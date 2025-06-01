@@ -10,40 +10,48 @@
 
 using System;
 
-namespace McduDotNet
+namespace McduDotNet.WinWingMcdu
 {
-    /// <summary>
-    /// Represents an instance of an MCDU.
-    /// </summary>
-    public interface IMcdu : IDisposable
+    static class UsbIdentifiers
     {
-        /// <summary>
-        /// Whether this is the captain MCDU, first officer MCDU or observer MCDU.
-        /// </summary>
-        ProductId ProductId { get; }
+        public const int VendorId = 0x4098;
 
-        /// <summary>
-        /// The MCDU's display.
-        /// </summary>
-        Screen Screen { get; }
+        public const int CaptainProductId = 0xBB36;
 
-        /// <summary>
-        /// Raised when a key is pressed.
-        /// </summary>
-        event EventHandler<KeyEventArgs> KeyDown;
+        public const int FirstOfficerProductId = 0xBB3E;
 
-        /// <summary>
-        /// Raised when a key is released.
-        /// </summary>
-        event EventHandler<KeyEventArgs> KeyUp;
+        public const int ObserverProductId = 0xBB3A;
 
-        /// <summary>
-        /// Copies the content of <see cref="Screen"/> to the display.
-        /// </summary>
-        /// <param name="skipDuplicateCheck">
-        /// The display is normally not refreshed if the library thinks that nothing has changed since the last
-        /// refresh. Setting this parameter to true skips that test.
-        /// </param>
-        void RefreshDisplay(bool skipDuplicateCheck = false);
+        public static bool IsMcdu(int vendorId, int productId)
+        {
+            switch(productId) {
+                case CaptainProductId:
+                case FirstOfficerProductId:
+                case ObserverProductId:
+                    return vendorId == VendorId;
+                default:
+                    return false;
+            }
+        }
+
+        public static int FromLibraryProductId(ProductId libraryProductId)
+        {
+            switch(libraryProductId) {
+                case ProductId.Captain:         return CaptainProductId;
+                case ProductId.FirstOfficer:    return FirstOfficerProductId;
+                case ProductId.Observer:        return ObserverProductId;
+                default:                        throw new NotImplementedException();
+            }
+        }
+
+        public static ProductId ToLibraryProductId(int usbProductId)
+        {
+            switch(usbProductId) {
+                case CaptainProductId:          return ProductId.Captain;
+                case FirstOfficerProductId:     return ProductId.FirstOfficer;
+                case ObserverProductId:         return ProductId.Observer;
+                default:                        throw new NotImplementedException();
+            }
+        }
     }
 }

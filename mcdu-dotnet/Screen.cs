@@ -202,5 +202,19 @@ namespace McduDotNet
             RightToLeft = false;
             Sol();
         }
+
+        public void ScrollRows(int startRow = 0, int endRow = Lines - 1)
+        {
+            if(startRow < 0 || startRow > endRow) {
+                throw new ArgumentOutOfRangeException(nameof(startRow));
+            }
+            if(endRow < startRow || endRow > Lines - 1) {
+                throw new ArgumentOutOfRangeException(nameof(endRow));
+            }
+            for(var rowIdx = startRow;rowIdx < endRow;++rowIdx) {
+                Rows[rowIdx].CopyFrom(Rows[rowIdx + 1]);
+            }
+            Rows[endRow].Clear();
+        }
     }
 }

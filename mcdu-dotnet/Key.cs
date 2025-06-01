@@ -8,42 +8,86 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-
 namespace McduDotNet
 {
     /// <summary>
-    /// Represents an instance of an MCDU.
+    /// An enumeration of all of the keys on the MCDU.
     /// </summary>
-    public interface IMcdu : IDisposable
+    public enum Key
     {
-        /// <summary>
-        /// Whether this is the captain MCDU, first officer MCDU or observer MCDU.
-        /// </summary>
-        ProductId ProductId { get; }
-
-        /// <summary>
-        /// The MCDU's display.
-        /// </summary>
-        Screen Screen { get; }
-
-        /// <summary>
-        /// Raised when a key is pressed.
-        /// </summary>
-        event EventHandler<KeyEventArgs> KeyDown;
-
-        /// <summary>
-        /// Raised when a key is released.
-        /// </summary>
-        event EventHandler<KeyEventArgs> KeyUp;
-
-        /// <summary>
-        /// Copies the content of <see cref="Screen"/> to the display.
-        /// </summary>
-        /// <param name="skipDuplicateCheck">
-        /// The display is normally not refreshed if the library thinks that nothing has changed since the last
-        /// refresh. Setting this parameter to true skips that test.
-        /// </param>
-        void RefreshDisplay(bool skipDuplicateCheck = false);
+        LineSelectLeft1,
+        LineSelectLeft2,
+        LineSelectLeft3,
+        LineSelectLeft4,
+        LineSelectLeft5,
+        LineSelectLeft6,
+        LineSelectRight1,
+        LineSelectRight2,
+        LineSelectRight3,
+        LineSelectRight4,
+        LineSelectRight5,
+        LineSelectRight6,
+        Dir,
+        Prog,
+        Perf,
+        Init,
+        Data,
+        Blank1,
+        Brt,
+        FPln,
+        RadNav,
+        FuelPred,
+        SecFPln,
+        AtcComm,
+        McduMenu,
+        Dim,
+        Airport,
+        Blank2,
+        LeftArrow,
+        UpArrow,
+        RightArrow,
+        DownArrow,
+        Digit1,
+        Digit2,
+        Digit3,
+        Digit4,
+        Digit5,
+        Digit6,
+        Digit7,
+        Digit8,
+        Digit9,
+        DecimalPoint,
+        Digit0,
+        PositiveNegative,
+        A,
+        B,
+        C,
+        D,
+        E,
+        F,
+        G,
+        H,
+        I,
+        J,
+        K,
+        L,
+        M,
+        N,
+        O,
+        P,
+        Q,
+        R,
+        S,
+        T,
+        U,
+        V,
+        W,
+        X,
+        Y,
+        Z,
+        Slash,
+        Space,
+        Ovfy,
+        Clr,
     }
 }

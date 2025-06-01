@@ -12,46 +12,19 @@ using System;
 
 namespace McduDotNet
 {
-    static class WinWingUsb
+    public class KeyEventArgs : EventArgs
     {
-        public const int VendorId = 0x4098;
+        public Key Key { get; }
 
-        public const int CaptainProductId = 0xBB36;
+        public string Character { get; }
 
-        public const int FirstOfficerProductId = 0xBB3E;
+        public bool Pressed { get; }
 
-        public const int ObserverProductId = 0xBB3A;
-
-        public static bool IsMcdu(int vendorId, int productId)
+        public KeyEventArgs(Key key, bool pressed)
         {
-            switch(productId) {
-                case CaptainProductId:
-                case FirstOfficerProductId:
-                case ObserverProductId:
-                    return vendorId == VendorId;
-                default:
-                    return false;
-            }
-        }
-
-        public static int FromLibraryProductId(ProductId libraryProductId)
-        {
-            switch(libraryProductId) {
-                case ProductId.Captain:         return CaptainProductId;
-                case ProductId.FirstOfficer:    return FirstOfficerProductId;
-                case ProductId.Observer:        return ObserverProductId;
-                default:                        throw new NotImplementedException();
-            }
-        }
-
-        public static ProductId ToLibraryProductId(int usbProductId)
-        {
-            switch(usbProductId) {
-                case CaptainProductId:          return ProductId.Captain;
-                case FirstOfficerProductId:     return ProductId.FirstOfficer;
-                case ObserverProductId:         return ProductId.Observer;
-                default:                        throw new NotImplementedException();
-            }
+            Key = key;
+            Character = key.ToCharacter();
+            Pressed = pressed;
         }
     }
 }

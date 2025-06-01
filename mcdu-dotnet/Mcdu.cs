@@ -10,7 +10,10 @@
 
 using System;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using HidSharp;
+using McduDotNet.WinWingMcdu;
 
 namespace McduDotNet
 {
@@ -25,12 +28,45 @@ namespace McduDotNet
         private readonly char[] _DisplayCharacterBuffer = new char[1];
         private int _DisplayPacketOffset = 0;
         private string _DisplayDuplicateCheckString;
+        private CancellationTokenSource _InputLoopCancellationTokenSource;
+        private Task _InputLoopTask;
+        private readonly InputReport01 _InputReport01_Previous = new InputReport01();
+        private readonly InputReport01 _InputReport01_Current = new InputReport01();
+        private (UInt64, UInt64, UInt64) _PreviousInputReport01Digest = (0,0,0);
 
         /// <inheritdoc/>
         public ProductId ProductId { get; }
 
         /// <inheritdoc/>
         public Screen Screen { get; }
+
+        /// <inheritdoc/>
+        public event EventHandler<KeyEventArgs> KeyDown;
+
+        /// <summary>
+        /// Raises <see cref="KeyDown"/>. Doesn't bother creating args unless something is listening.
+        /// </summary>
+        /// <param name="createArgs"></param>
+        protected virtual void OnKeyDown(Func<KeyEventArgs> createArgs)
+        {
+            if(KeyDown != null) {
+                KeyDown?.Invoke(this, createArgs());
+            }
+        }
+
+        /// <inheritdoc/>
+        public event EventHandler<KeyEventArgs> KeyUp;
+
+        /// <summary>
+        /// Raises <see cref="KeyUp"/>. Doesn't bother creating args unless something is listening.
+        /// </summary>
+        /// <param name="createArgs"></param>
+        protected virtual void OnKeyUp(Func<KeyEventArgs> createArgs)
+        {
+            if(KeyUp != null) {
+                KeyUp?.Invoke(this, createArgs());
+            }
+        }
 
         /// <summary>
         /// Creates a new object.
@@ -60,6 +96,10 @@ namespace McduDotNet
         protected virtual void Dispose(bool disposing)
         {
             if(disposing) {
+                _InputLoopCancellationTokenSource?.Cancel();
+                _InputLoopTask?.Wait(5000);
+                _InputLoopTask = null;
+
                 if(_HidStream != null) {
                     _HidStream.Dispose();
                     _HidStream = null;
@@ -78,6 +118,10 @@ namespace McduDotNet
             if(!_HidDevice.TryOpen(out _HidStream)) {
                 throw new McduException($"Could not open a stream to {_HidDevice}");
             }
+
+            _InputLoopCancellationTokenSource = new CancellationTokenSource();
+            _InputLoopTask = Task.Run(() => InputLoop(_InputLoopCancellationTokenSource.Token));
+
             UseMobiFlightInitialisationSequence();
         }
 
@@ -185,8 +229,71 @@ namespace McduDotNet
         private void SendPacket(byte[] bytes)
         {
             var stream = _HidStream;
-            if(stream != null) {
-                stream.Write(bytes);
+            stream?.Write(bytes);
+        }
+
+        private void InputLoop(CancellationToken cancellationToken)
+        {
+            var readBuffer = new byte[InputReport01.PacketLength];
+
+            while(!cancellationToken.IsCancellationRequested) {
+                var stream = _HidStream;
+                if(stream?.CanRead ?? false) {
+                    ClearHidStreamBuffer(stream);
+                    stream.ReadTimeout = 1000;
+                    try {
+                        var bytesRead = stream.Read(readBuffer, 0, readBuffer.Length);
+                        if (bytesRead > 0) {
+                            if(readBuffer[0] == 1 && bytesRead >= InputReport01.PacketLength) {
+                                ProcessInputReport1(readBuffer, bytesRead);
+                            }
+                        }
+                    } catch(TimeoutException) {
+                        // ugh
+                    }
+                }
+                Thread.Sleep(1);
+            }
+        }
+
+        private readonly byte[] _ClearBuffer = new byte[InputReport01.PacketLength];
+        private void ClearHidStreamBuffer(HidStream stream)
+        {
+            stream.ReadTimeout = 1;
+            try {
+                while(stream.Read(_ClearBuffer, 0, _ClearBuffer.Length) > 0) {
+                    ;
+                }
+            } catch(TimeoutException) {
+                // ugh
+            }
+        }
+
+        private void ProcessInputReport1(byte[] readBuffer, int bytesRead)
+        {
+            _InputReport01_Current.CopyFrom(readBuffer, 0, bytesRead);
+            var digest = _InputReport01_Current.ToDigest();
+            if(   digest.Item1 != _PreviousInputReport01Digest.Item1
+               || digest.Item2 != _PreviousInputReport01Digest.Item2
+               || digest.Item3 != _PreviousInputReport01Digest.Item3
+            ) {
+                try {
+                    foreach(Key key in Enum.GetValues(typeof(Key))) {
+                        var pressed = _InputReport01_Current.IsKeyPressed(key);
+                        var wasPressed = _InputReport01_Previous.IsKeyPressed(key);
+                        if(pressed != wasPressed) {
+                            if(pressed) {
+                                OnKeyDown(() => new KeyEventArgs(key, pressed));
+                            } else {
+                                OnKeyUp(() => new KeyEventArgs(key, pressed));
+                            }
+                        }
+                    }
+                } catch {
+                    // Swallow the exception for now - ultimately we want the events raised on a different thread
+                }
+                _InputReport01_Previous.CopyFrom(_InputReport01_Current);
+                _PreviousInputReport01Digest = digest;
             }
         }
     }

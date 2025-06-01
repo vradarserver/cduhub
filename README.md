@@ -27,6 +27,11 @@ The intention here is to have a small .NET Standard 2.0 library that uses
 HidSharp (https://www.zer7.com/software/hidsharp) to interact with the device,
 and for the library to be cross-platform.
 
+**(Turns out HidSharp buffers input reports internally, which makes for a laggy
+input experience when they're coming in every 1/100th of a second - I'm working
+around it for now but might need to switch to something that supports unbuffered
+input)**
+
 This is not about driving the display within flight simulators. WinWing and
 MobiFlight already cover that. This is about using it as a general character
 display.
@@ -260,10 +265,8 @@ So far I've figured out this for the payload, offsets & lengths in decimal:
 | 0      | 1      | 01 = report type |
 | 1      | 10     | Key bitflags |
 | 11     | 5      | ?? |
-| 16     | 1      | Left ambient sensor value 00 = dark ff = light |
-| 17     | 1      | ?? |
-| 18     | 1      | Right ambient sensor value 00 = dark ff = light |
-| 19     | 1      | ?? |
+| 16     | 2      | Little endian left ambient sensor value  |
+| 18     | 2      | Little endian right ambient sensor value |
 | 20     | 4      | Previous 4 bytes repeated? |
 
 I'm guessing the LED states and backlight level are in there somewhere.

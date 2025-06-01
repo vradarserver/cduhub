@@ -10,40 +10,43 @@
 
 using System;
 
-namespace McduDotNet
+namespace McduDotNet.WinWingMcdu
 {
-    /// <summary>
-    /// Represents an instance of an MCDU.
-    /// </summary>
-    public interface IMcdu : IDisposable
+    class InputReport01
     {
-        /// <summary>
-        /// Whether this is the captain MCDU, first officer MCDU or observer MCDU.
-        /// </summary>
-        ProductId ProductId { get; }
+        public const int PacketLength = 25;
 
-        /// <summary>
-        /// The MCDU's display.
-        /// </summary>
-        Screen Screen { get; }
+        private readonly byte[] _Packet = new byte[PacketLength];
 
-        /// <summary>
-        /// Raised when a key is pressed.
-        /// </summary>
-        event EventHandler<KeyEventArgs> KeyDown;
+        public void CopyFrom(byte[] buffer, int offset, int length)
+        {
+            if(length > 0) {
+                if(buffer[offset] != 1) {
+                    throw new McduException($"Unexpected report code {buffer[offset]} for a report code 1 buffer");
+                }
+                length = Math.Min(PacketLength, length);
+                Array.ConstrainedCopy(buffer, offset, _Packet, 0, length);
+                for(var idx = length;idx < _Packet.Length;++idx) {
+                    _Packet[idx] = 0;
+                }
+            }
+        }
 
-        /// <summary>
-        /// Raised when a key is released.
-        /// </summary>
-        event EventHandler<KeyEventArgs> KeyUp;
+        public void CopyFrom(InputReport01 other) => CopyFrom(other._Packet, 0, other._Packet.Length);
 
-        /// <summary>
-        /// Copies the content of <see cref="Screen"/> to the display.
-        /// </summary>
-        /// <param name="skipDuplicateCheck">
-        /// The display is normally not refreshed if the library thinks that nothing has changed since the last
-        /// refresh. Setting this parameter to true skips that test.
-        /// </param>
-        void RefreshDisplay(bool skipDuplicateCheck = false);
+        public (UInt64, UInt64, UInt64) ToDigest()
+        {
+            return (
+                BitConverter.ToUInt64(_Packet, 1),
+                BitConverter.ToUInt64(_Packet, 9),
+                BitConverter.ToUInt64(_Packet, 17)
+            );
+        }
+
+        public bool IsKeyPressed(Key key)
+        {
+            (var flag, var offset) = key.InputReport01FlagAndOffset();
+            return (_Packet[offset] & flag) != 0;
+        }
     }
 }
