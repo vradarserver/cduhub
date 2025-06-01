@@ -230,9 +230,9 @@ The full set of observed codes are:
 So for example, if you want a large yellow A (0x41 in UTF8) then the
 sequence for the character cell would be:
 
-First character on screen: `E8 00 41`
-Last character on screen: `E9 00 41`
-Any other position on screen: `E7 00 41`
++ First character on screen: `E8 00 41`
++ Last character on screen: `E9 00 41`
++ Any other position on screen: `E7 00 41`
 
 The characters are sent sequentially from top-left to bottom right. If a packet
 is shorter than 64 bytes then the remainder is padded out with zeros. Multi-byte

@@ -48,6 +48,9 @@ namespace Clock
                     mcdu.RefreshDisplay();
                     Thread.Sleep(100);
                 }
+
+                mcdu.Screen.Clear();
+                mcdu.RefreshDisplay();
             }
         }
     }
