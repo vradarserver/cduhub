@@ -24,8 +24,8 @@ server. It is fine for its intended purpose, but a bit clunky for a program that
 just wants to drive the display.
 
 The intention here is to have a small .NET Standard 2.0 library that uses
-HidSharp (https://github.com/IntergatedCircuits/HidSharp) to interact with the
-device, and for the library to be cross-platform.
+HidSharp (https://www.zer7.com/software/hidsharp) to interact with the device,
+and for the library to be cross-platform.
 
 This is not about driving the display within flight simulators. WinWing and
 MobiFlight already cover that. This is about using it as a general character

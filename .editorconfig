@@ -1,0 +1,102 @@
+# https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options?view=vs-2022
+# https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/
+# https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/categories
+
+
+[*]
+indent_style = space
+indent_size = 4
+tab_size = 4
+
+[*.{c,cpp,cs,csx,js,sql,ts,vb,vbx}]
+charset = utf-8-bom
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.cs]
+dotnet_sort_system_directives_first = true
+dotnet_style_require_accessibility_modifiers = omit_if_default
+dotnet_style_qualification_for_event = false:suggestion
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_method = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+csharp_prefer_simple_using_statement = false:suggestion
+
+dotnet_diagnostic.CA1806.severity = none        # Keeps wanting me to spam the source with underscores instead of just ignoring unwanted results.
+dotnet_diagnostic.IDE0055.severity = none       # Stop vandalising columns.
+dotnet_diagnostic.IDE0066.severity = none       # Stop trying to make switch expressions happen.
+dotnet_diagnostic.IDE0290.severity = none       # Stop banging on about primary constructors.
+dotnet_diagnostic.SYSLIB1045.severity = none    # Turn off the Regex precompilation spam, it's especially annoying on static Regex fields
+
+###############################
+# Naming Conventions          #
+###############################
+# pascal_case_style
+dotnet_naming_style.pascal_case_style.capitalization                = pascal_case
+
+# underscore_pascal_case_style
+dotnet_naming_style.underscore_pascal_case_style.required_prefix    = _
+dotnet_naming_style.underscore_pascal_case_style.capitalization     = pascal_case
+
+# interface_pascal_case_style
+dotnet_naming_style.interface_pascal_case_style.required_prefix     = I
+dotnet_naming_style.interface_pascal_case_style.capitalization      = pascal_case
+
+# type_param_pascal_case_style
+dotnet_naming_style.type_param_pascal_case_style.required_prefix    = T
+dotnet_naming_style.type_param_pascal_case_style.capitalization     = pascal_case
+
+# camel_case_style
+dotnet_naming_style.camel_case_style.capitalization                 = camel_case
+
+# simple_pascal_cased group - these are always pascal cased
+dotnet_naming_symbols.simple_pascal_cased.applicable_kinds                  = namespace, class, struct, enum, property, method, event, delegate
+dotnet_naming_symbols.simple_pascal_cased.applicable_accessibilities        = public, internal, private, protected, protected_internal, private_protected
+
+# simple_camel_cased group - these are always camel cased
+dotnet_naming_symbols.simple_camel_cased.applicable_kinds                   = parameter, local, local_function
+dotnet_naming_symbols.simple_camel_cased.applicable_accessibilities         = *
+
+# private_fields group - these must be underscore pascal cased
+dotnet_naming_symbols.private_fields.applicable_kinds                       = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities             = private, protected, private_protected
+
+# public_fields group - these need to be pascal cased
+dotnet_naming_symbols.public_fields.applicable_kinds                        = field
+dotnet_naming_symbols.public_fields.applicable_accessibilities              = public, internal, protected_internal
+
+# interfaces group - these are always pascal case and prefixed with an I
+dotnet_naming_symbols.interfaces.applicable_kinds                           = interface
+dotnet_naming_symbols.interfaces.applicable_accessibilities                 = *
+
+# type_params group - these are always pascal case and prefixed with an T
+dotnet_naming_symbols.type_params.applicable_kinds                          = type_parameter
+dotnet_naming_symbols.type_params.applicable_accessibilities                = *
+
+# Enforce rules
+dotnet_naming_rule.do_simple_pascal_cased.severity    = error
+dotnet_naming_rule.do_simple_pascal_cased.symbols     = simple_pascal_cased
+dotnet_naming_rule.do_simple_pascal_cased.style       = pascal_case_style
+
+dotnet_naming_rule.do_public_fields.severity          = error
+dotnet_naming_rule.do_public_fields.symbols           = public_fields
+dotnet_naming_rule.do_public_fields.style             = pascal_case_style
+
+dotnet_naming_rule.do_private_fields.severity         = error
+dotnet_naming_rule.do_private_fields.symbols          = private_fields
+dotnet_naming_rule.do_private_fields.style            = underscore_pascal_case_style
+
+dotnet_naming_rule.do_interfaces.severity             = error
+dotnet_naming_rule.do_interfaces.symbols              = interfaces
+dotnet_naming_rule.do_interfaces.style                = interface_pascal_case_style
+
+dotnet_naming_rule.do_type_params.severity            = error
+dotnet_naming_rule.do_type_params.symbols             = type_params
+dotnet_naming_rule.do_type_params.style               = type_param_pascal_case_style
+
+dotnet_naming_rule.do_simple_camel_cased.severity     = error
+dotnet_naming_rule.do_simple_camel_cased.symbols      = simple_camel_cased
+dotnet_naming_rule.do_simple_camel_cased.style        = camel_case_style
