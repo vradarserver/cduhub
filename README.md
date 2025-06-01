@@ -33,13 +33,13 @@ display.
 
 
 
-## WinWing USB Device Notes
+## USB Packet Sniffing Notes
 
-These are observations made using WireShark and USBPcap when the device is being
-driven by MobiFlight and SimAppPro.
+These are observations made using WireShark and USBPcap while the device is being
+driven by either MobiFlight or SimAppPro.
 
-The device has the vendor ID 0x4098 and one of three product IDs, depending on
-whether it is configured as the pilot MCDU, first officer MCDU or observer MCDU:
+The device has the vendor ID 0x4098 and one of three product IDs depending on
+how it's been configured:
 
 | Position      | Product ID |
 | ---           | --- |
@@ -50,6 +50,9 @@ whether it is configured as the pilot MCDU, first officer MCDU or observer MCDU:
 The device has three endpoints. The 0 endpoint responds to configuration
 requests, the 1 endpoint behaves as a joystick and the 2 endpoint is the
 display.
+
+Neither MobiFlight nor SimAppPro seem to be sending feature requests to
+endpoint 0.
 
 
 
@@ -62,7 +65,7 @@ packets are omitted then the device will not display output.
 
 #### MobiFlight Initialisation
 
-MobiFlight's is shorter than SimAppPro's. It starts with 17x 63 byte payloads
+MobiFlight's is shorter than SimAppPro's. It starts with 17x 64 byte payloads
 for report code F0:
 
 ```
@@ -168,11 +171,11 @@ then 2 seconds later and every 3 seconds after that:
 
 ### Heartbeat
 
-Both MobiFlight and SimAppPro send a 14 byte 02 report roughly every three
+Both MobiFlight and SimAppPro send a 14 byte 02 packet roughly every three
 seconds, which I'm assuming is a heartbeat.
 
 I've yet to observe any ill effect from not sending it. The display remains
-active without it.
+active without it, it continues to show whatever was last sent.
 
 The difference between the two is MobiFlight sends it twice in a row whereas
 SimAppPro sends it three times:
@@ -185,7 +188,8 @@ SimAppPro sends it three times:
 
 Once the display has been successfully initialised both applications send
 multiple F2 packets to populate the display. Each character is represented
-by a two byte colour and font code followed by one to three bytes of UTF8.
+by a two byte sequence that determines colour and font size, followed by one
+to three bytes of UTF8.
 
 #### Colour and Font Code
 
@@ -200,28 +204,28 @@ The last character on screen adds 2 to the first byte.
 
 The full set of observed codes are:
 
-| Value | Binary              | Colour  | Font  |
-| ---   | ---                 | ---     | ---   |
-| 2100  | 0010 0001 0000 0000 | Amber   | Large |
-| 8C01  | 1000 1100 0000 0001 | Amber   | Small |
-| 0801  | 0000 1000 0000 0001 | Brown   | Large |
-| 7302  | 0111 0011 0000 0010 | Brown   | Small |
-| 6300  | 0110 0011 0000 0000 | Cyan    | Large |
-| CE01  | 1100 1110 0000 0001 | Cyan    | Small |
-| 8400  | 1000 0100 0000 0000 | Green   | Large |
-| EF01  | 1110 1111 0000 0001 | Green   | Small |
-| 2901  | 0010 1001 0000 0001 | Grey    | Large |
-| 9402  | 1001 0100 0000 0010 | Grey    | Small |
-| 4A01  | 0100 1010 0000 0001 | Khaki   | Large |
-| B502  | 1011 0101 0000 0010 | Khaki   | Small |
-| A500  | 1010 0101 0000 0000 | Magenta | Large |
-| 1002  | 0001 0000 0000 0010 | Magenta | Small |
-| C600  | 1100 0110 0000 0000 | Red     | Large |
-| 3102  | 0011 0001 0000 0010 | Red     | Small |
-| 4200  | 0100 0010 0000 0000 | White   | Large |
-| AD01  | 1010 1011 0000 0001 | White   | Small |
-| E700  | 1110 0111 0000 0000 | Yellow  | Large |
-| 5202  | 0101 0010 0000 0010 | Yellow  | Small |
+| Value | Colour  | Font  |
+| ---   | ---     | ---   |
+| 2100  | Amber   | Large |
+| 8C01  | Amber   | Small |
+| 0801  | Brown   | Large |
+| 7302  | Brown   | Small |
+| 6300  | Cyan    | Large |
+| CE01  | Cyan    | Small |
+| 8400  | Green   | Large |
+| EF01  | Green   | Small |
+| 2901  | Grey    | Large |
+| 9402  | Grey    | Small |
+| 4A01  | Khaki   | Large |
+| B502  | Khaki   | Small |
+| A500  | Magenta | Large |
+| 1002  | Magenta | Small |
+| C600  | Red     | Large |
+| 3102  | Red     | Small |
+| 4200  | White   | Large |
+| AD01  | White   | Small |
+| E700  | Yellow  | Large |
+| 5202  | Yellow  | Small |
 
 So for example, if you want a large yellow A (0x41 in UTF8) then the
 sequence for the character cell would be:
