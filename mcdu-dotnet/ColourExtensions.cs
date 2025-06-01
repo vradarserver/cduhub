@@ -46,5 +46,22 @@ namespace McduDotNet
                 }
             }
         }
+
+        public static char ToDuplicateCheckCode(this Colour colour, bool isSmallFont)
+        {
+            switch(colour) {
+                case Colour.Amber:      return isSmallFont ? 'a' : 'A';
+                case Colour.Brown:      return isSmallFont ? 'b' : 'B';
+                case Colour.Cyan:       return isSmallFont ? 'c' : 'C';
+                case Colour.Green:      return isSmallFont ? 'g' : 'G';
+                case Colour.Grey:       return isSmallFont ? 'e' : 'E';
+                case Colour.Khaki:      return isSmallFont ? 'k' : 'K';
+                case Colour.Magenta:    return isSmallFont ? 'm' : 'M';
+                case Colour.Red:        return isSmallFont ? 'r' : 'R';
+                case Colour.White:      return isSmallFont ? 'w' : 'W';
+                case Colour.Yellow:     return isSmallFont ? 'y' : 'Y';
+                default:                throw new NotImplementedException();
+            }
+        }
     }
 }

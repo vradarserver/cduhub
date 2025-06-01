@@ -24,6 +24,7 @@ namespace McduDotNet
         private readonly byte[] _DisplayPacket = new byte[64];
         private readonly char[] _DisplayCharacterBuffer = new char[1];
         private int _DisplayPacketOffset = 0;
+        private string _DisplayDuplicateCheckString;
 
         /// <inheritdoc/>
         public ProductId ProductId { get; }
@@ -109,21 +110,25 @@ namespace McduDotNet
         }
 
         /// <inheritdoc/>
-        public void RefreshDisplay()
+        public void RefreshDisplay(bool skipDuplicateCheck = false)
         {
-            InitialiseDisplayPacket();
-            for(var rowIdx = 0;rowIdx < Screen.Rows.Length;++rowIdx) {
-                var row = Screen.Rows[rowIdx];
-                for(var cellIdx = 0;cellIdx < row.Cells.Length;++cellIdx) {
-                    var cell = row.Cells[cellIdx];
-                    AddCellToDisplayPacket(
-                        cell,
-                        isFirstCell: rowIdx == 0 && cellIdx == 0,
-                        isLastCell:  rowIdx + 1 == Screen.Rows.Length && cellIdx + 1 == row.Cells.Length
-                    );
+            var duplicateCheckString = Screen.BuildDuplicateCheckString();
+            if(skipDuplicateCheck || _DisplayDuplicateCheckString != duplicateCheckString) {
+                InitialiseDisplayPacket();
+                for(var rowIdx = 0;rowIdx < Screen.Rows.Length;++rowIdx) {
+                    var row = Screen.Rows[rowIdx];
+                    for(var cellIdx = 0;cellIdx < row.Cells.Length;++cellIdx) {
+                        var cell = row.Cells[cellIdx];
+                        AddCellToDisplayPacket(
+                            cell,
+                            isFirstCell: rowIdx == 0 && cellIdx == 0,
+                            isLastCell:  rowIdx + 1 == Screen.Rows.Length && cellIdx + 1 == row.Cells.Length
+                        );
+                    }
                 }
+                PadAndSendDisplayPacket();
+                _DisplayDuplicateCheckString = duplicateCheckString;
             }
-            PadAndSendDisplayPacket();
         }
 
         private void InitialiseDisplayPacket()

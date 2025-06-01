@@ -30,6 +30,10 @@ namespace McduDotNet
         /// <summary>
         /// Copies the content of <see cref="Screen"/> to the display.
         /// </summary>
-        void RefreshDisplay();
+        /// <param name="skipDuplicateCheck">
+        /// The display is normally not refreshed if the library thinks that nothing has changed since the last
+        /// refresh. Setting this parameter to true skips that test.
+        /// </param>
+        void RefreshDisplay(bool skipDuplicateCheck = false);
     }
 }

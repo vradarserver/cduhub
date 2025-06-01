@@ -44,5 +44,11 @@ namespace McduDotNet
             result.Append(Character);
             return result.ToString();
         }
+
+        public void AppendToDuplicateCheckBuffer(StringBuilder buffer)
+        {
+            buffer.Append(Character);
+            buffer.Append(Colour.ToDuplicateCheckCode(Small));
+        }
     }
 }

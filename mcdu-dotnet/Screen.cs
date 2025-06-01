@@ -102,6 +102,15 @@ namespace McduDotNet
             return buffer.ToString();
         }
 
+        public string BuildDuplicateCheckString()
+        {
+            var buffer = new StringBuilder();
+            foreach(var row in Rows) {
+                row.AppendToDuplicateCheckBuffer(buffer);
+            }
+            return buffer.ToString();
+        }
+
         public void Clear()
         {
             foreach(var row in Rows) {

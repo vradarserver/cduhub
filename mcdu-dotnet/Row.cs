@@ -34,6 +34,13 @@ namespace McduDotNet
             return buffer.ToString();
         }
 
+        public void AppendToDuplicateCheckBuffer(StringBuilder buffer)
+        {
+            foreach(var cell in Cells) {
+                cell.AppendToDuplicateCheckBuffer(buffer);
+            }
+        }
+
         public void Clear()
         {
             for(var idx = 0;idx < Cells.Length;++idx) {

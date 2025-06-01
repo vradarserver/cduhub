@@ -46,7 +46,7 @@ namespace Clock
                     screen.Write(now.Second.ToString("00"));
 
                     mcdu.RefreshDisplay();
-                    Thread.Sleep(250);
+                    Thread.Sleep(100);
                 }
             }
         }
