@@ -241,3 +241,110 @@ UTF8 is sent big-endian.
 The first/last character markers are used even if the full set of characters does
 not fill the screen. If you don't fill the screen then whatever was
 previously on display stays on display.
+
+
+
+### Input Reports
+
+Input reports with a 25 byte payload including the report code 01 are sent every
+1/100th of a second. E.G.:
+
+```
+HID Data: 0101000000000000000000000000000000ca02c602ca02c602
+```
+
+So far I've figured out this for the payload, offsets & lengths in decimal:
+
+| Offset | Length | Meaning |
+| ---    | ---    | --- |
+| 0      | 1      | 01 = report type |
+| 1      | 10     | Key bitflags |
+| 11     | 5      | ?? |
+| 16     | 1      | Left ambient sensor value 00 = dark ff = light |
+| 17     | 1      | ?? |
+| 18     | 1      | Right ambient sensor value 00 = dark ff = light |
+| 19     | 1      | ?? |
+| 20     | 4      | Previous 4 bytes repeated? |
+
+I'm guessing the LED states and backlight level are in there somewhere.
+
+#### Key Bitflags
+
+Offsets are zero-based in decimal from the start of the packet.
+
+| Key              | Flag | Packet Byte Index |
+| ---              | ---  | --- |
+| LineSelectLeft1  | 0x01 | 1 |
+| LineSelectLeft2  | 0x02 | 1 |
+| LineSelectLeft3  | 0x04 | 1 |
+| LineSelectLeft4  | 0x08 | 1 |
+| LineSelectLeft5  | 0x10 | 1 |
+| LineSelectLeft6  | 0x20 | 1 |
+| LineSelectRight1 | 0x40 | 1 |
+| LineSelectRight2 | 0x80 | 1 |
+| LineSelectRight3 | 0x01 | 2 |
+| LineSelectRight4 | 0x02 | 2 |
+| LineSelectRight5 | 0x04 | 2 |
+| LineSelectRight6 | 0x08 | 2 |
+| Dir              | 0x10 | 2 |
+| Prog             | 0x20 | 2 |
+| Perf             | 0x40 | 2 |
+| Init             | 0x80 | 2 |
+| Data             | 0x01 | 3 |
+| Blank1           | 0x02 | 3 |
+| Brt              | 0x04 | 3 |
+| FPln             | 0x08 | 3 |
+| RadNav           | 0x10 | 3 |
+| FuelPred         | 0x20 | 3 |
+| SecFPln          | 0x40 | 3 |
+| AtcComm          | 0x80 | 3 |
+| McduMenu         | 0x01 | 4 |
+| Dim              | 0x02 | 4 |
+| Airport          | 0x04 | 4 |
+| Blank2           | 0x08 | 4 |
+| LeftArrow        | 0x10 | 4 |
+| UpArrow          | 0x20 | 4 |
+| RightArrow       | 0x40 | 4 |
+| DownArrow        | 0x80 | 4 |
+| Digit1           | 0x01 | 5 |
+| Digit2           | 0x02 | 5 |
+| Digit3           | 0x04 | 5 |
+| Digit4           | 0x08 | 5 |
+| Digit5           | 0x10 | 5 |
+| Digit6           | 0x20 | 5 |
+| Digit7           | 0x40 | 5 |
+| Digit8           | 0x80 | 5 |
+| Digit9           | 0x01 | 6 |
+| DecimalPoint     | 0x02 | 6 |
+| Digit0           | 0x04 | 6 |
+| Negative         | 0x08 | 6 |
+| A                | 0x10 | 6 |
+| B                | 0x20 | 6 |
+| C                | 0x40 | 6 |
+| D                | 0x80 | 6 |
+| E                | 0x01 | 7 |
+| F                | 0x02 | 7 |
+| G                | 0x04 | 7 |
+| H                | 0x08 | 7 |
+| I                | 0x10 | 7 |
+| J                | 0x20 | 7 |
+| K                | 0x40 | 7 |
+| L                | 0x80 | 7 |
+| M                | 0x01 | 8 |
+| N                | 0x02 | 8 |
+| O                | 0x04 | 8 |
+| P                | 0x08 | 8 |
+| Q                | 0x10 | 8 |
+| R                | 0x20 | 8 |
+| S                | 0x40 | 8 |
+| T                | 0x80 | 8 |
+| U                | 0x01 | 9 |
+| V                | 0x02 | 9 |
+| W                | 0x04 | 9 |
+| X                | 0x08 | 9 |
+| Y                | 0x10 | 9 |
+| Z                | 0x20 | 9 |
+| Slash            | 0x40 | 9 |
+| Space            | 0x80 | 9 |
+| Ovfy             | 0x01 | 10 |
+| Clr              | 0x02 | 10 |
