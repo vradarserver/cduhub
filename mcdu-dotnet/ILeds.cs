@@ -8,47 +8,67 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-
 namespace McduDotNet
 {
     /// <summary>
-    /// Represents an instance of an MCDU.
+    /// Describes the state of the LEDs.
     /// </summary>
-    public interface IMcdu : IDisposable
+    public interface ILeds
     {
         /// <summary>
-        /// Whether this is the captain MCDU, first officer MCDU or observer MCDU.
+        /// Gets or sets the lit state of the FAIL LED.
         /// </summary>
-        ProductId ProductId { get; }
+        bool Fail { get; set; }
 
         /// <summary>
-        /// The MCDU's display.
+        /// Gets or sets the lit state of the FM LED.
         /// </summary>
-        Screen Screen { get; }
+        bool Fm { get; set; }
 
         /// <summary>
-        /// The MCDU's LED lights.
+        /// Gets or sets the lit state of the MCDU LED.
         /// </summary>
-        ILeds Leds { get; }
+        bool Mcdu { get; set; }
 
         /// <summary>
-        /// Raised when a key is pressed.
+        /// Gets or sets the lit state of the MENU LED.
         /// </summary>
-        event EventHandler<KeyEventArgs> KeyDown;
+        bool Menu { get; set; }
 
         /// <summary>
-        /// Raised when a key is released.
+        /// Gets or sets the lit state of the FM1 LED.
         /// </summary>
-        event EventHandler<KeyEventArgs> KeyUp;
+        bool Fm1 { get; set; }
 
         /// <summary>
-        /// Copies the content of <see cref="Screen"/> to the display.
+        /// Gets or sets the lit state of the IND LED.
         /// </summary>
-        /// <param name="skipDuplicateCheck">
-        /// The display is normally not refreshed if the library thinks that nothing has changed since the last
-        /// refresh. Setting this parameter to true skips that test.
-        /// </param>
-        void RefreshDisplay(bool skipDuplicateCheck = false);
+        bool Ind { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lit state of the RDY LED.
+        /// </summary>
+        bool Rdy { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lit state of the horizontal line LED.
+        /// </summary>
+        bool Line { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lit state of the FM2 LED.
+        /// </summary>
+        bool Fm2 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the brightness of the LEDs as a value from 0 to 1.
+        /// </summary>
+        double Brightness { get; set; }
+
+        /// <summary>
+        /// Switches all of the LEDs on or off.
+        /// </summary>
+        /// <param name="on"></param>
+        void TurnAllOn(bool on);
     }
 }

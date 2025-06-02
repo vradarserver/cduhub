@@ -169,6 +169,20 @@ namespace McduDotNet
                 : Screen.Columns + column;
         }
 
+        public void LeftLineSelect(int line, string text)
+        {
+            Line = line * 2;
+            ForLeftToRight();
+            Write(text);
+        }
+
+        public void RightLineSelect(int line, string text)
+        {
+            Line = line * 2;
+            ForRightToLeft();
+            Write(text);
+        }
+
         public void WriteCentred(string text)
         {
             CentreFor(text);

@@ -351,3 +351,38 @@ Offsets are zero-based in decimal from the start of the packet.
 | Space            | 0x80 | 9 |
 | Ovfy             | 0x01 | 10 |
 | Clr              | 0x02 | 10 |
+
+
+
+### Backlight and LEDs
+
+Part of the initialisation sent for MobiFlight was this:
+
+```
+01 HID Data: 0232bb00000349 00cc 0000000000
+02 HID Data: 0232bb00000349 01ff 0000000000
+```
+
+Turns out that this report controls the backlight and LEDs. The first of the two
+isolated bytes indicates which value to set (it is a discrete value, not a flag)
+and the second indicates the value. For LEDs 0 = off, 1 = on. For brightness
+values 0 = off, FF = full.
+
+All values are in hex.
+
+| First Byte | Value | Controls |
+| ---        | ---   | --- |
+| 00         | 0-FF  | Button backlight |
+| 01         | 0-FF  | Display backlight |
+| 02         | 0-FF  | LED backlight |
+| 03-07      | ??    | ?? |
+| 08         | 0/1   | FAIL LED |
+| 09         | 0/1   | FM LED |
+| 0A         | 0/1   | MCDU LED |
+| 0B         | 0/1   | MENU LED |
+| 0C         | 0/1   | FM1 LED |
+| 0D         | 0/1   | IND LED |
+| 0E         | 0/1   | RDY LED |
+| 0F         | 0/1   | LINE LED |
+| 10         | 0/1   | FM2 LED |
+| 11-FF      | ??    | ?? |

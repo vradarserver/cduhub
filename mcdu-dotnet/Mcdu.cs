@@ -40,6 +40,10 @@ namespace McduDotNet
         /// <inheritdoc/>
         public Screen Screen { get; }
 
+        private Leds _Leds;
+        /// <inheritdoc/>
+        public ILeds Leds => _Leds;
+
         /// <inheritdoc/>
         public event EventHandler<KeyEventArgs> KeyDown;
 
@@ -76,6 +80,7 @@ namespace McduDotNet
         public Mcdu(HidDevice hidDevice, ProductId productId)
         {
             _HidDevice = hidDevice;
+            _Leds = new Leds(this);
             ProductId = productId;
             Screen = new Screen();
         }
@@ -145,12 +150,13 @@ namespace McduDotNet
                 "f0000f38000032bb0000190100005f633100000e0000000400000000001a0000000000000032bb0000190100005f633100000e00000004000100000000000000",
                 "f00010381b0000000000000032bb0000190100005f633100000e0000000400020000001c0000000000000032bb00001a0100005f633100000100000000000000",
                 "f00011120232bb00001c0100005f6331000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-                "0232bb0000034900cc0000000000",
-                "0232bb0000034901ff0000000000",
+                "0232bb0000034900cc0000000000", // <-- set button backlight to 0xcc out of 0xff
+                "0232bb0000034901ff0000000000", // <-- set display backlight to full
             };
             foreach(var packet in packets) {
                 SendStringPacket(packet);
             }
+            _Leds.Initialise();
         }
 
         /// <inheritdoc/>
@@ -224,6 +230,20 @@ namespace McduDotNet
                 bytes[idx] = (byte)Convert.ToInt32(packet.Substring(idx * 2, 2), 16);
             }
             SendPacket(bytes);
+        }
+
+        private byte[] _LedOrBrightnessPacket = new byte[] {
+            0x02, 0x32, 0xbb, 0x00, 0x00, 0x03, 0x49,
+            0x00, 0x00,     // <-- these two change with each call
+            0x00, 0x00, 0x00, 0x00, 0x00
+        };
+
+        internal void SendLedOrBrightnessPacket(byte indicatorCode, byte value)
+        {
+            const int indicatorOffset = 7;
+            _LedOrBrightnessPacket[indicatorOffset] = indicatorCode;
+            _LedOrBrightnessPacket[indicatorOffset + 1] = value;
+            SendPacket(_LedOrBrightnessPacket);
         }
 
         private void SendPacket(byte[] bytes)

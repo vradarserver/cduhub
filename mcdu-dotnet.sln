@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "colours", "samples\colours\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cooked-input", "samples\cooked-input\cooked-input.csproj", "{C4180622-DDBE-4090-AC61-B7970CEDC992}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "leds", "samples\leds\leds.csproj", "{F656E0C6-F924-4D09-AEE0-9E258CF5C61A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{C4180622-DDBE-4090-AC61-B7970CEDC992}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4180622-DDBE-4090-AC61-B7970CEDC992}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4180622-DDBE-4090-AC61-B7970CEDC992}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F656E0C6-F924-4D09-AEE0-9E258CF5C61A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F656E0C6-F924-4D09-AEE0-9E258CF5C61A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F656E0C6-F924-4D09-AEE0-9E258CF5C61A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F656E0C6-F924-4D09-AEE0-9E258CF5C61A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -51,6 +57,7 @@ Global
 		{23A29B13-B7C2-4E62-A43E-E9B3244AC39A} = {237C6CC3-40C3-4128-A819-BE7447086CD6}
 		{02CE0CD4-675D-4A60-B265-55A55A4093A6} = {237C6CC3-40C3-4128-A819-BE7447086CD6}
 		{C4180622-DDBE-4090-AC61-B7970CEDC992} = {237C6CC3-40C3-4128-A819-BE7447086CD6}
+		{F656E0C6-F924-4D09-AEE0-9E258CF5C61A} = {237C6CC3-40C3-4128-A819-BE7447086CD6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C977F7C9-07B7-4BB4-A182-FDE6F96F171A}
