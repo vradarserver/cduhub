@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 		Directory.Build.props = Directory.Build.props
 		LICENSE = LICENSE
+		.github\workflows\nuget-publish.yml = .github\workflows\nuget-publish.yml
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -17,11 +18,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{237C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "clock", "samples\clock\clock.csproj", "{23A29B13-B7C2-4E62-A43E-E9B3244AC39A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "colours", "samples\colours\colours.csproj", "{02CE0CD4-675D-4A60-B265-55A55A4093A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "colours", "samples\colours\colours.csproj", "{02CE0CD4-675D-4A60-B265-55A55A4093A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cooked-input", "samples\cooked-input\cooked-input.csproj", "{C4180622-DDBE-4090-AC61-B7970CEDC992}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cooked-input", "samples\cooked-input\cooked-input.csproj", "{C4180622-DDBE-4090-AC61-B7970CEDC992}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "leds", "samples\leds\leds.csproj", "{F656E0C6-F924-4D09-AEE0-9E258CF5C61A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "leds", "samples\leds\leds.csproj", "{F656E0C6-F924-4D09-AEE0-9E258CF5C61A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

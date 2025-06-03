@@ -3,10 +3,35 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <RootNamespace>McduDotNet</RootNamespace>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <PackageId>mcdu-dotnet</PackageId>
+        <Title>MCDU DotNet</Title>
+        <Authors>Andrew Whewell</Authors>
+        <Description>A .NET Standard 2.0 library to read and write the WinWing MCDU peripheral</Description>
+        <Copyright>Copyright © 2025 onwards, Andrew Whewell</Copyright>
+        <PackageProjectUrl>https://github.com/vradarserver/mcdu-dotnet</PackageProjectUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <RepositoryUrl>https://github.com/vradarserver/mcdu-dotnet</RepositoryUrl>
+        <PackageTags>winwing; mcdu; .net; csharp; c#</PackageTags>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
     </PropertyGroup>
 
     <ItemGroup>
+      <None Include="..\LICENSE">
+        <Pack>True</Pack>
+        <PackagePath>\</PackagePath>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
       <PackageReference Include="HidSharp" Version="2.1.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="README.md">
+        <Pack>True</Pack>
+        <PackagePath>\</PackagePath>
+      </None>
     </ItemGroup>
 
 </Project>
