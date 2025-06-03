@@ -22,6 +22,7 @@ namespace McduDotNet
     /// </summary>
     class Mcdu : IMcdu
     {
+        private readonly object _OutputLock = new Object();
         private HidDevice _HidDevice;
         private HidStream _HidStream;
         private readonly byte[] _DisplayPacket = new byte[64];
@@ -162,22 +163,24 @@ namespace McduDotNet
         /// <inheritdoc/>
         public void RefreshDisplay(bool skipDuplicateCheck = false)
         {
-            var duplicateCheckString = Screen.BuildDuplicateCheckString();
-            if(skipDuplicateCheck || _DisplayDuplicateCheckString != duplicateCheckString) {
-                InitialiseDisplayPacket();
-                for(var rowIdx = 0;rowIdx < Screen.Rows.Length;++rowIdx) {
-                    var row = Screen.Rows[rowIdx];
-                    for(var cellIdx = 0;cellIdx < row.Cells.Length;++cellIdx) {
-                        var cell = row.Cells[cellIdx];
-                        AddCellToDisplayPacket(
-                            cell,
-                            isFirstCell: rowIdx == 0 && cellIdx == 0,
-                            isLastCell:  rowIdx + 1 == Screen.Rows.Length && cellIdx + 1 == row.Cells.Length
-                        );
+            lock(_OutputLock) {
+                var duplicateCheckString = Screen.BuildDuplicateCheckString();
+                if(skipDuplicateCheck || _DisplayDuplicateCheckString != duplicateCheckString) {
+                    InitialiseDisplayPacket();
+                    for(var rowIdx = 0;rowIdx < Screen.Rows.Length;++rowIdx) {
+                        var row = Screen.Rows[rowIdx];
+                        for(var cellIdx = 0;cellIdx < row.Cells.Length;++cellIdx) {
+                            var cell = row.Cells[cellIdx];
+                            AddCellToDisplayPacket(
+                                cell,
+                                isFirstCell: rowIdx == 0 && cellIdx == 0,
+                                isLastCell:  rowIdx + 1 == Screen.Rows.Length && cellIdx + 1 == row.Cells.Length
+                            );
+                        }
                     }
+                    PadAndSendDisplayPacket();
+                    _DisplayDuplicateCheckString = duplicateCheckString;
                 }
-                PadAndSendDisplayPacket();
-                _DisplayDuplicateCheckString = duplicateCheckString;
             }
         }
 
@@ -240,16 +243,20 @@ namespace McduDotNet
 
         internal void SendLedOrBrightnessPacket(byte indicatorCode, byte value)
         {
-            const int indicatorOffset = 7;
-            _LedOrBrightnessPacket[indicatorOffset] = indicatorCode;
-            _LedOrBrightnessPacket[indicatorOffset + 1] = value;
-            SendPacket(_LedOrBrightnessPacket);
+            lock(_OutputLock) {
+                const int indicatorOffset = 7;
+                _LedOrBrightnessPacket[indicatorOffset] = indicatorCode;
+                _LedOrBrightnessPacket[indicatorOffset + 1] = value;
+                SendPacket(_LedOrBrightnessPacket);
+            }
         }
 
         private void SendPacket(byte[] bytes)
         {
-            var stream = _HidStream;
-            stream?.Write(bytes);
+            lock(_OutputLock) {
+                var stream = _HidStream;
+                stream?.Write(bytes);
+            }
         }
 
         private void InputLoop(CancellationToken cancellationToken)
