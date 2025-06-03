@@ -18,7 +18,7 @@ namespace McduDotNet
     /// </summary>
     public class Row
     {
-        public Cell[] Cells { get; } = new Cell[Screen.Columns];
+        public Cell[] Cells { get; } = new Cell[Metrics.Columns];
 
         public Row()
         {
@@ -61,7 +61,7 @@ namespace McduDotNet
 
         public void ScrollRight(int columns = 1)
         {
-            columns = Math.Max(0, Math.Min(Screen.Columns, columns));
+            columns = Math.Max(0, Math.Min(Cells.Length, columns));
             for(var idx = Cells.Length - 1;idx >= columns;--idx) {
                 Cells[idx] = Cells[idx - columns];
             }

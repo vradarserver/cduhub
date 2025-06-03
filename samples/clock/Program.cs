@@ -29,8 +29,8 @@ namespace Clock
                     var screen = mcdu.Screen;
                     var now = DateTime.Now;
                     screen.Clear();
-                    screen.Line = Screen.Lines / 2;
-                    screen.Column = (Screen.Columns - "00:00:00".Length) / 2;
+                    screen.GotoMiddleLine();
+                    screen.CentreColumnFor("00:00:00");
 
                     screen.Colour = _DigitsColour;
                     screen.Write(now.Hour.ToString("00"));

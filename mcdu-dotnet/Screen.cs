@@ -19,24 +19,9 @@ namespace McduDotNet
     public class Screen
     {
         /// <summary>
-        /// The number of lines of display on the MCDU.
-        /// </summary>
-        public const int Lines = 14;
-
-        /// <summary>
-        /// The number of columns of display on the MCDU.
-        /// </summary>
-        public const int Columns = 24;
-
-        /// <summary>
-        /// The total number of cells on the MCDU display.
-        /// </summary>
-        public const int Cells = Lines * Columns;
-
-        /// <summary>
         /// The rows of cells on the MCDU display.
         /// </summary>
-        public Row[] Rows { get; } = new Row[Lines];
+        public Row[] Rows { get; } = new Row[Metrics.Lines];
 
         public Row CurrentRow => Rows[Line];
 
@@ -125,7 +110,7 @@ namespace McduDotNet
 
         public void Put(char ch)
         {
-            if(Line < Lines && Column < Columns) {
+            if(Line < Metrics.Lines && Column < Metrics.Columns) {
                 Rows[Line].Cells[Column] = ch == ' '
                     ? Cell.Space
                     : new Cell(ch, Colour, Small);
@@ -137,7 +122,7 @@ namespace McduDotNet
             if(!RightToLeft) {
                 foreach(var ch in text) {
                     Put(ch);
-                    Column = Math.Min(Column + 1, Columns - 1);
+                    Column = Math.Min(Column + 1, Metrics.Columns - 1);
                 }
             } else {
                 for(var idx = text.Length - 1;idx >= 0;--idx) {
@@ -154,20 +139,22 @@ namespace McduDotNet
             Sol();
         }
 
-        public void CentreFor(string text)
+        public void CentreColumnFor(string text)
         {
-            Column = Math.Max(0, (Screen.Columns - text.Length) / 2);
+            Column = Math.Max(0, (Metrics.Columns - text.Length) / 2);
         }
 
         public void Goto(int line, int column = 0)
         {
             Line = line >= 0
                 ? line
-                : Screen.Lines + line;
+                : Metrics.Lines + line;
             Column = column >= 0
                 ? column
-                : Screen.Columns + column;
+                : Metrics.Columns + column;
         }
+
+        public void GotoMiddleLine() => Line = Metrics.Lines / 2;
 
         public void LeftLineSelect(int line, string text)
         {
@@ -185,24 +172,24 @@ namespace McduDotNet
 
         public void WriteCentred(string text)
         {
-            CentreFor(text);
+            CentreColumnFor(text);
             Write(text);
         }
 
         public void WriteLineCentred(string text)
         {
-            CentreFor(text);
+            CentreColumnFor(text);
             WriteLine(text);
         }
 
         public void Eol()
         {
-            Column = RightToLeft ? 0 : Columns - 1;
+            Column = RightToLeft ? 0 : Metrics.Columns - 1;
         }
 
         public void Sol()
         {
-            Column = RightToLeft ? Columns - 1 : 0;
+            Column = RightToLeft ? Metrics.Columns - 1 : 0;
         }
 
         public void ForRightToLeft()
@@ -217,12 +204,12 @@ namespace McduDotNet
             Sol();
         }
 
-        public void ScrollRows(int startRow = 0, int endRow = Lines - 1)
+        public void ScrollRows(int startRow = 0, int endRow = Metrics.Lines - 1)
         {
             if(startRow < 0 || startRow > endRow) {
                 throw new ArgumentOutOfRangeException(nameof(startRow));
             }
-            if(endRow < startRow || endRow > Lines - 1) {
+            if(endRow < startRow || endRow > Metrics.Lines - 1) {
                 throw new ArgumentOutOfRangeException(nameof(endRow));
             }
             for(var rowIdx = startRow;rowIdx < endRow;++rowIdx) {

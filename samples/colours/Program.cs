@@ -53,7 +53,7 @@ namespace Colours
 
             ShowColourPairs(screen, _Colours, _StartColourOffset, smallFont: _FirstSetIsSmall);
 
-            screen.Line = Screen.Lines / 2;
+            screen.GotoMiddleLine();
             screen.Color = Colour.White;
             //screen.WriteLineCentred("←↑→↓ to scroll");        //<-- doesn't work - arrows render but display is out of whack
             screen.WriteLineCentred("Arrows to scroll");

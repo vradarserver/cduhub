@@ -41,10 +41,10 @@ namespace CookedInput
         {
             var screen = mcdu.Screen;
             screen.ScrollRows(1);
-            screen.Goto(Screen.Lines - 1);
+            screen.Goto(Metrics.Lines - 1);
             screen.CurrentRow.Clear();
 
-            var oldRow = screen.Rows[Screen.Lines - 2];
+            var oldRow = screen.Rows[Metrics.Lines - 2];
             for(var idx = 0;idx < oldRow.Cells.Length;++idx) {
                 var oldCell = oldRow.Cells[idx];
                 oldRow.Cells[idx] = new Cell(oldCell.Character, Colour.White, small: true);
