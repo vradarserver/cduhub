@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System;
 using System.Text;
 
 namespace McduDotNet
@@ -17,15 +18,17 @@ namespace McduDotNet
     /// </summary>
     public class Cell
     {
-        public static readonly Cell Space = new Cell();
+        public char Character { get; set; }
 
-        public char Character { get; }
+        public Colour Colour { get; set; }
 
-        public Colour Colour { get; }
+        public Colour Color
+        {
+            get => Colour;
+            set => Colour = value;
+        }
 
-        public Colour Color => Colour;
-
-        public bool Small { get; }
+        public bool Small { get; set; }
 
         public Cell() : this(' ', Colour.White, false)
         {
@@ -50,5 +53,29 @@ namespace McduDotNet
             buffer.Append(Character);
             buffer.Append(Colour.ToDuplicateCheckCode(Small));
         }
+
+        public void Clear()
+        {
+            Character = ' ';
+            Colour = Colour.White;
+            Small = false;
+        }
+
+        public void Set(char character, Colour colour, bool small)
+        {
+            Character = character;
+            Colour = colour;
+            Small = small;
+        }
+
+        public void CopyFrom(Cell cell)
+        {
+            if(cell == null) {
+                throw new ArgumentNullException(nameof(cell));
+            }
+            Set(cell.Character, cell.Colour, cell.Small);
+        }
+
+        public void CopyTo(Cell cell)  => cell?.CopyFrom(this);
     }
 }

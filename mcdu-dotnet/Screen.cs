@@ -27,10 +27,20 @@ namespace McduDotNet
 
         public Cell CurrentCell => CurrentRow.Cells[Column];
 
+        private Colour _Colour = Colour.White;
         /// <summary>
         /// The colour of the next character added to the display.
         /// </summary>
-        public Colour Colour { get; set; } = Colour.White;
+        public Colour Colour
+        {
+            get => _Colour;
+            set {
+                if(!Enum.IsDefined(typeof(Colour), value)) {
+                    throw new ArgumentOutOfRangeException(nameof(Colour), value, "Not a valid colour");
+                }
+                _Colour = value;
+            }
+        }
 
         /// <summary>
         /// Alias for <see cref="Colour"/>.
@@ -41,15 +51,35 @@ namespace McduDotNet
             set => Colour = value;
         }
 
+        private int _Column;
         /// <summary>
         /// The 0-based column of the next character to add.
         /// </summary>
-        public int Column { get; set; }
+        public int Column
+        {
+            get => _Column;
+            set {
+                if(value < 0 || value >= Metrics.Columns) {
+                    throw new ArgumentOutOfRangeException(nameof(Column), value, "Not a valid column");
+                }
+                _Column = value;
+            }
+        }
 
+        private int _Line;
         /// <summary>
         /// The 0-based line of the next character to add.
         /// </summary>
-        public int Line { get; set; }
+        public int Line
+        {
+            get => _Line;
+            set {
+                if(value < 0 || value >= Rows.Length) {
+                    throw new ArgumentOutOfRangeException(nameof(Line), value, "Not a valid line");
+                }
+                _Line = value;
+            }
+        }
 
         /// <summary>
         /// True if the next character to add will be in the small font.
@@ -108,13 +138,26 @@ namespace McduDotNet
             Small = false;
         }
 
+        public void CopyFrom(Screen screen)
+        {
+            if(screen == null) {
+                throw new ArgumentNullException(nameof(screen));
+            }
+            for(var idx = 0;idx < Rows.Length;++idx) {
+                Rows[idx].CopyFrom(screen.Rows[idx]);
+            }
+            RightToLeft = screen.RightToLeft;
+            Colour = screen.Colour;
+            Column = screen.Column;
+            Line = screen.Line;
+            Small = screen.Small;
+        }
+
+        public void CopyTo(Screen screen) => screen?.CopyFrom(this);
+
         public void Put(char ch)
         {
-            if(Line < Metrics.Lines && Column < Metrics.Columns) {
-                Rows[Line].Cells[Column] = ch == ' '
-                    ? Cell.Space
-                    : new Cell(ch, Colour, Small);
-            }
+            Rows[Line].Cells[Column].Set(ch, Colour, Small);
         }
 
         public void Write(string text)
@@ -136,7 +179,7 @@ namespace McduDotNet
         {
             Write(text);
             ++Line;
-            Sol();
+            GotoStartOfLine();
         }
 
         public void CentreColumnFor(string text)
@@ -182,12 +225,12 @@ namespace McduDotNet
             WriteLine(text);
         }
 
-        public void Eol()
+        public void GotoEndOfLine()
         {
             Column = RightToLeft ? 0 : Metrics.Columns - 1;
         }
 
-        public void Sol()
+        public void GotoStartOfLine()
         {
             Column = RightToLeft ? Metrics.Columns - 1 : 0;
         }
@@ -195,13 +238,13 @@ namespace McduDotNet
         public void ForRightToLeft()
         {
             RightToLeft = true;
-            Sol();
+            GotoStartOfLine();
         }
 
         public void ForLeftToRight()
         {
             RightToLeft = false;
-            Sol();
+            GotoStartOfLine();
         }
 
         public void ScrollRows(int startRow = 0, int endRow = Metrics.Lines - 1)
@@ -209,7 +252,7 @@ namespace McduDotNet
             if(startRow < 0 || startRow > endRow) {
                 throw new ArgumentOutOfRangeException(nameof(startRow));
             }
-            if(endRow < startRow || endRow > Metrics.Lines - 1) {
+            if(endRow < startRow || endRow >= Metrics.Lines) {
                 throw new ArgumentOutOfRangeException(nameof(endRow));
             }
             for(var rowIdx = startRow;rowIdx < endRow;++rowIdx) {

@@ -44,7 +44,7 @@ namespace McduDotNet
         public void Clear()
         {
             for(var idx = 0;idx < Cells.Length;++idx) {
-                Cells[idx] = Cell.Space;
+                Cells[idx].Clear();
             }
         }
 
@@ -55,7 +55,7 @@ namespace McduDotNet
                 Cells[idx - columns] = Cells[idx];
             }
             for(var idx = Cells.Length - columns;idx < Cells.Length;++idx) {
-                Cells[idx] = Cell.Space;
+                Cells[idx].Clear();
             }
         }
 
@@ -66,17 +66,20 @@ namespace McduDotNet
                 Cells[idx] = Cells[idx - columns];
             }
             for(var idx = 0;idx < columns;++idx) {
-                Cells[idx] = Cell.Space;
+                Cells[idx].Clear();
             }
         }
 
         public void CopyTo(Row row)
         {
+            if(row == null) {
+                throw new ArgumentNullException(nameof(row));
+            }
             for(var idx = 0;idx < Cells.Length;++idx) {
-                row.Cells[idx] = Cells[idx];
+                row.Cells[idx].CopyFrom(Cells[idx]);
             }
         }
 
-        public void CopyFrom(Row row) => row.CopyTo(this);
+        public void CopyFrom(Row row) => row?.CopyTo(this);
     }
 }
