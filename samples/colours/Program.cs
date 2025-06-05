@@ -53,11 +53,11 @@ namespace Colours
 
             ShowColourPairs(screen, _Colours, _StartColourOffset, smallFont: _FirstSetIsSmall);
 
-            screen.GotoMiddleLine();
+            screen.Goto(6);
             screen.Color = Colour.White;
-            //screen.WriteLineCentred("←↑→↓ to scroll");        //<-- doesn't work - arrows render but display is out of whack
-            screen.WriteLineCentred("Arrows to scroll");
-            screen.WriteLineCentred("F to flip fonts");
+            screen.WriteLineCentred("←↑→↓ to scroll");
+            screen.Small = true;
+            screen.WriteLineCentred("DIR to flip fonts");
 
             screen.Goto(-5);
             ShowColourPairs(screen, _Colours, _StartColourOffset, smallFont: !_FirstSetIsSmall);
@@ -124,7 +124,7 @@ namespace Colours
                 case Key.UpArrow:       scrollForwards(2); break;
                 case Key.RightArrow:    scrollBackwards(1); break;
                 case Key.LeftArrow:     scrollForwards(1); break;
-                case Key.F:             _FirstSetIsSmall = !_FirstSetIsSmall; break;
+                case Key.Dir:           _FirstSetIsSmall = !_FirstSetIsSmall; break;
                 default:                redrawScreen = false; break;
             }
 

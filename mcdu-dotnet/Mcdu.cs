@@ -194,12 +194,9 @@ namespace McduDotNet
         {
             _DisplayCharacterBuffer[0] = cell.Character;
             var utf8Bytes = Encoding.UTF8.GetBytes(_DisplayCharacterBuffer);
-            if(utf8Bytes.Length + 2 + _DisplayPacketOffset > _DisplayPacket.Length) {
-                PadAndSendDisplayPacket();
-            }
             AddColourAndBytesToDisplayPacket(cell.Colour, cell.Small, isFirstCell, isLastCell);
             for(var chIdx = 0;chIdx < utf8Bytes.Length;++chIdx) {
-                _DisplayPacket[_DisplayPacketOffset++] = utf8Bytes[chIdx];
+                AddToDisplayPacketSendWhenFull(utf8Bytes[chIdx]);
             }
         }
 
@@ -211,8 +208,17 @@ namespace McduDotNet
             } else if(isLastCell) {
                 b1 += 2;
             }
-            _DisplayPacket[_DisplayPacketOffset++] = b1;
-            _DisplayPacket[_DisplayPacketOffset++] = b2;
+            AddToDisplayPacketSendWhenFull(b1);
+            AddToDisplayPacketSendWhenFull(b2);
+        }
+
+        private void AddToDisplayPacketSendWhenFull(byte value)
+        {
+            _DisplayPacket[_DisplayPacketOffset++] = value;
+            if(_DisplayPacketOffset == _DisplayPacket.Length) {
+                SendPacket(_DisplayPacket);
+                InitialiseDisplayPacket();
+            }
         }
 
         private void PadAndSendDisplayPacket()
