@@ -18,8 +18,7 @@ namespace CookedInput
         {
             using(var mcdu = McduFactory.ConnectLocal()) {
                 Console.WriteLine($"Using {mcdu.ProductId} MCDU");
-
-                mcdu.Screen.WriteLine("     Press buttons");
+                mcdu.Output.Centred("Press buttons");
                 mcdu.RefreshDisplay();
 
                 mcdu.KeyDown += (_, args) => {
@@ -32,27 +31,19 @@ namespace CookedInput
                 Console.WriteLine($"Press Q to quit");
                 while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q);
 
-                mcdu.Screen.Clear();
-                mcdu.RefreshDisplay();
+                mcdu.Cleanup();
             }
         }
 
         private static void ShowKeyEvent(IMcdu mcdu, string eventName, KeyEventArgs args)
         {
-            var screen = mcdu.Screen;
-            screen.ScrollRows(1);
-            screen.Goto(Metrics.Lines - 1);
-            screen.CurrentRow.Clear();
-
-            var oldRow = screen.Rows[Metrics.Lines - 2];
-            for(var idx = 0;idx < oldRow.Cells.Length;++idx) {
-                var oldCell = oldRow.Cells[idx];
-                oldRow.Cells[idx] = new Cell(oldCell.Character, Colour.White, small: true);
-            }
-
-            screen.Colour = Colour.Green;
-            screen.Small = false;
-            screen.Write($"{eventName}: {args.Key} (\"{args.Character}\")");
+            mcdu.Output
+                .ScrollUp(startRow: 1)
+                .Line(-1)
+                .OverwriteRow(colour: Colour.White, small: true)
+                .BottomLine()
+                .Green().Large()
+                .Write($"{eventName}: {args.Key} (\"{args.Character}\")");
             mcdu.RefreshDisplay();
 
             Console.WriteLine($"{eventName}: {args.Key} (\"{args.Character}\")");

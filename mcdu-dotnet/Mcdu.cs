@@ -41,6 +41,9 @@ namespace McduDotNet
         /// <inheritdoc/>
         public Screen Screen { get; }
 
+        /// <inheritdoc/>
+        public Compositor Output { get; }
+
         private Leds _Leds;
         /// <inheritdoc/>
         public ILeds Leds => _Leds;
@@ -84,6 +87,7 @@ namespace McduDotNet
             _Leds = new Leds(this);
             ProductId = productId;
             Screen = new Screen();
+            Output = new Compositor(Screen);
         }
 
         /// <inheritdoc/>
@@ -129,6 +133,14 @@ namespace McduDotNet
             _InputLoopTask = Task.Run(() => InputLoop(_InputLoopCancellationTokenSource.Token));
 
             UseMobiFlightInitialisationSequence();
+        }
+
+        /// <inheritdoc/>
+        public void Cleanup()
+        {
+            Screen.Clear();
+            RefreshDisplay();
+            Leds.TurnAllOn(false);
         }
 
         private void UseMobiFlightInitialisationSequence()

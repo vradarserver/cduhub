@@ -9,21 +9,20 @@ namespace Leds
             using(var mcdu = McduFactory.ConnectLocal()) {
                 Console.WriteLine($"Using {mcdu.ProductId} MCDU");
 
-                var screen = mcdu.Screen;
-                screen.Small = true;
-
-                screen.LeftLineSelect(1, ">FAIL");
-                screen.LeftLineSelect(2, ">FM");
-                screen.LeftLineSelect(3, ">FM1");
-                screen.LeftLineSelect(4, ">FM2");
-                screen.LeftLineSelect(5, ">IND");
-                screen.LeftLineSelect(6, ">LINE");
-
-                screen.RightLineSelect(1, "MCDU<");
-                screen.RightLineSelect(2, "MENU<");
-                screen.RightLineSelect(3, "RDY<");
-                screen.RightLineSelect(5, "BRIGHT -5%<");
-                screen.RightLineSelect(6, "BRIGHT +5%<");
+                mcdu.Output
+                    .Small()
+                    .Grey()
+                    .LeftLabel(1, ">FAIL")
+                    .LeftLabel(2, ">FM")
+                    .LeftLabel(3, ">FM1")
+                    .LeftLabel(4, ">FM2")
+                    .LeftLabel(5, ">IND")
+                    .LeftLabel(6, ">LINE")
+                    .RightLabel(1, "MCDU<")
+                    .RightLabel(2, "MENU<")
+                    .RightLabel(3, "RDY<")
+                    .RightLabel(5, "BRIGHT -5%<")
+                    .RightLabel(6, "BRIGHT +5%<");
                 mcdu.RefreshDisplay();
 
                 mcdu.KeyDown += (_, args) => {
@@ -45,9 +44,7 @@ namespace Leds
                 Console.WriteLine($"Press Q to quit");
                 while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q);
 
-                mcdu.Screen.Clear();
-                mcdu.RefreshDisplay();
-                mcdu.Leds.TurnAllOn(false);
+                mcdu.Cleanup();
             }
         }
     }

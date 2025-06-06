@@ -33,6 +33,11 @@ namespace McduDotNet
         ILeds Leds { get; }
 
         /// <summary>
+        /// A fluent interface for drawing into the <see cref="Screen"/>.
+        /// </summary>
+        Compositor Output { get; }
+
+        /// <summary>
         /// Raised when a key is pressed.
         /// </summary>
         event EventHandler<KeyEventArgs> KeyDown;
@@ -50,5 +55,10 @@ namespace McduDotNet
         /// refresh. Setting this parameter to true skips that test.
         /// </param>
         void RefreshDisplay(bool skipDuplicateCheck = false);
+
+        /// <summary>
+        /// Resets the display and turns everything off.
+        /// </summary>
+        void Cleanup();
     }
 }

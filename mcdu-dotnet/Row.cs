@@ -22,7 +22,9 @@ namespace McduDotNet
 
         public Row()
         {
-            Clear();
+            for(var idx = 0;idx < Cells.Length;++idx) {
+                Cells[idx] = new Cell();
+            }
         }
 
         public override string ToString()

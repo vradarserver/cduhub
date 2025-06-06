@@ -41,31 +41,31 @@ namespace Colours
                 Console.WriteLine($"Press Q to quit");
                 while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q);
 
-                mcdu.Screen.Clear();
-                mcdu.RefreshDisplay();
+                mcdu.Cleanup();
             }
         }
 
         static void DrawScreen(IMcdu mcdu)
         {
-            var screen = mcdu.Screen;
-            screen.Clear();
+            mcdu.Screen.Clear();
 
-            ShowColourPairs(screen, _Colours, _StartColourOffset, smallFont: _FirstSetIsSmall);
+            ShowColourPairs(mcdu.Output, _Colours, _StartColourOffset, smallFont: _FirstSetIsSmall);
 
-            screen.Goto(6);
-            screen.Color = Colour.White;
-            screen.WriteLineCentred("←↑→↓ to scroll");
-            screen.Small = true;
-            screen.WriteLineCentred("DIR to flip fonts");
+            mcdu.Output
+                .Line(6)
+                .White()
+                .CentreFor("←↑→↓ and DIR")
+                .Large().Write("←↑→↓")
+                .Small().Write(" and ")
+                .Large().Write("DIR")
+                .Line(-5);
 
-            screen.Goto(-5);
-            ShowColourPairs(screen, _Colours, _StartColourOffset, smallFont: !_FirstSetIsSmall);
+            ShowColourPairs(mcdu.Output, _Colours, _StartColourOffset, smallFont: !_FirstSetIsSmall);
 
             mcdu.RefreshDisplay();
         }
 
-        static void ShowColourPairs(Screen screen, Colour[] colours, int startOffset, bool smallFont)
+        static void ShowColourPairs(Compositor output, Colour[] colours, int startOffset, bool smallFont)
         {
             var offset = startOffset;
 
@@ -81,27 +81,22 @@ namespace Colours
             for(var pairIdx = 0;pairIdx < colours.Length / 2;++pairIdx) {
                 var left = nextColour();
                 var right = nextColour();
-                ShowColourPair(screen, left, right, smallFont);
+                ShowColourPair(output, left, right, smallFont);
             }
         }
 
-        static void ShowColourPair(Screen screen, Colour left, Colour right, bool smallFont)
+        static void ShowColourPair(Compositor output, Colour left, Colour right, bool smallFont)
         {
-            screen.ForLeftToRight();
-            screen.Column = 0;
-            screen.Small = smallFont;
-            screen.Color = left;
-            screen.Write(left.ToString());
-            screen.Color = right;
-            screen.ForRightToLeft();
-            screen.WriteLine(right.ToString());
-            screen.ForLeftToRight();
+            output
+                .Small(smallFont)
+                .LeftToRight().Colour(left).Write(left)
+                .RightToLeft().Color(right).Write(right)
+                .LeftToRight().Newline();
         }
 
         static void Mcdu_KeyDown(object sender, KeyEventArgs args)
         {
             var mcdu = (IMcdu)sender;
-            var offset = _StartColourOffset;
 
             void scrollBackwards(int offset)
             {

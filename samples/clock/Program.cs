@@ -16,9 +16,6 @@ namespace Clock
 {
     class Program
     {
-        const Colour _DigitsColour = Colour.White;
-        const Colour _SeparatorColour = Colour.Yellow;
-
         static void Main(string[] _)
         {
             using(var mcdu = McduFactory.ConnectLocal()) {
@@ -26,31 +23,20 @@ namespace Clock
 
                 Console.WriteLine($"Press Q to quit");
                 while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
-                    var screen = mcdu.Screen;
                     var now = DateTime.Now;
-                    screen.Clear();
-                    screen.GotoMiddleLine();
-                    screen.CentreColumnFor("00:00:00");
 
-                    screen.Colour = _DigitsColour;
-                    screen.Write(now.Hour.ToString("00"));
-                    screen.Colour = _SeparatorColour;
-                    screen.Write(":");
-
-                    screen.Colour = _DigitsColour;
-                    screen.Write(now.Minute.ToString("00"));
-                    screen.Colour = _SeparatorColour;
-                    screen.Write(":");
-
-                    screen.Colour = _DigitsColour;
-                    screen.Write(now.Second.ToString("00"));
-
+                    mcdu.Output
+                        .Clear()
+                        .MiddleLine().CentreFor("00:00:00")
+                        .White().Write(now.Hour, "00").Yellow().Write(':')
+                        .White().Write(now.Minute, "00").Yellow().Write(':')
+                        .White().Write(now.Second, "00");
                     mcdu.RefreshDisplay();
+
                     Thread.Sleep(100);
                 }
 
-                mcdu.Screen.Clear();
-                mcdu.RefreshDisplay();
+                mcdu.Cleanup();
             }
         }
     }
