@@ -1,11 +1,7 @@
-name: Build and Publish NuGet Package
+name: Publish mcdu-dotnet NuGet Package
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
-      - 'v*.*.*-alpha-*'
-      - 'v*.*.*-beta-*'
+    workflow_dispatch:
 
 jobs:
   build:
