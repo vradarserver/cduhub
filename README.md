@@ -32,10 +32,6 @@ input experience when they're coming in every 1/100th of a second - I'm working
 around it for now but might need to switch to something that supports unbuffered
 input)**
 
-This is not about driving the display within flight simulators. WinWing and
-MobiFlight already cover that. This is about using it as a general character
-display.
-
 
 
 ## USB Packet Sniffing Notes

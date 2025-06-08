@@ -190,11 +190,11 @@ namespace McduDotNet
         public void Goto(int line, int column = 0)
         {
             Line = line >= 0
-                ? line
-                : Metrics.Lines + line;
+                ? Math.Min(line, Metrics.Lines - 1)
+                : Math.Max(0, Metrics.Lines + line);
             Column = column >= 0
-                ? column
-                : Metrics.Columns + column;
+                ? Math.Min(column, Metrics.Columns - 1)
+                : Math.Max(0, Metrics.Columns + column);
         }
 
         public void GotoMiddleLine() => Line = Metrics.Lines / 2;
