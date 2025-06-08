@@ -27,7 +27,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mcdu-dotnet", "library\mcdu
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{61A9C6CD-82AE-494E-86C9-21644DAADBD6}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "github", "github", "{C87A2F17-2182-479D-ABB2-010194C7C681}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{C87A2F17-2182-479D-ABB2-010194C7C681}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{784F0E13-DEAF-49A4-AAC4-F8C927A899C6}"
 	ProjectSection(SolutionItems) = preProject
