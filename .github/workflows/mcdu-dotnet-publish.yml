@@ -15,13 +15,13 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Restore dependencies
-        run: dotnet restore mcdu-dotnet/mcdu-dotnet.csproj
+        run: dotnet restore library/mcdu-dotnet/mcdu-dotnet.csproj
 
       - name: Build
-        run: dotnet build mcdu-dotnet/mcdu-dotnet.csproj --configuration Release --no-restore
+        run: dotnet build library/mcdu-dotnet/mcdu-dotnet.csproj --configuration Release --no-restore
 
       - name: Pack
-        run: dotnet pack mcdu-dotnet/mcdu-dotnet.csproj --configuration Release --no-build --output ./nupkg
+        run: dotnet pack library/mcdu-dotnet/mcdu-dotnet.csproj --configuration Release --no-build --output ./nupkg
 
       - name: Push to NuGet
         run: dotnet nuget push ./nupkg/mcdu-dotnet*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
