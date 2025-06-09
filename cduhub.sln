@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{717AFCD7-BBC8-416C-97B0-BFD086BF1739}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		build.bat = build.bat
 		Directory.Build.props = Directory.Build.props
 		LICENSE = LICENSE
 		README.md = README.md
@@ -33,6 +34,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\mcdu-dotnet-publish.yml = .github\workflows\mcdu-dotnet-publish.yml
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "apps", "apps", "{8110F87C-2A2E-484C-B35D-FD9CC36E8167}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cduhub", "library\cduhub\cduhub.csproj", "{367E7522-0295-4206-887D-EE8C3D3ABE48}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cduhub-cli", "apps\cduhub-cli\cduhub-cli.csproj", "{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -64,6 +71,14 @@ Global
 		{0E2D40C0-F634-4AC0-B20E-3E48EE8D3DFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E2D40C0-F634-4AC0-B20E-3E48EE8D3DFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E2D40C0-F634-4AC0-B20E-3E48EE8D3DFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{367E7522-0295-4206-887D-EE8C3D3ABE48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{367E7522-0295-4206-887D-EE8C3D3ABE48}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{367E7522-0295-4206-887D-EE8C3D3ABE48}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{367E7522-0295-4206-887D-EE8C3D3ABE48}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -77,6 +92,8 @@ Global
 		{0E2D40C0-F634-4AC0-B20E-3E48EE8D3DFA} = {7612F6B1-A4A7-431C-8688-167145D1D5F8}
 		{61A9C6CD-82AE-494E-86C9-21644DAADBD6} = {7612F6B1-A4A7-431C-8688-167145D1D5F8}
 		{784F0E13-DEAF-49A4-AAC4-F8C927A899C6} = {C87A2F17-2182-479D-ABB2-010194C7C681}
+		{367E7522-0295-4206-887D-EE8C3D3ABE48} = {7612F6B1-A4A7-431C-8688-167145D1D5F8}
+		{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5} = {8110F87C-2A2E-484C-B35D-FD9CC36E8167}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C977F7C9-07B7-4BB4-A182-FDE6F96F171A}
