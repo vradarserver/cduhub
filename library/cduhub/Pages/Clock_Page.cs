@@ -33,7 +33,7 @@ namespace Cduhub.Pages
             Output
                 .Clear()
                 .Line(1).Green().Small()
-                .Centered(now.ToString("dddd dd MMM"))
+                .Centered(now.ToString("ddd d MMM yyyy"))
                 .MiddleLine().White().Large()
                 .Centered(now.ToString("HH:mm:ss"));
             RefreshDisplay();

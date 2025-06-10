@@ -9,9 +9,7 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
 using McduDotNet;
 
 namespace Cduhub
@@ -28,7 +26,17 @@ namespace Cduhub
 
         public event EventHandler CloseApplication;
 
-        protected virtual void OnCloseApplication() => CloseApplication?.Invoke(this, EventArgs. Empty);
+        protected virtual void OnCloseApplication()
+        {
+            CloseApplication?.Invoke(this, EventArgs. Empty);
+        }
+
+        public event EventHandler ConnectedDeviceChanged;
+
+        protected virtual void OnConnectedDeviceChanged()
+        {
+            ConnectedDeviceChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         public void Dispose()
         {
@@ -42,10 +50,13 @@ namespace Cduhub
         {
             if(_Mcdu == null) {
                 _Mcdu = McduFactory.ConnectLocal();
-                _Mcdu.KeyDown += Mcdu_KeyDown;
-                _Mcdu.KeyUp += Mcdu_KeyUp;
-                _RootPage = new Pages.Root_Page(this);
-                SelectPage(_RootPage);
+                if(_Mcdu != null) {
+                    _Mcdu.KeyDown += Mcdu_KeyDown;
+                    _Mcdu.KeyUp += Mcdu_KeyUp;
+                    _RootPage = new Pages.Root_Page(this);
+                    SelectPage(_RootPage);
+                    OnConnectedDeviceChanged();
+                }
             }
         }
 
@@ -60,6 +71,7 @@ namespace Cduhub
                 _Mcdu.Cleanup();
                 _Mcdu.Dispose();
                 _Mcdu = null;
+                OnConnectedDeviceChanged();
             }
         }
 

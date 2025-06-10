@@ -211,6 +211,7 @@ namespace McduDotNet
             Line = line * 2;
             ForRightToLeft();
             Write(text);
+            ForLeftToRight();
         }
 
         public void WriteCentred(string text)

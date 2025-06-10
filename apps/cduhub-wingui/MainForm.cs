@@ -8,40 +8,47 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using McduDotNet;
-
-namespace Cduhub.Pages
+namespace Cduhub.WindowsGui
 {
-    class Root_Page : Page
+    public partial class MainForm : Form
     {
-        private Clock_Page _ClockPage;
-        private FenixMenu_Page _FenixMenuPage;
+        public Hub Hub => Program.Hub;
 
-        public Root_Page(Hub hub) : base(hub)
+        public string StateText
         {
-            _ClockPage = new Clock_Page(hub);
-            _FenixMenuPage = new FenixMenu_Page(hub);
-
-            Output
-                .Clear()
-                .Green()
-                .Centred("CduHub Menu")
-                .White()
-                .LeftLabel(1, ">Clock")
-                .RightLabel(1, "Fenix A320<")
-                .Red()
-                .RightLabel(6, "Quit<");
-
-            Leds.Mcdu = Leds.Menu = true;
+            get => _Label_State.Text;
+            set {
+                if(StateText != value) {
+                    _Label_State.Text = value;
+                }
+            }
         }
 
-        public override void OnKeyDown(Key key)
+        public MainForm()
         {
-            switch(key) {
-                case Key.LineSelectLeft1:   _Hub.SelectPage(_ClockPage); break;
-                case Key.LineSelectRight1:  _Hub.SelectPage(_FenixMenuPage); break;
-                case Key.LineSelectRight6:  _Hub.Shutdown(); break;
+            InitializeComponent();
+        }
+
+        private void UpdateStateDisplay()
+        {
+            var device = Hub.ConnectedDevice;
+            StateText = device == null
+                ? "Not connected to an MCDU"
+                : $"Connected to a {device} MCDU";
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            if(!DesignMode) {
+                Hub.ConnectedDeviceChanged += Hub_ConnectedDeviceChanged;
+                UpdateStateDisplay();
             }
+        }
+
+        private void Hub_ConnectedDeviceChanged(object sender, EventArgs e)
+        {
+            UpdateStateDisplay();
         }
     }
 }

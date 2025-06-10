@@ -37,9 +37,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "apps", "apps", "{8110F87C-2A2E-484C-B35D-FD9CC36E8167}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cduhub", "library\cduhub\cduhub.csproj", "{367E7522-0295-4206-887D-EE8C3D3ABE48}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cduhub", "library\cduhub\cduhub.csproj", "{367E7522-0295-4206-887D-EE8C3D3ABE48}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cduhub-cli", "apps\cduhub-cli\cduhub-cli.csproj", "{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cduhub-cli", "apps\cduhub-cli\cduhub-cli.csproj", "{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{7B861341-4A2E-4EE5-A81E-9FCB45E15FA4}"
+	ProjectSection(SolutionItems) = preProject
+		images\icon-1024x1024.png = images\icon-1024x1024.png
+		images\win32.ico = images\win32.ico
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cduhub-wingui", "apps\cduhub-wingui\cduhub-wingui.csproj", "{D2709D42-9FFA-4A38-A94F-B4FF692D3735}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,6 +87,10 @@ Global
 		{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2709D42-9FFA-4A38-A94F-B4FF692D3735}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2709D42-9FFA-4A38-A94F-B4FF692D3735}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2709D42-9FFA-4A38-A94F-B4FF692D3735}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2709D42-9FFA-4A38-A94F-B4FF692D3735}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -94,6 +106,7 @@ Global
 		{784F0E13-DEAF-49A4-AAC4-F8C927A899C6} = {C87A2F17-2182-479D-ABB2-010194C7C681}
 		{367E7522-0295-4206-887D-EE8C3D3ABE48} = {7612F6B1-A4A7-431C-8688-167145D1D5F8}
 		{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5} = {8110F87C-2A2E-484C-B35D-FD9CC36E8167}
+		{D2709D42-9FFA-4A38-A94F-B4FF692D3735} = {8110F87C-2A2E-484C-B35D-FD9CC36E8167}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C977F7C9-07B7-4BB4-A182-FDE6F96F171A}
