@@ -71,8 +71,8 @@ namespace FenixMcdu
                 ",
                 Variables = new {
                     names = new[] {
-                        "aircraft.mcdu1.display",
-                        "aircraft.mcdu2.display",
+                        FenixA320Utility.GraphQLMcdu1DisplayName,
+                        FenixA320Utility.GraphQLMcdu2DisplayName,
                     }
                 }
             };
@@ -85,11 +85,11 @@ namespace FenixMcdu
                     Screen screen = null;
                     var isVisible = false;
                     switch(name) {
-                        case FenixA320Utility.GraphGLPilotMcduDisplayName:
+                        case FenixA320Utility.GraphQLMcdu1DisplayName:
                             screen = _CaptainScreen;
                             isVisible = _DisplayProductId == ProductId.Captain;
                             break;
-                        case FenixA320Utility.GraphGLFirstOfficerMcduDisplayName:
+                        case FenixA320Utility.GraphQLMcdu2DisplayName:
                             screen = _FirstOfficerScreen;
                             isVisible = _DisplayProductId == ProductId.FirstOfficer;
                             break;
@@ -142,7 +142,7 @@ namespace FenixMcdu
                                 }}
                             }}
                         ",
-                        Variables = new { keyName = $"{FenixA320Utility.GraphGLSystemSwitchesPrefix}.{key}" }
+                        Variables = new { keyName = $"{FenixA320Utility.GraphQLSystemSwitchesPrefix}.{key}" }
                     };
 
                     Task.Run(() => client.SendMutationAsync<object>(request));

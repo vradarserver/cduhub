@@ -16,20 +16,25 @@ namespace Cduhub
     {
         protected readonly Hub _Hub;
 
-        public McduDotNet.Screen Screen { get; }
+        public Screen Screen { get; }
 
-        public McduDotNet.Compositor Output { get; }
+        public Compositor Output { get; }
+
+        public Leds Leds { get; }
 
         public virtual Key MenuKey { get; } = Key.McduMenu;
 
         public Page(Hub hub)
         {
             _Hub = hub;
-            Screen = new McduDotNet.Screen();
-            Output = new McduDotNet.Compositor(Screen);
+            Leds = new Leds();
+            Screen = new Screen();
+            Output = new Compositor(Screen);
         }
 
         public virtual void RefreshDisplay() => _Hub.RefreshDisplay(this);
+
+        public virtual void RefreshLeds() => _Hub.RefreshLeds(this);
 
         public virtual void OnPrepareScreen()
         {

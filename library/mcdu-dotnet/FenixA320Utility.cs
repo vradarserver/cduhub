@@ -20,9 +20,23 @@ namespace McduDotNet
     /// </summary>
     public static class FenixA320Utility
     {
-        public const string GraphGLPilotMcduDisplayName =           "aircraft.mcdu1.display";
-        public const string GraphGLFirstOfficerMcduDisplayName =    "aircraft.mcdu2.display";
-        public const string GraphGLSystemSwitchesPrefix =           "system.switches";
+        public const string GraphQLMcdu1DisplayName =       "aircraft.mcdu1.display";
+        public const string GraphQLMcdu2DisplayName =       "aircraft.mcdu2.display";
+        public const string GraphQLMcdu1LedFailName =       "system.indicators.I_CDU1_FAIL";
+        public const string GraphQLMcdu1LedFmName =         "system.indicators.I_CDU1_FM";
+        public const string GraphQLMcdu1LedFm1Name =        "system.indicators.I_CDU1_FM1";
+        public const string GraphQLMcdu1LedFm2Name =        "system.indicators.I_CDU1_FM2";
+        public const string GraphQLMcdu1LedIndName =        "system.indicators.I_CDU1_IND";
+        public const string GraphQLMcdu1LedMcduMenuName =   "system.indicators.I_CDU1_MCDU_MENU";
+        public const string GraphQLMcdu1LedRdyName =        "system.indicators.I_CDU1_RDY";
+        public const string GraphQLMcdu2LedFailName =       "system.indicators.I_CDU2_FAIL";
+        public const string GraphQLMcdu2LedFmName =         "system.indicators.I_CDU2_FM";
+        public const string GraphQLMcdu2LedFm1Name =        "system.indicators.I_CDU2_FM1";
+        public const string GraphQLMcdu2LedFm2Name =        "system.indicators.I_CDU2_FM2";
+        public const string GraphQLMcdu2LedIndName =        "system.indicators.I_CDU2_IND";
+        public const string GraphQLMcdu2LedMcduMenuName =   "system.indicators.I_CDU2_MCDU_MENU";
+        public const string GraphQLMcdu2LedRdyName =        "system.indicators.I_CDU2_RDY";
+        public const string GraphQLSystemSwitchesPrefix =   "system.switches";
 
         /// <summary>
         /// Converts from an MCDU product ID to a Fenix display / CDU number.
@@ -39,7 +53,7 @@ namespace McduDotNet
         /// <param name="screen"></param>
         public static void ParseGraphQLMcduValueToScreen(string mcduValue, Screen screen)
         {
-            if(!String.IsNullOrEmpty(mcduValue)) {
+            if(!String.IsNullOrEmpty(mcduValue) && screen != null) {
                 using(var stringReader = new StringReader(mcduValue)) {
                     var xdoc = XDocument.Load(stringReader);
                     var root = xdoc.Document.Descendants("root").FirstOrDefault();
@@ -52,7 +66,7 @@ namespace McduDotNet
                                 case "title":
                                 case "line":
                                 case "scratchpad":
-                                    CopyFenixGraphGLLineToScreen(screen, lineElement.Value);
+                                    CopyFenixGraphQLLineToScreen(screen, lineElement.Value);
                                     break;
                             }
                         }
@@ -61,7 +75,7 @@ namespace McduDotNet
             }
         }
 
-        private static void CopyFenixGraphGLLineToScreen(Screen screen, string line)
+        private static void CopyFenixGraphQLLineToScreen(Screen screen, string line)
         {
             foreach(var ch in line) {
                 char? putch = null;
@@ -92,8 +106,45 @@ namespace McduDotNet
             screen.Goto(screen.Line + 1, 0);
         }
 
+        public static void ParseGraphQLIndicatorValueToLeds(string indicatorName, string indicatorValue, Leds leds)
+        {
+            if(indicatorValue != null && leds != null) {
+                var on = indicatorValue != "0";
+                switch(indicatorName) {
+                    case GraphQLMcdu1LedFailName:
+                    case GraphQLMcdu2LedFailName:
+                        leds.Fail = on;
+                        break;
+                    case GraphQLMcdu1LedFmName:
+                    case GraphQLMcdu2LedFmName:
+                        leds.Fm = on;
+                        break;
+                    case GraphQLMcdu1LedFm1Name:
+                    case GraphQLMcdu2LedFm1Name:
+                        leds.Fm1 = on;
+                        break;
+                    case GraphQLMcdu1LedFm2Name:
+                    case GraphQLMcdu2LedFm2Name:
+                        leds.Fm2 = on;
+                        break;
+                    case GraphQLMcdu1LedIndName:
+                    case GraphQLMcdu2LedIndName:
+                        leds.Ind = on;
+                        break;
+                    case GraphQLMcdu1LedMcduMenuName:
+                    case GraphQLMcdu2LedMcduMenuName:
+                        leds.Mcdu = leds.Menu = on;
+                        break;
+                    case GraphQLMcdu1LedRdyName:
+                    case GraphQLMcdu2LedRdyName:
+                        leds.Rdy = on;
+                        break;
+                }
+            }
+        }
+
         /// <summary>
-        /// Builds Fenix's _CDU???_KEY_??? code for GraphGL messages from an MCDU key enum and an MCDU product
+        /// Builds Fenix's _CDU???_KEY_??? code for GraphQL messages from an MCDU key enum and an MCDU product
         /// ID.
         /// </summary>
         /// <param name="key"></param>

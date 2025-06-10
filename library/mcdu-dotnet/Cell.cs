@@ -68,14 +68,14 @@ namespace McduDotNet
             Small = small;
         }
 
-        public void CopyFrom(Cell cell)
+        public void CopyFrom(Cell other)
         {
-            if(cell == null) {
-                throw new ArgumentNullException(nameof(cell));
+            if(other == null) {
+                throw new ArgumentNullException(nameof(other));
             }
-            Set(cell.Character, cell.Colour, cell.Small);
+            Set(other.Character, other.Colour, other.Small);
         }
 
-        public void CopyTo(Cell cell)  => cell?.CopyFrom(this);
+        public void CopyTo(Cell other)  => other?.CopyFrom(this);
     }
 }

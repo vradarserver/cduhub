@@ -138,22 +138,22 @@ namespace McduDotNet
             Small = false;
         }
 
-        public void CopyFrom(Screen screen)
+        public void CopyFrom(Screen other)
         {
-            if(screen == null) {
-                throw new ArgumentNullException(nameof(screen));
+            if(other == null) {
+                throw new ArgumentNullException(nameof(other));
             }
             for(var idx = 0;idx < Rows.Length;++idx) {
-                Rows[idx].CopyFrom(screen.Rows[idx]);
+                Rows[idx].CopyFrom(other.Rows[idx]);
             }
-            RightToLeft = screen.RightToLeft;
-            Colour = screen.Colour;
-            Column = screen.Column;
-            Line = screen.Line;
-            Small = screen.Small;
+            RightToLeft = other.RightToLeft;
+            Colour = other.Colour;
+            Column = other.Column;
+            Line = other.Line;
+            Small = other.Small;
         }
 
-        public void CopyTo(Screen screen) => screen?.CopyFrom(this);
+        public void CopyTo(Screen other) => other?.CopyFrom(this);
 
         public void Put(char ch)
         {

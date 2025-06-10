@@ -27,6 +27,8 @@ namespace Cduhub.Pages
         private ProductId _DisplayProductId;
         private McduDotNet.Screen _CaptainScreen = new McduDotNet.Screen();
         private McduDotNet.Screen _FirstOfficerScreen = new McduDotNet.Screen();
+        private Leds _CaptainLeds = new Leds();
+        private Leds _FirstOfficerLeds = new Leds();
 
         public override Key MenuKey => Key.Blank2;
 
@@ -84,40 +86,81 @@ namespace Cduhub.Pages
                     ",
                     Variables = new {
                         names = new[] {
-                            "aircraft.mcdu1.display",
-                            "aircraft.mcdu2.display",
+                            FenixA320Utility.GraphQLMcdu1DisplayName,
+                            FenixA320Utility.GraphQLMcdu2DisplayName,
+
+                            FenixA320Utility.GraphQLMcdu1LedFailName,
+                            FenixA320Utility.GraphQLMcdu1LedFmName,
+                            FenixA320Utility.GraphQLMcdu1LedFm1Name,
+                            FenixA320Utility.GraphQLMcdu1LedFm2Name,
+                            FenixA320Utility.GraphQLMcdu1LedIndName,
+                            FenixA320Utility.GraphQLMcdu1LedMcduMenuName,
+                            FenixA320Utility.GraphQLMcdu1LedRdyName,
+
+                            FenixA320Utility.GraphQLMcdu2LedFailName,
+                            FenixA320Utility.GraphQLMcdu2LedFmName,
+                            FenixA320Utility.GraphQLMcdu2LedFm1Name,
+                            FenixA320Utility.GraphQLMcdu2LedFm2Name,
+                            FenixA320Utility.GraphQLMcdu2LedIndName,
+                            FenixA320Utility.GraphQLMcdu2LedMcduMenuName,
+                            FenixA320Utility.GraphQLMcdu2LedRdyName,
                         }
                     }
                 };
 
                 _SubscriptionStream = client.CreateSubscriptionStream<dynamic>(subscriptionRequest);
-                _Subscription = _SubscriptionStream.Subscribe(result => {
-                    var dataRefs = result.Data?.dataRefs;
-                    if(dataRefs != null) {
-                        var name = dataRefs.name?.ToString();
-                        McduDotNet.Screen screen = null;
-                        var isVisible = false;
-                        switch(name) {
-                            case FenixA320Utility.GraphGLPilotMcduDisplayName:
-                                screen = _CaptainScreen;
-                                isVisible = _DisplayProductId == ProductId.Captain;
-                                break;
-                            case FenixA320Utility.GraphGLFirstOfficerMcduDisplayName:
-                                screen = _FirstOfficerScreen;
-                                isVisible = _DisplayProductId == ProductId.FirstOfficer;
-                                break;
-                        }
-                        if(screen != null) {
-                            FenixA320Utility.ParseGraphQLMcduValueToScreen(
-                                dataRefs.value?.ToString(),
-                                screen
-                            );
-                            if(isVisible) {
-                                RefreshVisibleDisplay();
-                            }
-                        }
+                _Subscription = _SubscriptionStream.Subscribe(GraphQLSubscriptionUpdate);
+            }
+        }
+
+        private void GraphQLSubscriptionUpdate(GraphQLResponse<dynamic> response)
+        {
+            var dataRefs = response.Data?.dataRefs;
+            if(dataRefs != null) {
+                var name = dataRefs.name?.ToString();
+                var value = dataRefs.value?.ToString();
+
+                Screen updateScreen = null;
+                Leds updateLeds = null;
+                switch(name) {
+                    case FenixA320Utility.GraphQLMcdu1DisplayName:      updateScreen = _CaptainScreen; break;
+                    case FenixA320Utility.GraphQLMcdu2DisplayName:      updateScreen = _FirstOfficerScreen; break;
+
+                    case FenixA320Utility.GraphQLMcdu1LedFailName:      updateLeds = _CaptainLeds; break;
+                    case FenixA320Utility.GraphQLMcdu1LedFmName:        updateLeds = _CaptainLeds; break;
+                    case FenixA320Utility.GraphQLMcdu1LedFm1Name:       updateLeds = _CaptainLeds; break;
+                    case FenixA320Utility.GraphQLMcdu1LedFm2Name:       updateLeds = _CaptainLeds; break;
+                    case FenixA320Utility.GraphQLMcdu1LedIndName:       updateLeds = _CaptainLeds; break;
+                    case FenixA320Utility.GraphQLMcdu1LedMcduMenuName:  updateLeds = _CaptainLeds; break;
+                    case FenixA320Utility.GraphQLMcdu1LedRdyName:       updateLeds = _CaptainLeds; break;
+
+                    case FenixA320Utility.GraphQLMcdu2LedFailName:      updateLeds = _FirstOfficerLeds; break;
+                    case FenixA320Utility.GraphQLMcdu2LedFmName:        updateLeds = _FirstOfficerLeds; break;
+                    case FenixA320Utility.GraphQLMcdu2LedFm1Name:       updateLeds = _FirstOfficerLeds; break;
+                    case FenixA320Utility.GraphQLMcdu2LedFm2Name:       updateLeds = _FirstOfficerLeds; break;
+                    case FenixA320Utility.GraphQLMcdu2LedIndName:       updateLeds = _FirstOfficerLeds; break;
+                    case FenixA320Utility.GraphQLMcdu2LedMcduMenuName:  updateLeds = _FirstOfficerLeds; break;
+                    case FenixA320Utility.GraphQLMcdu2LedRdyName:       updateLeds = _FirstOfficerLeds; break;
+                }
+
+                if(updateScreen != null) {
+                    FenixA320Utility.ParseGraphQLMcduValueToScreen(value, updateScreen);
+                    var productId = updateScreen == _CaptainScreen
+                        ? ProductId.Captain
+                        : ProductId.FirstOfficer;
+                    if(_DisplayProductId == productId) {
+                        RefreshVisibleDisplay();
                     }
-                });
+                }
+                if(updateLeds != null) {
+                    FenixA320Utility.ParseGraphQLIndicatorValueToLeds(name, value, updateLeds);
+                    var productId = updateLeds == _CaptainLeds
+                        ? ProductId.Captain
+                        : ProductId.FirstOfficer;
+                    if(_DisplayProductId == productId) {
+                        RefreshVisibleLeds();
+                    }
+                }
             }
         }
 
@@ -144,11 +187,20 @@ namespace Cduhub.Pages
 
         private void RefreshVisibleDisplay()
         {
-            var copyFrom = _DisplayProductId == ProductId.Captain
+            var copyFromScreen = _DisplayProductId == ProductId.Captain
                 ? _CaptainScreen
                 : _FirstOfficerScreen;
-            Screen.CopyFrom(copyFrom);
+            Screen.CopyFrom(copyFromScreen);
             RefreshDisplay();
+        }
+
+        private void RefreshVisibleLeds()
+        {
+            var copyFromLeds = _DisplayProductId == ProductId.Captain
+                ? _CaptainLeds
+                : _FirstOfficerLeds;
+            Leds.CopyFrom(copyFromLeds);
+            RefreshLeds();
         }
 
         private void ToggleBetweenCaptainAndFirstOfficerMcdu()
@@ -174,7 +226,7 @@ namespace Cduhub.Pages
                                 }}
                             }}
                         ",
-                        Variables = new { keyName = $"{FenixA320Utility.GraphGLSystemSwitchesPrefix}.{key}" }
+                        Variables = new { keyName = $"{FenixA320Utility.GraphQLSystemSwitchesPrefix}.{key}" }
                     };
 
                     Task.Run(() => client.SendMutationAsync<object>(request));

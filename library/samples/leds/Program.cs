@@ -26,6 +26,7 @@ namespace Leds
                 mcdu.RefreshDisplay();
 
                 mcdu.KeyDown += (_, args) => {
+                    var refreshLeds = true;
                     switch(args.Key) {
                         case Key.LineSelectLeft1:   mcdu.Leds.Fail = !mcdu.Leds.Fail; break;
                         case Key.LineSelectLeft2:   mcdu.Leds.Fm = !mcdu.Leds.Fm; break;
@@ -38,6 +39,11 @@ namespace Leds
                         case Key.LineSelectRight3:  mcdu.Leds.Rdy = !mcdu.Leds.Rdy; break;
                         case Key.LineSelectRight5:  mcdu.Leds.Brightness = Math.Max(0, mcdu.Leds.Brightness - 0.05); break;
                         case Key.LineSelectRight6:  mcdu.Leds.Brightness = Math.Min(100, mcdu.Leds.Brightness + 0.05); break;
+                        default:                    refreshLeds = false; break;
+                    }
+
+                    if(refreshLeds) {
+                        mcdu.RefreshLeds();
                     }
                 };
 

@@ -72,16 +72,16 @@ namespace McduDotNet
             }
         }
 
-        public void CopyTo(Row row)
+        public void CopyTo(Row other)
         {
-            if(row == null) {
-                throw new ArgumentNullException(nameof(row));
+            if(other == null) {
+                throw new ArgumentNullException(nameof(other));
             }
             for(var idx = 0;idx < Cells.Length;++idx) {
-                row.Cells[idx].CopyFrom(Cells[idx]);
+                other.Cells[idx].CopyFrom(Cells[idx]);
             }
         }
 
-        public void CopyFrom(Row row) => row?.CopyTo(this);
+        public void CopyFrom(Row other) => other?.CopyTo(this);
     }
 }

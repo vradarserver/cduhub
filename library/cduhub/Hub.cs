@@ -76,8 +76,8 @@ namespace Cduhub
                 page.OnPrepareScreen();
                 _SelectedPage = page;
 
-                _Mcdu.Screen.CopyFrom(page.Screen);
-                _Mcdu.RefreshDisplay();
+                RefreshDisplay(page);
+                RefreshLeds(page);
 
                 _SelectedPage.OnSelected(true);
             }
@@ -88,6 +88,14 @@ namespace Cduhub
             if(page == _SelectedPage) {
                 _Mcdu.Screen.CopyFrom(page.Screen);
                 _Mcdu.RefreshDisplay();
+            }
+        }
+
+        public void RefreshLeds(Page page)
+        {
+            if(page == _SelectedPage) {
+                _Mcdu.Leds.CopyFrom(page.Leds);
+                _Mcdu.RefreshLeds();
             }
         }
 

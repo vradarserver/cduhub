@@ -34,6 +34,7 @@ namespace McduDotNet
         private readonly InputReport01 _InputReport01_Previous = new InputReport01();
         private readonly InputReport01 _InputReport01_Current = new InputReport01();
         private (UInt64, UInt64, UInt64) _PreviousInputReport01Digest = (0,0,0);
+        private Leds _PreviousLeds;
 
         /// <inheritdoc/>
         public ProductId ProductId { get; }
@@ -44,9 +45,8 @@ namespace McduDotNet
         /// <inheritdoc/>
         public Compositor Output { get; }
 
-        private Leds _Leds;
         /// <inheritdoc/>
-        public ILeds Leds => _Leds;
+        public Leds Leds { get; }
 
         /// <inheritdoc/>
         public event EventHandler<KeyEventArgs> KeyDown;
@@ -84,8 +84,8 @@ namespace McduDotNet
         public Mcdu(HidDevice hidDevice, ProductId productId)
         {
             _HidDevice = hidDevice;
-            _Leds = new Leds(this);
             ProductId = productId;
+            Leds = new Leds();
             Screen = new Screen();
             Output = new Compositor(Screen);
         }
@@ -133,14 +133,17 @@ namespace McduDotNet
             _InputLoopTask = Task.Run(() => InputLoop(_InputLoopCancellationTokenSource.Token));
 
             UseMobiFlightInitialisationSequence();
+            RefreshLeds();
         }
 
         /// <inheritdoc/>
         public void Cleanup()
         {
             Screen.Clear();
-            RefreshDisplay();
             Leds.TurnAllOn(false);
+            Leds.Brightness = .5;
+            RefreshDisplay();
+            RefreshLeds();
         }
 
         private void UseMobiFlightInitialisationSequence()
@@ -169,7 +172,6 @@ namespace McduDotNet
             foreach(var packet in packets) {
                 SendStringPacket(packet);
             }
-            _Leds.Initialise();
         }
 
         /// <inheritdoc/>
@@ -193,6 +195,40 @@ namespace McduDotNet
                     PadAndSendDisplayPacket();
                     _DisplayDuplicateCheckString = duplicateCheckString;
                 }
+            }
+        }
+
+        public void RefreshLeds(bool skipDuplicateCheck = false)
+        {
+            if(skipDuplicateCheck || !(_PreviousLeds?.Equals(Leds) ?? false)) {
+                void sendBright(double? previous, double current, byte indicatorCode)
+                {
+                    if(previous != current) {
+                        SendLedOrBrightnessPacket(indicatorCode, (byte)(0xff * current));
+                    }
+                }
+                void sendLight(bool? previous, bool current, byte indicatorCode)
+                {
+                    if(previous != current) {
+                        SendLedOrBrightnessPacket(indicatorCode, current ? (byte)1 : (byte)0);
+                    }
+                }
+
+                sendBright(_PreviousLeds?.Brightness,   Leds.Brightness,    0x02);
+                sendLight(_PreviousLeds?.Fail,          Leds.Fail,          0x08);
+                sendLight(_PreviousLeds?.Fm,            Leds.Fm,            0x09);
+                sendLight(_PreviousLeds?.Mcdu,          Leds.Mcdu,          0x0a);
+                sendLight(_PreviousLeds?.Menu,          Leds.Menu,          0x0b);
+                sendLight(_PreviousLeds?.Fm1,           Leds.Fm1,           0x0c);
+                sendLight(_PreviousLeds?.Ind,           Leds.Ind,           0x0d);
+                sendLight(_PreviousLeds?.Rdy,           Leds.Rdy,           0x0e);
+                sendLight(_PreviousLeds?.Line,          Leds.Line,          0x0f);
+                sendLight(_PreviousLeds?.Fm2,           Leds.Fm2,           0x10);
+
+                if(_PreviousLeds == null) {
+                    _PreviousLeds = new Leds();
+                }
+                _PreviousLeds.CopyFrom(Leds);
             }
         }
 

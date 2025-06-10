@@ -30,7 +30,7 @@ namespace McduDotNet
         /// <summary>
         /// The MCDU's LED lights.
         /// </summary>
-        ILeds Leds { get; }
+        Leds Leds { get; }
 
         /// <summary>
         /// A fluent interface for drawing into the <see cref="Screen"/>.
@@ -55,6 +55,15 @@ namespace McduDotNet
         /// refresh. Setting this parameter to true skips that test.
         /// </param>
         void RefreshDisplay(bool skipDuplicateCheck = false);
+
+        /// <summary>
+        /// Copies the content of <see cref="Leds"/> to the unit.
+        /// </summary>
+        /// <param name="skipDuplicateCheck">
+        /// The LEDs are normally not refreshed if the library thinks that nothing has changed since the last
+        /// refresh. Setting this parameter to true skips that test.
+        /// </param>
+        void RefreshLeds(bool skipDuplicateCheck = false);
 
         /// <summary>
         /// Resets the display and turns everything off.

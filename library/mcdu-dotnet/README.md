@@ -62,6 +62,18 @@ object. There are a pair of functions, `CopyFrom` and `CopyTo`, that can be used
 copy the content of a screen buffer into the MCDU's screen buffer.
 
 
+
+### LEDs
+
+Same process as per screen buffers - there is an `Led` class that carries the state and
+brightness of the LED lights. The class is copyable.
+
+There is a `RefreshLeds` function on the MCDU object to copy the current state of the
+`Led` buffer to the device. If nothing has changed since the last refresh then, by
+default, nothing is sent.
+
+
+
 ## Product Notes
 
 [WinWing MCDU USB Packet Sniffing Notes](WINWING-MCDU-USB.md)

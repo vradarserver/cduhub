@@ -9,109 +9,68 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace McduDotNet
 {
     /// <summary>
-    /// Implements the LEDs for the <see cref="Mcdu"/> implementation of <see cref="IMcdu"/>.
+    /// Describes the state of the LEDs.
     /// </summary>
-    class Leds : ILeds
+    public class Leds
     {
-        private Mcdu _Mcdu;
-        private bool _Initialising;
-
-        private double _Brightness = 0.75;
-        /// <inheritdoc/>
-        public double Brightness
-        {
-            get => _Brightness;
-            set => SetFieldAndSend(value, ref _Brightness, 0x02, () => (byte)(0xff * Brightness));
-        }
-
-        private bool _Fail;
-        /// <inheritdoc/>
-        public bool Fail
-        {
-            get => _Fail;
-            set => SetFieldAndSend(value, ref _Fail, 0x08, () => (byte)(Fail ? 1 : 0));
-        }
-
-        private bool _Fm;
-        /// <inheritdoc/>
-        public bool Fm
-        {
-            get => _Fm;
-            set => SetFieldAndSend(value, ref _Fm, 0x09, () => (byte)(Fm ? 1 : 0));
-        }
-
-        private bool _McduLed;
-        /// <inheritdoc/>
-        public bool Mcdu
-        {
-            get => _McduLed;
-            set => SetFieldAndSend(value, ref _McduLed, 0x0A, () => (byte)(Mcdu ? 1 : 0));
-        }
-
-        private bool _Menu;
-        /// <inheritdoc/>
-        public bool Menu
-        {
-            get => _Menu;
-            set => SetFieldAndSend(value, ref _Menu, 0x0B, () => (byte)(Menu ? 1 : 0));
-        }
-
-        private bool _Fm1;
-        /// <inheritdoc/>
-        public bool Fm1
-        {
-            get => _Fm1;
-            set => SetFieldAndSend(value, ref _Fm1, 0x0C, () => (byte)(Fm1 ? 1 : 0));
-        }
-
-        private bool _Ind;
-        /// <inheritdoc/>
-        public bool Ind
-        {
-            get => _Ind;
-            set => SetFieldAndSend(value, ref _Ind, 0x0D, () => (byte)(Ind ? 1 : 0));
-        }
-
-        private bool _Rdy;
-        /// <inheritdoc/>
-        public bool Rdy
-        {
-            get => _Rdy;
-            set => SetFieldAndSend(value, ref _Rdy, 0x0E, () => (byte)(Rdy ? 1 : 0));
-        }
-
-        private bool _Line;
-        /// <inheritdoc/>
-        public bool Line
-        {
-            get => _Line;
-            set => SetFieldAndSend(value, ref _Line, 0x0F, () => (byte)(Line ? 1 : 0));
-        }
-
-        private bool _Fm2;
-        /// <inheritdoc/>
-        public bool Fm2
-        {
-            get => _Fm2;
-            set => SetFieldAndSend(value, ref _Fm2, 0x10, () => (byte)(Fm2 ? 1 : 0));
-        }
+        /// <summary>
+        /// Gets or sets the brightness of the LEDs as a value from 0 to 1.
+        /// </summary>
+        public double Brightness { get; set; } = 0.75;
 
         /// <summary>
-        /// Creates a new object.
+        /// Gets or sets the lit state of the FAIL LED.
         /// </summary>
-        /// <param name="mcdu"></param>
-        public Leds(Mcdu mcdu)
-        {
-            _Mcdu = mcdu;
-        }
+        public bool Fail { get; set; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the lit state of the FM LED.
+        /// </summary>
+        public bool Fm { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lit state of the MCDU LED.
+        /// </summary>
+        public bool Mcdu { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lit state of the MENU LED.
+        /// </summary>
+        public bool Menu { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lit state of the FM1 LED.
+        /// </summary>
+        public bool Fm1 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lit state of the IND LED.
+        /// </summary>
+        public bool Ind { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lit state of the RDY LED.
+        /// </summary>
+        public bool Rdy { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lit state of the horizontal line LED.
+        /// </summary>
+        public bool Line { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lit state of the FM2 LED.
+        /// </summary>
+        public bool Fm2 { get; set; }
+
+        /// <summary>
+        /// Switches all of the LEDs on or off.
+        /// </summary>
+        /// <param name="on"></param>
         public void TurnAllOn(bool on)
         {
             Fail =  on;
@@ -125,23 +84,48 @@ namespace McduDotNet
             Rdy =   on;
         }
 
-        internal void Initialise()
+        /// <inheritdoc/>
+        public override bool Equals(object obj)
         {
-            _Initialising = true;
-            try {
-                Brightness = Brightness;
-                TurnAllOn(false);
-            } finally {
-                _Initialising = false;
+            var result = Object.ReferenceEquals(this, obj);
+            if(!result && obj is Leds other) {
+                result = Brightness == other.Brightness
+                      && Fail == other.Fail
+                      && Fm == other.Fm
+                      && Fm1 == other.Fm1
+                      && Fm2 == other.Fm2
+                      && Ind == other.Ind
+                      && Line == other.Line
+                      && Mcdu == other.Mcdu
+                      && Menu == other.Menu
+                      && Rdy == other.Rdy;
             }
+            return result;
         }
 
-        private void SetFieldAndSend<T>(T value, ref T backingField, byte indicatorCode, Func<byte> calculateByteValue)
+        /// <inheritdoc/>
+        public override int GetHashCode()
         {
-            if(_Initialising || !EqualityComparer<T>.Default.Equals(value, backingField)) {
-                backingField = value;
-                _Mcdu.SendLedOrBrightnessPacket(indicatorCode, calculateByteValue());
-            }
+            return Brightness.GetHashCode();
         }
+
+        public void CopyFrom(Leds other)
+        {
+            if(other == null) {
+                throw new ArgumentNullException(nameof(other));
+            }
+            Brightness = other.Brightness;
+            Fail = other.Fail;
+            Fm = other.Fm;
+            Fm1 = other.Fm1;
+            Fm2 = other.Fm2;
+            Ind = other.Ind;
+            Line = other.Line;
+            Mcdu = other.Mcdu;
+            Menu = other.Menu;
+            Rdy = other.Rdy;
+        }
+
+        public void CopyTo(Leds other) => other?.CopyFrom(this);
     }
 }
