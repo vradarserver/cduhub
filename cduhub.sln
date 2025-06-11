@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{717AFCD7-BBC8-416C-97B0-BFD086BF1739}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.gitignore = .gitignore
 		build.bat = build.bat
 		Directory.Build.props = Directory.Build.props
 		LICENSE = LICENSE
@@ -32,6 +33,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{C87A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{784F0E13-DEAF-49A4-AAC4-F8C927A899C6}"
 	ProjectSection(SolutionItems) = preProject
+		.github\workflows\cduhub-release-apps.yml = .github\workflows\cduhub-release-apps.yml
 		.github\workflows\mcdu-dotnet-publish.yml = .github\workflows\mcdu-dotnet-publish.yml
 	EndProjectSection
 EndProject
@@ -47,7 +49,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{7B8613
 		images\win32.ico = images\win32.ico
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cduhub-wingui", "apps\cduhub-wingui\cduhub-wingui.csproj", "{D2709D42-9FFA-4A38-A94F-B4FF692D3735}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cduhub-wingui", "apps\cduhub-wingui\cduhub-wingui.csproj", "{D2709D42-9FFA-4A38-A94F-B4FF692D3735}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "installers", "installers", "{F23391C6-F0DD-4436-A60C-0B65690AE6C6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "innosetup", "innosetup", "{F32C6B7D-F01C-40BD-87DC-09ED8E5DEA77}"
+	ProjectSection(SolutionItems) = preProject
+		installers\innosetup\cduhub-wingui.iss = installers\innosetup\cduhub-wingui.iss
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -107,6 +116,7 @@ Global
 		{367E7522-0295-4206-887D-EE8C3D3ABE48} = {7612F6B1-A4A7-431C-8688-167145D1D5F8}
 		{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5} = {8110F87C-2A2E-484C-B35D-FD9CC36E8167}
 		{D2709D42-9FFA-4A38-A94F-B4FF692D3735} = {8110F87C-2A2E-484C-B35D-FD9CC36E8167}
+		{F32C6B7D-F01C-40BD-87DC-09ED8E5DEA77} = {F23391C6-F0DD-4436-A60C-0B65690AE6C6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C977F7C9-07B7-4BB4-A182-FDE6F96F171A}

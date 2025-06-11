@@ -1,0 +1,86 @@
+name: Build and Release CduHub applications
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+      - 'v*.*.*-alpha-*'
+      - 'v*.*.*-beta-*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      PUBLISH_DIR: publish
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Publish cduhub-wingui
+        run: dotnet publish apps\cduhub-wingui\cduhub-wingui.csproj --configuration Release --output ${{ env.PUBLISH_DIR }}\cduhub-wingui
+
+      - name: Build cduhub-wingui installer
+        run: iscc.exe /DVERSION=${{ github.ref_name }} installers\innosetup\cduhub-wingui.iss
+
+      - name: Upload cduhub-wingui installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: cduhub-wingui-${{ github.ref_name }}.exe
+          path: cduhub-wingui-${{ github.ref_name }}.exe
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download cduhub-wingui installer
+        uses: actions/download-artifact@v4
+        with:
+          name: cduhub-wingui-${{ github.ref_name }}.exe
+          path: .
+
+      - name: Get previous version tag
+        id: get_prev_tag
+        run: |
+          PREV_TAG=$(git tag --list 'v[0-9]*' --sort=-v:refname | grep -v "^${GITHUB_REF_NAME}$" | head -n 1)
+          if [ -z "$PREV_TAG" ]; then
+            echo "PREV_TAG=" >> $GITHUB_ENV
+          else
+            echo "PREV_TAG=$PREV_TAG" >> $GITHUB_ENV
+          fi
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          echo 'CHANGELOG<<EOF' >> $GITHUB_ENV
+          if [ -z "${{ env.PREV_TAG }}" ]; then
+            git log --pretty=format:"* %s" >> $GITHUB_ENV
+          else
+            git log ${{ env.PREV_TAG }}..HEAD --pretty=format:"* %s" >> $GITHUB_ENV
+          fi
+          echo 'EOF' >> $GITHUB_ENV
+
+      - name: Determine whether pre-release
+        id: check_prerelease
+        run: |
+          if [[ "${GITHUB_REF_NAME}" =~ -(alpha|beta)- ]]; then
+            echo "PRERELEASE=true" >> $GITHUB_ENV
+          else
+            echo "PRERELEASE=false" >> $GITHUB_ENV
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: ${{ env.CHANGELOG }}
+          draft: true
+          prerelease: ${{ env.PRERELEASE }}
+          files: |
+            cduhub-wingui-${{ github.ref_name }}.exe
