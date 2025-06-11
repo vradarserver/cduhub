@@ -54,16 +54,13 @@ jobs:
             echo "PREV_TAG=$PREV_TAG" >> $GITHUB_ENV
           fi
 
-      - name: Generate changelog
-        id: changelog
+      - name: Generate changelog file
         run: |
-          echo 'CHANGELOG<<EOF' >> $GITHUB_ENV
           if [ -z "${{ env.PREV_TAG }}" ]; then
-            git log --pretty=format:"* %s" >> $GITHUB_ENV
+            git log --pretty=format:"* %s" > changelog.txt
           else
-            git log ${{ env.PREV_TAG }}..HEAD --pretty=format:"* %s" >> $GITHUB_ENV
+            git log ${{ env.PREV_TAG }}..HEAD --pretty=format:"* %s" > changelog.txt
           fi
-          echo 'EOF' >> $GITHUB_ENV
 
       - name: Determine whether pre-release
         id: check_prerelease
@@ -79,7 +76,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          body: ${{ env.CHANGELOG }}
+          body-file: changelog.txt
           draft: true
           prerelease: ${{ env.PRERELEASE }}
           files: |
