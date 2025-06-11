@@ -76,7 +76,7 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          body-file: changelog.txt
+          body_path: changelog.txt
           draft: true
           prerelease: ${{ env.PRERELEASE }}
           files: |
