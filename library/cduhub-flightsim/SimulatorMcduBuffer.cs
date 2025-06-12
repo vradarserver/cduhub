@@ -8,46 +8,20 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using Cduhub.FlightSim;
 using McduDotNet;
 
-namespace Cduhub.Pages
+namespace Cduhub.FlightSim
 {
-    class Fenix_Page : Page
+    public class SimulatorMcduBuffer
     {
-        private readonly FenixA320EfbMcdu _FenixA320;
+        public Screen Screen { get; }
 
-        public override Key MenuKey => Key.Blank2;
+        public Leds Leds { get; }
 
-        public Fenix_Page(Hub hub) : base(hub)
+        public SimulatorMcduBuffer()
         {
-            _FenixA320 = new FenixA320EfbMcdu(Screen, Leds);
-            _FenixA320.DisplayRefreshRequired += FenixA320_DisplayRefreshRequired;
-            _FenixA320.LedsRefreshRequired += FenixA320_LedsRefreshRequired;
-
-            _FenixA320.Reconnect();
+            Screen = new Screen();
+            Leds = new Leds();
         }
-
-        public override void OnKeyDown(Key key)
-        {
-            if(key != Key.Blank1) {
-                _FenixA320.SendKeyToSimulator(key, pressed: true);
-            } else {
-                _FenixA320.AdvanceSelectedBufferProductId();
-            }
-        }
-
-        public override void OnKeyUp(Key key)
-        {
-            if(key != Key.Blank1) {
-                _FenixA320.SendKeyToSimulator(key, pressed: false);
-            }
-        }
-
-        public void Reconnect() => _FenixA320.Reconnect();
-
-        private void FenixA320_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
-
-        private void FenixA320_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLeds();
     }
 }

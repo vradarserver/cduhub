@@ -58,6 +58,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "innosetup", "innosetup", "{
 		installers\innosetup\cduhub-wingui.iss = installers\innosetup\cduhub-wingui.iss
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cduhub-flightsim", "library\cduhub-flightsim\cduhub-flightsim.csproj", "{6A5771A0-1330-4A81-A47D-66CA72D11896}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -100,6 +102,10 @@ Global
 		{D2709D42-9FFA-4A38-A94F-B4FF692D3735}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2709D42-9FFA-4A38-A94F-B4FF692D3735}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D2709D42-9FFA-4A38-A94F-B4FF692D3735}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A5771A0-1330-4A81-A47D-66CA72D11896}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A5771A0-1330-4A81-A47D-66CA72D11896}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A5771A0-1330-4A81-A47D-66CA72D11896}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A5771A0-1330-4A81-A47D-66CA72D11896}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -117,6 +123,7 @@ Global
 		{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5} = {8110F87C-2A2E-484C-B35D-FD9CC36E8167}
 		{D2709D42-9FFA-4A38-A94F-B4FF692D3735} = {8110F87C-2A2E-484C-B35D-FD9CC36E8167}
 		{F32C6B7D-F01C-40BD-87DC-09ED8E5DEA77} = {F23391C6-F0DD-4436-A60C-0B65690AE6C6}
+		{6A5771A0-1330-4A81-A47D-66CA72D11896} = {7612F6B1-A4A7-431C-8688-167145D1D5F8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C977F7C9-07B7-4BB4-A182-FDE6F96F171A}

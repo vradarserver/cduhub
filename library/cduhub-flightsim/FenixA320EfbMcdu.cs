@@ -1,0 +1,231 @@
+﻿// Copyright © 2025 onwards, Andrew Whewell
+// All rights reserved.
+//
+// Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+//    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+//    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+//    * Neither the name of the author nor the names of the program's contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+using System;
+using System.Threading.Tasks;
+using GraphQL;
+using GraphQL.Client.Http;
+using GraphQL.Client.Serializer.Newtonsoft;
+using McduDotNet;
+
+namespace Cduhub.FlightSim
+{
+    /// <summary>
+    /// Manages the connection to Fenix's A320 EFB MCDUs.
+    /// </summary>
+    public class FenixA320EfbMcdu : SimulatedMcdus, IDisposable
+    {
+        private GraphQLHttpClient _GraphQLClient;
+        private IObservable<GraphQLResponse<dynamic>> _SubscriptionStream;
+        private IDisposable _Subscription;
+
+        /// <inheritdoc/>
+        public override SimulatorMcduBuffer PilotBuffer { get; } = new SimulatorMcduBuffer();
+
+        /// <inheritdoc/>
+        public override SimulatorMcduBuffer FirstOfficerBuffer { get; } = new SimulatorMcduBuffer();
+
+        /// <summary>
+        /// The address of the machine running the Fenix A320 simulation.
+        /// </summary>
+        public string Host { get; set; } = "localhost";
+
+        /// <summary>
+        /// The port of the EFB exposed by the Fenix A320 simulation.
+        /// </summary>
+        public int Port { get; set; } = 8083;
+
+        /// <summary>
+        /// Creates a new object.
+        /// </summary>
+        /// <param name="masterScreen"></param>
+        /// <param name="masterLeds"></param>
+        public FenixA320EfbMcdu(Screen masterScreen, Leds masterLeds) : base(masterScreen, masterLeds)
+        {
+        }
+
+        /// <summary>
+        /// Finalises the object.
+        /// </summary>
+        ~FenixA320EfbMcdu() => Dispose(false);
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Disposes of, or finalises, the object.
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if(disposing) {
+                DisposeGraphQLClient();
+            }
+        }
+
+        /// <summary>
+        /// Connects to the Fenix EFB's MCDUs. If a connection has already been established then it is dropped
+        /// and restarted.
+        /// </summary>
+        public void Reconnect()
+        {
+            CreateGraphQLClient();
+        }
+
+        /// <inheritdoc/>
+        public override void SendKeyToSimulator(Key mcduKey, bool pressed)
+        {
+            var client = _GraphQLClient;
+            if(client != null) {
+                var key = FenixA320Utility.GraphQLKeyName(mcduKey, SelectedBufferProductId);
+                if(key != "") {
+                    var request = new GraphQLRequest() {
+                        Query = $@"
+                            mutation ($keyName: String!) {{
+                                dataRef {{
+                                    writeInt(name: $keyName, value: {(pressed ? 1 : 0)})
+                                    __typename
+                                }}
+                            }}
+                        ",
+                        Variables = new { keyName = $"{FenixA320Utility.GraphQLSystemSwitchesPrefix}.{key}" }
+                    };
+
+                    Task.Run(() => client.SendMutationAsync<object>(request));
+                }
+            }
+        }
+
+        private void CreateGraphQLClient()
+        {
+            DisposeGraphQLClient();
+
+            var endpointUri = new Uri($"ws://{Host}:{Port}/graphql");
+            var options = new GraphQLHttpClientOptions() {
+                EndPoint = endpointUri,
+                UseWebSocketForQueriesAndMutations = true
+            };
+            _GraphQLClient = new GraphQLHttpClient(options, new NewtonsoftJsonSerializer());
+            SetupFenixDisplayChangeEvents();
+        }
+
+        private void DisposeGraphQLClient()
+        {
+            var client = _GraphQLClient;
+            var subscription = _Subscription;
+
+            _GraphQLClient = null;
+            _SubscriptionStream = null;
+            _Subscription = null;
+
+            try {
+                if(subscription != null) {
+                    subscription.Dispose();
+                }
+            } catch {;}
+            try {
+                if(client != null) {
+                    client.Dispose();
+                }
+            } catch {;}
+        }
+
+        private void SetupFenixDisplayChangeEvents()
+        {
+            var client = _GraphQLClient;
+            if(client != null) {
+                var subscriptionRequest = new GraphQLRequest {
+                    Query = @"
+                        subscription OnDataRefChanged($names: [String!]!) {
+                            dataRefs(names: $names) {
+                                name
+                                value
+                            }
+                        }
+                    ",
+                    Variables = new {
+                        names = new[] {
+                            FenixA320Utility.GraphQLMcdu1DisplayName,
+                            FenixA320Utility.GraphQLMcdu2DisplayName,
+
+                            FenixA320Utility.GraphQLMcdu1LedFailName,
+                            FenixA320Utility.GraphQLMcdu1LedFmName,
+                            FenixA320Utility.GraphQLMcdu1LedFm1Name,
+                            FenixA320Utility.GraphQLMcdu1LedFm2Name,
+                            FenixA320Utility.GraphQLMcdu1LedIndName,
+                            FenixA320Utility.GraphQLMcdu1LedMcduMenuName,
+                            FenixA320Utility.GraphQLMcdu1LedRdyName,
+
+                            FenixA320Utility.GraphQLMcdu2LedFailName,
+                            FenixA320Utility.GraphQLMcdu2LedFmName,
+                            FenixA320Utility.GraphQLMcdu2LedFm1Name,
+                            FenixA320Utility.GraphQLMcdu2LedFm2Name,
+                            FenixA320Utility.GraphQLMcdu2LedIndName,
+                            FenixA320Utility.GraphQLMcdu2LedMcduMenuName,
+                            FenixA320Utility.GraphQLMcdu2LedRdyName,
+                        }
+                    }
+                };
+
+                _SubscriptionStream = client.CreateSubscriptionStream<dynamic>(subscriptionRequest);
+                _Subscription = _SubscriptionStream.Subscribe(GraphQLSubscriptionUpdate);
+            }
+        }
+
+        private void GraphQLSubscriptionUpdate(GraphQLResponse<dynamic> response)
+        {
+            var dataRefs = response.Data?.dataRefs;
+            if(dataRefs != null) {
+                var name = dataRefs.name?.ToString();
+                var value = dataRefs.value?.ToString();
+
+                Screen updateScreen = null;
+                Leds updateLeds = null;
+                switch(name) {
+                    case FenixA320Utility.GraphQLMcdu1DisplayName:      updateScreen = PilotBuffer.Screen; break;
+                    case FenixA320Utility.GraphQLMcdu2DisplayName:      updateScreen = FirstOfficerBuffer.Screen; break;
+
+                    case FenixA320Utility.GraphQLMcdu1LedFailName:      updateLeds = PilotBuffer.Leds; break;
+                    case FenixA320Utility.GraphQLMcdu1LedFmName:        updateLeds = PilotBuffer.Leds; break;
+                    case FenixA320Utility.GraphQLMcdu1LedFm1Name:       updateLeds = PilotBuffer.Leds; break;
+                    case FenixA320Utility.GraphQLMcdu1LedFm2Name:       updateLeds = PilotBuffer.Leds; break;
+                    case FenixA320Utility.GraphQLMcdu1LedIndName:       updateLeds = PilotBuffer.Leds; break;
+                    case FenixA320Utility.GraphQLMcdu1LedMcduMenuName:  updateLeds = PilotBuffer.Leds; break;
+                    case FenixA320Utility.GraphQLMcdu1LedRdyName:       updateLeds = PilotBuffer.Leds; break;
+
+                    case FenixA320Utility.GraphQLMcdu2LedFailName:      updateLeds = FirstOfficerBuffer.Leds; break;
+                    case FenixA320Utility.GraphQLMcdu2LedFmName:        updateLeds = FirstOfficerBuffer.Leds; break;
+                    case FenixA320Utility.GraphQLMcdu2LedFm1Name:       updateLeds = FirstOfficerBuffer.Leds; break;
+                    case FenixA320Utility.GraphQLMcdu2LedFm2Name:       updateLeds = FirstOfficerBuffer.Leds; break;
+                    case FenixA320Utility.GraphQLMcdu2LedIndName:       updateLeds = FirstOfficerBuffer.Leds; break;
+                    case FenixA320Utility.GraphQLMcdu2LedMcduMenuName:  updateLeds = FirstOfficerBuffer.Leds; break;
+                    case FenixA320Utility.GraphQLMcdu2LedRdyName:       updateLeds = FirstOfficerBuffer.Leds; break;
+                }
+
+                if(updateScreen != null) {
+                    FenixA320Utility.ParseGraphQLMcduValueToScreen(value, updateScreen);
+                    if(updateScreen == SelectedBuffer.Screen) {
+                        RefreshSelectedScreen();
+                    }
+                }
+                if(updateLeds != null) {
+                    FenixA320Utility.ParseGraphQLIndicatorValueToLeds(name, value, updateLeds);
+                    if(updateLeds == SelectedBuffer.Leds) {
+                        RefreshSelectedLeds();
+                    }
+                }
+            }
+        }
+    }
+}
