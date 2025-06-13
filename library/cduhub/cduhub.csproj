@@ -23,11 +23,10 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="GraphQL.Client" Version="6.1.0" />
-        <PackageReference Include="GraphQL.Client.Serializer.Newtonsoft" Version="6.1.0" />
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\cduhub-flightsim\cduhub-flightsim.csproj" />
         <ProjectReference Include="..\mcdu-dotnet\mcdu-dotnet.csproj" />
     </ItemGroup>
 

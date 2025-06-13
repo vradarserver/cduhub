@@ -8,44 +8,30 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using Cduhub.FlightSim;
 using McduDotNet;
 
 namespace Cduhub.Pages
 {
-    class Root_Page : Page
+    class SimBridge_Page : Page
     {
-        private Clock_Page _ClockPage;
-        private FenixMenu_Page _FenixMenuPage;
-        private SimBridgeMenu_Page _SimBridgeMenuPage;
+        private readonly SimBridgeA320RemoteMcdu _SimBridgeA320;
 
-        public Root_Page(Hub hub) : base(hub)
+        public override Key MenuKey => Key.Blank2;
+
+        public SimBridge_Page(Hub hub) : base(hub)
         {
-            _ClockPage = new Clock_Page(hub);
-            _FenixMenuPage = new FenixMenu_Page(hub);
-            _SimBridgeMenuPage = new SimBridgeMenu_Page(hub);
+            _SimBridgeA320 = new SimBridgeA320RemoteMcdu(Screen, Leds);
+            _SimBridgeA320.DisplayRefreshRequired += SimBridgeA320_DisplayRefreshRequired;
+            _SimBridgeA320.LedsRefreshRequired += SimBridgeA320_LedsRefreshRequired;
 
-            Output
-                .Clear()
-                .Green()
-                .Centred("CduHub Menu")
-                .White()
-                .LeftLabel(1, ">Clock")
-                .RightLabel(1, "Fenix A320<")
-                .RightLabel(2, "SimBridge A320<")
-                .Red()
-                .RightLabel(6, "Quit<");
-
-            Leds.Mcdu = Leds.Menu = true;
+            _SimBridgeA320.Reconnect();
         }
 
-        public override void OnKeyDown(Key key)
-        {
-            switch(key) {
-                case Key.LineSelectLeft1:   _Hub.SelectPage(_ClockPage); break;
-                case Key.LineSelectRight1:  _Hub.SelectPage(_FenixMenuPage); break;
-                case Key.LineSelectRight2:  _Hub.SelectPage(_SimBridgeMenuPage); break;
-                case Key.LineSelectRight6:  _Hub.Shutdown(); break;
-            }
-        }
+        public void Reconnect() => _SimBridgeA320.Reconnect();
+
+        private void SimBridgeA320_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
+
+        private void SimBridgeA320_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLeds();
     }
 }

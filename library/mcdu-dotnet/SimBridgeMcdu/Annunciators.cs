@@ -8,44 +8,35 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using McduDotNet;
+using System.Runtime.Serialization;
 
-namespace Cduhub.Pages
+namespace McduDotNet.SimBridgeMcdu
 {
-    class Root_Page : Page
+    [DataContract]
+    public class Annunciators
     {
-        private Clock_Page _ClockPage;
-        private FenixMenu_Page _FenixMenuPage;
-        private SimBridgeMenu_Page _SimBridgeMenuPage;
+        [DataMember]
+        public bool Blank { get; set; }
 
-        public Root_Page(Hub hub) : base(hub)
-        {
-            _ClockPage = new Clock_Page(hub);
-            _FenixMenuPage = new FenixMenu_Page(hub);
-            _SimBridgeMenuPage = new SimBridgeMenu_Page(hub);
+        [DataMember]
+        public bool Fail { get; set; }
 
-            Output
-                .Clear()
-                .Green()
-                .Centred("CduHub Menu")
-                .White()
-                .LeftLabel(1, ">Clock")
-                .RightLabel(1, "Fenix A320<")
-                .RightLabel(2, "SimBridge A320<")
-                .Red()
-                .RightLabel(6, "Quit<");
+        [DataMember]
+        public bool Fm1 { get; set; }
 
-            Leds.Mcdu = Leds.Menu = true;
-        }
+        [DataMember]
+        public bool Fm2 { get; set; }
 
-        public override void OnKeyDown(Key key)
-        {
-            switch(key) {
-                case Key.LineSelectLeft1:   _Hub.SelectPage(_ClockPage); break;
-                case Key.LineSelectRight1:  _Hub.SelectPage(_FenixMenuPage); break;
-                case Key.LineSelectRight2:  _Hub.SelectPage(_SimBridgeMenuPage); break;
-                case Key.LineSelectRight6:  _Hub.Shutdown(); break;
-            }
-        }
+        [DataMember]
+        public bool Fmgc { get; set; }
+
+        [DataMember]
+        public bool Ind { get; set; }
+
+        [DataMember(Name = "mcdu_menu")]
+        public bool McduMenu { get; set; }
+
+        [DataMember]
+        public bool Rdy { get; set; }
     }
 }

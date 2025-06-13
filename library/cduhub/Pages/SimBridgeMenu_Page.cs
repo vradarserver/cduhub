@@ -12,40 +12,41 @@ using McduDotNet;
 
 namespace Cduhub.Pages
 {
-    class Root_Page : Page
+    class SimBridgeMenu_Page : Page
     {
-        private Clock_Page _ClockPage;
-        private FenixMenu_Page _FenixMenuPage;
-        private SimBridgeMenu_Page _SimBridgeMenuPage;
+        private SimBridge_Page _SimBridge_Page;
 
-        public Root_Page(Hub hub) : base(hub)
+        public SimBridgeMenu_Page(Hub hub) : base(hub)
         {
-            _ClockPage = new Clock_Page(hub);
-            _FenixMenuPage = new FenixMenu_Page(hub);
-            _SimBridgeMenuPage = new SimBridgeMenu_Page(hub);
-
             Output
-                .Clear()
                 .Green()
-                .Centred("CduHub Menu")
+                .Centred("SimBridge Menu")
                 .White()
-                .LeftLabel(1, ">Clock")
-                .RightLabel(1, "Fenix A320<")
-                .RightLabel(2, "SimBridge A320<")
-                .Red()
-                .RightLabel(6, "Quit<");
-
-            Leds.Mcdu = Leds.Menu = true;
+                .Newline()
+                .Newline()
+                .Centred("BLANK2 for hub menu")
+                .Amber()
+                .LeftLabel(6, ">Reconnect")
+                .Cyan()
+                .RightLabel(6, "SimBridge<");
         }
 
         public override void OnKeyDown(Key key)
         {
             switch(key) {
-                case Key.LineSelectLeft1:   _Hub.SelectPage(_ClockPage); break;
-                case Key.LineSelectRight1:  _Hub.SelectPage(_FenixMenuPage); break;
-                case Key.LineSelectRight2:  _Hub.SelectPage(_SimBridgeMenuPage); break;
-                case Key.LineSelectRight6:  _Hub.Shutdown(); break;
+                case Key.LineSelectLeft6:   Reconnect(); break;
+                case Key.LineSelectRight6:  OpenSimBridgePage(); break;
             }
+        }
+
+        private void Reconnect() => _SimBridge_Page?.Reconnect();
+
+        private void OpenSimBridgePage()
+        {
+            if(_SimBridge_Page == null) {
+                _SimBridge_Page = new SimBridge_Page(_Hub);
+            }
+            _Hub.SelectPage(_SimBridge_Page);
         }
     }
 }

@@ -99,8 +99,7 @@ namespace McduDotNet
                     default:  putch = ch; break;
                 }
                 if(putch != null) {
-                    screen.Put(putch.Value);
-                    screen.Column = Math.Min(screen.Column + 1, Metrics.Columns - 1);
+                    screen.Put(putch.Value, advanceColumn: true);
                 }
             }
             screen.Goto(screen.Line + 1, 0);

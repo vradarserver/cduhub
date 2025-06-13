@@ -155,22 +155,30 @@ namespace McduDotNet
 
         public void CopyTo(Screen other) => other?.CopyFrom(this);
 
-        public void Put(char ch)
+        public void Put(char ch, bool advanceColumn = false)
         {
+            if(ch == ' ') { // <-- non-breaking space
+                ch = ' ';   // <-- bog-standard space
+            }
             Rows[Line].Cells[Column].Set(ch, Colour, Small);
+            if(advanceColumn) {
+                if(!RightToLeft) {
+                    Column = Math.Min(Column + 1, Metrics.Columns - 1);
+                } else {
+                    Column = Math.Max(Column - 1, 0);
+                }
+            }
         }
 
         public void Write(string text)
         {
             if(!RightToLeft) {
                 foreach(var ch in text) {
-                    Put(ch);
-                    Column = Math.Min(Column + 1, Metrics.Columns - 1);
+                    Put(ch, advanceColumn: true);
                 }
             } else {
                 for(var idx = text.Length - 1;idx >= 0;--idx) {
-                    Put(text[idx]);
-                    Column = Math.Max(Column - 1, 0);
+                    Put(text[idx], advanceColumn: true);
                 }
             }
         }
