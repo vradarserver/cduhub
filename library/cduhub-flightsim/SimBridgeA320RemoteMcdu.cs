@@ -9,6 +9,7 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
@@ -24,6 +25,9 @@ namespace Cduhub.FlightSim
     {
         private CancellationTokenSource _WebSocketCancelationTokenSource;
         private Task _WebSocketTask;
+        private readonly object _QueueLock = new object();
+        private readonly Queue<string> _SendEventQueue = new Queue<string>();
+        private readonly SemaphoreSlim _SendMessageSemaphore = new SemaphoreSlim(1, 1);
 
         /// <inheritdoc/>
         public override SimulatorMcduBuffer PilotBuffer { get; } = new SimulatorMcduBuffer();
@@ -40,6 +44,31 @@ namespace Cduhub.FlightSim
         /// The port that SimBridge is listening to.
         /// </summary>
         public int Port { get; set; } = 8380;
+
+        private bool _IsConnected;
+        /// <summary>
+        /// Gets a value indicating whether we're connected to SimBridge.
+        /// </summary>
+        public bool IsConnected
+        {
+            get => _IsConnected;
+            protected set {
+                if(value != IsConnected) {
+                    _IsConnected = value;
+                    OnIsConnectedChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Raised when <see cref="IsConnected"/> changes value.
+        /// </summary>
+        public event EventHandler IsConnectedChanged;
+
+        /// <summary>
+        /// Raises <see cref="IsConnectedChanged"/>.
+        /// </summary>
+        protected virtual void OnIsConnectedChanged() => IsConnectedChanged?.Invoke(this, EventArgs.Empty);
 
         /// <summary>
         /// Creates a new object.
@@ -88,6 +117,10 @@ namespace Cduhub.FlightSim
                 } catch {
                 }
             }
+
+            lock(_QueueLock) {
+                _SendEventQueue.Clear();
+            }
         }
 
         /// <summary>
@@ -104,6 +137,16 @@ namespace Cduhub.FlightSim
         /// <inheritdoc/>
         public override void SendKeyToSimulator(Key key, bool pressed)
         {
+            var keyCode = key.ToSimBridgeRemoteMcduKeyName();
+            if(pressed && keyCode != "" && IsConnected) {
+                var leftRight = SelectedBufferProductId == ProductId.Captain
+                    ? "left"
+                    : "right";
+                var eventCode = $"event:{leftRight}:{keyCode}";
+                lock(_QueueLock) {
+                    _SendEventQueue.Enqueue(eventCode);
+                }
+            }
         }
 
         private async Task ConnectWebSocket(CancellationToken cancellationToken)
@@ -111,14 +154,21 @@ namespace Cduhub.FlightSim
             var uri = new Uri($"ws://{Host}:{Port}/interfaces/v1/mcdu");
             while(!cancellationToken.IsCancellationRequested) {
                 try {
+                    IsConnected = false;
                     using(var client = new ClientWebSocket()) {
                         await client.ConnectAsync(uri, cancellationToken);
                         await SendMessage(client, "requestUpdate", cancellationToken);
-                        await ReceiveLoop(client, cancellationToken);
+                        IsConnected = true;
+
+                        var sendLoop = Task.Run(() => SendLoop(client, cancellationToken));
+                        var receiveLoop = Task.Run(() => ReceiveLoop(client, cancellationToken));
+                        Task.WaitAll(sendLoop, receiveLoop);
                     }
                 } catch(HttpRequestException) {
+                    IsConnected = false;
                     await Task.Delay(5000);
                 } catch(WebSocketException) {
+                    IsConnected = false;
                     await Task.Delay(1000);
                 } catch(OperationCanceledException) {
                     break;
@@ -132,12 +182,46 @@ namespace Cduhub.FlightSim
         {
             if(!String.IsNullOrEmpty(message) && !cancellationToken.IsCancellationRequested) {
                 var utf8Buffer = Encoding.UTF8.GetBytes(message);
-                await client.SendAsync(
-                    new ArraySegment<byte>(utf8Buffer),
-                    WebSocketMessageType.Text,
-                    endOfMessage: true,
-                    cancellationToken
-                );
+
+                var gotSemaphore = false;
+                try {
+                    await _SendMessageSemaphore.WaitAsync(cancellationToken);
+                    gotSemaphore = true;
+
+                    if(!cancellationToken.IsCancellationRequested) {
+                        await client.SendAsync(
+                            new ArraySegment<byte>(utf8Buffer),
+                            WebSocketMessageType.Text,
+                            endOfMessage: true,
+                            cancellationToken
+                        );
+                    }
+                } finally {
+                    if(gotSemaphore) {
+                        _SendMessageSemaphore.Release();
+                    }
+                }
+            }
+        }
+
+        private async Task SendLoop(ClientWebSocket client, CancellationToken cancellationToken)
+        {
+            lock(_QueueLock) {
+                _SendEventQueue.Clear();
+            }
+
+            while(client.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested) {
+                string eventCode = null;
+                lock(_QueueLock) {
+                    if(_SendEventQueue.Count > 0) {
+                        eventCode = _SendEventQueue.Dequeue();
+                    }
+                }
+                if(eventCode == null) {
+                    Thread.Sleep(1);
+                } else {
+                    await SendMessage(client, eventCode, cancellationToken);
+                }
             }
         }
 

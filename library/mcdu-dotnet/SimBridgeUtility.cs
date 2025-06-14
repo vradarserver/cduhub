@@ -85,7 +85,9 @@ namespace McduDotNet
                 OverlayRow(mcdu.ScratchPad, smallRow: false, rowBuffer, RowAlign.Left, screen, bottomLine);
 
                 if(mcdu.DownArrow || mcdu.UpArrow) {
-                    var arrows = $"{(mcdu.DownArrow ? "↓" : "")}{(mcdu.UpArrow ? "↑" : "")}";
+                    // Note that the remote MCDU has these in the opposite order to the simulator MCDU
+                    // We're using the simulator order here - up then down.
+                    var arrows = $"{(mcdu.UpArrow ? "↑" : " ")}{(mcdu.DownArrow ? "↓" : " ")}";
                     OverlayRow(arrows, smallRow: false, rowBuffer, RowAlign.Right, screen, bottomLine);
                 }
             }
@@ -131,7 +133,7 @@ namespace McduDotNet
                             case "{yellow}":    SetColour(screen, Colour.Yellow, ref resetColour); break;// <-- guess
                             case "{white}":     SetColour(screen, Colour.White, ref resetColour); break;
                             case "{big}":       screen.Small = false; break;
-                            case "{inop}":      screen.Colour = Colour.Grey; break;
+                            case "{inop}":      resetColour = screen.Colour = Colour.Grey; break;
                             case "{small}":     screen.Small = true; break;
                             case "{sp}":        Put(screen, ' ', ref textLength); break;
                             case "{end}":

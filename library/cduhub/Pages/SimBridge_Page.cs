@@ -28,6 +28,15 @@ namespace Cduhub.Pages
             _SimBridgeA320.Reconnect();
         }
 
+        public override void OnKeyDown(Key key)
+        {
+            if(key != Key.Blank1) {
+                _SimBridgeA320.SendKeyToSimulator(key, pressed: true);
+            } else {
+                _SimBridgeA320.AdvanceSelectedBufferProductId();
+            }
+        }
+
         public void Reconnect() => _SimBridgeA320.Reconnect();
 
         private void SimBridgeA320_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();

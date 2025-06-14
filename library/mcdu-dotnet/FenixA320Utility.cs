@@ -151,7 +151,7 @@ namespace McduDotNet
         /// <returns></returns>
         public static string GraphQLKeyName(Key key, ProductId mcduProduct)
         {
-            var cduKey = key.ToFenixCduKeyName();
+            var cduKey = key.ToFenixEfbMcduKeyName();
             var cduNum = ProductIdToFenixMcduNumber(mcduProduct);
 
             return cduKey == ""

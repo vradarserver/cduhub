@@ -132,7 +132,7 @@ namespace McduDotNet
             return result;
         }
 
-        public static string ToFenixCduKeyName(this Key key)
+        public static string ToFenixEfbMcduKeyName(this Key key)
         {
             switch(key) {
                 case Key.LineSelectLeft1:   return "LSK1L";
@@ -209,6 +209,87 @@ namespace McduDotNet
                 case Key.Space:             return "SPACE";
                 case Key.Ovfy:              return "OVFLY";
                 case Key.Clr:               return "CLEAR";
+                default:                    return "";
+            }
+        }
+
+        public static string ToSimBridgeRemoteMcduKeyName(this Key key)
+        {
+            switch(key) {
+                case Key.LineSelectLeft1:   return "L1";
+                case Key.LineSelectLeft2:   return "L2";
+                case Key.LineSelectLeft3:   return "L3";
+                case Key.LineSelectLeft4:   return "L4";
+                case Key.LineSelectLeft5:   return "L5";
+                case Key.LineSelectLeft6:   return "L6";
+                case Key.LineSelectRight1:  return "R1";
+                case Key.LineSelectRight2:  return "R2";
+                case Key.LineSelectRight3:  return "R3";
+                case Key.LineSelectRight4:  return "R4";
+                case Key.LineSelectRight5:  return "R5";
+                case Key.LineSelectRight6:  return "R6";
+                case Key.Dir:               return "DIR";
+                case Key.Prog:              return "PROG";
+                case Key.Perf:              return "PERF";
+                case Key.Init:              return "INIT";
+                case Key.Data:              return "DATA";
+                case Key.Blank1:            return "";
+                case Key.Brt:               return "";
+                case Key.FPln:              return "FPLN";
+                case Key.RadNav:            return "RAD";
+                case Key.FuelPred:          return "FUEL";
+                case Key.SecFPln:           return "SEC";
+                case Key.AtcComm:           return "ATC";
+                case Key.McduMenu:          return "MENU";
+                case Key.Dim:               return "";
+                case Key.Airport:           return "AIRPORT";
+                case Key.Blank2:            return "";
+                case Key.LeftArrow:         return "PREVPAGE";
+                case Key.UpArrow:           return "UP";
+                case Key.RightArrow:        return "NEXTPAGE";
+                case Key.DownArrow:         return "DOWN";
+                case Key.Digit1:            return "1";
+                case Key.Digit2:            return "2";
+                case Key.Digit3:            return "3";
+                case Key.Digit4:            return "4";
+                case Key.Digit5:            return "5";
+                case Key.Digit6:            return "6";
+                case Key.Digit7:            return "7";
+                case Key.Digit8:            return "8";
+                case Key.Digit9:            return "9";
+                case Key.DecimalPoint:      return "DOT";
+                case Key.Digit0:            return "0";
+                case Key.PositiveNegative:  return "PLUSMINUS";
+                case Key.A:                 return "A";
+                case Key.B:                 return "B";
+                case Key.C:                 return "C";
+                case Key.D:                 return "D";
+                case Key.E:                 return "E";
+                case Key.F:                 return "F";
+                case Key.G:                 return "G";
+                case Key.H:                 return "H";
+                case Key.I:                 return "I";
+                case Key.J:                 return "J";
+                case Key.K:                 return "K";
+                case Key.L:                 return "L";
+                case Key.M:                 return "M";
+                case Key.N:                 return "N";
+                case Key.O:                 return "O";
+                case Key.P:                 return "P";
+                case Key.Q:                 return "Q";
+                case Key.R:                 return "R";
+                case Key.S:                 return "S";
+                case Key.T:                 return "T";
+                case Key.U:                 return "U";
+                case Key.V:                 return "V";
+                case Key.W:                 return "W";
+                case Key.X:                 return "X";
+                case Key.Y:                 return "Y";
+                case Key.Z:                 return "Z";
+                case Key.Slash:             return "DIV";
+                case Key.Space:             return "SP";
+                case Key.Ovfy:              return "OVFY";
+                case Key.Clr:               return "CLR";
                 default:                    return "";
             }
         }
