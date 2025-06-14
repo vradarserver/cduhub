@@ -32,7 +32,6 @@ namespace Cduhub.WindowsGui
 
             var mainForm = new MainForm();
             using(Hub = new()) {
-                Hub.CloseApplication += (_,_) => mainForm.Close();
                 Hub.Connect();
 
                 Application.Run(mainForm);

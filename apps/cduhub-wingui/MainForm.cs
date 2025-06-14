@@ -42,13 +42,27 @@ namespace Cduhub.WindowsGui
             base.OnLoad(e);
             if(!DesignMode) {
                 Hub.ConnectedDeviceChanged += Hub_ConnectedDeviceChanged;
+                Hub.CloseApplication += Hub_CloseApplication;
                 UpdateStateDisplay();
+            }
+        }
+
+        private void Hub_CloseApplication(object sender, EventArgs e)
+        {
+            if(InvokeRequired) {
+                BeginInvoke(new MethodInvoker(() => Hub_CloseApplication(sender, e)));
+            } else {
+                Close();
             }
         }
 
         private void Hub_ConnectedDeviceChanged(object sender, EventArgs e)
         {
-            UpdateStateDisplay();
+            if(InvokeRequired) {
+                BeginInvoke(new MethodInvoker(() => Hub_ConnectedDeviceChanged(sender, e)));
+            } else {
+                UpdateStateDisplay();
+            }
         }
     }
 }
