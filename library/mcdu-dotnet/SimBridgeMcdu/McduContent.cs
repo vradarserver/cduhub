@@ -19,15 +19,15 @@ namespace McduDotNet.SimBridgeMcdu
         public Annunciators Annunciators { get; } = new Annunciators();
 
         [DataMember]
-        public bool[] Arrows { get; } = new bool[4];
+        public bool[] Arrows { get; set; } = new bool[4];
 
-        public bool LeftArrow => Arrows[0];
+        public bool UpArrow => Arrows[0];
 
-        public bool RightArrow => Arrows[1];
+        public bool DownArrow => Arrows[1];
 
-        public bool UpArrow => Arrows[2];
+        public bool LeftArrow => Arrows[2];     // ??
 
-        public bool DownArrow => Arrows[3];
+        public bool RightArrow => Arrows[3];    // ??
 
         [DataMember]
         public double DisplayBrightness { get; set; }

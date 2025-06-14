@@ -21,6 +21,13 @@ namespace McduDotNet
     /// </summary>
     public static class SimBridgeUtility
     {
+        enum RowAlign
+        {
+            Left,
+            Right,
+            Centre,
+        }
+
         public static void ParseSimBridgeUpdateMcduToScreenAndLeds(
             McduContent mcdu,
             Screen screen,
@@ -46,64 +53,150 @@ namespace McduDotNet
             }
         }
 
-        private static Regex _LineRegex = new Regex(@"(?<sub>\{[^}]+\})|(?<txt>[^\{]+)", RegexOptions.Compiled);
+        private static readonly Regex _LineRegex = new Regex(
+            @"(?<sub>\{[a-zA-Z0-9_]*\})|(?<txt>[^{]+|\{)",
+            RegexOptions.Compiled
+        );
 
         private static void UpdateScreen(McduContent mcdu, Screen screen)
         {
+            var rowBuffer = new Row();
             if(mcdu != null && screen != null) {
                 screen.Clear();
-                screen.Small = false;
-                PutLine(0, mcdu.Title, screen);
+                OverlayRow(mcdu.Title, smallRow: false, rowBuffer, RowAlign.Centre, screen, 0);
+                OverlayRow(mcdu.TitleLeft, smallRow: false, rowBuffer, RowAlign.Left, screen, 0);
+                OverlayRow(mcdu.Page, smallRow: false, rowBuffer, RowAlign.Right, screen, 0);
+                if(mcdu.LeftArrow || mcdu.RightArrow) {
+                    var arrows = $"{(mcdu.LeftArrow ? "←" : "")}{(mcdu.RightArrow ? "→" : "")}";
+                    OverlayRow(arrows, smallRow: false, rowBuffer, RowAlign.Right, screen, 0);
+                }
 
                 for(var lineIdx = 0;lineIdx < (mcdu.Lines?.Length ?? 0);++lineIdx) {
-                    screen.Small = lineIdx % 2 == 0;
+                    var rowNumber = lineIdx + 1;
+                    var smallRow = lineIdx % 2 == 0;
                     var lines = mcdu.Lines[lineIdx];
-                    if(lines?.Length > 0) {
-                        for(var overlayIdx = 0;overlayIdx < lines.Length;++overlayIdx) {
-                            switch(overlayIdx) {
-                                case 1:
-                                    screen.ForRightToLeft();
-                                    break;
-                                default:
-                                    screen.ForLeftToRight();
-                                    break;
-                            }
-                            PutLine(1 + lineIdx, lines[overlayIdx], screen);
-                        }
+                    if(lines?.Length > 2) {
+                        OverlayRow(lines[0], smallRow, rowBuffer, RowAlign.Left, screen, rowNumber);
+                        OverlayRow(lines[1], smallRow, rowBuffer, RowAlign.Right, screen, rowNumber);
+                        OverlayRow(lines[2], smallRow, rowBuffer, RowAlign.Centre, screen, rowNumber);
                     }
                 }
 
                 screen.Small = false;
                 var bottomLine = screen.Rows.Length - 1;
-                PutLine(bottomLine, mcdu.ScratchPad, screen);
+                OverlayRow(mcdu.ScratchPad, smallRow: false, rowBuffer, RowAlign.Left, screen, bottomLine);
+
+                if(mcdu.DownArrow || mcdu.UpArrow) {
+                    var arrows = $"{(mcdu.DownArrow ? "↓" : "")}{(mcdu.UpArrow ? "↑" : "")}";
+                    OverlayRow(arrows, smallRow: false, rowBuffer, RowAlign.Right, screen, bottomLine);
+                }
             }
         }
 
-        private static void PutLine(int lineIdx, string line, Screen screen)
+        private static void OverlayRow(
+            string simBridgeLine,
+            bool smallRow,
+            Row rowBuffer,
+            RowAlign rowAlign,
+            Screen screen,
+            int rowNumber
+        )
         {
-            screen.Line = Math.Max(0, Math.Min(lineIdx, Metrics.Lines - 1));
-            screen.GotoStartOfLine();
-            screen.Colour = Colour.White;
+            screen.Line = Math.Max(0, Math.Min(rowNumber, Metrics.Lines - 1));
+            screen.CurrentRow.CopyTo(rowBuffer);
+            screen.CurrentRow.Clear();
 
-            if(!String.IsNullOrEmpty(line)) {
-                foreach(Match match in _LineRegex.Matches(line)) {
+            screen.Column = 0;
+            screen.Colour = Colour.White;
+            screen.Small = smallRow;
+
+            var textLength = 0;
+            Colour? resetColour = null;
+
+            if(!String.IsNullOrEmpty(simBridgeLine)) {
+                foreach(Match match in _LineRegex.Matches(simBridgeLine)) {
                     var sub = match.Groups["sub"];
                     var txt = match.Groups["txt"];
                     if(txt.Success) {
-                        screen.Write(txt.Value);
+                        foreach(var ch in txt.Value) {
+                            Put(screen, ch, ref textLength);
+                        }
                     } else if(sub.Success) {
                         switch(sub.Value.ToLowerInvariant()) {
-                            case "{big}":   screen.Small = false; break;
-                            case "{end}":   break;  // ??
-                            case "{green}": screen.Colour = Colour.Green; break;
-                            case "{inop}":  screen.Colour = Colour.Grey; break;
-                            case "{small}": screen.Small = true; break;
-                            case "{sp}":    screen.Put(' ', advanceColumn: true); break;
-                            case "{white}": screen.Colour = Colour.White; break;
-                            default:
+                            case "{amber}":     SetColour(screen, Colour.Amber, ref resetColour); break;
+                            case "{brown}":     SetColour(screen, Colour.Brown, ref resetColour); break; // <-- guess
+                            case "{cyan}":      SetColour(screen, Colour.Cyan, ref resetColour); break;
+                            case "{green}":     SetColour(screen, Colour.Green, ref resetColour); break;
+                            case "{khaki}":     SetColour(screen, Colour.Khaki, ref resetColour); break; // <-- guess
+                            case "{magenta}":   SetColour(screen, Colour.Magenta, ref resetColour); break;
+                            case "{red}":       SetColour(screen, Colour.Red, ref resetColour); break;   // <-- guess
+                            case "{yellow}":    SetColour(screen, Colour.Yellow, ref resetColour); break;// <-- guess
+                            case "{white}":     SetColour(screen, Colour.White, ref resetColour); break;
+                            case "{big}":       screen.Small = false; break;
+                            case "{inop}":      screen.Colour = Colour.Grey; break;
+                            case "{small}":     screen.Small = true; break;
+                            case "{sp}":        Put(screen, ' ', ref textLength); break;
+                            case "{end}":
+                                screen.Small = smallRow;
+                                screen.Colour = resetColour ?? Colour.White;
                                 break;
                         }
                     }
+                }
+            }
+
+            AlignRow(screen, rowAlign, textLength);
+            RestorePreviousContent(screen, rowBuffer);
+        }
+
+        static void Put(Screen screen, char ch, ref int textLength)
+        {
+            switch(ch) {
+                case '{':   ch = '←'; break;
+                case '}':   ch = '→'; break;
+                case '_':   ch = '☐'; break;
+                case '|':   ch = '/'; break;
+            }
+            screen.Put(ch, advanceColumn: true);
+            ++textLength;
+        }
+
+        static void SetColour(Screen screen, Colour colour, ref Colour? resetColour)
+        {
+            if(resetColour == null) {
+                resetColour = colour;
+            }
+            screen.Colour = colour;
+        }
+
+        static void AlignRow(Screen screen, RowAlign rowAlign, int textLength)
+        {
+            switch(rowAlign) {
+                case RowAlign.Left:
+                    break;
+                case RowAlign.Centre:
+                    screen.CurrentRow.ShiftRight(
+                        0,
+                        screen.Column,
+                        (Metrics.Columns - textLength) / 2
+                    );
+                    break;
+                case RowAlign.Right:
+                    screen.CurrentRow.ShiftRight(
+                        0,
+                        screen.Column,
+                        Metrics.Columns - textLength
+                    );
+                    break;
+            }
+        }
+
+        static void RestorePreviousContent(Screen screen, Row rowBuffer)
+        {
+            for(var idx = 0;idx < rowBuffer.Cells.Length;++idx) {
+                var cell = rowBuffer.Cells[idx];
+                if(cell.Character != ' ') {
+                    screen.CurrentRow.Cells[idx].CopyFrom(cell);
                 }
             }
         }

@@ -50,28 +50,6 @@ namespace McduDotNet
             }
         }
 
-        public void ScrollLeft(int columns = 1)
-        {
-            columns = Math.Max(0, Math.Min(Cells.Length, columns));
-            for(var idx = columns;idx < Cells.Length;++idx) {
-                Cells[idx - columns] = Cells[idx];
-            }
-            for(var idx = Cells.Length - columns;idx < Cells.Length;++idx) {
-                Cells[idx].Clear();
-            }
-        }
-
-        public void ScrollRight(int columns = 1)
-        {
-            columns = Math.Max(0, Math.Min(Cells.Length, columns));
-            for(var idx = Cells.Length - 1;idx >= columns;--idx) {
-                Cells[idx] = Cells[idx - columns];
-            }
-            for(var idx = 0;idx < columns;++idx) {
-                Cells[idx].Clear();
-            }
-        }
-
         public void CopyTo(Row other)
         {
             if(other == null) {
@@ -83,5 +61,19 @@ namespace McduDotNet
         }
 
         public void CopyFrom(Row other) => other?.CopyTo(this);
+
+        public void ShiftRight(int startColumn, int length, int count)
+        {
+            if(count > 0 && length > 0) {
+                for(var idx = length - 1;idx >= 0;--idx) {
+                    var fromIdx = startColumn + idx;
+                    var toIdx = fromIdx + count;
+                    Cells[fromIdx].CopyTo(Cells[toIdx]);
+                }
+                for(var idx = 0;idx < count;++idx) {
+                    Cells[startColumn + idx].Clear();
+                }
+            }
+        }
     }
 }
