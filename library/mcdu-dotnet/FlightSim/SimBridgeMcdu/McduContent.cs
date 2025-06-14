@@ -8,49 +8,46 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using McduDotNet;
+using System.Runtime.Serialization;
 
-namespace Cduhub.Pages
+namespace McduDotNet.FlightSim.SimBridgeMcdu
 {
-    class SimBridgeMenu_Page : Page
+    [DataContract]
+    public class McduContent
     {
-        private FlightSimMenu_Page _Parent;
-        private SimBridge_Page _SimBridge_Page;
+        [DataMember]
+        public Annunciators Annunciators { get; } = new Annunciators();
 
-        public SimBridgeMenu_Page(FlightSimMenu_Page parent, Hub hub) : base(hub)
-        {
-            _Parent = parent;
-            Output
-                .Green()
-                .Centred("SimBridge Menu")
-                .White()
-                .Newline()
-                .Newline()
-                .Centred("BLANK2 for hub menu")
-                .Amber()
-                .LeftLabel(6, ">Cancel")
-                .Cyan()
-                .RightLabel(5, "Reconnect")
-                .RightLabel(6, "SimBridge MCDU<");
-        }
+        [DataMember]
+        public bool[] Arrows { get; set; } = new bool[4];
 
-        public override void OnKeyDown(Key key)
-        {
-            switch(key) {
-                case Key.LineSelectLeft6:   _Hub.SelectPage(_Parent); break;
-                case Key.LineSelectRight5:  Reconnect(); break;
-                case Key.LineSelectRight6:  OpenSimBridgePage(); break;
-            }
-        }
+        public bool UpArrow => Arrows[0];
 
-        private void Reconnect() => _SimBridge_Page?.Reconnect();
+        public bool DownArrow => Arrows[1];
 
-        private void OpenSimBridgePage()
-        {
-            if(_SimBridge_Page == null) {
-                _SimBridge_Page = new SimBridge_Page(_Hub);
-            }
-            _Hub.SelectPage(_SimBridge_Page);
-        }
+        public bool LeftArrow => Arrows[2];     // ??
+
+        public bool RightArrow => Arrows[3];    // ??
+
+        [DataMember]
+        public double DisplayBrightness { get; set; }
+
+        [DataMember]
+        public double IntegralBrightness { get; set; }
+
+        [DataMember]
+        public string[][] Lines { get; set; }
+
+        [DataMember]
+        public string Page { get; set; }
+
+        [DataMember]
+        public string ScratchPad { get; set; }
+
+        [DataMember]
+        public string Title { get; set; }
+
+        [DataMember]
+        public string TitleLeft { get; set; }
     }
 }

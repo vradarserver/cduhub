@@ -12,45 +12,36 @@ using McduDotNet;
 
 namespace Cduhub.Pages
 {
-    class SimBridgeMenu_Page : Page
+    class XPlaneMenu_Page : Page
     {
         private FlightSimMenu_Page _Parent;
-        private SimBridge_Page _SimBridge_Page;
 
-        public SimBridgeMenu_Page(FlightSimMenu_Page parent, Hub hub) : base(hub)
+        public XPlaneMenu_Page(FlightSimMenu_Page parent, Hub hub) : base(hub)
         {
             _Parent = parent;
             Output
                 .Green()
-                .Centred("SimBridge Menu")
+                .Centred("X-Plane 12 Menu")
                 .White()
                 .Newline()
+                .Newline()
+                .Centred("BLANK1 to swap MCDUs")
                 .Newline()
                 .Centred("BLANK2 for hub menu")
                 .Amber()
                 .LeftLabel(6, ">Cancel")
                 .Cyan()
                 .RightLabel(5, "Reconnect")
-                .RightLabel(6, "SimBridge MCDU<");
+                .RightLabel(6, "X-Plane 12 MCDU<");
         }
 
         public override void OnKeyDown(Key key)
         {
             switch(key) {
                 case Key.LineSelectLeft6:   _Hub.SelectPage(_Parent); break;
-                case Key.LineSelectRight5:  Reconnect(); break;
-                case Key.LineSelectRight6:  OpenSimBridgePage(); break;
+//                case Key.LineSelectRight5:  Reconnect(); break;
+//                case Key.LineSelectRight6:  OpenSimBridgePage(); break;
             }
-        }
-
-        private void Reconnect() => _SimBridge_Page?.Reconnect();
-
-        private void OpenSimBridgePage()
-        {
-            if(_SimBridge_Page == null) {
-                _SimBridge_Page = new SimBridge_Page(_Hub);
-            }
-            _Hub.SelectPage(_SimBridge_Page);
         }
     }
 }

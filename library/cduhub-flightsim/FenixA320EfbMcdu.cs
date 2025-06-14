@@ -14,6 +14,7 @@ using GraphQL;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
 using McduDotNet;
+using McduDotNet.FlightSim;
 
 namespace Cduhub.FlightSim
 {
@@ -88,7 +89,7 @@ namespace Cduhub.FlightSim
         {
             var client = _GraphQLClient;
             if(client != null) {
-                var key = FenixA320Utility.GraphQLKeyName(mcduKey, SelectedBufferProductId);
+                var key = FenixA320GraphQL.GraphQLKeyName(mcduKey, SelectedBufferProductId);
                 if(key != "") {
                     var request = new GraphQLRequest() {
                         Query = $@"
@@ -99,7 +100,7 @@ namespace Cduhub.FlightSim
                                 }}
                             }}
                         ",
-                        Variables = new { keyName = $"{FenixA320Utility.GraphQLSystemSwitchesPrefix}.{key}" }
+                        Variables = new { keyName = $"{FenixA320GraphQL.GraphQLSystemSwitchesPrefix}.{key}" }
                     };
 
                     Task.Run(() => client.SendMutationAsync<object>(request));
@@ -156,24 +157,24 @@ namespace Cduhub.FlightSim
                     ",
                     Variables = new {
                         names = new[] {
-                            FenixA320Utility.GraphQLMcdu1DisplayName,
-                            FenixA320Utility.GraphQLMcdu2DisplayName,
+                            FenixA320GraphQL.GraphQLMcdu1DisplayName,
+                            FenixA320GraphQL.GraphQLMcdu2DisplayName,
 
-                            FenixA320Utility.GraphQLMcdu1LedFailName,
-                            FenixA320Utility.GraphQLMcdu1LedFmName,
-                            FenixA320Utility.GraphQLMcdu1LedFm1Name,
-                            FenixA320Utility.GraphQLMcdu1LedFm2Name,
-                            FenixA320Utility.GraphQLMcdu1LedIndName,
-                            FenixA320Utility.GraphQLMcdu1LedMcduMenuName,
-                            FenixA320Utility.GraphQLMcdu1LedRdyName,
+                            FenixA320GraphQL.GraphQLMcdu1LedFailName,
+                            FenixA320GraphQL.GraphQLMcdu1LedFmName,
+                            FenixA320GraphQL.GraphQLMcdu1LedFm1Name,
+                            FenixA320GraphQL.GraphQLMcdu1LedFm2Name,
+                            FenixA320GraphQL.GraphQLMcdu1LedIndName,
+                            FenixA320GraphQL.GraphQLMcdu1LedMcduMenuName,
+                            FenixA320GraphQL.GraphQLMcdu1LedRdyName,
 
-                            FenixA320Utility.GraphQLMcdu2LedFailName,
-                            FenixA320Utility.GraphQLMcdu2LedFmName,
-                            FenixA320Utility.GraphQLMcdu2LedFm1Name,
-                            FenixA320Utility.GraphQLMcdu2LedFm2Name,
-                            FenixA320Utility.GraphQLMcdu2LedIndName,
-                            FenixA320Utility.GraphQLMcdu2LedMcduMenuName,
-                            FenixA320Utility.GraphQLMcdu2LedRdyName,
+                            FenixA320GraphQL.GraphQLMcdu2LedFailName,
+                            FenixA320GraphQL.GraphQLMcdu2LedFmName,
+                            FenixA320GraphQL.GraphQLMcdu2LedFm1Name,
+                            FenixA320GraphQL.GraphQLMcdu2LedFm2Name,
+                            FenixA320GraphQL.GraphQLMcdu2LedIndName,
+                            FenixA320GraphQL.GraphQLMcdu2LedMcduMenuName,
+                            FenixA320GraphQL.GraphQLMcdu2LedRdyName,
                         }
                     }
                 };
@@ -193,34 +194,34 @@ namespace Cduhub.FlightSim
                 Screen updateScreen = null;
                 Leds updateLeds = null;
                 switch(name) {
-                    case FenixA320Utility.GraphQLMcdu1DisplayName:      updateScreen = PilotBuffer.Screen; break;
-                    case FenixA320Utility.GraphQLMcdu2DisplayName:      updateScreen = FirstOfficerBuffer.Screen; break;
+                    case FenixA320GraphQL.GraphQLMcdu1DisplayName:      updateScreen = PilotBuffer.Screen; break;
+                    case FenixA320GraphQL.GraphQLMcdu2DisplayName:      updateScreen = FirstOfficerBuffer.Screen; break;
 
-                    case FenixA320Utility.GraphQLMcdu1LedFailName:      updateLeds = PilotBuffer.Leds; break;
-                    case FenixA320Utility.GraphQLMcdu1LedFmName:        updateLeds = PilotBuffer.Leds; break;
-                    case FenixA320Utility.GraphQLMcdu1LedFm1Name:       updateLeds = PilotBuffer.Leds; break;
-                    case FenixA320Utility.GraphQLMcdu1LedFm2Name:       updateLeds = PilotBuffer.Leds; break;
-                    case FenixA320Utility.GraphQLMcdu1LedIndName:       updateLeds = PilotBuffer.Leds; break;
-                    case FenixA320Utility.GraphQLMcdu1LedMcduMenuName:  updateLeds = PilotBuffer.Leds; break;
-                    case FenixA320Utility.GraphQLMcdu1LedRdyName:       updateLeds = PilotBuffer.Leds; break;
+                    case FenixA320GraphQL.GraphQLMcdu1LedFailName:      updateLeds = PilotBuffer.Leds; break;
+                    case FenixA320GraphQL.GraphQLMcdu1LedFmName:        updateLeds = PilotBuffer.Leds; break;
+                    case FenixA320GraphQL.GraphQLMcdu1LedFm1Name:       updateLeds = PilotBuffer.Leds; break;
+                    case FenixA320GraphQL.GraphQLMcdu1LedFm2Name:       updateLeds = PilotBuffer.Leds; break;
+                    case FenixA320GraphQL.GraphQLMcdu1LedIndName:       updateLeds = PilotBuffer.Leds; break;
+                    case FenixA320GraphQL.GraphQLMcdu1LedMcduMenuName:  updateLeds = PilotBuffer.Leds; break;
+                    case FenixA320GraphQL.GraphQLMcdu1LedRdyName:       updateLeds = PilotBuffer.Leds; break;
 
-                    case FenixA320Utility.GraphQLMcdu2LedFailName:      updateLeds = FirstOfficerBuffer.Leds; break;
-                    case FenixA320Utility.GraphQLMcdu2LedFmName:        updateLeds = FirstOfficerBuffer.Leds; break;
-                    case FenixA320Utility.GraphQLMcdu2LedFm1Name:       updateLeds = FirstOfficerBuffer.Leds; break;
-                    case FenixA320Utility.GraphQLMcdu2LedFm2Name:       updateLeds = FirstOfficerBuffer.Leds; break;
-                    case FenixA320Utility.GraphQLMcdu2LedIndName:       updateLeds = FirstOfficerBuffer.Leds; break;
-                    case FenixA320Utility.GraphQLMcdu2LedMcduMenuName:  updateLeds = FirstOfficerBuffer.Leds; break;
-                    case FenixA320Utility.GraphQLMcdu2LedRdyName:       updateLeds = FirstOfficerBuffer.Leds; break;
+                    case FenixA320GraphQL.GraphQLMcdu2LedFailName:      updateLeds = FirstOfficerBuffer.Leds; break;
+                    case FenixA320GraphQL.GraphQLMcdu2LedFmName:        updateLeds = FirstOfficerBuffer.Leds; break;
+                    case FenixA320GraphQL.GraphQLMcdu2LedFm1Name:       updateLeds = FirstOfficerBuffer.Leds; break;
+                    case FenixA320GraphQL.GraphQLMcdu2LedFm2Name:       updateLeds = FirstOfficerBuffer.Leds; break;
+                    case FenixA320GraphQL.GraphQLMcdu2LedIndName:       updateLeds = FirstOfficerBuffer.Leds; break;
+                    case FenixA320GraphQL.GraphQLMcdu2LedMcduMenuName:  updateLeds = FirstOfficerBuffer.Leds; break;
+                    case FenixA320GraphQL.GraphQLMcdu2LedRdyName:       updateLeds = FirstOfficerBuffer.Leds; break;
                 }
 
                 if(updateScreen != null) {
-                    FenixA320Utility.ParseGraphQLMcduValueToScreen(value, updateScreen);
+                    FenixA320GraphQL.ParseGraphQLMcduValueToScreen(value, updateScreen);
                     if(updateScreen == SelectedBuffer.Screen) {
                         RefreshSelectedScreen();
                     }
                 }
                 if(updateLeds != null) {
-                    FenixA320Utility.ParseGraphQLIndicatorValueToLeds(name, value, updateLeds);
+                    FenixA320GraphQL.ParseGraphQLIndicatorValueToLeds(name, value, updateLeds);
                     if(updateLeds == SelectedBuffer.Leds) {
                         RefreshSelectedLeds();
                     }

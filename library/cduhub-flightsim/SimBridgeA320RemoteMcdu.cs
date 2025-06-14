@@ -10,24 +10,21 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using McduDotNet;
-using McduDotNet.SimBridgeMcdu;
+using McduDotNet.FlightSim;
+using McduDotNet.FlightSim.SimBridgeMcdu;
 using Newtonsoft.Json;
 
 namespace Cduhub.FlightSim
 {
-    public class SimBridgeA320RemoteMcdu : SimulatedMcdus, IDisposable
+    public class SimBridgeA320RemoteMcdu : SimulatedMcdusOverWebSocket
     {
-        private CancellationTokenSource _WebSocketCancelationTokenSource;
-        private Task _WebSocketTask;
         private readonly object _QueueLock = new object();
         private readonly Queue<string> _SendEventQueue = new Queue<string>();
-        private readonly SemaphoreSlim _SendMessageSemaphore = new SemaphoreSlim(1, 1);
 
         /// <inheritdoc/>
         public override SimulatorMcduBuffer PilotBuffer { get; } = new SimulatorMcduBuffer();
@@ -45,30 +42,8 @@ namespace Cduhub.FlightSim
         /// </summary>
         public int Port { get; set; } = 8380;
 
-        private bool _IsConnected;
-        /// <summary>
-        /// Gets a value indicating whether we're connected to SimBridge.
-        /// </summary>
-        public bool IsConnected
-        {
-            get => _IsConnected;
-            protected set {
-                if(value != IsConnected) {
-                    _IsConnected = value;
-                    OnIsConnectedChanged();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Raised when <see cref="IsConnected"/> changes value.
-        /// </summary>
-        public event EventHandler IsConnectedChanged;
-
-        /// <summary>
-        /// Raises <see cref="IsConnectedChanged"/>.
-        /// </summary>
-        protected virtual void OnIsConnectedChanged() => IsConnectedChanged?.Invoke(this, EventArgs.Empty);
+        /// <inheritdoc/>
+        protected override Uri WebSocketUri => new Uri($"ws://{Host}:{Port}/interfaces/v1/mcdu");
 
         /// <summary>
         /// Creates a new object.
@@ -79,59 +54,13 @@ namespace Cduhub.FlightSim
         {
         }
 
-        /// <summary>
-        /// Finalises the object.
-        /// </summary>
-        ~SimBridgeA320RemoteMcdu() => Dispose(false);
-
-        /// <inheritdoc/>
-        public void Dispose()
+        protected override void DisposeWebSocket()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Disposes of, or finalises, the object.
-        /// </summary>
-        /// <param name="disposing"></param>
-        protected virtual void Dispose(bool disposing)
-        {
-            if(disposing) {
-                DisposeWebSocket();
-            }
-        }
-
-        private void DisposeWebSocket()
-        {
-            var cts = _WebSocketCancelationTokenSource;
-            var backgroundTask = _WebSocketTask;
-
-            _WebSocketCancelationTokenSource = null;
-            _WebSocketTask = null;
-
-            if(cts != null) {
-                try {
-                    cts.Cancel();
-                    backgroundTask?.Wait(5000);
-                } catch {
-                }
-            }
+            base.DisposeWebSocket();
 
             lock(_QueueLock) {
                 _SendEventQueue.Clear();
             }
-        }
-
-        /// <summary>
-        /// Connects to SimBridge. If it is already connected then this drops the connection and establishes a
-        /// new one.
-        /// </summary>
-        public void Reconnect()
-        {
-            DisposeWebSocket();
-            _WebSocketCancelationTokenSource = new CancellationTokenSource();
-            _WebSocketTask = Task.Run(() => ConnectWebSocket(_WebSocketCancelationTokenSource.Token));
         }
 
         /// <inheritdoc/>
@@ -149,62 +78,12 @@ namespace Cduhub.FlightSim
             }
         }
 
-        private async Task ConnectWebSocket(CancellationToken cancellationToken)
+        protected override async Task InitialiseNewConnection(ClientWebSocket client, CancellationToken cancellationToken)
         {
-            var uri = new Uri($"ws://{Host}:{Port}/interfaces/v1/mcdu");
-            while(!cancellationToken.IsCancellationRequested) {
-                try {
-                    IsConnected = false;
-                    using(var client = new ClientWebSocket()) {
-                        await client.ConnectAsync(uri, cancellationToken);
-                        await SendMessage(client, "requestUpdate", cancellationToken);
-                        IsConnected = true;
-
-                        var sendLoop = Task.Run(() => SendLoop(client, cancellationToken));
-                        var receiveLoop = Task.Run(() => ReceiveLoop(client, cancellationToken));
-                        Task.WaitAll(sendLoop, receiveLoop);
-                    }
-                } catch(HttpRequestException) {
-                    IsConnected = false;
-                    await Task.Delay(5000);
-                } catch(WebSocketException) {
-                    IsConnected = false;
-                    await Task.Delay(1000);
-                } catch(OperationCanceledException) {
-                    break;
-                } catch {
-                    throw;
-                }
-            }
+            await SendUTF8Message(client, "requestUpdate", cancellationToken);
         }
 
-        private async Task SendMessage(ClientWebSocket client, string message, CancellationToken cancellationToken)
-        {
-            if(!String.IsNullOrEmpty(message) && !cancellationToken.IsCancellationRequested) {
-                var utf8Buffer = Encoding.UTF8.GetBytes(message);
-
-                var gotSemaphore = false;
-                try {
-                    await _SendMessageSemaphore.WaitAsync(cancellationToken);
-                    gotSemaphore = true;
-
-                    if(!cancellationToken.IsCancellationRequested) {
-                        await client.SendAsync(
-                            new ArraySegment<byte>(utf8Buffer),
-                            WebSocketMessageType.Text,
-                            endOfMessage: true,
-                            cancellationToken
-                        );
-                    }
-                } finally {
-                    if(gotSemaphore) {
-                        _SendMessageSemaphore.Release();
-                    }
-                }
-            }
-        }
-
-        private async Task SendLoop(ClientWebSocket client, CancellationToken cancellationToken)
+        protected override async Task SendLoop(ClientWebSocket client, CancellationToken cancellationToken)
         {
             lock(_QueueLock) {
                 _SendEventQueue.Clear();
@@ -220,12 +99,12 @@ namespace Cduhub.FlightSim
                 if(eventCode == null) {
                     Thread.Sleep(1);
                 } else {
-                    await SendMessage(client, eventCode, cancellationToken);
+                    await SendUTF8Message(client, eventCode, cancellationToken);
                 }
             }
         }
 
-        private async Task ReceiveLoop(ClientWebSocket client, CancellationToken cancellationToken)
+        protected override async Task ReceiveLoop(ClientWebSocket client, CancellationToken cancellationToken)
         {
             var buffer = new byte[64 * 1024];
             while(client.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested) {
@@ -252,12 +131,12 @@ namespace Cduhub.FlightSim
         {
             var json = message.Substring("update:".Length);
             var mcduDisplay = JsonConvert.DeserializeObject<McduDisplay>(json);
-            SimBridgeUtility.ParseSimBridgeUpdateMcduToScreenAndLeds(
+            SimBridgeWebSocket.ParseSimBridgeUpdateMcduToScreenAndLeds(
                 mcduDisplay.Left,
                 PilotBuffer.Screen,
                 PilotBuffer.Leds
             );
-            SimBridgeUtility.ParseSimBridgeUpdateMcduToScreenAndLeds(
+            SimBridgeWebSocket.ParseSimBridgeUpdateMcduToScreenAndLeds(
                 mcduDisplay.Right,
                 FirstOfficerBuffer.Screen,
                 FirstOfficerBuffer.Leds

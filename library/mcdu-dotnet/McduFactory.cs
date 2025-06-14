@@ -26,12 +26,16 @@ namespace McduDotNet
         /// <returns></returns>
         public static IReadOnlyList<ProductId> FindLocalMcdus()
         {
-            return DeviceList
-                .Local
-                .GetHidDevices(vendorID: UsbIdentifiers.VendorId)
-                .Where(device => UsbIdentifiers.IsMcdu(device.VendorID, device.ProductID))
-                .Select(device => UsbIdentifiers.ToLibraryProductId(device.ProductID))
-                .ToArray();
+            var result = new List<ProductId>();
+
+            var local = DeviceList.Local;
+            foreach(var hidDevice in local.GetHidDevices()) {
+                if(UsbIdentifiers.IsMcdu(hidDevice.VendorID, hidDevice.ProductID)) {
+                    result.Add(UsbIdentifiers.ToLibraryProductId(hidDevice.ProductID));
+                }
+            }
+
+            return result;
         }
 
         /// <summary>

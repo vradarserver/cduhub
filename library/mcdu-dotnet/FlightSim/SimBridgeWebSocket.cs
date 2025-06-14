@@ -10,14 +10,15 @@
 
 using System;
 using System.Text.RegularExpressions;
-using McduDotNet.SimBridgeMcdu;
+using McduDotNet.FlightSim.SimBridgeMcdu;
 
-namespace McduDotNet
+namespace McduDotNet.FlightSim
 {
     /// <summary>
-    /// Methods that help when trying to convert between the MCDU-DOTNET world and the SIMBRIDGE world.
+    /// Methods that help when trying to convert between the MCDU-DOTNET world and the world exposed by
+    /// SimBridge's WebSocket server.
     /// </summary>
-    public static class SimBridgeUtility
+    public static class SimBridgeWebSocket
     {
         enum RowAlign
         {

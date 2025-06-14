@@ -12,6 +12,7 @@ using GraphQL;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
 using McduDotNet;
+using McduDotNet.FlightSim;
 
 namespace FenixMcdu
 {
@@ -71,8 +72,8 @@ namespace FenixMcdu
                 ",
                 Variables = new {
                     names = new[] {
-                        FenixA320Utility.GraphQLMcdu1DisplayName,
-                        FenixA320Utility.GraphQLMcdu2DisplayName,
+                        FenixA320GraphQL.GraphQLMcdu1DisplayName,
+                        FenixA320GraphQL.GraphQLMcdu2DisplayName,
                     }
                 }
             };
@@ -85,17 +86,17 @@ namespace FenixMcdu
                     Screen screen = null;
                     var isVisible = false;
                     switch(name) {
-                        case FenixA320Utility.GraphQLMcdu1DisplayName:
+                        case FenixA320GraphQL.GraphQLMcdu1DisplayName:
                             screen = _CaptainScreen;
                             isVisible = _DisplayProductId == ProductId.Captain;
                             break;
-                        case FenixA320Utility.GraphQLMcdu2DisplayName:
+                        case FenixA320GraphQL.GraphQLMcdu2DisplayName:
                             screen = _FirstOfficerScreen;
                             isVisible = _DisplayProductId == ProductId.FirstOfficer;
                             break;
                     }
                     if(screen != null) {
-                        FenixA320Utility.ParseGraphQLMcduValueToScreen(
+                        FenixA320GraphQL.ParseGraphQLMcduValueToScreen(
                             dataRefs.value?.ToString(),
                             screen
                         );
@@ -131,7 +132,7 @@ namespace FenixMcdu
         {
             var client = _FenixEfbGraphQLClient;
             if(client != null) {
-                var key = FenixA320Utility.GraphQLKeyName(mcduKey, _DisplayProductId);
+                var key = FenixA320GraphQL.GraphQLKeyName(mcduKey, _DisplayProductId);
                 if(key != "") {
                     var request = new GraphQLRequest() {
                         Query = $@"
@@ -142,7 +143,7 @@ namespace FenixMcdu
                                 }}
                             }}
                         ",
-                        Variables = new { keyName = $"{FenixA320Utility.GraphQLSystemSwitchesPrefix}.{key}" }
+                        Variables = new { keyName = $"{FenixA320GraphQL.GraphQLSystemSwitchesPrefix}.{key}" }
                     };
 
                     Task.Run(() => client.SendMutationAsync<object>(request));

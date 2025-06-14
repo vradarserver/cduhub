@@ -8,46 +8,39 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.Runtime.Serialization;
+using McduDotNet;
 
-namespace McduDotNet.SimBridgeMcdu
+namespace Cduhub.Pages
 {
-    [DataContract]
-    public class McduContent
+    class FlightSimMenu_Page : Page
     {
-        [DataMember]
-        public Annunciators Annunciators { get; } = new Annunciators();
+        private FenixMenu_Page _FenixMenuPage;
+        private SimBridgeMenu_Page _SimBridgeMenuPage;
+        private XPlaneMenu_Page _XPlaneMenuPage;
 
-        [DataMember]
-        public bool[] Arrows { get; set; } = new bool[4];
+        public FlightSimMenu_Page(Hub hub) : base(hub)
+        {
+            _FenixMenuPage = new FenixMenu_Page(this, hub);
+            _SimBridgeMenuPage = new SimBridgeMenu_Page(this, hub);
+            _XPlaneMenuPage = new XPlaneMenu_Page(this, hub);
 
-        public bool UpArrow => Arrows[0];
+            Output
+                .Clear()
+                .Green()
+                .Centred("Flight Simulators")
+                .White()
+                .LeftLabel(1, ">Fenix")
+                .LeftLabel(2, ">SimBridge")
+                .RightLabel(1, "X-Plane 12<");
+        }
 
-        public bool DownArrow => Arrows[1];
-
-        public bool LeftArrow => Arrows[2];     // ??
-
-        public bool RightArrow => Arrows[3];    // ??
-
-        [DataMember]
-        public double DisplayBrightness { get; set; }
-
-        [DataMember]
-        public double IntegralBrightness { get; set; }
-
-        [DataMember]
-        public string[][] Lines { get; set; }
-
-        [DataMember]
-        public string Page { get; set; }
-
-        [DataMember]
-        public string ScratchPad { get; set; }
-
-        [DataMember]
-        public string Title { get; set; }
-
-        [DataMember]
-        public string TitleLeft { get; set; }
+        public override void OnKeyDown(Key key)
+        {
+            switch(key) {
+                case Key.LineSelectLeft1:   _Hub.SelectPage(_FenixMenuPage); break;
+                case Key.LineSelectLeft2:   _Hub.SelectPage(_SimBridgeMenuPage); break;
+                case Key.LineSelectRight1:  _Hub.SelectPage(_XPlaneMenuPage); break;
+            }
+        }
     }
 }

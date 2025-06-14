@@ -13,12 +13,13 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace McduDotNet
+namespace McduDotNet.FlightSim
 {
     /// <summary>
-    /// A set of utility methods for interacting with the Fenix Simulations A320 MCDU.
+    /// A set of utility methods for interacting with the Fenix Simulations A320 MCDU as exposed
+    /// by a GraphQL server hosted by Fenix.
     /// </summary>
-    public static class FenixA320Utility
+    public static class FenixA320GraphQL
     {
         public const string GraphQLMcdu1DisplayName =       "aircraft.mcdu1.display";
         public const string GraphQLMcdu2DisplayName =       "aircraft.mcdu2.display";

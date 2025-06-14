@@ -14,10 +14,12 @@ namespace Cduhub.Pages
 {
     class FenixMenu_Page : Page
     {
+        private FlightSimMenu_Page _Parent;
         private Fenix_Page _FenixPage;
 
-        public FenixMenu_Page(Hub hub) : base(hub)
+        public FenixMenu_Page(FlightSimMenu_Page parent, Hub hub) : base(hub)
         {
+            _Parent = parent;
             Output
                 .Green()
                 .Centred("Fenix A320 Menu")
@@ -28,15 +30,17 @@ namespace Cduhub.Pages
                 .Newline()
                 .Centred("BLANK2 for hub menu")
                 .Amber()
-                .LeftLabel(6, ">RECONNECT")
+                .LeftLabel(6, ">Cancel")
                 .Cyan()
-                .RightLabel(6, "FENIX MCDU<");
+                .RightLabel(5, "Reconnect")
+                .RightLabel(6, "Fenix MCDU<");
         }
 
         public override void OnKeyDown(Key key)
         {
             switch(key) {
-                case Key.LineSelectLeft6:   Reconnect(); break;
+                case Key.LineSelectLeft6:   _Hub.SelectPage(_Parent); break;
+                case Key.LineSelectRight5:  Reconnect(); break;
                 case Key.LineSelectRight6:  OpenFenixPage(); break;
             }
         }

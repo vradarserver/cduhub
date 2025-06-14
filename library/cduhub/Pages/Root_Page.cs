@@ -15,14 +15,12 @@ namespace Cduhub.Pages
     class Root_Page : Page
     {
         private Clock_Page _ClockPage;
-        private FenixMenu_Page _FenixMenuPage;
-        private SimBridgeMenu_Page _SimBridgeMenuPage;
+        private FlightSimMenu_Page _FlightSimsPage;
 
         public Root_Page(Hub hub) : base(hub)
         {
             _ClockPage = new Clock_Page(hub);
-            _FenixMenuPage = new FenixMenu_Page(hub);
-            _SimBridgeMenuPage = new SimBridgeMenu_Page(hub);
+            _FlightSimsPage = new FlightSimMenu_Page(hub);
 
             Output
                 .Clear()
@@ -30,8 +28,7 @@ namespace Cduhub.Pages
                 .Centred("CduHub Menu")
                 .White()
                 .LeftLabel(1, ">Clock")
-                .RightLabel(1, "Fenix A320<")
-                .RightLabel(2, "SimBridge A320<")
+                .RightLabel(1, "Flight Sims<")
                 .Red()
                 .RightLabel(6, "Quit<");
 
@@ -42,8 +39,7 @@ namespace Cduhub.Pages
         {
             switch(key) {
                 case Key.LineSelectLeft1:   _Hub.SelectPage(_ClockPage); break;
-                case Key.LineSelectRight1:  _Hub.SelectPage(_FenixMenuPage); break;
-                case Key.LineSelectRight2:  _Hub.SelectPage(_SimBridgeMenuPage); break;
+                case Key.LineSelectRight1:  _Hub.SelectPage(_FlightSimsPage); break;
                 case Key.LineSelectRight6:  _Hub.Shutdown(); break;
             }
         }
