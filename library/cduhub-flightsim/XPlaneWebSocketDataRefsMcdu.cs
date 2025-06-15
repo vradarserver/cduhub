@@ -29,9 +29,19 @@ namespace Cduhub.FlightSim
     /// </summary>
     public class XPlaneWebSocketDataRefsMcdu : SimulatedMcdusOverWebSocket
     {
+        class KeyCommand
+        {
+            public string Command;
+            public bool Pressed;
+        }
+
         private const int _McduLines = 14;      // <-- should be same as Metrics but just to ensure internal consistency...
         private Dictionary<string, DatarefInfoModel> _DatarefsByName = null;
         private Dictionary<long, DatarefInfoModel> _DatarefsById = null;
+        private Dictionary<string, CommandInfoModel> _CommandsByName = null;
+        private Dictionary<long, CommandInfoModel> _CommandsById = null;
+        private readonly object _QueueLock = new object();
+        private readonly Queue<KeyCommand> _SendCommandQueue = new Queue<KeyCommand>();
 
         private int _RequestId;
 
@@ -67,14 +77,35 @@ namespace Cduhub.FlightSim
             HttpClient = httpClient;
         }
 
+        protected override void DisposeWebSocket()
+        {
+            base.DisposeWebSocket();
+
+            lock(_QueueLock) {
+                _SendCommandQueue.Clear();
+            }
+        }
+
         /// <inheritdoc/>
         public override void SendKeyToSimulator(Key key, bool pressed)
         {
+            var keyCode = key.ToXPlaneCommand();
+            if(keyCode != "" && IsConnected) {
+                var fms = SelectedBufferProductId == ProductId.Captain
+                    ? "FMS"
+                    : "FMS2";
+                var command = $"sim/{fms}/{keyCode}";
+                lock(_QueueLock) {
+                    _SendCommandQueue.Enqueue(new KeyCommand() { Command = command, Pressed = pressed });
+                }
+            }
         }
 
         protected override async Task InitialiseNewConnection(ClientWebSocket client, CancellationToken cancellationToken)
         {
             await FetchKnownDatarefs();
+            await FetchKnownCommands();
+
             var datarefsByName = _DatarefsByName;
 
             var datarefs = new DatarefSubscribeValuesModel() {
@@ -126,6 +157,59 @@ namespace Cduhub.FlightSim
             }
             _DatarefsByName = datarefsByName;
             _DatarefsById = datarefsById;
+        }
+
+        private async Task FetchKnownCommands()
+        {
+            var commandsByName = new Dictionary<string, CommandInfoModel>();
+            var commandsById = new Dictionary<long, CommandInfoModel>();
+
+            var uri = new Uri($"http://{Host}:{Port}/api/v2/Commands");
+            var json = await HttpClient.GetStringAsync(uri);
+            var deserialised = JsonConvert.DeserializeObject<KnownCommandsModel>(json);
+            foreach(var command in deserialised.Data) {
+                if(!commandsByName.ContainsKey(command.Name)) {
+                    commandsByName.Add(command.Name, command);
+                }
+                if(!commandsById.ContainsKey(command.Id)) {
+                    commandsById.Add(command.Id, command);
+                }
+            }
+            _CommandsByName = commandsByName;
+            _CommandsById = commandsById;
+        }
+
+        protected override async Task SendLoop(ClientWebSocket client, CancellationToken cancellationToken)
+        {
+            lock(_QueueLock) {
+                _SendCommandQueue.Clear();
+            }
+
+            while(client.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested) {
+                KeyCommand command = null;
+                lock(_QueueLock) {
+                    if(_SendCommandQueue.Count > 0) {
+                        command = _SendCommandQueue.Dequeue();
+                    }
+                }
+                if(command == null) {
+                    Thread.Sleep(1);
+                } else {
+                    var knownCommands = _CommandsByName;
+                    if(knownCommands?.TryGetValue(command.Command, out var commandInfo) ?? false) {
+                        var request = new CommandsRequestModel() {
+                            RequestId = Interlocked.Increment(ref _RequestId),
+                            Type = "command_set_is_active",
+                        };
+                        request.Params.Commands.Add(new CommandActiveModel() {
+                            Id = commandInfo.Id,
+                            IsActive = command.Pressed,
+                        });
+                        var json = JsonConvert.SerializeObject(request);
+                        await SendUTF8Message(client, json, cancellationToken);
+                    }
+                }
+            }
         }
 
         protected override async Task ReceiveLoop(ClientWebSocket client, CancellationToken cancellationToken)

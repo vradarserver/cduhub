@@ -37,6 +37,13 @@ namespace Cduhub.Pages
             }
         }
 
+        public override void OnKeyUp(Key key)
+        {
+            if(key != Key.Blank1) {
+                _XPlaneMcdu.SendKeyToSimulator(key, pressed: false);
+            }
+        }
+
         public void Reconnect() => _XPlaneMcdu.Reconnect();
 
         private void XPlaneMcdu_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();

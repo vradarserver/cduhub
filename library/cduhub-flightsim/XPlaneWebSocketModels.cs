@@ -39,14 +39,38 @@ namespace Cduhub.FlightSim.XPlaneWebSocketModels
     }
 
     [DataContract]
-    public class DatarefSubscribeValuesModel
+    public class KnownCommandsModel
+    {
+        [DataMember]
+        public List<CommandInfoModel> Data { get; set; } = new List<CommandInfoModel>();
+    }
+
+    [DataContract]
+    public class CommandInfoModel
+    {
+        [DataMember]
+        public long Id { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
+
+        [DataMember]
+        public string Name { get; set; }
+    }
+
+    [DataContract]
+    public class RequestModel
     {
         [DataMember(Name = "req_id")]
         public int RequestId { get; set; }
 
         [DataMember(Name = "type")]
         public string Type { get; set; }
+    }
 
+    [DataContract]
+    public class DatarefSubscribeValuesModel : RequestModel
+    {
         [DataMember(Name = "params")]
         public SubscribeParamsModel Params { get; } = new SubscribeParamsModel();
     }
@@ -81,5 +105,32 @@ namespace Cduhub.FlightSim.XPlaneWebSocketModels
 
         [DataMember(Name = "data")]
         public Dictionary<string, dynamic> Data { get; set; } = new Dictionary<string, dynamic>();
+    }
+
+    [DataContract]
+    public class CommandsRequestModel : RequestModel
+    {
+        [DataMember(Name = "params")]
+        public CommandParametersModel Params { get; } = new CommandParametersModel();
+    }
+
+    [DataContract]
+    public class CommandParametersModel
+    {
+        [DataMember(Name = "commands")]
+        public List<CommandActiveModel> Commands { get; } = new List<CommandActiveModel>();
+    }
+
+    [DataContract]
+    public class CommandActiveModel
+    {
+        [DataMember(Name = "id", EmitDefaultValue = true)]
+        public long Id { get; set; }
+
+        [DataMember(Name = "is_active", EmitDefaultValue = true)]
+        public bool IsActive { get; set; }
+
+        [DataMember(Name = "duration", EmitDefaultValue = false)]
+        public float? Duration { get; set; }
     }
 }

@@ -293,5 +293,86 @@ namespace McduDotNet
                 default:                    return "";
             }
         }
+
+        public static string ToXPlaneCommand(this Key key)
+        {
+            switch(key) {
+                case Key.LineSelectLeft1:   return "ls_1l";
+                case Key.LineSelectLeft2:   return "ls_2l";
+                case Key.LineSelectLeft3:   return "ls_3l";
+                case Key.LineSelectLeft4:   return "ls_4l";
+                case Key.LineSelectLeft5:   return "ls_5l";
+                case Key.LineSelectLeft6:   return "ls_6l";
+                case Key.LineSelectRight1:  return "ls_1r";
+                case Key.LineSelectRight2:  return "ls_2r";
+                case Key.LineSelectRight3:  return "ls_3r";
+                case Key.LineSelectRight4:  return "ls_4r";
+                case Key.LineSelectRight5:  return "ls_5r";
+                case Key.LineSelectRight6:  return "ls_6r";
+                case Key.Dir:               return "dir_intc";
+                case Key.Prog:              return "prog";
+                case Key.Perf:              return "perf";
+                case Key.Init:              return "index";
+                case Key.Data:              return "data";
+                case Key.Blank1:            return "";
+                case Key.Brt:               return "";
+                case Key.FPln:              return "fpln";
+                case Key.RadNav:            return "navrad";
+                case Key.FuelPred:          return "fuel_pred";
+                case Key.SecFPln:           return "";          // <-- can't see anything obvious and they don't work in the XPlane-12 A330
+                case Key.AtcComm:           return "";          // <-- can't see anything obvious and they don't work in the XPlane-12 A330
+                case Key.McduMenu:          return "menu";
+                case Key.Dim:               return "";
+                case Key.Airport:           return "airport";
+                case Key.Blank2:            return "";
+                case Key.LeftArrow:         return "prev";
+                case Key.UpArrow:           return "up";
+                case Key.RightArrow:        return "next";
+                case Key.DownArrow:         return "down";
+                case Key.Digit1:            return "key_1";
+                case Key.Digit2:            return "key_2";
+                case Key.Digit3:            return "key_3";
+                case Key.Digit4:            return "key_4";
+                case Key.Digit5:            return "key_5";
+                case Key.Digit6:            return "key_6";
+                case Key.Digit7:            return "key_7";
+                case Key.Digit8:            return "key_8";
+                case Key.Digit9:            return "key_9";
+                case Key.DecimalPoint:      return "key_period";
+                case Key.Digit0:            return "key_0";
+                case Key.PositiveNegative:  return "key_minus";
+                case Key.A:                 return "key_A";
+                case Key.B:                 return "key_B";
+                case Key.C:                 return "key_C";
+                case Key.D:                 return "key_D";
+                case Key.E:                 return "key_E";
+                case Key.F:                 return "key_F";
+                case Key.G:                 return "key_G";
+                case Key.H:                 return "key_H";
+                case Key.I:                 return "key_I";
+                case Key.J:                 return "key_J";
+                case Key.K:                 return "key_K";
+                case Key.L:                 return "key_L";
+                case Key.M:                 return "key_M";
+                case Key.N:                 return "key_N";
+                case Key.O:                 return "key_O";
+                case Key.P:                 return "key_P";
+                case Key.Q:                 return "key_Q";
+                case Key.R:                 return "key_R";
+                case Key.S:                 return "key_S";
+                case Key.T:                 return "key_T";
+                case Key.U:                 return "key_U";
+                case Key.V:                 return "key_V";
+                case Key.W:                 return "key_W";
+                case Key.X:                 return "key_X";
+                case Key.Y:                 return "key_Y";
+                case Key.Z:                 return "key_Z";
+                case Key.Slash:             return "key_slash";
+                case Key.Space:             return "key_space";
+                case Key.Ovfy:              return "key_overfly";
+                case Key.Clr:               return "key_clear";
+                default:                    return "";
+            }
+        }
     }
 }
