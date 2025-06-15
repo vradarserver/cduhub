@@ -17,7 +17,7 @@ namespace McduDotNet.FlightSim.SimBridgeMcdu
     /// Utility methods that can help when translating between the X-Plane web socket world and the
     /// MCDU-DOTNET world.
     /// </summary>
-    public static class XPlaneWebSocket
+    public static class XPlaneGenericWebSocket
     {
         public static void ParseWebSocketDisplayLineIntoRow(Screen screen, string displayLine, int rowNumber)
         {

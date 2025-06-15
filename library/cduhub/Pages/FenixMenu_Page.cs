@@ -32,7 +32,7 @@ namespace Cduhub.Pages
                 .Amber()
                 .LeftLabel(6, ">Cancel")
                 .Cyan()
-                .RightLabel(5, "Reconnect")
+                .RightLabel(5, "Reconnect<")
                 .RightLabel(6, "Fenix MCDU<");
         }
 

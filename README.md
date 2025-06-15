@@ -68,9 +68,9 @@ Known issues:
 ### X-Plane 12: General Airbus
 
 This uses X-Plane's standard datarefs for MCDUs to read and control the pilot and
-first-officer MCDUs that emit standard datarefs. You can flip between the two
-MCDUs using the BLANK1 button (next to DATA) and you can jump back to the
-CduHub menu using the BLANK2 button (next to AIRPORT).
+first-officer MCDUs. You can flip between the two MCDUs using the BLANK1 button
+(next to DATA) and you can jump back to the CduHub menu using the BLANK2 button
+(next to AIRPORT).
 
 Known issues:
 

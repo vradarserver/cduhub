@@ -10,7 +10,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
@@ -18,7 +18,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Cduhub.FlightSim.XPlaneWebSocketModels;
 using McduDotNet;
-using McduDotNet.FlightSim.SimBridgeMcdu;
 using Newtonsoft.Json;
 
 namespace Cduhub.FlightSim
@@ -27,23 +26,24 @@ namespace Cduhub.FlightSim
     /// Maintains a pilot and first-officer pair of MCDU buffers for MCDU data sent from X-Plane 12+ over its web
     /// socket interface using the predefined standard MCDU data refs and commands.
     /// </summary>
-    public class XPlaneWebSocketDataRefsMcdu : SimulatedMcdusOverWebSocket
+    public abstract class XPlaneWebSocketDataRefsMcdu : SimulatedMcdusOverWebSocket
     {
-        class KeyCommand
+        protected class KeyCommand
         {
-            public string Command;
-            public bool Pressed;
+            public string Command { get; set; }
+
+            public bool Pressed { get; set; }
         }
 
-        private const int _McduLines = 14;      // <-- should be same as Metrics but just to ensure internal consistency...
-        private Dictionary<string, DatarefInfoModel> _DatarefsByName = null;
-        private Dictionary<long, DatarefInfoModel> _DatarefsById = null;
-        private Dictionary<string, CommandInfoModel> _CommandsByName = null;
-        private Dictionary<long, CommandInfoModel> _CommandsById = null;
-        private readonly object _QueueLock = new object();
-        private readonly Queue<KeyCommand> _SendCommandQueue = new Queue<KeyCommand>();
+        protected const int _McduLines = 14;      // <-- should be same as Metrics but just to ensure internal consistency...
+        protected Dictionary<string, DatarefInfoModel> _DatarefsByName = null;
+        protected Dictionary<long, DatarefInfoModel> _DatarefsById = null;
+        protected Dictionary<string, CommandInfoModel> _CommandsByName = null;
+        protected Dictionary<long, CommandInfoModel> _CommandsById = null;
+        protected readonly object _QueueLock = new object();
+        protected readonly Queue<KeyCommand> _SendCommandQueue = new Queue<KeyCommand>();
 
-        private int _RequestId;
+        protected int _RequestId;
 
         /// <inheritdoc/>
         public override SimulatorMcduBuffer PilotBuffer { get; } = new SimulatorMcduBuffer();
@@ -52,12 +52,12 @@ namespace Cduhub.FlightSim
         public override SimulatorMcduBuffer FirstOfficerBuffer { get; } = new SimulatorMcduBuffer();
 
         /// <summary>
-        /// Gets or sets the address of the machine running X-Plane 12+.
+        /// Gets or sets the address of the machine running X-Plane.
         /// </summary>
         public string Host { get; set; } = "localhost";
 
         /// <summary>
-        /// Gets or sets the port that X-Plane 12+'s WebSocket server is listening to.
+        /// Gets or sets the port that X-Plane's WebSocket server is listening to.
         /// </summary>
         public int Port { get; set; } = 8086;
 
@@ -86,60 +86,42 @@ namespace Cduhub.FlightSim
             }
         }
 
-        /// <inheritdoc/>
-        public override void SendKeyToSimulator(Key key, bool pressed)
-        {
-            var keyCode = key.ToXPlaneCommand();
-            if(keyCode != "" && IsConnected) {
-                var fms = SelectedBufferProductId == ProductId.Captain
-                    ? "FMS"
-                    : "FMS2";
-                var command = $"sim/{fms}/{keyCode}";
-                lock(_QueueLock) {
-                    _SendCommandQueue.Enqueue(new KeyCommand() { Command = command, Pressed = pressed });
-                }
-            }
-        }
-
         protected override async Task InitialiseNewConnection(ClientWebSocket client, CancellationToken cancellationToken)
         {
             await FetchKnownDatarefs();
             await FetchKnownCommands();
 
             var datarefsByName = _DatarefsByName;
+            var subscribeToDatarefNames = SubscribeToDatarefs().ToArray();
 
-            var datarefs = new DatarefSubscribeValuesModel() {
-                RequestId = Interlocked.Increment(ref _RequestId),
-                Type =      "dataref_subscribe_values",
-            };
+            if(datarefsByName != null && subscribeToDatarefNames.Length > 0) {
+                var datarefs = new DatarefSubscribeValuesModel() {
+                    RequestId = Interlocked.Increment(ref _RequestId),
+                    Type =      "dataref_subscribe_values",
+                };
 
-            bool add(string name)
-            {
-                DatarefInfoModel datarefInfo = null;
-                datarefsByName?.TryGetValue(name, out datarefInfo);
-                if(datarefInfo != null) {
+                var success = true;
+                foreach(var name in subscribeToDatarefNames) {
+                    datarefsByName.TryGetValue(name, out var datarefInfo);
+                    if(datarefInfo == null) {
+                        success = false;
+                        break;
+                    }
                     datarefs.Params.Datarefs.Add(new DatarefSubscribeModel() {
                         Id = datarefInfo.Id,
                         Name = datarefInfo.Name,
                     });
                 }
-                return datarefInfo != null;
-            }
-
-            var success = true;
-            for(var idx = 0;idx < _McduLines;++idx) {
-                success = success && add($"sim/cockpit2/radios/indicators/fms_cdu1_text_line{idx}");
-                success = success && add($"sim/cockpit2/radios/indicators/fms_cdu2_text_line{idx}");
-                success = success && add($"sim/cockpit2/radios/indicators/fms_cdu1_style_line{idx}");
-                success = success && add($"sim/cockpit2/radios/indicators/fms_cdu2_style_line{idx}");
-            }
-            if(success) {
-                var json = JsonConvert.SerializeObject(datarefs);
-                await SendUTF8Message(client, json, cancellationToken);
+                if(success) {
+                    var json = JsonConvert.SerializeObject(datarefs);
+                    await SendUTF8Message(client, json, cancellationToken);
+                }
             }
         }
 
-        private async Task FetchKnownDatarefs()
+        protected abstract IEnumerable<string> SubscribeToDatarefs();
+
+        protected virtual async Task FetchKnownDatarefs()
         {
             var datarefsByName = new Dictionary<string, DatarefInfoModel>();
             var datarefsById = new Dictionary<long, DatarefInfoModel>();
@@ -159,7 +141,7 @@ namespace Cduhub.FlightSim
             _DatarefsById = datarefsById;
         }
 
-        private async Task FetchKnownCommands()
+        protected virtual async Task FetchKnownCommands()
         {
             var commandsByName = new Dictionary<string, CommandInfoModel>();
             var commandsById = new Dictionary<long, CommandInfoModel>();
@@ -226,13 +208,13 @@ namespace Cduhub.FlightSim
             }
         }
 
-        private void ProcessMessage(string message)
+        protected virtual void ProcessMessage(string message)
         {
             if(!String.IsNullOrEmpty(message)) {
                 try {
                     var updateMessage = JsonConvert.DeserializeObject<UpdateMessageModel>(message);
                     if(updateMessage?.Type == "dataref_update_values") {
-                        ProcessUpdateMessage(updateMessage);
+                        ProcessDatarefUpdateValuesMessage(updateMessage);
                     }
                 } catch(JsonSerializationException) {
                     ;
@@ -240,7 +222,7 @@ namespace Cduhub.FlightSim
             }
         }
 
-        private void ProcessUpdateMessage(UpdateMessageModel updateMessage)
+        protected virtual void ProcessDatarefUpdateValuesMessage(UpdateMessageModel updateMessage)
         {
             var datarefsById = _DatarefsById;
             if(updateMessage.Data != null && datarefsById != null) {
@@ -248,42 +230,13 @@ namespace Cduhub.FlightSim
                     var key = kvp.Key;
                     var value = kvp.Value;
                     if(long.TryParse(key, out var id) && datarefsById.TryGetValue(id, out var dataref)) {
-                        ProcessScreenUpdate(dataref, value, "sim/cockpit2/radios/indicators/fms_cdu1_text_line", PilotBuffer.Screen, isDisplay: true);
-                        ProcessScreenUpdate(dataref, value, "sim/cockpit2/radios/indicators/fms_cdu2_text_line", FirstOfficerBuffer.Screen, isDisplay: true);
-                        ProcessScreenUpdate(dataref, value, "sim/cockpit2/radios/indicators/fms_cdu1_style_line", PilotBuffer.Screen, isDisplay: false);
-                        ProcessScreenUpdate(dataref, value, "sim/cockpit2/radios/indicators/fms_cdu2_style_line", FirstOfficerBuffer.Screen, isDisplay: false);
+                        ProcessDatarefUpdateValue(dataref, value);
                     }
                 }
                 RefreshSelectedScreen();
             }
         }
 
-        private void ProcessScreenUpdate(
-            DatarefInfoModel dataref,
-            dynamic value,
-            string prefix,
-            Screen screen,
-            bool isDisplay
-        )
-        {
-            if(dataref.Name.StartsWith(prefix)) {
-                var rowText = dataref.Name.Substring(prefix.Length);
-                if(int.TryParse(rowText, NumberStyles.None, CultureInfo.InvariantCulture, out var rowNumber)) {
-                    if(isDisplay) {
-                        XPlaneWebSocket.ParseWebSocketDisplayLineIntoRow(
-                            screen,
-                            value as string,
-                            rowNumber
-                        );
-                    } else {
-                        XPlaneWebSocket.ParseWebSocketStyleLineIntoRow(
-                            screen,
-                            value as string,
-                            rowNumber
-                        );
-                    }
-                }
-            }
-        }
+        protected abstract void ProcessDatarefUpdateValue(DatarefInfoModel dataref, dynamic value);
     }
 }

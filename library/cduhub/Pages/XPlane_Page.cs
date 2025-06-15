@@ -15,13 +15,13 @@ namespace Cduhub.Pages
 {
     class XPlane_Page : Page
     {
-        private readonly XPlaneWebSocketDataRefsMcdu _XPlaneMcdu;
+        private readonly XPlaneGenericMcdu _XPlaneMcdu;
 
         public override Key MenuKey => Key.Blank2;
 
         public XPlane_Page(Hub hub) : base(hub)
         {
-            _XPlaneMcdu = new XPlaneWebSocketDataRefsMcdu(hub.HttpClient, Screen, Leds);
+            _XPlaneMcdu = new XPlaneGenericMcdu(hub.HttpClient, Screen, Leds);
             _XPlaneMcdu.DisplayRefreshRequired += XPlaneMcdu_DisplayRefreshRequired;
             _XPlaneMcdu.LedsRefreshRequired += XPlaneMcdu_LedsRefreshRequired;
 
