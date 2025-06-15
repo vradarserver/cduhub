@@ -15,6 +15,7 @@ namespace Cduhub.Pages
     class XPlaneMenu_Page : Page
     {
         private FlightSimMenu_Page _Parent;
+        private XPlane_Page _XPlane_Page;
 
         public XPlaneMenu_Page(FlightSimMenu_Page parent, Hub hub) : base(hub)
         {
@@ -39,9 +40,19 @@ namespace Cduhub.Pages
         {
             switch(key) {
                 case Key.LineSelectLeft6:   _Hub.SelectPage(_Parent); break;
-//                case Key.LineSelectRight5:  Reconnect(); break;
-//                case Key.LineSelectRight6:  OpenSimBridgePage(); break;
+                case Key.LineSelectRight5:  Reconnect(); break;
+                case Key.LineSelectRight6:  OpenXPlanePage(); break;
             }
+        }
+
+        private void Reconnect() => _XPlane_Page?.Reconnect();
+
+        private void OpenXPlanePage()
+        {
+            if(_XPlane_Page == null) {
+                _XPlane_Page = new XPlane_Page(_Hub);
+            }
+            _Hub.SelectPage(_XPlane_Page);
         }
     }
 }
