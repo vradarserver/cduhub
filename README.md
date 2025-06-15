@@ -65,6 +65,25 @@ Known issues:
 
 
 
+### X-Plane 12: General Airbus
+
+This uses X-Plane's standard datarefs for MCDUs to read and control the pilot and
+first-officer MCDUs that emit standard datarefs. You can flip between the two
+MCDUs using the BLANK1 button (next to DATA) and you can jump back to the
+CduHub menu using the BLANK2 button (next to AIRPORT).
+
+Known issues:
+
+* ToLiSS doesn't work, it uses non-standard datarefs. It'll be done next as a
+  separate simulator.
+* SEC F-PLN and ATC-COMM don't appear to have commands for them. They don't do
+  anything in the A330 so I'm assuming they're just not present.
+* MCDU MENU doesn't do anything, I'm not sure I'm sending the right command there.
+* BRT and DIM don't do anything. I think I can get them mirroring the simulation
+  though, I'll do that later.
+* LEDs don't work. I think I just need to find the commands for those.
+
+
 ## mcdu-dotnet
 
 `cduhub` started off as a .NET Standard 2.0 library to read and write the WinWing
