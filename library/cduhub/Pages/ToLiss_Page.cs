@@ -8,43 +8,46 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using Cduhub.FlightSim;
 using McduDotNet;
 
 namespace Cduhub.Pages
 {
-    class FlightSimMenu_Page : Page
+    class ToLiss_Page : Page
     {
-        private FenixMenu_Page _FenixMenuPage;
-        private SimBridgeMenu_Page _SimBridgeMenuPage;
-        private ToLissMenu_Page _ToLissMenuPage;
-        private XPlaneMenu_Page _XPlaneMenuPage;
+        private readonly ToLissWebSocketMcdu _ToLissMcdu;
 
-        public FlightSimMenu_Page(Hub hub) : base(hub)
+        public override Key MenuKey => Key.Blank2;
+
+        public ToLiss_Page(Hub hub) : base(hub)
         {
-            _FenixMenuPage = new FenixMenu_Page(this, hub);
-            _SimBridgeMenuPage = new SimBridgeMenu_Page(this, hub);
-            _ToLissMenuPage = new ToLissMenu_Page(this, hub);
-            _XPlaneMenuPage = new XPlaneMenu_Page(this, hub);
+            _ToLissMcdu = new ToLissWebSocketMcdu(hub.HttpClient, Screen, Leds);
+            _ToLissMcdu.DisplayRefreshRequired += ToLissMcdu_DisplayRefreshRequired;
+            _ToLissMcdu.LedsRefreshRequired += ToLissMcdu_LedsRefreshRequired;
 
-            Output
-                .Clear()
-                .Green()
-                .Centred("Flight Simulators")
-                .White()
-                .LeftLabel(1, ">Fenix")
-                .LeftLabel(2, ">SimBridge")
-                .RightLabel(1, "X-Plane 12<")
-                .RightLabel(2, "ToLiss<");
+            _ToLissMcdu.Reconnect();
         }
 
         public override void OnKeyDown(Key key)
         {
-            switch(key) {
-                case Key.LineSelectLeft1:   _Hub.SelectPage(_FenixMenuPage); break;
-                case Key.LineSelectLeft2:   _Hub.SelectPage(_SimBridgeMenuPage); break;
-                case Key.LineSelectRight1:  _Hub.SelectPage(_XPlaneMenuPage); break;
-                case Key.LineSelectRight2:  _Hub.SelectPage(_ToLissMenuPage); break;
+            if(key != Key.Blank1) {
+                _ToLissMcdu.SendKeyToSimulator(key, pressed: true);
+            } else {
+                _ToLissMcdu.AdvanceSelectedBufferProductId();
             }
         }
+
+        public override void OnKeyUp(Key key)
+        {
+            if(key != Key.Blank1) {
+                _ToLissMcdu.SendKeyToSimulator(key, pressed: false);
+            }
+        }
+
+        public void Reconnect() => _ToLissMcdu.Reconnect();
+
+        private void ToLissMcdu_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
+
+        private void ToLissMcdu_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLeds();
     }
 }

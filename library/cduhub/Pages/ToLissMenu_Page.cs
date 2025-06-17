@@ -12,39 +12,47 @@ using McduDotNet;
 
 namespace Cduhub.Pages
 {
-    class FlightSimMenu_Page : Page
+    class ToLissMenu_Page : Page
     {
-        private FenixMenu_Page _FenixMenuPage;
-        private SimBridgeMenu_Page _SimBridgeMenuPage;
-        private ToLissMenu_Page _ToLissMenuPage;
-        private XPlaneMenu_Page _XPlaneMenuPage;
+        private FlightSimMenu_Page _Parent;
+        private ToLiss_Page _ToLiss_Page;
 
-        public FlightSimMenu_Page(Hub hub) : base(hub)
+        public ToLissMenu_Page(FlightSimMenu_Page parent, Hub hub) : base(hub)
         {
-            _FenixMenuPage = new FenixMenu_Page(this, hub);
-            _SimBridgeMenuPage = new SimBridgeMenu_Page(this, hub);
-            _ToLissMenuPage = new ToLissMenu_Page(this, hub);
-            _XPlaneMenuPage = new XPlaneMenu_Page(this, hub);
-
+            _Parent = parent;
             Output
-                .Clear()
                 .Green()
-                .Centred("Flight Simulators")
+                .Centred("ToLiss Menu")
                 .White()
-                .LeftLabel(1, ">Fenix")
-                .LeftLabel(2, ">SimBridge")
-                .RightLabel(1, "X-Plane 12<")
-                .RightLabel(2, "ToLiss<");
+                .Newline()
+                .Newline()
+                .Centred("BLANK1 to swap MCDUs")
+                .Newline()
+                .Centred("BLANK2 for hub menu")
+                .Amber()
+                .LeftLabel(6, ">Cancel")
+                .Cyan()
+                .RightLabel(5, "Reconnect<")
+                .RightLabel(6, "ToLiss MCDU<");
         }
 
         public override void OnKeyDown(Key key)
         {
             switch(key) {
-                case Key.LineSelectLeft1:   _Hub.SelectPage(_FenixMenuPage); break;
-                case Key.LineSelectLeft2:   _Hub.SelectPage(_SimBridgeMenuPage); break;
-                case Key.LineSelectRight1:  _Hub.SelectPage(_XPlaneMenuPage); break;
-                case Key.LineSelectRight2:  _Hub.SelectPage(_ToLissMenuPage); break;
+                case Key.LineSelectLeft6:   _Hub.SelectPage(_Parent); break;
+                case Key.LineSelectRight5:  Reconnect(); break;
+                case Key.LineSelectRight6:  OpenXPlanePage(); break;
             }
+        }
+
+        private void Reconnect() => _ToLiss_Page?.Reconnect();
+
+        private void OpenXPlanePage()
+        {
+            if(_ToLiss_Page == null) {
+                _ToLiss_Page = new ToLiss_Page(_Hub);
+            }
+            _Hub.SelectPage(_ToLiss_Page);
         }
     }
 }

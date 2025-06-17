@@ -162,11 +162,16 @@ namespace McduDotNet
             }
             Rows[Line].Cells[Column].Set(ch, Colour, Small);
             if(advanceColumn) {
-                if(!RightToLeft) {
-                    Column = Math.Min(Column + 1, Metrics.Columns - 1);
-                } else {
-                    Column = Math.Max(Column - 1, 0);
-                }
+                AdvanceColumn();
+            }
+        }
+
+        public void AdvanceColumn()
+        {
+            if(!RightToLeft) {
+                Column = Math.Min(Column + 1, Metrics.Columns - 1);
+            } else {
+                Column = Math.Max(Column - 1, 0);
             }
         }
 

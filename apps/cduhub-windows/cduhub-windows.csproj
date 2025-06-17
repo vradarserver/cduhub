@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net47</TargetFramework>
+        <OutputType>WinExe</OutputType>
+        <RootNamespace>Cduhub.WindowsGui</RootNamespace>
+        <UseWindowsForms>true</UseWindowsForms>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\library\cduhub\cduhub.csproj" />
+    </ItemGroup>
+
+</Project>

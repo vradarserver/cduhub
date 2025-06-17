@@ -8,42 +8,63 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using McduDotNet;
+using System;
+using System.Windows.Forms;
 
-namespace Cduhub.Pages
+namespace Cduhub.WindowsGui
 {
-    class FlightSimMenu_Page : Page
+    public partial class MainForm : Form
     {
-        private FenixMenu_Page _FenixMenuPage;
-        private SimBridgeMenu_Page _SimBridgeMenuPage;
-        private ToLissMenu_Page _ToLissMenuPage;
-        private XPlaneMenu_Page _XPlaneMenuPage;
+        public Hub Hub => Program.Hub;
 
-        public FlightSimMenu_Page(Hub hub) : base(hub)
+        public string StateText
         {
-            _FenixMenuPage = new FenixMenu_Page(this, hub);
-            _SimBridgeMenuPage = new SimBridgeMenu_Page(this, hub);
-            _ToLissMenuPage = new ToLissMenu_Page(this, hub);
-            _XPlaneMenuPage = new XPlaneMenu_Page(this, hub);
-
-            Output
-                .Clear()
-                .Green()
-                .Centred("Flight Simulators")
-                .White()
-                .LeftLabel(1, ">Fenix")
-                .LeftLabel(2, ">SimBridge")
-                .RightLabel(1, "X-Plane 12<")
-                .RightLabel(2, "ToLiss<");
+            get => _Label_State.Text;
+            set {
+                if(StateText != value) {
+                    _Label_State.Text = value;
+                }
+            }
         }
 
-        public override void OnKeyDown(Key key)
+        public MainForm()
         {
-            switch(key) {
-                case Key.LineSelectLeft1:   _Hub.SelectPage(_FenixMenuPage); break;
-                case Key.LineSelectLeft2:   _Hub.SelectPage(_SimBridgeMenuPage); break;
-                case Key.LineSelectRight1:  _Hub.SelectPage(_XPlaneMenuPage); break;
-                case Key.LineSelectRight2:  _Hub.SelectPage(_ToLissMenuPage); break;
+            InitializeComponent();
+        }
+
+        private void UpdateStateDisplay()
+        {
+            var device = Hub.ConnectedDevice;
+            StateText = device == null
+                ? "Not connected to an MCDU"
+                : $"Connected to a {device} MCDU";
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            if(!DesignMode) {
+                Hub.ConnectedDeviceChanged += Hub_ConnectedDeviceChanged;
+                Hub.CloseApplication += Hub_CloseApplication;
+                UpdateStateDisplay();
+            }
+        }
+
+        private void Hub_CloseApplication(object sender, EventArgs e)
+        {
+            if(InvokeRequired) {
+                BeginInvoke(new MethodInvoker(() => Hub_CloseApplication(sender, e)));
+            } else {
+                Close();
+            }
+        }
+
+        private void Hub_ConnectedDeviceChanged(object sender, EventArgs e)
+        {
+            if(InvokeRequired) {
+                BeginInvoke(new MethodInvoker(() => Hub_ConnectedDeviceChanged(sender, e)));
+            } else {
+                UpdateStateDisplay();
             }
         }
     }

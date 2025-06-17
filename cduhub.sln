@@ -49,8 +49,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{7B8613
 		images\win32.ico = images\win32.ico
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cduhub-wingui", "apps\cduhub-wingui\cduhub-wingui.csproj", "{D2709D42-9FFA-4A38-A94F-B4FF692D3735}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "installers", "installers", "{F23391C6-F0DD-4436-A60C-0B65690AE6C6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "innosetup", "innosetup", "{F32C6B7D-F01C-40BD-87DC-09ED8E5DEA77}"
@@ -58,7 +56,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "innosetup", "innosetup", "{
 		installers\innosetup\cduhub-wingui.iss = installers\innosetup\cduhub-wingui.iss
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cduhub-flightsim", "library\cduhub-flightsim\cduhub-flightsim.csproj", "{6A5771A0-1330-4A81-A47D-66CA72D11896}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cduhub-flightsim", "library\cduhub-flightsim\cduhub-flightsim.csproj", "{6A5771A0-1330-4A81-A47D-66CA72D11896}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cduhub-windows", "apps\cduhub-windows\cduhub-windows.csproj", "{74C211CE-9802-44D3-941B-9DF9E3527BB0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -98,14 +98,14 @@ Global
 		{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D2709D42-9FFA-4A38-A94F-B4FF692D3735}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D2709D42-9FFA-4A38-A94F-B4FF692D3735}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D2709D42-9FFA-4A38-A94F-B4FF692D3735}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D2709D42-9FFA-4A38-A94F-B4FF692D3735}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6A5771A0-1330-4A81-A47D-66CA72D11896}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6A5771A0-1330-4A81-A47D-66CA72D11896}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A5771A0-1330-4A81-A47D-66CA72D11896}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A5771A0-1330-4A81-A47D-66CA72D11896}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74C211CE-9802-44D3-941B-9DF9E3527BB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74C211CE-9802-44D3-941B-9DF9E3527BB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74C211CE-9802-44D3-941B-9DF9E3527BB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74C211CE-9802-44D3-941B-9DF9E3527BB0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -121,9 +121,9 @@ Global
 		{784F0E13-DEAF-49A4-AAC4-F8C927A899C6} = {C87A2F17-2182-479D-ABB2-010194C7C681}
 		{367E7522-0295-4206-887D-EE8C3D3ABE48} = {7612F6B1-A4A7-431C-8688-167145D1D5F8}
 		{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5} = {8110F87C-2A2E-484C-B35D-FD9CC36E8167}
-		{D2709D42-9FFA-4A38-A94F-B4FF692D3735} = {8110F87C-2A2E-484C-B35D-FD9CC36E8167}
 		{F32C6B7D-F01C-40BD-87DC-09ED8E5DEA77} = {F23391C6-F0DD-4436-A60C-0B65690AE6C6}
 		{6A5771A0-1330-4A81-A47D-66CA72D11896} = {7612F6B1-A4A7-431C-8688-167145D1D5F8}
+		{74C211CE-9802-44D3-941B-9DF9E3527BB0} = {8110F87C-2A2E-484C-B35D-FD9CC36E8167}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C977F7C9-07B7-4BB4-A182-FDE6F96F171A}

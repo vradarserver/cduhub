@@ -233,10 +233,15 @@ namespace Cduhub.FlightSim
                         ProcessDatarefUpdateValue(dataref, value);
                     }
                 }
+                FinishedProcessingDatarefUpdate();
                 RefreshSelectedScreen();
             }
         }
 
         protected abstract void ProcessDatarefUpdateValue(DatarefInfoModel dataref, dynamic value);
+
+        protected virtual void FinishedProcessingDatarefUpdate()
+        {
+        }
     }
 }
