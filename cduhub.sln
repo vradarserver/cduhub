@@ -53,12 +53,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "installers", "installers", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "innosetup", "innosetup", "{F32C6B7D-F01C-40BD-87DC-09ED8E5DEA77}"
 	ProjectSection(SolutionItems) = preProject
-		installers\innosetup\cduhub-wingui.iss = installers\innosetup\cduhub-wingui.iss
+		installers\innosetup\cduhub-windows.iss = installers\innosetup\cduhub-windows.iss
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cduhub-flightsim", "library\cduhub-flightsim\cduhub-flightsim.csproj", "{6A5771A0-1330-4A81-A47D-66CA72D11896}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cduhub-windows", "apps\cduhub-windows\cduhub-windows.csproj", "{74C211CE-9802-44D3-941B-9DF9E3527BB0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cduhub-windows", "apps\cduhub-windows\cduhub-windows.csproj", "{74C211CE-9802-44D3-941B-9DF9E3527BB0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

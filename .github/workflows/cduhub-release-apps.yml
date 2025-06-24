@@ -20,17 +20,20 @@ jobs:
         with:
           dotnet-version: '8.x'
 
-      - name: Publish cduhub-wingui
-        run: dotnet publish apps\cduhub-wingui\cduhub-wingui.csproj --configuration Release --output ${{ env.PUBLISH_DIR }}\cduhub-wingui
+      - name: Restore NuGet packages
+        run: dotnet restore cduhub.sln
 
-      - name: Build cduhub-wingui installer
-        run: iscc.exe /DVERSION=${{ github.ref_name }} installers\innosetup\cduhub-wingui.iss
+      - name: Publish cduhub-windows
+        run: msbuild apps\cduhub-windows\cduhub-windows.csproj /p:Configuration=Release /p:PublishDir=..\..\${{ env.PUBLISH_DIR }}\cduhub-windows /t:Publish
 
-      - name: Upload cduhub-wingui installer
+      - name: Build cduhub-windows installer
+        run: iscc.exe /DVERSION=${{ github.ref_name }} installers\innosetup\cduhub-windows.iss
+
+      - name: Upload cduhub-windows installer
         uses: actions/upload-artifact@v4
         with:
-          name: cduhub-wingui-${{ github.ref_name }}.exe
-          path: installers\innosetup\Output\cduhub-wingui-${{ github.ref_name }}.exe
+          name: cduhub-windows-${{ github.ref_name }}.exe
+          path: installers\innosetup\Output\cduhub-windows-${{ github.ref_name }}.exe
 
   release:
     runs-on: ubuntu-latest
@@ -38,10 +41,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download cduhub-wingui installer
+      - name: Download cduhub-windows installer
         uses: actions/download-artifact@v4
         with:
-          name: cduhub-wingui-${{ github.ref_name }}.exe
+          name: cduhub-windows-${{ github.ref_name }}.exe
           path: .
 
       - name: Get previous version tag
@@ -80,4 +83,4 @@ jobs:
           draft: true
           prerelease: ${{ env.PRERELEASE }}
           files: |
-            cduhub-wingui-${{ github.ref_name }}.exe
+            cduhub-windows-${{ github.ref_name }}.exe
