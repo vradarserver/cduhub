@@ -13,13 +13,19 @@ jobs:
     env:
       PUBLISH_DIR: publish
     steps:
-      - uses: actions/checkout@v4
+      - name: Setup msbuild
+        uses: microsoft/setup-msbuild@v1
+        with:
+           vs-version: '17.0'   # VS2022
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.x'
 
+      - name: Checkout source
+        uses: actions/checkout@v4
+  
       - name: Restore NuGet packages
         run: dotnet restore cduhub.sln
 
