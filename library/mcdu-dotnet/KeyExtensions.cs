@@ -374,5 +374,91 @@ namespace McduDotNet
                 default:                    return "";
             }
         }
+
+        public static string ToToLissCommand(this Key key, int mcduNumber)
+        {
+            var suffix = "";
+            switch(key) {
+                case Key.LineSelectLeft1:   suffix = "LSK1L"; break;
+                case Key.LineSelectLeft2:   suffix = "LSK2L"; break;
+                case Key.LineSelectLeft3:   suffix = "LSK3L"; break;
+                case Key.LineSelectLeft4:   suffix = "LSK4L"; break;
+                case Key.LineSelectLeft5:   suffix = "LSK5L"; break;
+                case Key.LineSelectLeft6:   suffix = "LSK6L"; break;
+                case Key.LineSelectRight1:  suffix = "LSK1R"; break;
+                case Key.LineSelectRight2:  suffix = "LSK2R"; break;
+                case Key.LineSelectRight3:  suffix = "LSK3R"; break;
+                case Key.LineSelectRight4:  suffix = "LSK4R"; break;
+                case Key.LineSelectRight5:  suffix = "LSK5R"; break;
+                case Key.LineSelectRight6:  suffix = "LSK6R"; break;
+                case Key.Dir:               suffix = "DirTo"; break;
+                case Key.Prog:              suffix = "Prog"; break;
+                case Key.Perf:              suffix = "Perf"; break;
+                case Key.Init:              suffix = "Init"; break;
+                case Key.Data:              suffix = "Data"; break;
+                case Key.Blank1:            break;
+                case Key.Brt:               suffix = "KeyBright"; break;
+                case Key.FPln:              suffix = "Fpln"; break;
+                case Key.RadNav:            suffix = "RadNav"; break;
+                case Key.FuelPred:          suffix = "FuelPred"; break;
+                case Key.SecFPln:           suffix = "SecFpln"; break;
+                case Key.AtcComm:           suffix = "ATC"; break;
+                case Key.McduMenu:          suffix = "Menu"; break;
+                case Key.Dim:               suffix = "KeyDim"; break;
+                case Key.Airport:           suffix = "Airport"; break;
+                case Key.Blank2:            break;
+                case Key.LeftArrow:         suffix = "SlewLeft"; break;
+                case Key.UpArrow:           suffix = "SlewUp"; break;
+                case Key.RightArrow:        suffix = "SlewRight"; break;
+                case Key.DownArrow:         suffix = "SlewDown"; break;
+                case Key.Digit1:            suffix = "Key1"; break;
+                case Key.Digit2:            suffix = "Key2"; break;
+                case Key.Digit3:            suffix = "Key3"; break;
+                case Key.Digit4:            suffix = "Key4"; break;
+                case Key.Digit5:            suffix = "Key5"; break;
+                case Key.Digit6:            suffix = "Key6"; break;
+                case Key.Digit7:            suffix = "Key7"; break;
+                case Key.Digit8:            suffix = "Key8"; break;
+                case Key.Digit9:            suffix = "Key9"; break;
+                case Key.DecimalPoint:      suffix = "KeyDecimal"; break;
+                case Key.Digit0:            suffix = "Key0"; break;
+                case Key.PositiveNegative:  suffix = "KeyPM"; break;
+                case Key.A:                 suffix = "KeyA"; break;
+                case Key.B:                 suffix = "KeyB"; break;
+                case Key.C:                 suffix = "KeyC"; break;
+                case Key.D:                 suffix = "KeyD"; break;
+                case Key.E:                 suffix = "KeyE"; break;
+                case Key.F:                 suffix = "KeyF"; break;
+                case Key.G:                 suffix = "KeyG"; break;
+                case Key.H:                 suffix = "KeyH"; break;
+                case Key.I:                 suffix = "KeyI"; break;
+                case Key.J:                 suffix = "KeyJ"; break;
+                case Key.K:                 suffix = "KeyK"; break;
+                case Key.L:                 suffix = "KeyL"; break;
+                case Key.M:                 suffix = "KeyM"; break;
+                case Key.N:                 suffix = "KeyN"; break;
+                case Key.O:                 suffix = "KeyO"; break;
+                case Key.P:                 suffix = "KeyP"; break;
+                case Key.Q:                 suffix = "KeyQ"; break;
+                case Key.R:                 suffix = "KeyR"; break;
+                case Key.S:                 suffix = "KeyS"; break;
+                case Key.T:                 suffix = "KeyT"; break;
+                case Key.U:                 suffix = "KeyU"; break;
+                case Key.V:                 suffix = "KeyV"; break;
+                case Key.W:                 suffix = "KeyW"; break;
+                case Key.X:                 suffix = "KeyX"; break;
+                case Key.Y:                 suffix = "KeyY"; break;
+                case Key.Z:                 suffix = "KeyZ"; break;
+                case Key.Slash:             suffix = "KeySlash"; break;
+                case Key.Space:             suffix = "KeySpace"; break;
+                case Key.Ovfy:              suffix = "KeyOverfly"; break;
+                case Key.Clr:               suffix = "KeyClear"; break;
+                default:                    suffix = ""; break;
+            }
+
+            return suffix == ""
+                ? ""
+                : $"MCDU{mcduNumber}{suffix}";
+        }
     }
 }
