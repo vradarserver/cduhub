@@ -1,4 +1,4 @@
-# CDUHUB
+# CDU HUB
 
 [WinWing](https://uk.winwingsim.com/view/) sell a replica of the Airbus MCDU
 panel. It plugs in over USB, it has a 24 x 14 alphanumeric colour display,
@@ -29,10 +29,10 @@ This includes Windows, most major Linux distros and macOS.
 
 ### MSFS2020 / 2024: Fenix A320
 
-CduHub uses the Fenix browser EFB's MCDU page to read and control the MCDU
+CDU Hub uses the Fenix browser EFB's MCDU page to read and control the MCDU
 display for both the captain and first officer. You can flip between the two
 MCDUs using the BLANK1 button (next to DATA) and you can jump back to the
-CduHub menu using the BLANK2 button (next to AIRPORT).
+CDU Hub menu using the BLANK2 button (next to AIRPORT).
 
 Known issues:
 
@@ -49,7 +49,7 @@ MCDU. When FlyByWire add support for separate pilot and first officer MCDUs
 the program should be able to read and control them separately, and switch
 between them using the BLANK1 button (next to DATA).
 
-You can jump back to the CduHub menu using the BLANK2 button (next to AIRPORT).
+You can jump back to the CDU Hub menu using the BLANK2 button (next to AIRPORT).
 
 Known issues:
 
@@ -69,19 +69,38 @@ Known issues:
 
 This uses X-Plane's standard datarefs for MCDUs to read and control the pilot and
 first-officer MCDUs. You can flip between the two MCDUs using the BLANK1 button
-(next to DATA) and you can jump back to the CduHub menu using the BLANK2 button
+(next to DATA) and you can jump back to the CDU Hub menu using the BLANK2 button
 (next to AIRPORT).
 
 Known issues:
 
-* ToLiSS doesn't work, it uses non-standard datarefs. It'll be done next as a
-  separate simulator.
 * SEC F-PLN and ATC-COMM don't appear to have commands for them. They don't do
   anything in the A330 so I'm assuming they're just not present.
 * MCDU MENU doesn't do anything, I'm not sure I'm sending the right command there.
 * BRT and DIM don't do anything. I think I can get them mirroring the simulation
   though, I'll do that later.
 * LEDs don't work. I think I just need to find the commands for those.
+* No X-Plane 11 support. I need to implement UDP support to get that working. I
+  also don't have a copy of X-Plane 11 to test with.
+
+
+
+### X-Plane 12: ToLiss
+
+This uses ToLiss's custom datarefs to read and control the pilot and first-officer
+MCDUs. You can flip between the two MCDUs using the BLANK1 button (next to DATA)
+and you can jump back to the CDU Hub menu using the BLANK2 button (next to
+AIRPORT).
+
+Known issues:
+
+* LEDs don't work. I've not actually seen them light up in the simulator yet so
+  I'm not sure whether ToLiss simulate them.
+* X-Plane 12 only. I need to switch away from the web socket implementation to a
+  UDP implementation to get support working for earlier versions.
+* Keeps disconnecting. If I am to keep the web socket implementation then it needs
+  to be made more robust.
+
 
 
 ## mcdu-dotnet
