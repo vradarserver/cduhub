@@ -5,7 +5,12 @@
         <OutputType>WinExe</OutputType>
         <RootNamespace>Cduhub.WindowsGui</RootNamespace>
         <UseWindowsForms>true</UseWindowsForms>
+        <ApplicationIcon>app.ico</ApplicationIcon>
     </PropertyGroup>
+
+    <ItemGroup>
+      <Content Include="app.ico" />
+    </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\library\cduhub\cduhub.csproj" />

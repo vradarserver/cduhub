@@ -12,6 +12,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -20,6 +22,7 @@ namespace Cduhub.WindowsGui
 {
     public static class Program
     {
+        private const string _SingleInstanceMutexName = @"Global\CduHub-SGEZ8Z2CM8UA";
         public static Hub Hub;
 
         /// <summary>
@@ -31,12 +34,41 @@ namespace Cduhub.WindowsGui
             Application.ThreadException += new System.Threading.ThreadExceptionEventHandler(Application_ThreadException);
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
 
-            var mainForm = new MainForm();
-            using(Hub = new Hub()) {
-                Hub.Connect();
-
-                Application.Run(mainForm);
+            var singleInstanceMutex = CreateSingleInstanceMutex(out var mutexAcquired);
+            if(!mutexAcquired) {
+                MessageBox.Show("Only one instance of CduHub can run at a time", "Already Running");
+            } else {
+                try {
+                    var mainForm = new MainForm();
+                    using(Hub = new Hub()) {
+                        Hub.Connect();
+                        Application.Run(mainForm);
+                    }
+                } finally {
+                    singleInstanceMutex.ReleaseMutex();
+                    singleInstanceMutex.Dispose();
+                }
             }
+        }
+
+        private static Mutex CreateSingleInstanceMutex(out bool acquired)
+        {
+            var allowEveryoneRule = new MutexAccessRule(
+                new SecurityIdentifier(WellKnownSidType.WorldSid, null),
+                MutexRights.FullControl,
+                AccessControlType.Allow
+            );
+            var securitySettings = new MutexSecurity();
+            securitySettings.AddAccessRule(allowEveryoneRule);
+
+            var result = new Mutex(false, _SingleInstanceMutexName, out var _, securitySettings);
+            try {
+                acquired = result.WaitOne(1000, false);
+            } catch(AbandonedMutexException) {
+                acquired = true;
+            }
+
+            return result;
         }
 
         /// <summary>
