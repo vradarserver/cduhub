@@ -106,6 +106,7 @@ namespace Cduhub
                     if(_Mcdu != null) {
                         _Mcdu.KeyDown += Mcdu_KeyDown;
                         _Mcdu.KeyUp += Mcdu_KeyUp;
+                        _Mcdu.Disconnected += Mcdu_Disconnected;
                         _RootPage = new Pages.Root_Page(this);
                         SelectPage(_RootPage);
                         OnConnectedDeviceChanged();
@@ -149,13 +150,15 @@ namespace Cduhub
         {
             if(page != _SelectedPage) {
                 _SelectedPage?.OnSelected(false);
-                page.OnPrepareScreen();
+                page?.OnPrepareScreen();
                 _SelectedPage = page;
 
-                RefreshDisplay(page);
-                RefreshLeds(page);
+                if(page != null) {
+                    RefreshDisplay(page);
+                    RefreshLeds(page);
 
-                _SelectedPage.OnSelected(true);
+                    _SelectedPage.OnSelected(true);
+                }
             }
         }
 
@@ -176,6 +179,11 @@ namespace Cduhub
         }
 
         public void Shutdown() => OnCloseApplication();
+
+        private void Mcdu_Disconnected(object sender, EventArgs e)
+        {
+            Disconnect();
+        }
 
         private void Mcdu_KeyDown(object sender, McduDotNet.KeyEventArgs e)
         {

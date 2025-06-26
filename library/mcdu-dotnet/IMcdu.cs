@@ -48,6 +48,11 @@ namespace McduDotNet
         event EventHandler<KeyEventArgs> KeyUp;
 
         /// <summary>
+        /// Raised when the MCDU has been disconnected.
+        /// </summary>
+        event EventHandler Disconnected;
+
+        /// <summary>
         /// Copies the content of <see cref="Screen"/> to the display.
         /// </summary>
         /// <param name="skipDuplicateCheck">

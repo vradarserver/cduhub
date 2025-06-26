@@ -9,6 +9,8 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -77,6 +79,16 @@ namespace McduDotNet
         }
 
         /// <summary>
+        /// Raised when a disconnection of the MCDU is detected.
+        /// </summary>
+        public event EventHandler Disconnected;
+
+        /// <summary>
+        /// Raises <see cref="Disconnected"/>.
+        /// </summary>
+        protected virtual void OnDisconnected() => Disconnected?.Invoke(this, EventArgs.Empty);
+
+        /// <summary>
         /// Creates a new object.
         /// </summary>
         /// <param name="hidDevice"></param>
@@ -88,6 +100,7 @@ namespace McduDotNet
             Leds = new Leds();
             Screen = new Screen();
             Output = new Compositor(Screen);
+            HidSharp.DeviceList.Local.Changed += HidSharpDeviceList_Changed;
         }
 
         /// <inheritdoc/>
@@ -106,6 +119,8 @@ namespace McduDotNet
         protected virtual void Dispose(bool disposing)
         {
             if(disposing) {
+                HidSharp.DeviceList.Local.Changed -= HidSharpDeviceList_Changed;
+
                 _InputLoopCancellationTokenSource?.Cancel();
                 _InputLoopTask?.Wait(5000);
                 _InputLoopTask = null;
@@ -309,7 +324,12 @@ namespace McduDotNet
         {
             lock(_OutputLock) {
                 var stream = _HidStream;
-                stream?.Write(bytes);
+                try {
+                    stream?.Write(bytes);
+                } catch(IOException) {
+                    // This can happen when the device is disconnected mid-write
+                    ;
+                }
             }
         }
 
@@ -318,20 +338,33 @@ namespace McduDotNet
             var readBuffer = new byte[InputReport01.PacketLength];
 
             while(!cancellationToken.IsCancellationRequested) {
-                var stream = _HidStream;
-                if(stream?.CanRead ?? false) {
-                    ClearHidStreamBuffer(stream);
-                    stream.ReadTimeout = 1000;
-                    try {
-                        var bytesRead = stream.Read(readBuffer, 0, readBuffer.Length);
-                        if (bytesRead > 0) {
-                            if(readBuffer[0] == 1 && bytesRead >= InputReport01.PacketLength) {
-                                ProcessInputReport1(readBuffer, bytesRead);
+                try {
+                    var stream = _HidStream;
+                    if(stream?.CanRead ?? false) {
+                        ClearHidStreamBuffer(stream);
+                        stream.ReadTimeout = 1000;
+                        try {
+                            var bytesRead = stream.Read(readBuffer, 0, readBuffer.Length);
+                            if (bytesRead > 0) {
+                                if(readBuffer[0] == 1 && bytesRead >= InputReport01.PacketLength) {
+                                    ProcessInputReport1(readBuffer, bytesRead);
+                                }
                             }
+                        } catch(TimeoutException) {
+                            // ugh
                         }
-                    } catch(TimeoutException) {
-                        // ugh
                     }
+                } catch(IOException) {
+                    // These will happen when the device is disconnected. Under Windows we can look for the Win32
+                    // exception and tell for sure, but that won't fly on other platforms. For now I'm going to
+                    // assume that any IO exception during the input loop is indicative of the device being
+                    // disconnected.
+                    //
+                    // There is a strong argument for raising the disconnected event here. However, we're also
+                    // listening to HidSharp's device change event and raising from there, so we risk a reentrant
+                    // raise if we do. Also if the event handler disposes of this MCDU on a disconnect then the
+                    // dispose will block waiting for us to finish, but we would be blocking waiting on the event
+                    // handler... the wait would timeout eventually but it wouldn't be very nice.
                 }
                 Thread.Sleep(1);
             }
@@ -375,6 +408,18 @@ namespace McduDotNet
                 }
                 _InputReport01_Previous.CopyFrom(_InputReport01_Current);
                 _PreviousInputReport01Digest = digest;
+            }
+        }
+
+        private void HidSharpDeviceList_Changed(object sender, DeviceListChangedEventArgs e)
+        {
+            var mcduPresent = HidSharp
+                .DeviceList
+                .Local
+                .GetHidDevices()
+                .Any(device => device.DevicePath == _HidDevice.DevicePath);
+            if(!mcduPresent) {
+                OnDisconnected();
             }
         }
     }
