@@ -4,7 +4,7 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <RootNamespace>Cduhub.FlightSim</RootNamespace>
         <Authors>Andrew Whewell</Authors>
-        <Description>Flight simulator interactions for cduhub.</Description>
+        <Description>Flight simulator interactions for CDU Hub.</Description>
         <Copyright>Copyright © 2025 onwards, Andrew Whewell</Copyright>
         <PackageProjectUrl>https://github.com/vradarserver/cduhub</PackageProjectUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>

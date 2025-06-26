@@ -25,7 +25,7 @@ namespace Cduhub.Pages
             Output
                 .Clear()
                 .Green()
-                .Centred("CduHub Menu")
+                .Centred("CDU Hub Menu")
                 .White()
                 .LeftLabel(1, ">Clock")
                 .RightLabel(1, "Flight Sims<")

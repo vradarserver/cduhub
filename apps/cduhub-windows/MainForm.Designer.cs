@@ -64,7 +64,7 @@ namespace Cduhub.WindowsGui
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "MainForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "CduHub";
+            Text = "CDU Hub";
             WindowState = FormWindowState.Minimized;
             ResumeLayout(false);
             PerformLayout();

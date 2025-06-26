@@ -105,7 +105,7 @@ Known issues:
 
 ## mcdu-dotnet
 
-`cduhub` started off as a .NET Standard 2.0 library to read and write the WinWing
+CDU Hub started off as a .NET Standard 2.0 library to read and write the WinWing
 MCDU as a standalone display and keyboard. That library is `mcdu-dotnet` and it's
 in the `library` folder. The README for it
 [is here](library/mcdu-dotnet/README.md).

@@ -36,7 +36,7 @@ namespace Cduhub.WindowsGui
 
             var singleInstanceMutex = CreateSingleInstanceMutex(out var mutexAcquired);
             if(!mutexAcquired) {
-                MessageBox.Show("Only one instance of CduHub can run at a time", "Already Running");
+                MessageBox.Show("Only one instance of CDU Hub can run at a time", "Already Running");
             } else {
                 try {
                     var mainForm = new MainForm();
