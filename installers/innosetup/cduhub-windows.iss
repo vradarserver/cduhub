@@ -8,7 +8,7 @@
 AppName=CDU Hub
 AppVerName=CDU Hub {#VERSION}
 DefaultDirName={autopf}\cduhub
-DefaultGroupName=CduHub
+DefaultGroupName=CDU Hub
 DisableDirPage=no
 LicenseFile={#Root}\LICENSE
 ArchitecturesInstallIn64BitMode=x64
