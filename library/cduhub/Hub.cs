@@ -10,52 +10,109 @@
 
 using System;
 using System.Net.Http;
+using System.Threading;
 using McduDotNet;
 
 namespace Cduhub
 {
+    /// <summary>
+    /// The root hub object.
+    /// </summary>
     public class Hub : IDisposable
     {
         private IMcdu _Mcdu;
         private Page _SelectedPage;
         private Page _RootPage;
+        private int _ConnectingCount;
+        private System.Timers.Timer _ReconnectTimer;
+        private bool _WaitingForConnect = true;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the hub should perpetually try to reconnect to the MCDU if
+        /// connection is either never acquired or lost after acquisition. Defaults to true.
+        /// </summary>
+        public bool AutoReconnect { get; set; } = true;
+
+        /// <summary>
+        /// The connected device or null if no device is connected.
+        /// </summary>
         public ProductId? ConnectedDevice => _Mcdu?.ProductId;
 
+        /// <summary>
+        /// The HttpClient for pages to use.
+        /// </summary>
         public HttpClient HttpClient { get; } = new HttpClient();
 
+        /// <summary>
+        /// Raised when the hub wants the parent application to close.
+        /// </summary>
         public event EventHandler CloseApplication;
 
+        /// <summary>
+        /// Raises <see cref="CloseApplication"/>.
+        /// </summary>
         protected virtual void OnCloseApplication()
         {
             CloseApplication?.Invoke(this, EventArgs. Empty);
         }
 
+        /// <summary>
+        /// Raised when <see cref="ConnectedDevice"/> changes.
+        /// </summary>
         public event EventHandler ConnectedDeviceChanged;
 
+        /// <summary>
+        /// Raises <see cref="ConnectedDeviceChanged"/>.
+        /// </summary>
         protected virtual void OnConnectedDeviceChanged()
         {
             ConnectedDeviceChanged?.Invoke(this, EventArgs.Empty);
         }
 
+        /// <summary>
+        /// Creates a new object.
+        /// </summary>
+        public Hub()
+        {
+            _ReconnectTimer = new System.Timers.Timer() {
+                AutoReset = false,
+                Interval = 1000,
+            };
+            _ReconnectTimer.Elapsed += ReconnectTimer_Elapsed;
+            _ReconnectTimer.Start();
+        }
+
+        /// <inheritdoc/>
         public void Dispose()
         {
+            AutoReconnect = false;
+
+            var timer = _ReconnectTimer;
+            _ReconnectTimer = null;
+            timer.Dispose();
+
             _Mcdu?.Cleanup();
             _Mcdu?.Dispose();
             _Mcdu = null;
+
             GC.SuppressFinalize(this);
         }
 
         public void Connect()
         {
-            if(_Mcdu == null) {
-                _Mcdu = McduFactory.ConnectLocal();
-                if(_Mcdu != null) {
-                    _Mcdu.KeyDown += Mcdu_KeyDown;
-                    _Mcdu.KeyUp += Mcdu_KeyUp;
-                    _RootPage = new Pages.Root_Page(this);
-                    SelectPage(_RootPage);
-                    OnConnectedDeviceChanged();
+            if(_Mcdu == null && Interlocked.Exchange(ref _ConnectingCount, 1) == 0) {
+                try {
+                    _Mcdu = McduFactory.ConnectLocal();
+                    if(_Mcdu != null) {
+                        _Mcdu.KeyDown += Mcdu_KeyDown;
+                        _Mcdu.KeyUp += Mcdu_KeyUp;
+                        _RootPage = new Pages.Root_Page(this);
+                        SelectPage(_RootPage);
+                        OnConnectedDeviceChanged();
+                    }
+                } finally {
+                    Interlocked.Exchange(ref _ConnectingCount, 0);
+                    _WaitingForConnect = false;
                 }
             }
         }
@@ -79,6 +136,13 @@ namespace Cduhub
         {
             Disconnect();
             Connect();
+        }
+
+        private void PerformAutoReconnect()
+        {
+            if(AutoReconnect && !_WaitingForConnect) {
+                Connect();
+            }
         }
 
         public void SelectPage(Page page)
@@ -127,6 +191,16 @@ namespace Cduhub
         private void Mcdu_KeyUp(object sender, McduDotNet.KeyEventArgs e)
         {
             _SelectedPage?.OnKeyUp(e.Key);
+        }
+
+        private void ReconnectTimer_Elapsed(object sender, EventArgs e)
+        {
+            try {
+                PerformAutoReconnect();
+            } finally {
+                var timer = _ReconnectTimer;
+                timer?.Start();
+            }
         }
     }
 }
