@@ -48,10 +48,18 @@ namespace Cduhub.FlightSim
         }
 
         /// <inheritdoc/>
+        public bool IsConnected { get; private set; }
+
+        /// <inheritdoc/>
         public long CountMessagesFromSimulator { get; private set; }
 
         /// <inheritdoc/>
         public DateTime LastMessageTimeUtc { get; private set; }
+
+        /// <inheritdoc/>
+        public event EventHandler IsConnectedChanged;
+
+        protected virtual void OnIsConnectedChanged() => IsConnectedChanged?.Invoke(this, EventArgs.Empty);
 
         /// <inheritdoc/>
         public event EventHandler DisplayRefreshRequired;
@@ -116,6 +124,18 @@ namespace Cduhub.FlightSim
 
         /// <inheritdoc/>
         public abstract void ReconnectToSimulator();
+
+        /// <summary>
+        /// Sets or clears <see cref="IsConnected"/> and raises <see cref="IsConnectedChanged"/>.
+        /// </summary>
+        /// <param name="connected"></param>
+        protected void RecordConnection(bool connected)
+        {
+            if(IsConnected != connected) {
+                IsConnected = connected;
+                OnIsConnectedChanged();
+            }
+        }
 
         /// <summary>
         /// Updates counters and statistics, and raises events, when a message is received from the simulator.

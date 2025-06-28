@@ -11,6 +11,7 @@
 using System;
 using System.Threading.Tasks;
 using GraphQL;
+using GraphQL.Client.Abstractions.Websocket;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
 using McduDotNet;
@@ -24,8 +25,9 @@ namespace Cduhub.FlightSim
     public class FenixA320EfbMcdu : SimulatedMcdus, IDisposable
     {
         private GraphQLHttpClient _GraphQLClient;
-        private IObservable<GraphQLResponse<dynamic>> _SubscriptionStream;
-        private IDisposable _Subscription;
+        private IObservable<GraphQLResponse<dynamic>> _PushSubscriptionStream;
+        private IDisposable _PushSubscription;
+        private IDisposable _ConnectionStateSubscription;
 
         /// <inheritdoc/>
         public override string FlightSimulatorName => FlightSimulatorNames.MSFS2020_2024;
@@ -124,31 +126,48 @@ namespace Cduhub.FlightSim
                 UseWebSocketForQueriesAndMutations = true
             };
             _GraphQLClient = new GraphQLHttpClient(options, new NewtonsoftJsonSerializer());
-            SetupFenixDisplayChangeEvents();
+            SetupConnectionStateSubscription();
+            SetupPushedDataSubscription();
         }
 
         private void DisposeGraphQLClient()
         {
             var client = _GraphQLClient;
-            var subscription = _Subscription;
+            var connectionStateSubscription = _ConnectionStateSubscription;
+            var pushSubscription = _PushSubscription;
 
             _GraphQLClient = null;
-            _SubscriptionStream = null;
-            _Subscription = null;
+            _ConnectionStateSubscription = null;
+            _PushSubscriptionStream = null;
+            _PushSubscription = null;
 
             try {
-                if(subscription != null) {
-                    subscription.Dispose();
-                }
+                connectionStateSubscription?.Dispose();
             } catch {;}
             try {
-                if(client != null) {
-                    client.Dispose();
-                }
+                pushSubscription?.Dispose();
+            } catch {;}
+            try {
+                client?.Dispose();
             } catch {;}
         }
 
-        private void SetupFenixDisplayChangeEvents()
+        private void SetupConnectionStateSubscription()
+        {
+            var client = _GraphQLClient;
+            if(client != null) {
+                _ConnectionStateSubscription = client
+                    .WebsocketConnectionState
+                    .Subscribe(ConnectionStateUpdate);
+            }
+        }
+
+        private void ConnectionStateUpdate(GraphQLWebsocketConnectionState state)
+        {
+            RecordConnection(state == GraphQLWebsocketConnectionState.Connected);
+        }
+
+        private void SetupPushedDataSubscription()
         {
             var client = _GraphQLClient;
             if(client != null) {
@@ -185,12 +204,12 @@ namespace Cduhub.FlightSim
                     }
                 };
 
-                _SubscriptionStream = client.CreateSubscriptionStream<dynamic>(subscriptionRequest);
-                _Subscription = _SubscriptionStream.Subscribe(GraphQLSubscriptionUpdate);
+                _PushSubscriptionStream = client.CreateSubscriptionStream<dynamic>(subscriptionRequest);
+                _PushSubscription = _PushSubscriptionStream.Subscribe(PushedDataUpdate);
             }
         }
 
-        private void GraphQLSubscriptionUpdate(GraphQLResponse<dynamic> response)
+        private void PushedDataUpdate(GraphQLResponse<dynamic> response)
         {
             var dataRefs = response.Data?.dataRefs;
             if(dataRefs != null) {

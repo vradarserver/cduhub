@@ -33,31 +33,6 @@ namespace Cduhub.FlightSim
         /// </summary>
         protected abstract Uri WebSocketUri { get; }
 
-        private bool _IsConnected;
-        /// <summary>
-        /// Gets a value indicating whether we're connected to the web socket.
-        /// </summary>
-        public bool IsConnected
-        {
-            get => _IsConnected;
-            protected set {
-                if(value != IsConnected) {
-                    _IsConnected = value;
-                    OnIsConnectedChanged();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Raised when <see cref="IsConnected"/> changes value.
-        /// </summary>
-        public event EventHandler IsConnectedChanged;
-
-        /// <summary>
-        /// Raises <see cref="IsConnectedChanged"/>.
-        /// </summary>
-        protected virtual void OnIsConnectedChanged() => IsConnectedChanged?.Invoke(this, EventArgs.Empty);
-
         /// <summary>
         /// Creates a new object.
         /// </summary>
@@ -122,23 +97,21 @@ namespace Cduhub.FlightSim
         {
             while(!cancellationToken.IsCancellationRequested) {
                 try {
-                    IsConnected = false;
+                    RecordConnection(connected: false);
                     using(var client = new ClientWebSocket()) {
                         await client.ConnectAsync(WebSocketUri, cancellationToken);
                         await InitialiseNewConnection(client, cancellationToken);
-                        IsConnected = true;
 
+                        var pollConnectionStateLoop = Task.Run(() => PollConnectionStateLoop(client, cancellationToken));
                         var sendLoop = Task.Run(() => SendLoop(client, cancellationToken));
                         var receiveLoop = Task.Run(() => ReceiveLoop(client, cancellationToken));
-                        Task.WaitAll(sendLoop, receiveLoop);
+                        Task.WaitAll(pollConnectionStateLoop, sendLoop, receiveLoop);
                     }
                 } catch(HttpRequestException) {
-                    IsConnected = false;
                     if(!cancellationToken.IsCancellationRequested) {
                         await Task.Delay(5000);
                     }
                 } catch(WebSocketException) {
-                    IsConnected = false;
                     if(!cancellationToken.IsCancellationRequested) {
                         await Task.Delay(1000);
                     }
@@ -153,6 +126,20 @@ namespace Cduhub.FlightSim
         protected virtual Task InitialiseNewConnection(ClientWebSocket client, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
+        }
+
+        protected async virtual Task PollConnectionStateLoop(ClientWebSocket client, CancellationToken cancellationToken)
+        {
+            while(client != null && !cancellationToken.IsCancellationRequested) {
+                try {
+                    RecordConnection(client.State == WebSocketState.Open);
+                } catch {
+                    // We can get all sorts of errors - client can be disposed, state is garbage etc.
+                    // I think if it's erroring then we should assume that the connection is bad.
+                    RecordConnection(connected: false);
+                }
+                await Task.Delay(100);
+            }
         }
 
         protected virtual Task SendLoop(ClientWebSocket client, CancellationToken cancellationToken)
