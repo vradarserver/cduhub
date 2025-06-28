@@ -15,6 +15,12 @@ namespace Cduhub.FlightSim
 {
     public abstract class SimulatedMcdus : IFlightSimulatorMcdu
     {
+        /// <inheritdoc/>
+        public abstract string FlightSimulatorName { get; }
+
+        /// <inheritdoc/>
+        public abstract string AircraftName { get; }
+
         public Screen MasterScreen { get; }
 
         public Leds MasterLeds { get; }
@@ -42,6 +48,12 @@ namespace Cduhub.FlightSim
         }
 
         /// <inheritdoc/>
+        public long CountMessagesFromSimulator { get; private set; }
+
+        /// <inheritdoc/>
+        public DateTime LastMessageTimeUtc { get; private set; }
+
+        /// <inheritdoc/>
         public event EventHandler DisplayRefreshRequired;
 
         protected virtual void OnDisplayRefreshRequired() => DisplayRefreshRequired?.Invoke(this, EventArgs.Empty);
@@ -50,6 +62,11 @@ namespace Cduhub.FlightSim
         public event EventHandler LedsRefreshRequired;
 
         protected virtual void OnLedsRefreshRequired() => LedsRefreshRequired?.Invoke(this, EventArgs.Empty);
+
+        /// <inheritdoc/>
+        public event EventHandler MessageReceived;
+
+        protected virtual void OnMessageReceived() => MessageReceived?.Invoke(this, EventArgs.Empty);
 
         /// <summary>
         /// Creates a new object.
@@ -99,5 +116,15 @@ namespace Cduhub.FlightSim
 
         /// <inheritdoc/>
         public abstract void ReconnectToSimulator();
+
+        /// <summary>
+        /// Updates counters and statistics, and raises events, when a message is received from the simulator.
+        /// </summary>
+        protected void RecordMessageReceivedFromSimulator()
+        {
+            LastMessageTimeUtc = DateTime.UtcNow;
+            ++CountMessagesFromSimulator;
+            OnMessageReceived();
+        }
     }
 }

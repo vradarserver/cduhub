@@ -27,6 +27,12 @@ namespace Cduhub.FlightSim
         private readonly Queue<string> _SendEventQueue = new Queue<string>();
 
         /// <inheritdoc/>
+        public override string FlightSimulatorName => FlightSimulatorNames.MSFS2020_2024;
+
+        /// <inheritdoc/>
+        public override string AircraftName => "FBW SimBridge";
+
+        /// <inheritdoc/>
         public override SimulatorMcduBuffer PilotBuffer { get; } = new SimulatorMcduBuffer();
 
         /// <inheritdoc/>
@@ -115,6 +121,7 @@ namespace Cduhub.FlightSim
                         ProcessMessage(msg);
                     }
                 }
+                RecordMessageReceivedFromSimulator();
             }
         }
 

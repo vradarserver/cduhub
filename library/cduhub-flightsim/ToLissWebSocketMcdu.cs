@@ -23,6 +23,12 @@ namespace Cduhub.FlightSim
 
         private ToLissScreenBuffer _FirstOfficerToLissBuffer = new ToLissScreenBuffer();
 
+        /// <inheritdoc/>
+        public override string FlightSimulatorName => FlightSimulatorNames.XPlane12;
+
+        /// <inheritdoc/>
+        public override string AircraftName => "ToLiss A32x";
+
         public ToLissWebSocketMcdu(HttpClient httpClient, Screen masterScreen, Leds masterLeds) : base(httpClient, masterScreen, masterLeds)
         {
         }

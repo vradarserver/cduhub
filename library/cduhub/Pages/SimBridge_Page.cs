@@ -25,6 +25,7 @@ namespace Cduhub.Pages
             _SimBridgeA320.DisplayRefreshRequired += SimBridgeA320_DisplayRefreshRequired;
             _SimBridgeA320.LedsRefreshRequired += SimBridgeA320_LedsRefreshRequired;
 
+            ConnectedFlightSimulators.AddFlightSimulatorMcdu(_SimBridgeA320);
             _SimBridgeA320.ReconnectToSimulator();
         }
 

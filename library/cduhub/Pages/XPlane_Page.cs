@@ -25,6 +25,7 @@ namespace Cduhub.Pages
             _XPlaneMcdu.DisplayRefreshRequired += XPlaneMcdu_DisplayRefreshRequired;
             _XPlaneMcdu.LedsRefreshRequired += XPlaneMcdu_LedsRefreshRequired;
 
+            ConnectedFlightSimulators.AddFlightSimulatorMcdu(_XPlaneMcdu);
             _XPlaneMcdu.ReconnectToSimulator();
         }
 

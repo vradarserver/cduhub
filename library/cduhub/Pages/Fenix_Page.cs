@@ -25,6 +25,7 @@ namespace Cduhub.Pages
             _FenixA320.DisplayRefreshRequired += FenixA320_DisplayRefreshRequired;
             _FenixA320.LedsRefreshRequired += FenixA320_LedsRefreshRequired;
 
+            ConnectedFlightSimulators.AddFlightSimulatorMcdu(_FenixA320);
             _FenixA320.ReconnectToSimulator();
         }
 

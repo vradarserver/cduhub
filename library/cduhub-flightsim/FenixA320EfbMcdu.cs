@@ -28,6 +28,12 @@ namespace Cduhub.FlightSim
         private IDisposable _Subscription;
 
         /// <inheritdoc/>
+        public override string FlightSimulatorName => FlightSimulatorNames.MSFS2020_2024;
+
+        /// <inheritdoc/>
+        public override string AircraftName => "Fenix A32x";
+
+        /// <inheritdoc/>
         public override SimulatorMcduBuffer PilotBuffer { get; } = new SimulatorMcduBuffer();
 
         /// <inheritdoc/>
@@ -227,6 +233,7 @@ namespace Cduhub.FlightSim
                     }
                 }
             }
+            RecordMessageReceivedFromSimulator();
         }
     }
 }

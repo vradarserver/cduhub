@@ -16,6 +16,16 @@ namespace Cduhub.FlightSim
     public interface IFlightSimulatorMcdu
     {
         /// <summary>
+        /// The name of the flight simulator.
+        /// </summary>
+        string FlightSimulatorName { get; }
+
+        /// <summary>
+        /// The name of the add-on product or aircraft.
+        /// </summary>
+        string AircraftName { get; }
+
+        /// <summary>
         /// The content of the simulated pilot MCDU.
         /// </summary>
         SimulatorMcduBuffer PilotBuffer { get; }
@@ -47,6 +57,16 @@ namespace Cduhub.FlightSim
         SimulatorMcduBuffer SelectedBuffer { get; }
 
         /// <summary>
+        /// The number of messages received from the simulator.
+        /// </summary>
+        long CountMessagesFromSimulator { get; }
+
+        /// <summary>
+        /// The time at UTC that the last message was received.
+        /// </summary>
+        DateTime LastMessageTimeUtc { get; }
+
+        /// <summary>
         /// Raised when the USB MCDU needs to have its display updated.
         /// </summary>
         event EventHandler DisplayRefreshRequired;
@@ -55,6 +75,12 @@ namespace Cduhub.FlightSim
         /// Raised when the USB MCDU needs to have its LEDs updated.
         /// </summary>
         event EventHandler LedsRefreshRequired;
+
+        /// <summary>
+        /// Raised when <see cref="CountMessagesFromSimulator"/> and <see cref="LastMessageTimeUtc"/> are
+        /// updated.
+        /// </summary>
+        event EventHandler MessageReceived;
 
         /// <summary>
         /// Sends a key to the simulated MCDU.

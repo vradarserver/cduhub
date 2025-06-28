@@ -46,6 +46,12 @@ namespace Cduhub.FlightSim
         protected int _RequestId;
 
         /// <inheritdoc/>
+        public override string FlightSimulatorName => FlightSimulatorNames.XPlane12;
+
+        /// <inheritdoc/>
+        public override string AircraftName => "Generic";
+
+        /// <inheritdoc/>
         public override SimulatorMcduBuffer PilotBuffer { get; } = new SimulatorMcduBuffer();
 
         /// <inheritdoc/>
@@ -205,6 +211,7 @@ namespace Cduhub.FlightSim
                         ProcessMessage(msg);
                     }
                 }
+                RecordMessageReceivedFromSimulator();
             }
         }
 

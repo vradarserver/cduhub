@@ -10,19 +10,23 @@
 
 using System;
 using System.Windows.Forms;
+using Cduhub.FlightSim;
 
 namespace Cduhub.WindowsGui
 {
     public partial class MainForm : Form
     {
+        private ListViewHelper<IFlightSimulatorMcdu, object> _ConnectedFlightSimulatorsListView;
+        private bool _HookedConnectedFlightSimulators;
+
         public Hub Hub => Program.Hub;
 
         public string StateText
         {
-            get => _Label_State.Text;
+            get => _Label_UsbDeviceState.Text;
             set {
                 if(StateText != value) {
-                    _Label_State.Text = value;
+                    _Label_UsbDeviceState.Text = value;
                 }
             }
         }
@@ -30,6 +34,20 @@ namespace Cduhub.WindowsGui
         public MainForm()
         {
             InitializeComponent();
+
+            _ConnectedFlightSimulatorsListView = new(
+                _ListView_ConnectedFlightSimulators,
+                flightsim => new string[] {
+                    flightsim.FlightSimulatorName,
+                    flightsim.AircraftName,
+                    flightsim.LastMessageTimeUtc == default
+                        ? ""
+                        : flightsim.LastMessageTimeUtc.ToLocalTime().ToString("dd-MMM-yyyy HH:mm:ss"),
+                    flightsim.CountMessagesFromSimulator.ToString("N0")
+                },
+                extractID: flightsim => flightsim,
+                autoResizeToContent: true
+            );
         }
 
         private void UpdateStateDisplay()
@@ -40,6 +58,13 @@ namespace Cduhub.WindowsGui
                 : $"Connected to a {device} MCDU";
         }
 
+        private void UpdateConnectedFlightSimulatorsDisplay()
+        {
+            _ConnectedFlightSimulatorsListView.RefreshList(
+                ConnectedFlightSimulators.GetFlightSimulatorMcdus()
+            );
+        }
+
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -47,6 +72,28 @@ namespace Cduhub.WindowsGui
                 Hub.ConnectedDeviceChanged += Hub_ConnectedDeviceChanged;
                 Hub.CloseApplication += Hub_CloseApplication;
                 UpdateStateDisplay();
+                UpdateConnectedFlightSimulatorsDisplay();
+
+                ConnectedFlightSimulators.FlightSimulatorStateChanged += ConnectedFlightSimulators_FlightSimulatorStateChanged;
+                _HookedConnectedFlightSimulators = true;
+                _ConnectedFlightSimulatorsListView.SendResizeAllColumns();
+            }
+        }
+
+        private void UnhookConnectedFlightSimulators()
+        {
+            if(_HookedConnectedFlightSimulators) {
+                _HookedConnectedFlightSimulators = false;
+                ConnectedFlightSimulators.FlightSimulatorStateChanged -= ConnectedFlightSimulators_FlightSimulatorStateChanged;
+            }
+        }
+
+        private void ConnectedFlightSimulators_FlightSimulatorStateChanged(object sender, EventArgs e)
+        {
+            if(InvokeRequired) {
+                BeginInvoke(new MethodInvoker(() => ConnectedFlightSimulators_FlightSimulatorStateChanged(sender, e)));
+            } else {
+                UpdateConnectedFlightSimulatorsDisplay();
             }
         }
 

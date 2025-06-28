@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Cduhub.WindowsGui
@@ -16,8 +17,11 @@ namespace Cduhub.WindowsGui
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if(disposing && (components != null)) {
-                components.Dispose();
+            if(disposing) {
+                if(components != null) {
+                    components.Dispose();
+                }
+                UnhookConnectedFlightSimulators();
             }
             base.Dispose(disposing);
         }
@@ -30,49 +34,121 @@ namespace Cduhub.WindowsGui
         /// </summary>
         private void InitializeComponent()
         {
-            var resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            label1 = new Label();
-            _Label_State = new Label();
-            SuspendLayout();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+            this.label1 = new System.Windows.Forms.Label();
+            this._Label_UsbDeviceState = new System.Windows.Forms.Label();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this._ListView_ConnectedFlightSimulators = new System.Windows.Forms.ListView();
+            this._Col_FlightSim_Name = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this._Col_FlightSim_LastMessageUtc = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this._Col_FlightSim_CountMessages = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this._Col_FlightSim_Aircraft = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.groupBox1.SuspendLayout();
+            this.SuspendLayout();
             // 
             // label1
             // 
-            label1.AutoSize = true;
-            label1.Location = new Point(12, 12);
-            label1.Margin = new Padding(3, 3, 3, 0);
-            label1.Name = "label1";
-            label1.Size = new Size(43, 19);
-            label1.TabIndex = 0;
-            label1.Text = "State:";
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(12, 12);
+            this.label1.Margin = new System.Windows.Forms.Padding(3);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(68, 15);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "USB device:";
             // 
-            // _Label_State
+            // _Label_UsbDeviceState
             // 
-            _Label_State.AutoSize = true;
-            _Label_State.Location = new Point(61, 12);
-            _Label_State.Name = "_Label_State";
-            _Label_State.Size = new Size(15, 19);
-            _Label_State.TabIndex = 1;
-            _Label_State.Text = "-";
+            this._Label_UsbDeviceState.AutoSize = true;
+            this._Label_UsbDeviceState.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this._Label_UsbDeviceState.Location = new System.Drawing.Point(86, 12);
+            this._Label_UsbDeviceState.Margin = new System.Windows.Forms.Padding(3);
+            this._Label_UsbDeviceState.Name = "_Label_UsbDeviceState";
+            this._Label_UsbDeviceState.Size = new System.Drawing.Size(14, 15);
+            this._Label_UsbDeviceState.TabIndex = 1;
+            this._Label_UsbDeviceState.Text = "-";
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this._ListView_ConnectedFlightSimulators);
+            this.groupBox1.Location = new System.Drawing.Point(12, 33);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(480, 197);
+            this.groupBox1.TabIndex = 2;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Flight Simulators";
+            // 
+            // _ListView_ConnectedFlightSimulators
+            // 
+            this._ListView_ConnectedFlightSimulators.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this._ListView_ConnectedFlightSimulators.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this._Col_FlightSim_Name,
+            this._Col_FlightSim_Aircraft,
+            this._Col_FlightSim_LastMessageUtc,
+            this._Col_FlightSim_CountMessages});
+            this._ListView_ConnectedFlightSimulators.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this._ListView_ConnectedFlightSimulators.FullRowSelect = true;
+            this._ListView_ConnectedFlightSimulators.GridLines = true;
+            this._ListView_ConnectedFlightSimulators.HideSelection = false;
+            this._ListView_ConnectedFlightSimulators.Location = new System.Drawing.Point(6, 22);
+            this._ListView_ConnectedFlightSimulators.MultiSelect = false;
+            this._ListView_ConnectedFlightSimulators.Name = "_ListView_ConnectedFlightSimulators";
+            this._ListView_ConnectedFlightSimulators.Size = new System.Drawing.Size(468, 169);
+            this._ListView_ConnectedFlightSimulators.TabIndex = 0;
+            this._ListView_ConnectedFlightSimulators.UseCompatibleStateImageBehavior = false;
+            this._ListView_ConnectedFlightSimulators.View = System.Windows.Forms.View.Details;
+            // 
+            // _Col_FlightSim_Name
+            // 
+            this._Col_FlightSim_Name.Text = "Flight Simulator";
+            // 
+            // _Col_FlightSim_LastMessageUtc
+            // 
+            this._Col_FlightSim_LastMessageUtc.Text = "Last Message";
+            // 
+            // _Col_FlightSim_CountMessages
+            // 
+            this._Col_FlightSim_CountMessages.Text = "Messages";
+            this._Col_FlightSim_CountMessages.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // _Col_FlightSim_Aircraft
+            // 
+            this._Col_FlightSim_Aircraft.Text = "Aircraft";
             // 
             // MainForm
             // 
-            AutoScaleDimensions = new SizeF(7F, 17F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(564, 275);
-            Controls.Add(_Label_State);
-            Controls.Add(label1);
-            Icon = (Icon)resources.GetObject("$this.Icon");
-            Name = "MainForm";
-            StartPosition = FormStartPosition.CenterScreen;
-            Text = "CDU Hub";
-            WindowState = FormWindowState.Minimized;
-            ResumeLayout(false);
-            PerformLayout();
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(504, 242);
+            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this._Label_UsbDeviceState);
+            this.Controls.Add(this.label1);
+            this.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(4, 2, 4, 2);
+            this.Name = "MainForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "CDU Hub";
+            this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
+            this.groupBox1.ResumeLayout(false);
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
         }
 
         #endregion
 
         private Label label1;
-        private Label _Label_State;
+        private Label _Label_UsbDeviceState;
+        private GroupBox groupBox1;
+        private ListView _ListView_ConnectedFlightSimulators;
+        private ColumnHeader _Col_FlightSim_Name;
+        private ColumnHeader _Col_FlightSim_LastMessageUtc;
+        private ColumnHeader _Col_FlightSim_CountMessages;
+        private ColumnHeader _Col_FlightSim_Aircraft;
     }
 }
