@@ -25,7 +25,7 @@ namespace Cduhub.Pages
             _ToLissMcdu.DisplayRefreshRequired += ToLissMcdu_DisplayRefreshRequired;
             _ToLissMcdu.LedsRefreshRequired += ToLissMcdu_LedsRefreshRequired;
 
-            _ToLissMcdu.Reconnect();
+            _ToLissMcdu.ReconnectToSimulator();
         }
 
         public override void OnKeyDown(Key key)
@@ -44,7 +44,7 @@ namespace Cduhub.Pages
             }
         }
 
-        public void Reconnect() => _ToLissMcdu.Reconnect();
+        public void Reconnect() => _ToLissMcdu.ReconnectToSimulator();
 
         private void ToLissMcdu_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
 

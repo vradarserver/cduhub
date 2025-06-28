@@ -79,7 +79,7 @@ namespace Cduhub.FlightSim
         /// Connects to the Fenix EFB's MCDUs. If a connection has already been established then it is dropped
         /// and restarted.
         /// </summary>
-        public void Reconnect()
+        public override void ReconnectToSimulator()
         {
             CreateGraphQLClient();
         }

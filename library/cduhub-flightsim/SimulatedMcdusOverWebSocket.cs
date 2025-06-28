@@ -111,7 +111,7 @@ namespace Cduhub.FlightSim
         /// Connects to the web socket. If it is already connected then this drops the connection and establishes a
         /// new one.
         /// </summary>
-        public virtual void Reconnect()
+        public override void ReconnectToSimulator()
         {
             DisposeWebSocket();
             _WebSocketCancelationTokenSource = new CancellationTokenSource();

@@ -13,7 +13,7 @@ using McduDotNet;
 
 namespace Cduhub.FlightSim
 {
-    public abstract class SimulatedMcdus
+    public abstract class SimulatedMcdus : IFlightSimulatorMcdu
     {
         public Screen MasterScreen { get; }
 
@@ -25,7 +25,7 @@ namespace Cduhub.FlightSim
 
         public virtual SimulatorMcduBuffer ObserverBuffer => FirstOfficerBuffer;
 
-        protected virtual bool IsObserverMcduPresent => false;
+        public virtual bool IsObserverMcduPresent => false;
 
         public ProductId SelectedBufferProductId { get; set; }
 
@@ -41,10 +41,12 @@ namespace Cduhub.FlightSim
             }
         }
 
+        /// <inheritdoc/>
         public event EventHandler DisplayRefreshRequired;
 
         protected virtual void OnDisplayRefreshRequired() => DisplayRefreshRequired?.Invoke(this, EventArgs.Empty);
 
+        /// <inheritdoc/>
         public event EventHandler LedsRefreshRequired;
 
         protected virtual void OnLedsRefreshRequired() => LedsRefreshRequired?.Invoke(this, EventArgs.Empty);
@@ -60,6 +62,7 @@ namespace Cduhub.FlightSim
             MasterLeds = masterLeds;
         }
 
+        /// <inheritdoc/>
         public void AdvanceSelectedBufferProductId()
         {
             switch(SelectedBufferProductId) {
@@ -91,6 +94,10 @@ namespace Cduhub.FlightSim
             OnLedsRefreshRequired();
         }
 
+        /// <inheritdoc/>
         public abstract void SendKeyToSimulator(Key key, bool pressed);
+
+        /// <inheritdoc/>
+        public abstract void ReconnectToSimulator();
     }
 }

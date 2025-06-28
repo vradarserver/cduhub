@@ -25,7 +25,7 @@ namespace Cduhub.Pages
             _XPlaneMcdu.DisplayRefreshRequired += XPlaneMcdu_DisplayRefreshRequired;
             _XPlaneMcdu.LedsRefreshRequired += XPlaneMcdu_LedsRefreshRequired;
 
-            _XPlaneMcdu.Reconnect();
+            _XPlaneMcdu.ReconnectToSimulator();
         }
 
         public override void OnKeyDown(Key key)
@@ -44,7 +44,7 @@ namespace Cduhub.Pages
             }
         }
 
-        public void Reconnect() => _XPlaneMcdu.Reconnect();
+        public void Reconnect() => _XPlaneMcdu.ReconnectToSimulator();
 
         private void XPlaneMcdu_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
 

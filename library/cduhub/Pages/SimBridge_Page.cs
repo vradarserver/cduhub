@@ -25,7 +25,7 @@ namespace Cduhub.Pages
             _SimBridgeA320.DisplayRefreshRequired += SimBridgeA320_DisplayRefreshRequired;
             _SimBridgeA320.LedsRefreshRequired += SimBridgeA320_LedsRefreshRequired;
 
-            _SimBridgeA320.Reconnect();
+            _SimBridgeA320.ReconnectToSimulator();
         }
 
         public override void OnKeyDown(Key key)
@@ -37,7 +37,7 @@ namespace Cduhub.Pages
             }
         }
 
-        public void Reconnect() => _SimBridgeA320.Reconnect();
+        public void Reconnect() => _SimBridgeA320.ReconnectToSimulator();
 
         private void SimBridgeA320_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
 

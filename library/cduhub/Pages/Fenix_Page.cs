@@ -25,7 +25,7 @@ namespace Cduhub.Pages
             _FenixA320.DisplayRefreshRequired += FenixA320_DisplayRefreshRequired;
             _FenixA320.LedsRefreshRequired += FenixA320_LedsRefreshRequired;
 
-            _FenixA320.Reconnect();
+            _FenixA320.ReconnectToSimulator();
         }
 
         public override void OnKeyDown(Key key)
@@ -44,7 +44,7 @@ namespace Cduhub.Pages
             }
         }
 
-        public void Reconnect() => _FenixA320.Reconnect();
+        public void Reconnect() => _FenixA320.ReconnectToSimulator();
 
         private void FenixA320_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
 
