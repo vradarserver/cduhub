@@ -22,7 +22,7 @@ namespace Cduhub.Pages
             _Parent = parent;
             Output
                 .Green()
-                .Centred("ToLiss Menu")
+                .Centred("ToLiss")
                 .White()
                 .Newline()
                 .Newline()
@@ -33,7 +33,7 @@ namespace Cduhub.Pages
                 .LeftLabel(6, ">Cancel")
                 .Cyan()
                 .RightLabel(5, "Reconnect<")
-                .RightLabel(6, "ToLiss MCDU<");
+                .RightLabel(6, "MCDU<");
         }
 
         public override void OnKeyDown(Key key)

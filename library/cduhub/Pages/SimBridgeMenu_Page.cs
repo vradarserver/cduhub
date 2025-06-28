@@ -22,7 +22,7 @@ namespace Cduhub.Pages
             _Parent = parent;
             Output
                 .Green()
-                .Centred("SimBridge Menu")
+                .Centred("SimBridge")
                 .White()
                 .Newline()
                 .Newline()
@@ -31,7 +31,7 @@ namespace Cduhub.Pages
                 .LeftLabel(6, ">Cancel")
                 .Cyan()
                 .RightLabel(5, "Reconnect<")
-                .RightLabel(6, "SimBridge MCDU<");
+                .RightLabel(6, "MCDU<");
         }
 
         public override void OnKeyDown(Key key)

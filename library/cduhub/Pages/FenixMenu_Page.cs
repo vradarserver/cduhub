@@ -22,7 +22,7 @@ namespace Cduhub.Pages
             _Parent = parent;
             Output
                 .Green()
-                .Centred("Fenix A320 Menu")
+                .Centred("Fenix A32x")
                 .White()
                 .Newline()
                 .Newline()
@@ -33,7 +33,7 @@ namespace Cduhub.Pages
                 .LeftLabel(6, ">Cancel")
                 .Cyan()
                 .RightLabel(5, "Reconnect<")
-                .RightLabel(6, "Fenix MCDU<");
+                .RightLabel(6, "MCDU<");
         }
 
         public override void OnKeyDown(Key key)
