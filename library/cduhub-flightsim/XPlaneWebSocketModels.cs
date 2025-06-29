@@ -14,51 +14,6 @@ using System.Runtime.Serialization;
 namespace Cduhub.FlightSim.XPlaneWebSocketModels
 {
     [DataContract]
-    public class KnownDatarefsModel
-    {
-        [DataMember]
-        public List<DatarefInfoModel> Data { get; set; } = new List<DatarefInfoModel>();
-    }
-
-    [DataContract]
-    public class DatarefInfoModel
-    {
-        [DataMember]
-        public long Id { get; set; }
-
-        [DataMember(Name = "is_writable")]
-        public bool IsWritable { get; set; }
-
-        [DataMember]
-        public string Name { get; set; }
-
-        [DataMember(Name = "value_type")]
-        public string ValueType { get; set; }
-
-        public override string ToString() => Name;
-    }
-
-    [DataContract]
-    public class KnownCommandsModel
-    {
-        [DataMember]
-        public List<CommandInfoModel> Data { get; set; } = new List<CommandInfoModel>();
-    }
-
-    [DataContract]
-    public class CommandInfoModel
-    {
-        [DataMember]
-        public long Id { get; set; }
-
-        [DataMember]
-        public string Description { get; set; }
-
-        [DataMember]
-        public string Name { get; set; }
-    }
-
-    [DataContract]
     public class RequestModel
     {
         [DataMember(Name = "req_id")]

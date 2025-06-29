@@ -11,6 +11,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using Cduhub.FlightSim.XPlaneRestModels;
 using Cduhub.FlightSim.XPlaneWebSocketModels;
 using McduDotNet;
 using McduDotNet.FlightSim;
