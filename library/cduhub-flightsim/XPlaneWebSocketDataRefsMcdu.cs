@@ -173,7 +173,7 @@ namespace Cduhub.FlightSim
                 _SendCommandQueue.Clear();
             }
 
-            while(client.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested) {
+            while(!cancellationToken.IsCancellationRequested) {
                 KeyCommand command = null;
                 lock(_QueueLock) {
                     if(_SendCommandQueue.Count > 0) {
@@ -203,7 +203,7 @@ namespace Cduhub.FlightSim
         protected override async Task ReceiveLoop(ClientWebSocket client, CancellationToken cancellationToken)
         {
             var buffer = new byte[64 * 1024];
-            while(client.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested) {
+            while(!cancellationToken.IsCancellationRequested) {
                 var result = await client.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
                 if(result.MessageType == WebSocketMessageType.Text) {
                     var msg = Encoding.UTF8.GetString(buffer, 0, result.Count);
