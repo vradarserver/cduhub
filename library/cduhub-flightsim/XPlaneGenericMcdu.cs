@@ -72,13 +72,13 @@ namespace Cduhub.FlightSim
                 var rowText = dataref.Name.Substring(prefix.Length);
                 if(int.TryParse(rowText, NumberStyles.None, CultureInfo.InvariantCulture, out var rowNumber)) {
                     if(isDisplay) {
-                        XPlaneGenericWebSocket.ParseWebSocketDisplayLineIntoRow(
+                        XPlaneGenericDataRef.ParseMime64DisplayLineIntoRow(
                             screen,
                             value as string,
                             rowNumber
                         );
                     } else {
-                        XPlaneGenericWebSocket.ParseWebSocketStyleLineIntoRow(
+                        XPlaneGenericDataRef.ParseMime64StyleLineIntoRow(
                             screen,
                             value as string,
                             rowNumber
