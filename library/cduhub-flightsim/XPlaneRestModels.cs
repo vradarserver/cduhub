@@ -39,6 +39,13 @@ namespace Cduhub.FlightSim.XPlaneRestModels
     }
 
     [DataContract]
+    public class DatarefValueModel
+    {
+        [DataMember(Name = "data")]
+        public string Data { get; set; }
+    }
+
+    [DataContract]
     public class KnownCommandsModel
     {
         [DataMember]
@@ -56,5 +63,12 @@ namespace Cduhub.FlightSim.XPlaneRestModels
 
         [DataMember]
         public string Name { get; set; }
+    }
+
+    [DataContract]
+    public class ActivateCommandModel
+    {
+        [DataMember(Name = "duration")]
+        public float Duration { get; set; }
     }
 }
