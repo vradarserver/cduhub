@@ -19,20 +19,11 @@ using Cduhub.FlightSim.XPlaneRestModels;
 using McduDotNet;
 using Newtonsoft.Json;
 
-// NOT USED. This works just fine, except it's too slow. There is a lag before XPlane returns any data and
-// we're having to send two HTTP requests for each line on the MCDU (one for the content, one for the style -
-// this is for the generic X-Plane MCDU) times two MCDUs = 2 x 14 x 2 = 56 requests for a single update.
-// Ideally we want 10 updates a second, so that's 560 HTTP requests a second. It is like typing on a rubber
-// band.
-//
-// If we were able to fetch multiple datarefs in one hit then that would be better... but the best solution
-// would be for whatever is causing the 100 second abort to go away when using ClientWebSocket.
-
 namespace Cduhub.FlightSim
 {
     /// <summary>
     /// Another day, another attempt at getting sensible communication with XPlane. This would not be as sensible
-    /// as WebSockets, but ClientWebSocket-to-X-Plane aborts after 100 seconds (no problems with SimBridge, so I
+    /// as WebSockets, but ClientWebSocket or X-Plane aborts after 100 seconds (no problems with SimBridge, so I
     /// suspect something about X-Plane's WebSocket server triggers the old 100 second abort issue)... but it is
     /// a lot more sensible that subscribing to 3200+ datarefs over UDP.
     /// </summary>
@@ -44,7 +35,7 @@ namespace Cduhub.FlightSim
         protected Dictionary<long, DatarefInfoModel> _DatarefsById = null;
         protected Dictionary<string, CommandInfoModel> _CommandsByName = null;
         protected Dictionary<long, CommandInfoModel> _CommandsById = null;
-        protected System.Timers.Timer _RefreshDisplayTimer = new System.Timers.Timer(200) {
+        protected System.Timers.Timer _RefreshDisplayTimer = new System.Timers.Timer(100) {
             AutoReset = false,
             Enabled = false,
         };

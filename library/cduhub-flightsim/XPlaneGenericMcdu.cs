@@ -8,17 +8,25 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.Collections.Generic;
-using System.Globalization;
+using System;
 using System.Net.Http;
-using Cduhub.FlightSim.XPlaneRestModels;
+using System.Threading.Tasks;
 using McduDotNet;
 using McduDotNet.FlightSim.SimBridgeMcdu;
 
 namespace Cduhub.FlightSim
 {
-    public class XPlaneGenericMcdu : XPlaneWebSocketDataRefsMcdu
+    public class XPlaneGenericMcdu : XPlaneRestMcdus
     {
+        const int _ScratchpadDownloadIntervalMilliseconds = 100;
+        const int _VisibleScreenDownloadIntervalMilliseconds = 750;
+        const int _OtherScreenDownloadIntervalMilliseconds = 30000;
+        private DateTime _LastScratchpadLineDownloadUtc;
+        private DateTime _LastVisibleScreenDownloadUtc;
+        private DateTime _LastOtherScreenDownloadUtc;
+
+        public override string AircraftName => "Generic";
+
         public XPlaneGenericMcdu(HttpClient httpClient, Screen masterScreen, Leds masterLeds) : base(httpClient, masterScreen, masterLeds)
         {
         }
@@ -26,65 +34,61 @@ namespace Cduhub.FlightSim
         /// <inheritdoc/>
         public override void SendKeyToSimulator(Key key, bool pressed)
         {
-            var keyCode = key.ToXPlaneCommand();
-            if(keyCode != "" && IsConnected) {
-                var fms = SelectedBufferProductId == ProductId.Captain
-                    ? "FMS"
-                    : "FMS2";
-                var command = $"sim/{fms}/{keyCode}";
-                lock(_QueueLock) {
-                    _SendCommandQueue.Enqueue(new KeyCommand() { Command = command, Pressed = pressed });
+            if(pressed) {
+                var keyCode = key.ToXPlaneCommand();
+                if(keyCode != "" && IsConnected) {
+                    var fms = SelectedBufferProductId == ProductId.Captain
+                        ? "FMS"
+                        : "FMS2";
+                    var command = $"sim/{fms}/{keyCode}";
+                    Task.Run(() => ActivateCommandOrReconnect(command));
                 }
             }
         }
 
-        protected override IEnumerable<string> SubscribeToDatarefs()
+        protected override void DownloadMcduContent()
         {
-            var result = new List<string>();
-            for(var idx = 0;idx < _McduLines;++idx) {
-                result.Add($"sim/cockpit2/radios/indicators/fms_cdu1_text_line{idx}");
-                result.Add($"sim/cockpit2/radios/indicators/fms_cdu2_text_line{idx}");
-                result.Add($"sim/cockpit2/radios/indicators/fms_cdu1_style_line{idx}");
-                result.Add($"sim/cockpit2/radios/indicators/fms_cdu2_style_line{idx}");
+            var now = DateTime.UtcNow;
+            if(_LastScratchpadLineDownloadUtc.AddMilliseconds(_ScratchpadDownloadIntervalMilliseconds) <= now) {
+                DownloadVisibleScratchpad();
             }
-
-            return result;
-        }
-
-        protected override void ProcessDatarefUpdateValue(DatarefInfoModel dataref, dynamic value)
-        {
-            ProcessScreenUpdate(dataref, value, "sim/cockpit2/radios/indicators/fms_cdu1_text_line", PilotBuffer.Screen, isDisplay: true);
-            ProcessScreenUpdate(dataref, value, "sim/cockpit2/radios/indicators/fms_cdu2_text_line", FirstOfficerBuffer.Screen, isDisplay: true);
-            ProcessScreenUpdate(dataref, value, "sim/cockpit2/radios/indicators/fms_cdu1_style_line", PilotBuffer.Screen, isDisplay: false);
-            ProcessScreenUpdate(dataref, value, "sim/cockpit2/radios/indicators/fms_cdu2_style_line", FirstOfficerBuffer.Screen, isDisplay: false);
-        }
-
-        private void ProcessScreenUpdate(
-            DatarefInfoModel dataref,
-            dynamic value,
-            string prefix,
-            Screen screen,
-            bool isDisplay
-        )
-        {
-            if(dataref.Name.StartsWith(prefix)) {
-                var rowText = dataref.Name.Substring(prefix.Length);
-                if(int.TryParse(rowText, NumberStyles.None, CultureInfo.InvariantCulture, out var rowNumber)) {
-                    if(isDisplay) {
-                        XPlaneGenericDataRef.ParseMime64DisplayLineIntoRow(
-                            screen,
-                            value as string,
-                            rowNumber
-                        );
-                    } else {
-                        XPlaneGenericDataRef.ParseMime64StyleLineIntoRow(
-                            screen,
-                            value as string,
-                            rowNumber
-                        );
-                    }
-                }
+            if(_LastVisibleScreenDownloadUtc.AddMilliseconds(_VisibleScreenDownloadIntervalMilliseconds) <= now) {
+                _LastVisibleScreenDownloadUtc = DownloadScreen(SelectedBuffer.Screen);
+                RefreshSelectedScreen();
+            }
+            if(_LastOtherScreenDownloadUtc.AddMilliseconds(_OtherScreenDownloadIntervalMilliseconds) < now) {
+                _LastOtherScreenDownloadUtc = DownloadScreen(SelectedBuffer == PilotBuffer
+                    ? FirstOfficerBuffer.Screen
+                    : PilotBuffer.Screen
+                );
             }
         }
+
+        private void DownloadVisibleScratchpad()
+        {
+            DownloadLineForScreen(SelectedBuffer.Screen, 13);
+            _LastScratchpadLineDownloadUtc = DateTime.UtcNow;
+            RefreshSelectedScreen();
+        }
+
+        private DateTime DownloadScreen(Screen screen)
+        {
+            for(var lineIdx = 0;lineIdx < Metrics.Lines;++lineIdx) {
+                DownloadLineForScreen(screen, lineIdx);
+            }
+            return DateTime.UtcNow;
+        }
+
+        private void DownloadLineForScreen(Screen screen, int lineNumber)
+        {
+            var cduNumber = ScreenToCduNumber(screen);
+
+            var displayLine = GetDataRef($"sim/cockpit2/radios/indicators/fms_cdu{cduNumber}_text_line{lineNumber}");
+            var styleLine = GetDataRef($"sim/cockpit2/radios/indicators/fms_cdu{cduNumber}_style_line{lineNumber}");
+            XPlaneGenericDataRef.ParseMime64DisplayLineIntoRow(screen, displayLine, lineNumber);
+            XPlaneGenericDataRef.ParseMime64StyleLineIntoRow(screen, styleLine, lineNumber);
+        }
+
+        private int ScreenToCduNumber(Screen screen) => screen == PilotBuffer.Screen ? 1 : 2;
     }
 }

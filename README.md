@@ -70,18 +70,20 @@ Known issues:
 This uses X-Plane's standard datarefs for MCDUs to read and control the pilot and
 first-officer MCDUs. You can flip between the two MCDUs using the BLANK1 button
 (next to DATA) and you can jump back to the CDU Hub menu using the BLANK2 button
-(next to AIRPORT).
+(next to AIRPORT). X-Plane 12 only.
 
 Known issues:
 
+* Bit laggy. This is a by-product of fetching the MCDU datarefs by REST instead of
+  WebSockets (which gets aborted after 100 seconds) or UDP (which requires 3200+
+  datarefs for the generic MCDUs - it's too many, that's 3200 UDP packets to process
+  every *n*th of a second).
 * SEC F-PLN and ATC-COMM don't appear to have commands for them. They don't do
   anything in the A330 so I'm assuming they're just not present.
 * MCDU MENU doesn't do anything, I'm not sure I'm sending the right command there.
 * BRT and DIM don't do anything. I think I can get them mirroring the simulation
   though, I'll do that later.
 * LEDs don't work. I think I just need to find the commands for those.
-* No X-Plane 11 support. I need to implement UDP support to get that working. I
-  also don't have a copy of X-Plane 11 to test with.
 
 
 
@@ -94,12 +96,13 @@ AIRPORT).
 
 Known issues:
 
+* Disconnects after 100 seconds. Something about the X-Plane WebSocket server is
+  not sitting right with .NET Standard 2.0's `ClientWebSocket`, it reliably aborts
+  after 100 seconds. No issues with SimBridge's WebSocket server. I think the work
+  around here is to do a UDP implementation.
 * LEDs don't work. I've not actually seen them light up in the simulator yet so
   I'm not sure whether ToLiss simulate them.
-* X-Plane 12 only. I need to switch away from the web socket implementation to a
-  UDP implementation to get support working for earlier versions.
-* Keeps disconnecting. If I am to keep the web socket implementation then it needs
-  to be made more robust.
+* X-Plane 12 only. A UDP implementation should support earlier versions of X-Plane.
 
 
 
