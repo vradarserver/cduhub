@@ -9,6 +9,7 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.Threading;
 using System.Windows.Forms;
 using Cduhub.FlightSim;
 
@@ -18,6 +19,7 @@ namespace Cduhub.WindowsGui
     {
         private ListViewHelper<IFlightSimulatorMcdu, object> _ConnectedFlightSimulatorsListView;
         private bool _HookedConnectedFlightSimulators;
+        private int _ConnectedFlightSimulatorsChanged = 0;
 
         public Hub Hub => Program.Hub;
 
@@ -91,11 +93,7 @@ namespace Cduhub.WindowsGui
 
         private void ConnectedFlightSimulators_FlightSimulatorStateChanged(object sender, EventArgs e)
         {
-            if(InvokeRequired) {
-                BeginInvoke(new MethodInvoker(() => ConnectedFlightSimulators_FlightSimulatorStateChanged(sender, e)));
-            } else {
-                UpdateConnectedFlightSimulatorsDisplay();
-            }
+            Interlocked.Exchange(ref _ConnectedFlightSimulatorsChanged, 1);
         }
 
         private void Hub_CloseApplication(object sender, EventArgs e)
@@ -113,6 +111,13 @@ namespace Cduhub.WindowsGui
                 BeginInvoke(new MethodInvoker(() => Hub_ConnectedDeviceChanged(sender, e)));
             } else {
                 UpdateStateDisplay();
+            }
+        }
+
+        private void RefreshDisplayTimer_Tick(object sender, EventArgs e)
+        {
+            if(Interlocked.Exchange(ref _ConnectedFlightSimulatorsChanged, 0) != 0) {
+                UpdateConnectedFlightSimulatorsDisplay();
             }
         }
     }

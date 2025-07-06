@@ -34,6 +34,7 @@ namespace Cduhub.WindowsGui
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.label1 = new System.Windows.Forms.Label();
             this._Label_UsbDeviceState = new System.Windows.Forms.Label();
@@ -44,6 +45,7 @@ namespace Cduhub.WindowsGui
             this._Col_FlightSim_Connected = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this._Col_FlightSim_LastMessageUtc = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this._Col_FlightSim_CountMessages = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this._RefreshDisplayTimer = new System.Windows.Forms.Timer(this.components);
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -126,6 +128,12 @@ namespace Cduhub.WindowsGui
             this._Col_FlightSim_CountMessages.Text = "Messages";
             this._Col_FlightSim_CountMessages.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
+            // _RefreshDisplayTimer
+            // 
+            this._RefreshDisplayTimer.Enabled = true;
+            this._RefreshDisplayTimer.Interval = 250;
+            this._RefreshDisplayTimer.Tick += new System.EventHandler(this.RefreshDisplayTimer_Tick);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -158,5 +166,6 @@ namespace Cduhub.WindowsGui
         private ColumnHeader _Col_FlightSim_CountMessages;
         private ColumnHeader _Col_FlightSim_Aircraft;
         private ColumnHeader _Col_FlightSim_Connected;
+        private Timer _RefreshDisplayTimer;
     }
 }
