@@ -24,6 +24,7 @@ namespace McduDotNet
     /// </summary>
     class Mcdu : IMcdu
     {
+        private int _ProcessingPauseMilliseconds = 40;
         private readonly object _OutputLock = new Object();
         private HidDevice _HidDevice;
         private HidStream _HidStream;
@@ -209,6 +210,13 @@ namespace McduDotNet
                     }
                     PadAndSendDisplayPacket();
                     _DisplayDuplicateCheckString = duplicateCheckString;
+
+                    if(_ProcessingPauseMilliseconds > 0) {
+                        // If we send packets too quickly then the device can freak out. I don't see any errors coming
+                        // back in WireShark, it just doesn't update the screen properly. This forces a pause so that
+                        // a set of very fast updates won't corrupt the display.
+                        Thread.Sleep(_ProcessingPauseMilliseconds);
+                    }
                 }
             }
         }

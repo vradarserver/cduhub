@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -28,7 +29,7 @@ namespace Cduhub.FlightSim
         private UdpClient _UdpClient;
         private IPEndPoint _XPlaneSendEndpoint;
         private DateTime _IdleReceiveTimeoutFromUtc;
-        private readonly List<string> _Subscriptions = new List<string>();
+        private readonly List<XPlaneDataRefSubscription> _Subscriptions = new List<XPlaneDataRefSubscription>();
 
         /// <summary>
         /// Gets or sets the address of the machine running X-Plane.
@@ -80,7 +81,7 @@ namespace Cduhub.FlightSim
         /// <summary>
         /// All of the dataref subscriptions.
         /// </summary>
-        public IReadOnlyList<string> DataRefSubscriptions => _Subscriptions;
+        public IReadOnlyList<XPlaneDataRefSubscription> DataRefSubscriptions => _Subscriptions;
 
         /// <summary>
         /// Called when an RREF or RREFO packet is received.
@@ -159,28 +160,21 @@ namespace Cduhub.FlightSim
         /// Adds a dataref subscription.
         /// </summary>
         /// <param name="dataRef"></param>
+        /// <param name="tag"></param>
         /// <exception cref="InvalidOperationException"></exception>
-        public void AddSubscription(string dataRef)
+        public void AddSubscription(string dataRef, object tag = null)
         {
             if(IsConnected) {
                 throw new InvalidOperationException(
                     "You cannot set a subscription after the connection to X-Plane has been established"
                 );
             }
-            if(!_Subscriptions.Contains(dataRef)) {
-                _Subscriptions.Add(dataRef);
+            if(_Subscriptions.Any(candidate => candidate.DataRef == dataRef)) {
+                throw new InvalidOperationException(
+                    $"You have already subscribed to {dataRef}"
+                );
             }
-        }
-
-        /// <summary>
-        /// Adds many dataref subscriptions.
-        /// </summary>
-        /// <param name="dataRefs"></param>
-        public void AddSubscriptions(string[] dataRefs)
-        {
-            foreach(var dataRef in dataRefs) {
-                AddSubscription(dataRef);
-            }
+            _Subscriptions.Add(new XPlaneDataRefSubscription(dataRef, tag));
         }
 
         /// <summary>
@@ -238,7 +232,12 @@ namespace Cduhub.FlightSim
             }
         }
 
-        private void SendSubscriptions(UdpClient client, IPEndPoint xplaneEndpoint, string[] subscriptions, bool enable)
+        private void SendSubscriptions(
+            UdpClient client,
+            IPEndPoint xplaneEndpoint,
+            XPlaneDataRefSubscription[] subscriptions,
+            bool enable
+        )
         {
             var buffer = new byte[413];
             var dataRefIdx = 0;
@@ -265,50 +264,62 @@ namespace Cduhub.FlightSim
                 // cause some very freaky effects. We have no way of knowing whether it was received because
                 // they're using UDP instead of anything reliable / knowable. So I'm going to pause between
                 // every-so-many to give it a chance to catch up. Fingers crossed!
-                _IdleReceiveTimeoutFromUtc = DateTime.UtcNow;
-                if(countSent % CountSubscriptionsBetweenPauses == 0) {
-                    Thread.Sleep(MillisecondPauseDuringSubscriptions);
+                //
+                // The pause is only sent on subscriptions. When unsubscribing we want to rattle through these
+                // as quickly as possible, we don't have the luxury of time. Our thread might be killed if it
+                // takes too long to close down.
+                if(enable) {
+                    _IdleReceiveTimeoutFromUtc = DateTime.UtcNow;
+                    if(countSent % CountSubscriptionsBetweenPauses == 0) {
+                        Thread.Sleep(MillisecondPauseDuringSubscriptions);
+                    }
                 }
             }
 
             for(var idx = 0;idx < subscriptions.Length;++idx) {
-                var dataRef = subscriptions[idx];
-                addToBuffer(LittleEndian.GetBytes(idx + 1));
-                addToBuffer(Encoding.ASCII.GetBytes($"{dataRef}\0"));
+                var subscription = subscriptions[idx];
+                addToBuffer(LittleEndian.GetBytes(idx));
+                addToBuffer(Encoding.ASCII.GetBytes($"{subscription.DataRef}\0"));
                 sendBuffer(idx + 1);
             }
         }
 
-        protected async virtual Task ReceiveLoop(UdpClient client, string[] subscriptions, CancellationToken cancellationToken)
+        protected async virtual Task ReceiveLoop(
+            UdpClient client,
+            XPlaneDataRefSubscription[] subscriptions,
+            CancellationToken cancellationToken
+        )
         {
-            while(!cancellationToken.IsCancellationRequested) {
+            while(!cancellationToken.IsCancellationRequested && client == _UdpClient) {
                 var response = await client.ReceiveAsync();
                 _IdleReceiveTimeoutFromUtc = DateTime.UtcNow;
-                if(response.Buffer?.Length > 0) {
+                if(response.Buffer?.Length > 0 && !cancellationToken.IsCancellationRequested && client == _UdpClient) {
                     var buffer = new byte[response.Buffer.Length];
                     Array.Copy(response.Buffer, buffer, buffer.Length);
-                    await ProcessUdpResponse(buffer, subscriptions);
+                    ProcessUdpResponse(buffer, subscriptions);
                 }
             }
         }
 
-        protected Task ProcessUdpResponse(byte[] buffer, string[] subscriptions)
+        protected void ProcessUdpResponse(byte[] buffer, XPlaneDataRefSubscription[] subscriptions)
         {
             OnPacketReceived();
             if(buffer.Length > 4) {
                 var type = Encoding.ASCII.GetString(buffer, 0, 4);
                 if(type == "RREF") {
                     var dataRefValues = ProcessRREF(buffer, subscriptions, 5);
-                    if(dataRefValues.Length > 0) {
-                        DataRefUpdatesReceived?.Invoke(dataRefValues);
+                    if(dataRefValues.Length > 0 && DataRefUpdatesReceived != null) {
+                        DataRefUpdatesReceived(dataRefValues);
                     }
                 }
             }
-
-            return Task.CompletedTask;
         }
 
-        protected virtual XPlaneDataRefValue[] ProcessRREF(byte[] buffer, string[] subscriptions, int startOffset)
+        protected virtual XPlaneDataRefValue[] ProcessRREF(
+            byte[] buffer,
+            XPlaneDataRefSubscription[] subscriptions,
+            int startOffset
+        )
         {
             var result = new List<XPlaneDataRefValue>();
 
@@ -321,18 +332,23 @@ namespace Cduhub.FlightSim
             return result.ToArray();
         }
 
-        private void ReceivedFloat(List<XPlaneDataRefValue> values, int dataRefIdx, float value, string[] subscriptions)
+        private void ReceivedFloat(
+            List<XPlaneDataRefValue> values,
+            int dataRefIdx,
+            float value,
+            XPlaneDataRefSubscription[] subscriptions
+        )
         {
-            var subscription = GetDataRefName(subscriptions, dataRefIdx);
+            var subscription = GetSubscription(subscriptions, dataRefIdx);
             if(subscription != null) {
                 values.Add(new XPlaneDataRefValue(subscription, value));
             }
         }
 
-        private static string GetDataRefName(string[] subscriptions, int index)
+        private static XPlaneDataRefSubscription GetSubscription(XPlaneDataRefSubscription[] subscriptions, int index)
         {
-            var result = index > 0 && index <= subscriptions.Length
-                ? subscriptions[index - 1]
+            var result = index >= 0 && index < subscriptions.Length
+                ? subscriptions[index]
                 : null;
             return result;
         }

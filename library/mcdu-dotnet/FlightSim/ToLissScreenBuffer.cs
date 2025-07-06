@@ -261,6 +261,16 @@ namespace McduDotNet.FlightSim
                     while(buffer.Length <= columnNumber) {
                         buffer.Append(' ');
                     }
+                    var stringTerminated = false;
+                    for(var idx = 0;idx < columnNumber;++idx) {
+                        if(buffer[idx] == '\0') {
+                            stringTerminated = true;
+                            break;
+                        }
+                    }
+                    if(stringTerminated) {
+                        ch = '\0';
+                    }
                     buffer[columnNumber] = ch;
                 }
             }

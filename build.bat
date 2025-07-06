@@ -23,6 +23,7 @@ set RUNARGS=
     if "%1"=="clock"         set BADARG=OK & set TARGET=SAMCLOCK
     if "%1"=="colours"       set BADARG=OK & set TARGET=SAMCOLS
     if "%1"=="cooked-input"  set BADARG=OK & set TARGET=SAMCOOKI
+    if "%1"=="fast-update"   set BADARG=OK & set TARGET=SAMFSTUP
     if "%1"=="fenix-mcdu"    set BADARG=OK & set TARGET=SAMFENIX
     if "%1"=="leds"          set BADARG=OK & set TARGET=SAMLEDS
 
@@ -48,6 +49,7 @@ set RUNARGS=
     if "%TARGET%"=="SAMCOLS"    goto :SAMCOLS
     if "%TARGET%"=="SAMCOOKI"   goto :SAMCOOKI
     if "%TARGET%"=="SAMFENIX"   goto :SAMFENIX
+    if "%TARGET%"=="SAMFSTUP"   goto :SAMFSTUP
     if "%TARGET%"=="SAMLEDS"    goto :SAMLEDS
 
 :USAGE
@@ -60,6 +62,7 @@ echo.
 echo clock        Build the clock mcdu-dotnet sample
 echo colours      Build the colours mcdu-dotnet sample
 echo cooked-input Build the cooked-input mcdu-dotnet sample
+echo fast-update  Build the fast-update mcdu-dotnet sample
 echo fenix-mcdu   Build the fenix-mcdu mcdu-dotnet sample
 echo leds         Build the leds mcdu-dotnet sample
 echo.
@@ -130,6 +133,11 @@ rem ## Build targets
 
 :SAMFENIX
     set "PROJ=%BATDIR%library\samples\fenix-mcdu\fenix-mcdu.csproj"
+    call :DOTNET
+    goto :EOF
+
+:SAMFSTUP
+    set "PROJ=%BATDIR%library\samples\fast-update\fast-update.csproj"
     call :DOTNET
     goto :EOF
 

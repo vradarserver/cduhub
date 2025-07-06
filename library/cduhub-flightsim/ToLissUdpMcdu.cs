@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -105,165 +106,156 @@ namespace Cduhub.FlightSim
 
         private int SelectedMcduNumber() => SelectedBuffer != PilotBuffer ? 2 : 1;
 
-        private void SubscribeToDatarefs()
+        enum RowType : byte
         {
-            void subscribeToEachCellInTheRow(string dataRef)
+            Title,
+            STitle,
+            Scratchpad,
+            Label,
+            Cont,
+            SCont,
+            VertSlew
+        }
+
+        class SubscriptionTag
+        {
+            public RowType RowType;
+            public byte McduNum;
+            public string Style;
+            public byte RowNumber;
+            public byte CellNumber;
+
+            private SubscriptionTag()
             {
-                for(var idx = 0;idx < Metrics.Columns;++idx) {
-                    _XPlaneUdp.AddSubscription($"{dataRef}[{idx}]");
-                }
             }
 
-            for(var mcduNum = 1;mcduNum < 3;++mcduNum) {
-                foreach(var style in "wgybs") {
-                    subscribeToEachCellInTheRow($"AirbusFBW/MCDU{mcduNum}title{style}");
-                }
-                foreach(var style in "wgyb") {
-                    subscribeToEachCellInTheRow($"AirbusFBW/MCDU{mcduNum}stitle{style}");
-                }
-                foreach(var style in "wa") {
-                    subscribeToEachCellInTheRow($"AirbusFBW/MCDU{mcduNum}sp{style}");
-                }
-                for(var labelNum = 1;labelNum < 7;++labelNum) {
-                    foreach(var style in new string[] { "w", "g", "y", "b", "a", "m", "s", "Lg", "Lw", }) {
-                        subscribeToEachCellInTheRow($"AirbusFBW/MCDU{mcduNum}label{labelNum}{style}");
-                    }
-                }
-                for(var contNum = 1;contNum < 7;++contNum) {
-                    foreach(var style in "wgybams") {
-                        subscribeToEachCellInTheRow($"AirbusFBW/MCDU{mcduNum}cont{contNum}{style}");
-                    }
-                }
-                for(var scontNum = 1;scontNum < 7;++scontNum) {
-                    foreach(var style in "wgybams") {
-                        subscribeToEachCellInTheRow($"AirbusFBW/MCDU{mcduNum}scont{scontNum}{style}");
-                    }
-                }
-                _XPlaneUdp.AddSubscription($"AirbusFBW/MCDU{mcduNum}VertSlewKeys");
+            public SubscriptionTag(RowType rowType, byte mcduNum, string style)
+            {
+                RowType = rowType;
+                McduNum = mcduNum;
+                Style = style;
+            }
+
+            public SubscriptionTag(RowType rowType, byte mcduNum, string style, byte rowNumber) : this(rowType, mcduNum, style)
+            {
+                RowNumber = rowNumber;
+            }
+
+            public SubscriptionTag ForCell(byte cellNumber)
+            {
+                return new SubscriptionTag() {
+                    RowType =       RowType,
+                    McduNum =       McduNum,
+                    Style =         Style,
+                    RowNumber =     RowNumber,
+                    CellNumber =    cellNumber,
+                };
             }
         }
 
-        static readonly Regex _McduNumberRegex = new Regex(@"^AirbusFBW/MCDU(?<mcduNum>1|2)", RegexOptions.Compiled);
-        static readonly Regex _TitleRegex = new Regex(@"MCDU[1|2]title(?<style>w|g|y|b|s)$", RegexOptions.Compiled);
-        static readonly Regex _STitleRegex = new Regex(@"MCDU[1|2]stitle(?<style>w|g|y|b)$", RegexOptions.Compiled);
-        static readonly Regex _SPRegex = new Regex(@"MCDU[1|2]sp(?<style>w|a)$", RegexOptions.Compiled);
-        static readonly Regex _LabelRegex = new Regex(@"MCDU[1|2]label(?<labelNum>1|2|3|4|5|6)(?<style>w|g|y|b|a|m|s|Lg|Lw)$", RegexOptions.Compiled);
-        static readonly Regex _ContRegex = new Regex(@"MCDU[1|2]cont(?<contNum>1|2|3|4|5|6)(?<style>w|g|y|b|a|m|s)$", RegexOptions.Compiled);
-        static readonly Regex _SContRegex = new Regex(@"MCDU[1|2]scont(?<scontNum>1|2|3|4|5|6)(?<style>w|g|y|b|a|m|s)$", RegexOptions.Compiled);
-        static readonly Regex _VertSlewKeysRegex = new Regex(@"MCDU[1|2]VertSlewKeys$", RegexOptions.Compiled);
+        private void SubscribeToDatarefs()
+        {
+            void subscribeToEachCellInTheRow(string dataRef, SubscriptionTag tag)
+            {
+                for(byte idx = 0;idx < Metrics.Columns;++idx) {
+                    var fullTag = tag.ForCell(idx);
+                    _XPlaneUdp.AddSubscription($"{dataRef}[{idx}]", fullTag);
+                }
+            }
+
+            for(byte mcduNum = 1;mcduNum < 3;++mcduNum) {
+                foreach(var style in new string[] { "w", "g", "y", "b", "s", }) {
+                    var tag = new SubscriptionTag(RowType.Title, mcduNum, style);
+                    subscribeToEachCellInTheRow($"AirbusFBW/MCDU{mcduNum}title{style}", tag);
+                }
+                foreach(var style in new string[] { "w", "g", "y", "b" }) {
+                    var tag = new SubscriptionTag(RowType.STitle, mcduNum, style);
+                    subscribeToEachCellInTheRow($"AirbusFBW/MCDU{mcduNum}stitle{style}", tag);
+                }
+                foreach(var style in new string[] { "w", "a", }) {
+                    var tag = new SubscriptionTag(RowType.Scratchpad, mcduNum, style);
+                    subscribeToEachCellInTheRow($"AirbusFBW/MCDU{mcduNum}sp{style}", tag);
+                }
+                for(byte labelNum = 1;labelNum < 7;++labelNum) {
+                    foreach(var style in new string[] { "w", "g", "y", "b", "a", "m", "s", "Lg", "Lw", }) {
+                        var tag = new SubscriptionTag(RowType.Label, mcduNum, style, labelNum);
+                        subscribeToEachCellInTheRow($"AirbusFBW/MCDU{mcduNum}label{labelNum}{style}", tag);
+                    }
+                }
+                for(byte contNum = 1;contNum < 7;++contNum) {
+                    foreach(var style in new string[] { "w", "g", "y", "b", "a", "m", "s", }) {
+                        var tag = new SubscriptionTag(RowType.Cont, mcduNum, style, contNum);
+                        subscribeToEachCellInTheRow($"AirbusFBW/MCDU{mcduNum}cont{contNum}{style}", tag);
+                    }
+                }
+                for(byte scontNum = 1;scontNum < 7;++scontNum) {
+                    foreach(var style in new string[] { "w", "g", "y", "b", "a", "m", "s", }) {
+                        var tag = new SubscriptionTag(RowType.SCont, mcduNum, style, scontNum);
+                        subscribeToEachCellInTheRow($"AirbusFBW/MCDU{mcduNum}scont{scontNum}{style}", tag);
+                    }
+                }
+                _XPlaneUdp.AddSubscription($"AirbusFBW/MCDU{mcduNum}VertSlewKeys", new SubscriptionTag(RowType.VertSlew, mcduNum, null));
+            }
+        }
 
         private void DataRefUpdatesReceived(XPlaneDataRefValue[] dataRefValues)
         {
-            foreach(var dataRefValue in dataRefValues) {
-                (var dataRefName, var dataRefIndex) = dataRefValue.ParseArrayDataRef();
+            var pilotUpdated = false;
+            var firstOfficerUpdated = false;
 
-                var mcduNumMatch = _McduNumberRegex.Match(dataRefName);
-                if(mcduNumMatch.Success) {
-                    var mcduNum = int.Parse(mcduNumMatch.Groups["mcduNum"].Value);
-                    var mcduBuffer = mcduNum == 1 ? PilotBuffer : FirstOfficerBuffer;
-                    var processed = false;
-                    var character = (char)dataRefValue.Value;
-                    processed |= ProcessTitleUpdate(dataRefName, mcduBuffer, dataRefIndex, character);
-                    processed |= ProcessSTitleUpdate(dataRefName, mcduBuffer, dataRefIndex, character);
-                    processed |= ProcessSPUpdate(dataRefName, mcduBuffer, dataRefIndex, character);
-                    processed |= ProcessLabelUpdate(dataRefName, mcduBuffer, dataRefIndex, character);
-                    processed |= ProcessContUpdate(dataRefName, mcduBuffer, dataRefIndex, character);
-                    processed |= ProcessSContUpdate(dataRefName, mcduBuffer, dataRefIndex, character);
-                    if(!processed) {
-                        ProcessVertSlewKeysUpdate(dataRefName, mcduBuffer, (int)dataRefValue.Value);
+            foreach(var dataRefValue in dataRefValues) {
+                var tag = (SubscriptionTag)dataRefValue.Subscription.Tag;
+                var value = dataRefValue.Value;
+                ToLissScreenBuffer tolissBuffer = null;
+                switch(tag.McduNum) {
+                    case 1:
+                        tolissBuffer = _PilotTolissBuffer;
+                        pilotUpdated = true;
+                        break;
+                    case 2:
+                        tolissBuffer = _FirstOfficerToLissBuffer;
+                        firstOfficerUpdated = true;
+                        break;
+                }
+
+                if(tolissBuffer != null) {
+                    switch(tag.RowType) {
+                        case RowType.Title:
+                            tolissBuffer.SetTitleCell(tag.Style, tag.CellNumber, (char)value);
+                            break;
+                        case RowType.STitle:
+                            tolissBuffer.SetSTitleCell(tag.Style, tag.CellNumber, (char)value);
+                            break;
+                        case RowType.Scratchpad:
+                            tolissBuffer.SetScratchPadCell(tag.Style, tag.CellNumber, (char)value);
+                            break;
+                        case RowType.Label:
+                            tolissBuffer.SetLabelCell(tag.RowNumber, tag.Style, tag.CellNumber, (char)value);
+                            break;
+                        case RowType.Cont:
+                            tolissBuffer.SetContCell(tag.RowNumber, tag.Style, tag.CellNumber, (char)value);
+                            break;
+                        case RowType.SCont:
+                            tolissBuffer.SetSContCell(tag.RowNumber, tag.Style, tag.CellNumber, (char)value);
+                            break;
+                        case RowType.VertSlew:
+                            tolissBuffer.SetVertSlewKeys((long)value);
+                            break;
                     }
                 }
             }
 
-            _PilotTolissBuffer.CopyToScreen(PilotBuffer.Screen);
-            _FirstOfficerToLissBuffer.CopyToScreen(FirstOfficerBuffer.Screen);
-            RefreshSelectedScreen();
-        }
-
-        private bool ProcessTitleUpdate(string dataRefName, SimulatorMcduBuffer mcduBuffer, int chIndex, char ch)
-        {
-            var match = _TitleRegex.Match(dataRefName);
-            if(match.Success) {
-                var style = match.Groups["style"].Value;
-                var tolissBuffer = GetToLissScreenBuffer(mcduBuffer);
-                tolissBuffer.SetTitleCell(style, chIndex, ch);
+            if(pilotUpdated) {
+                _PilotTolissBuffer.CopyToScreen(PilotBuffer.Screen);
             }
-            return match.Success;
-        }
-
-        private bool ProcessSTitleUpdate(string dataRefName, SimulatorMcduBuffer mcduBuffer, int chIndex, char ch)
-        {
-            var match = _STitleRegex.Match(dataRefName);
-            if(match.Success) {
-                var style = match.Groups["style"].Value;
-                var tolissBuffer = GetToLissScreenBuffer(mcduBuffer);
-                tolissBuffer.SetSTitleCell(style, chIndex, ch);
+            if(firstOfficerUpdated) {
+                _FirstOfficerToLissBuffer.CopyToScreen(FirstOfficerBuffer.Screen);
             }
-            return match.Success;
-        }
-
-        private bool ProcessSPUpdate(string dataRefName, SimulatorMcduBuffer mcduBuffer, int chIndex, char ch)
-        {
-            var match = _SPRegex.Match(dataRefName);
-            if(match.Success) {
-                var style = match.Groups["style"].Value;
-                var tolissBuffer = GetToLissScreenBuffer(mcduBuffer);
-                tolissBuffer.SetScratchPadCell(style, chIndex, ch);
+            if(   (pilotUpdated && SelectedBuffer == PilotBuffer)
+               || (firstOfficerUpdated && SelectedBuffer == FirstOfficerBuffer)
+            ) {
+                RefreshSelectedScreen();
             }
-            return match.Success;
-        }
-
-        private bool ProcessLabelUpdate(string dataRefName, SimulatorMcduBuffer mcduBuffer, int chIndex, char ch)
-        {
-            var match = _LabelRegex.Match(dataRefName);
-            if(match.Success) {
-                var labelNum = int.Parse(match.Groups["labelNum"].Value);
-                var style = match.Groups["style"].Value;
-                var tolissBuffer = GetToLissScreenBuffer(mcduBuffer);
-                tolissBuffer.SetLabelCell(labelNum, style, chIndex, ch);
-            }
-            return match.Success;
-        }
-
-        private bool ProcessContUpdate(string dataRefName, SimulatorMcduBuffer mcduBuffer, int chIndex, char ch)
-        {
-            var match = _ContRegex.Match(dataRefName);
-            if(match.Success) {
-                var contNum = int.Parse(match.Groups["contNum"].Value);
-                var style = match.Groups["style"].Value;
-                var tolissBuffer = GetToLissScreenBuffer(mcduBuffer);
-                tolissBuffer.SetContCell(contNum, style, chIndex, ch);
-            }
-            return match.Success;
-        }
-
-        private bool ProcessSContUpdate(string dataRefName, SimulatorMcduBuffer mcduBuffer, int chIndex, char ch)
-        {
-            var match = _SContRegex.Match(dataRefName);
-            if(match.Success) {
-                var scontNum = int.Parse(match.Groups["scontNum"].Value);
-                var style = match.Groups["style"].Value;
-                var tolissBuffer = GetToLissScreenBuffer(mcduBuffer);
-                tolissBuffer.SetSContCell(scontNum, style, chIndex, ch);
-            }
-            return match.Success;
-        }
-
-        private bool ProcessVertSlewKeysUpdate(string dataRefName, SimulatorMcduBuffer mcduBuffer, int value)
-        {
-            var match = _VertSlewKeysRegex.Match(dataRefName);
-            if(match.Success) {
-                var tolissBuffer = GetToLissScreenBuffer(mcduBuffer);
-                tolissBuffer.SetVertSlewKeys(value);
-            }
-            return match.Success;
-        }
-
-        private ToLissScreenBuffer GetToLissScreenBuffer(SimulatorMcduBuffer mcduBuffer)
-        {
-            return mcduBuffer == FirstOfficerBuffer
-                ? _FirstOfficerToLissBuffer
-                : _PilotTolissBuffer;
         }
     }
 }
