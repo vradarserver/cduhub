@@ -89,6 +89,11 @@ namespace Cduhub.FlightSim
         public Action<XPlaneDataRefValue[]> DataRefUpdatesReceived { get; set; }
 
         /// <summary>
+        /// Called when all subscriptions that contribute to a frame event have been received and processed.
+        /// </summary>
+        public Action FrameReceived { get; set; }
+
+        /// <summary>
         /// Raised when <see cref="IsConnected"/> changes.
         /// </summary>
         public event EventHandler IsConnectedChanged;
@@ -161,8 +166,9 @@ namespace Cduhub.FlightSim
         /// </summary>
         /// <param name="dataRef"></param>
         /// <param name="tag"></param>
+        /// <param name="includeInFrameEvent"></param>
         /// <exception cref="InvalidOperationException"></exception>
-        public void AddSubscription(string dataRef, object tag = null)
+        public void AddSubscription(string dataRef, object tag = null, bool includeInFrameEvent = false)
         {
             if(IsConnected) {
                 throw new InvalidOperationException(
@@ -174,7 +180,7 @@ namespace Cduhub.FlightSim
                     $"You have already subscribed to {dataRef}"
                 );
             }
-            _Subscriptions.Add(new XPlaneDataRefSubscription(dataRef, tag));
+            _Subscriptions.Add(new XPlaneDataRefSubscription(dataRef, tag, includeInFrameEvent));
         }
 
         /// <summary>
@@ -290,29 +296,49 @@ namespace Cduhub.FlightSim
             CancellationToken cancellationToken
         )
         {
+            var countFrameSubscriptionsExpected = subscriptions
+                .Where(sub => sub.IncludeInFrameEvent)
+                .Count();
+            var countFrameSubscriptionsSeen = ResetCurrentFrame(subscriptions);
+
             while(!cancellationToken.IsCancellationRequested && client == _UdpClient) {
                 var response = await client.ReceiveAsync();
                 _IdleReceiveTimeoutFromUtc = DateTime.UtcNow;
                 if(response.Buffer?.Length > 0 && !cancellationToken.IsCancellationRequested && client == _UdpClient) {
                     var buffer = new byte[response.Buffer.Length];
                     Array.Copy(response.Buffer, buffer, buffer.Length);
-                    ProcessUdpResponse(buffer, subscriptions);
+                    countFrameSubscriptionsSeen += ProcessUdpResponse(buffer, subscriptions);
+                    if(countFrameSubscriptionsSeen == countFrameSubscriptionsExpected) {
+                        FrameReceived?.Invoke();
+                        countFrameSubscriptionsSeen = ResetCurrentFrame(subscriptions);
+                    }
                 }
             }
         }
 
-        protected void ProcessUdpResponse(byte[] buffer, XPlaneDataRefSubscription[] subscriptions)
+        protected int ProcessUdpResponse(byte[] buffer, XPlaneDataRefSubscription[] subscriptions)
         {
             OnPacketReceived();
+
+            var countNewSubscriptionsInFrame = 0;
             if(buffer.Length > 4) {
                 var type = Encoding.ASCII.GetString(buffer, 0, 4);
                 if(type == "RREF") {
                     var dataRefValues = ProcessRREF(buffer, subscriptions, 5);
-                    if(dataRefValues.Length > 0 && DataRefUpdatesReceived != null) {
-                        DataRefUpdatesReceived(dataRefValues);
+                    if(dataRefValues.Length > 0) {
+                        DataRefUpdatesReceived?.Invoke(dataRefValues);
+                        foreach(var drValue in dataRefValues) {
+                            var sub = drValue.Subscription;
+                            if(sub.IncludeInFrameEvent && !sub.IsInCurrentFrame) {
+                                ++countNewSubscriptionsInFrame;
+                                sub.IsInCurrentFrame = true;
+                            }
+                        }
                     }
                 }
             }
+
+            return countNewSubscriptionsInFrame;
         }
 
         protected virtual XPlaneDataRefValue[] ProcessRREF(
@@ -351,6 +377,15 @@ namespace Cduhub.FlightSim
                 ? subscriptions[index]
                 : null;
             return result;
+        }
+
+        protected virtual int ResetCurrentFrame(XPlaneDataRefSubscription[] subscriptions)
+        {
+            foreach(var sub in subscriptions) {
+                sub.IsInCurrentFrame = false;
+            }
+
+            return 0;
         }
 
         protected async virtual Task IdleReconnectLoop(

@@ -60,6 +60,7 @@ namespace Cduhub.FlightSim
             _XPlaneUdp.PacketReceived += (sender,args) => RecordMessageReceivedFromSimulator();
             _XPlaneUdp.DataRefRefreshIntervalTimesPerSecond = 5;
             _XPlaneUdp.DataRefUpdatesReceived = DataRefUpdatesReceived;
+            _XPlaneUdp.FrameReceived = FrameReceived;
 
             SubscribeToDatarefs();
         }
@@ -159,7 +160,7 @@ namespace Cduhub.FlightSim
             {
                 for(byte idx = 0;idx < Metrics.Columns;++idx) {
                     var fullTag = tag.ForCell(idx);
-                    _XPlaneUdp.AddSubscription($"{dataRef}[{idx}]", fullTag);
+                    _XPlaneUdp.AddSubscription($"{dataRef}[{idx}]", fullTag, includeInFrameEvent: true);
                 }
             }
 
@@ -194,68 +195,54 @@ namespace Cduhub.FlightSim
                         subscribeToEachCellInTheRow($"AirbusFBW/MCDU{mcduNum}scont{scontNum}{style}", tag);
                     }
                 }
-                _XPlaneUdp.AddSubscription($"AirbusFBW/MCDU{mcduNum}VertSlewKeys", new SubscriptionTag(RowType.VertSlew, mcduNum, null));
+                _XPlaneUdp.AddSubscription(
+                    $"AirbusFBW/MCDU{mcduNum}VertSlewKeys",
+                    new SubscriptionTag(RowType.VertSlew, mcduNum, null),
+                    includeInFrameEvent: true
+                );
             }
         }
 
         private void DataRefUpdatesReceived(XPlaneDataRefValue[] dataRefValues)
         {
-            var pilotUpdated = false;
-            var firstOfficerUpdated = false;
-
             foreach(var dataRefValue in dataRefValues) {
                 var tag = (SubscriptionTag)dataRefValue.Subscription.Tag;
                 var value = dataRefValue.Value;
-                ToLissScreenBuffer tolissBuffer = null;
-                switch(tag.McduNum) {
-                    case 1:
-                        tolissBuffer = _PilotTolissBuffer;
-                        pilotUpdated = true;
+                var tolissBuffer = tag.McduNum == 1
+                    ? _PilotTolissBuffer
+                    : _FirstOfficerToLissBuffer;
+
+                switch(tag.RowType) {
+                    case RowType.Title:
+                        tolissBuffer.SetTitleCell(tag.Style, tag.CellNumber, (char)value);
                         break;
-                    case 2:
-                        tolissBuffer = _FirstOfficerToLissBuffer;
-                        firstOfficerUpdated = true;
+                    case RowType.STitle:
+                        tolissBuffer.SetSTitleCell(tag.Style, tag.CellNumber, (char)value);
+                        break;
+                    case RowType.Scratchpad:
+                        tolissBuffer.SetScratchPadCell(tag.Style, tag.CellNumber, (char)value);
+                        break;
+                    case RowType.Label:
+                        tolissBuffer.SetLabelCell(tag.RowNumber, tag.Style, tag.CellNumber, (char)value);
+                        break;
+                    case RowType.Cont:
+                        tolissBuffer.SetContCell(tag.RowNumber, tag.Style, tag.CellNumber, (char)value);
+                        break;
+                    case RowType.SCont:
+                        tolissBuffer.SetSContCell(tag.RowNumber, tag.Style, tag.CellNumber, (char)value);
+                        break;
+                    case RowType.VertSlew:
+                        tolissBuffer.SetVertSlewKeys((long)value);
                         break;
                 }
+            }
+        }
 
-                if(tolissBuffer != null) {
-                    switch(tag.RowType) {
-                        case RowType.Title:
-                            tolissBuffer.SetTitleCell(tag.Style, tag.CellNumber, (char)value);
-                            break;
-                        case RowType.STitle:
-                            tolissBuffer.SetSTitleCell(tag.Style, tag.CellNumber, (char)value);
-                            break;
-                        case RowType.Scratchpad:
-                            tolissBuffer.SetScratchPadCell(tag.Style, tag.CellNumber, (char)value);
-                            break;
-                        case RowType.Label:
-                            tolissBuffer.SetLabelCell(tag.RowNumber, tag.Style, tag.CellNumber, (char)value);
-                            break;
-                        case RowType.Cont:
-                            tolissBuffer.SetContCell(tag.RowNumber, tag.Style, tag.CellNumber, (char)value);
-                            break;
-                        case RowType.SCont:
-                            tolissBuffer.SetSContCell(tag.RowNumber, tag.Style, tag.CellNumber, (char)value);
-                            break;
-                        case RowType.VertSlew:
-                            tolissBuffer.SetVertSlewKeys((long)value);
-                            break;
-                    }
-                }
-            }
-
-            if(pilotUpdated) {
-                _PilotTolissBuffer.CopyToScreen(PilotBuffer.Screen);
-            }
-            if(firstOfficerUpdated) {
-                _FirstOfficerToLissBuffer.CopyToScreen(FirstOfficerBuffer.Screen);
-            }
-            if(   (pilotUpdated && SelectedBuffer == PilotBuffer)
-               || (firstOfficerUpdated && SelectedBuffer == FirstOfficerBuffer)
-            ) {
-                RefreshSelectedScreen();
-            }
+        private void FrameReceived()
+        {
+            _PilotTolissBuffer.CopyToScreen(PilotBuffer.Screen);
+            _FirstOfficerToLissBuffer.CopyToScreen(FirstOfficerBuffer.Screen);
+            RefreshSelectedScreen();
         }
     }
 }

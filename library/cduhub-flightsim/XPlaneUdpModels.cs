@@ -18,10 +18,15 @@ namespace Cduhub.FlightSim.XPlaneUdpModels
 
         public object Tag { get; }
 
-        public XPlaneDataRefSubscription(string dataRef, object tag)
+        public bool IncludeInFrameEvent { get; }
+
+        public bool IsInCurrentFrame { get; set; }
+
+        public XPlaneDataRefSubscription(string dataRef, object tag, bool includeInFrameEvent)
         {
             DataRef = dataRef;
             Tag = tag;
+            IncludeInFrameEvent = includeInFrameEvent;
         }
 
         public override string ToString() => DataRef;
