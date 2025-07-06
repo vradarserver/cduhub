@@ -65,6 +65,24 @@ Known issues:
 
 
 
+### X-Plane: ToLiss
+
+This uses ToLiss's custom datarefs to read and control the pilot and first-officer
+MCDUs. You can flip between the two MCDUs using the BLANK1 button (next to DATA)
+and you can jump back to the CDU Hub menu using the BLANK2 button (next to
+AIRPORT).
+
+Known issues:
+
+* Pauses at startup. This is a side-effect of the mechanism used to interact with
+  X-Plane. I'll add a progress bar in a future update.
+* LEDs don't work. I've not actually seen them light up in the simulator yet so
+  I'm not sure whether ToLiss simulate them.
+* BRT and DIM only affect the simulated MCDU, not the real one. I'll look at this
+  when I do the general BRT/DIM handling for the device.
+
+
+
 ### X-Plane 12: General Airbus
 
 This uses X-Plane's standard datarefs for MCDUs to read and control the pilot and
@@ -84,25 +102,6 @@ Known issues:
 * BRT and DIM don't do anything. I think I can get them mirroring the simulation
   though, I'll do that later.
 * LEDs don't work. I think I just need to find the commands for those.
-
-
-
-### X-Plane 12: ToLiss
-
-This uses ToLiss's custom datarefs to read and control the pilot and first-officer
-MCDUs. You can flip between the two MCDUs using the BLANK1 button (next to DATA)
-and you can jump back to the CDU Hub menu using the BLANK2 button (next to
-AIRPORT).
-
-Known issues:
-
-* Disconnects after 100 seconds. Something about the X-Plane WebSocket server is
-  not sitting right with .NET Standard 2.0's `ClientWebSocket`, it reliably aborts
-  after 100 seconds. No issues with SimBridge's WebSocket server. I think the work
-  around here is to do a UDP implementation.
-* LEDs don't work. I've not actually seen them light up in the simulator yet so
-  I'm not sure whether ToLiss simulate them.
-* X-Plane 12 only. A UDP implementation should support earlier versions of X-Plane.
 
 
 
