@@ -24,6 +24,7 @@ namespace Cduhub.FlightSim
     /// </summary>
     public class XPlaneUdp : IDisposable
     {
+        private object _UdpClientLock = new object();
         private UdpClient _UdpClient;
         private IPEndPoint _XPlaneSendEndpoint;
         private DateTime _IdleReceiveTimeoutFromUtc;
@@ -255,7 +256,9 @@ namespace Cduhub.FlightSim
             void sendBuffer(int countSent)
             {
                 Array.Clear(buffer, dataRefIdx, buffer.Length - dataRefIdx);
-                client.Send(buffer, buffer.Length, xplaneEndpoint);
+                lock(_UdpClientLock) {
+                    client.Send(buffer, buffer.Length, xplaneEndpoint);
+                }
                 dataRefIdx = startDataRefIdx;
 
                 // I've had this run too quickly for X-Plane to process and it ends up missing some, which can
@@ -345,6 +348,24 @@ namespace Cduhub.FlightSim
                     receiveTimeoutCancellationTokenSource.Cancel();
                 }
                 await Task.Delay(100);
+            }
+        }
+
+        public void SendCommand(string command)
+        {
+            var client = _UdpClient;
+            var endpoint = _XPlaneSendEndpoint;
+
+            if(client != null) {
+                var buffer = new byte[509];
+                Array.Clear(buffer, 0, buffer.Length);
+                Encoding.ASCII.GetBytes("CMND").CopyTo(buffer, 0);
+                Encoding.ASCII.GetBytes(command).CopyTo(buffer, 5);
+                lock(_UdpClientLock) {
+                    try {
+                        client.Send(buffer, buffer.Length, endpoint);
+                    } catch { };
+                }
             }
         }
     }

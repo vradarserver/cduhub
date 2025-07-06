@@ -57,7 +57,7 @@ namespace Cduhub.FlightSim
         {
             _XPlaneUdp.IsConnectedChanged += (sender,args) => RecordConnection(_XPlaneUdp.IsConnected);
             _XPlaneUdp.PacketReceived += (sender,args) => RecordMessageReceivedFromSimulator();
-            _XPlaneUdp.DataRefRefreshIntervalTimesPerSecond = 1;
+            _XPlaneUdp.DataRefRefreshIntervalTimesPerSecond = 5;
             _XPlaneUdp.DataRefUpdatesReceived = DataRefUpdatesReceived;
 
             SubscribeToDatarefs();
@@ -93,14 +93,14 @@ namespace Cduhub.FlightSim
 
         public override void SendKeyToSimulator(Key key, bool pressed)
         {
-            //var mcduNumber = SelectedMcduNumber();
-            //var keyCode = key.ToToLissCommand(mcduNumber);
-            //if(keyCode != "" && IsConnected) {
-            //    var command = $"AirbusFBW/{keyCode}";
-            //    lock(_QueueLock) {
-            //        _SendCommandQueue.Enqueue(new KeyCommand() { Command = command, Pressed = pressed });
-            //    }
-            //}
+            if(pressed) {
+                var mcduNumber = SelectedMcduNumber();
+                var keyCode = key.ToToLissCommand(mcduNumber);
+                if(keyCode != "" && IsConnected) {
+                    var command = $"AirbusFBW/{keyCode}";
+                    _XPlaneUdp.SendCommand(command);
+                }
+            }
         }
 
         private int SelectedMcduNumber() => SelectedBuffer != PilotBuffer ? 2 : 1;
