@@ -17,30 +17,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Cduhub.FlightSim.XPlaneUdpModels;
 
-// THIS IS NOT USED. As far as I can tell for a generic CDU in X-Plane 11/12 you'd need to subscribe to 120
-// datarefs per line (24 for the styles, 96 for the 24 UTF-8 characters quads) and there's 14 lines, so that's
-// 1680 per MCDU, ~3200 subscriptions for both simultaneously. Plus because it's UDP the 4 bytes for each
-// character can come in out of order, so while they're being built up they can form invalid bytecodes (I
-// think). I don't think they ever intended this to be read over UDP.
-//
-// https://developer.x-plane.com/article/datarefs-for-the-cdu-screen/
-//
-// I'm not the Andrew in the comments but the commenter has a good point re. efficiency. I don't have a lot of
-// of history with X-Plane so I am probably missing something obvious, but it does look like they have painted
-// themselves into a corner here. I can see why they are trying to move to WebSockets.
-//
-// But... I only started looking at using UDP because X-Plane 12's WebSocket server aborts connections from
-// .NET Standard 2.0 clients after exactly 100 seconds. Now that could well be because it's triggering a bug
-// in .NET's web socket implementation... but the thing is, whatever is going on doesn't affect SimBridge's
-// web socket connections. I can use the .NET ClientWebSocket with SimBridge and it'll stay connected forever.
-//
-// So yeah... X-Plane support is probably going to be constrained to X-Plane 12, and it's probably going to
-// have to wait for them to fix whatever is triggering the 100 second WebSocket abort.
-//
-// I'm leaving this here so that it's in source control if I ever feel like enduring another bout of hardcore
-// mental self-flagellation... and UDP is a possibility for ToLiss I guess, at least they're just 24 datarefs
-// per line instead of 120, albeit with many overlays per line.
-
 namespace Cduhub.FlightSim
 {
     /// <summary>
@@ -83,6 +59,16 @@ namespace Cduhub.FlightSim
         /// The number of times per second to receive data.
         /// </summary>
         public int DataRefRefreshIntervalTimesPerSecond { get; set; } = 1;
+
+        /// <summary>
+        /// The number of subscription requests to make before we pause to let X-Plane catch up.
+        /// </summary>
+        public int CountSubscriptionsBetweenPauses { get; set; } = 100;
+
+        /// <summary>
+        /// How long to wait during subscriptions while we let X-Plane catch up.
+        /// </summary>
+        public int MillisecondPauseDuringSubscriptions { get; set; } = 100;
 
         /// <summary>
         /// True if the UDP client exists. It might not actually be "connected" to anything, UDP doesn't do
@@ -266,18 +252,27 @@ namespace Cduhub.FlightSim
             addToBuffer(LittleEndian.GetBytes(enable ? DataRefRefreshIntervalTimesPerSecond : 0));
 
             var startDataRefIdx = dataRefIdx;
-            void sendBuffer()
+            void sendBuffer(int countSent)
             {
                 Array.Clear(buffer, dataRefIdx, buffer.Length - dataRefIdx);
                 client.Send(buffer, buffer.Length, xplaneEndpoint);
                 dataRefIdx = startDataRefIdx;
+
+                // I've had this run too quickly for X-Plane to process and it ends up missing some, which can
+                // cause some very freaky effects. We have no way of knowing whether it was received because
+                // they're using UDP instead of anything reliable / knowable. So I'm going to pause between
+                // every-so-many to give it a chance to catch up. Fingers crossed!
+                _IdleReceiveTimeoutFromUtc = DateTime.UtcNow;
+                if(countSent % CountSubscriptionsBetweenPauses == 0) {
+                    Thread.Sleep(MillisecondPauseDuringSubscriptions);
+                }
             }
 
             for(var idx = 0;idx < subscriptions.Length;++idx) {
                 var dataRef = subscriptions[idx];
                 addToBuffer(LittleEndian.GetBytes(idx + 1));
                 addToBuffer(Encoding.ASCII.GetBytes($"{dataRef}\0"));
-                sendBuffer();
+                sendBuffer(idx + 1);
             }
         }
 

@@ -15,13 +15,13 @@ namespace Cduhub.Pages
 {
     class ToLiss_Page : Page
     {
-        private readonly ToLissWebSocketMcdu _ToLissMcdu;
+        private readonly ToLissUdpMcdu _ToLissMcdu;
 
         public override Key MenuKey => Key.Blank2;
 
         public ToLiss_Page(Hub hub) : base(hub)
         {
-            _ToLissMcdu = new ToLissWebSocketMcdu(hub.HttpClient, Screen, Leds);
+            _ToLissMcdu = new ToLissUdpMcdu(Screen, Leds);
             _ToLissMcdu.DisplayRefreshRequired += ToLissMcdu_DisplayRefreshRequired;
             _ToLissMcdu.LedsRefreshRequired += ToLissMcdu_LedsRefreshRequired;
 

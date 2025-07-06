@@ -31,15 +31,15 @@ namespace McduDotNet.FlightSim
 
         class RowStyles
         {
-            public string Style_w;
-            public string Style_g;
-            public string Style_y;
-            public string Style_b;
-            public string Style_a;
-            public string Style_m;
-            public string Style_s;
-            public string Style_Lg;
-            public string Style_Lw;
+            public StringBuilder Style_w = new StringBuilder();
+            public StringBuilder Style_g = new StringBuilder();
+            public StringBuilder Style_y = new StringBuilder();
+            public StringBuilder Style_b = new StringBuilder();
+            public StringBuilder Style_a = new StringBuilder();
+            public StringBuilder Style_m = new StringBuilder();
+            public StringBuilder Style_s = new StringBuilder();
+            public StringBuilder Style_Lg = new StringBuilder();
+            public StringBuilder Style_Lw = new StringBuilder();
         }
 
         private RowVariants[] _Rows = new RowVariants[Metrics.Lines];
@@ -66,6 +66,17 @@ namespace McduDotNet.FlightSim
         }
 
         /// <summary>
+        /// Applies a character dataref value to the Title row.
+        /// </summary>
+        /// <param name="style"></param>
+        /// <param name="cellIdx"></param>
+        /// <param name="ch"></param>
+        public void SetTitleCell(string style, int cellIdx, char ch)
+        {
+            SetCell(style, ch, 0, cellIdx, Variant.Normal);
+        }
+
+        /// <summary>
         /// Applies a dataref value to the STitle row.
         /// </summary>
         /// <param name="style"></param>
@@ -76,6 +87,17 @@ namespace McduDotNet.FlightSim
         }
 
         /// <summary>
+        /// Applies a character dataref value to the STitle row.
+        /// </summary>
+        /// <param name="style"></param>
+        /// <param name="cellIdx"></param>
+        /// <param name="ch"></param>
+        public void SetSTitleCell(string style, int cellIdx, char ch)
+        {
+            SetCell(style, ch, 0, cellIdx, Variant.Small);
+        }
+
+        /// <summary>
         /// Applies a dataref value to the ScratchPad row.
         /// </summary>
         /// <param name="style"></param>
@@ -83,6 +105,17 @@ namespace McduDotNet.FlightSim
         public void SetScratchPad(string style, string value)
         {
             SetText(style, value, _Rows.Length - 1, Variant.Normal);
+        }
+
+        /// <summary>
+        /// Applies a character dataref value to the ScratchPad row.
+        /// </summary>
+        /// <param name="style"></param>
+        /// <param name="cellIdx"></param>
+        /// <param name="ch"></param>
+        public void SetScratchPadCell(string style, int cellIdx, char ch)
+        {
+            SetCell(style, ch, _Rows.Length - 1, cellIdx, Variant.Normal);
         }
 
         /// <summary>
@@ -98,6 +131,19 @@ namespace McduDotNet.FlightSim
         }
 
         /// <summary>
+        /// Applies a character dataref value to a Label row.
+        /// </summary>
+        /// <param name="labelNumber"></param>
+        /// <param name="style"></param>
+        /// <param name="cellIdx"></param>
+        /// <param name="ch"></param>
+        public void SetLabelCell(int labelNumber, string style, int cellIdx, char ch)
+        {
+            var rowNumber = 1 + ((labelNumber - 1) * 2);
+            SetCell(style, ch, rowNumber, cellIdx, Variant.Normal);
+        }
+
+        /// <summary>
         /// Applies a dataref value to a Cont row.
         /// </summary>
         /// <param name="contNumber"></param>
@@ -110,6 +156,19 @@ namespace McduDotNet.FlightSim
         }
 
         /// <summary>
+        /// Applies a character dataref value to a Cont row.
+        /// </summary>
+        /// <param name="contNumber"></param>
+        /// <param name="style"></param>
+        /// <param name="cellIdx"></param>
+        /// <param name="ch"></param>
+        public void SetContCell(int contNumber, string style, int cellIdx, char ch)
+        {
+            var rowNumber = 2 + ((contNumber - 1) * 2);
+            SetCell(style, ch, rowNumber, cellIdx, Variant.Normal);
+        }
+
+        /// <summary>
         /// Applies a dataref value to an SCont row.
         /// </summary>
         /// <param name="scontNumber"></param>
@@ -119,6 +178,19 @@ namespace McduDotNet.FlightSim
         {
             var rowNumber = 2 + ((scontNumber - 1) * 2);
             SetText(style, value, rowNumber, Variant.Small);
+        }
+
+        /// <summary>
+        /// Applies a character dataref value to an SCont row.
+        /// </summary>
+        /// <param name="scontNumber"></param>
+        /// <param name="style"></param>
+        /// <param name="cellIdx"></param>
+        /// <param name="ch"></param>
+        public void SetSContCell(int scontNumber, string style, int cellIdx, char ch)
+        {
+            var rowNumber = 2 + ((scontNumber - 1) * 2);
+            SetCell(style, ch, rowNumber, cellIdx, Variant.Small);
         }
 
         /// <summary>
@@ -144,16 +216,52 @@ namespace McduDotNet.FlightSim
                 var text = Encoding.UTF8.GetString(bytes);
                 text = text.Trim('\0');
 
+                StringBuilder buffer = null;
                 switch(style) {
-                    case "w":   styles.Style_w = text; break;
-                    case "g":   styles.Style_g = text; break;
-                    case "y":   styles.Style_y = text; break;
-                    case "b":   styles.Style_b = text; break;
-                    case "a":   styles.Style_a = text; break;
-                    case "m":   styles.Style_m = text; break;
-                    case "s":   styles.Style_s = text; break;
-                    case "Lg":  styles.Style_Lg = text; break;
-                    case "Lw":  styles.Style_Lw = text; break;
+                    case "w":   buffer = styles.Style_w; break;
+                    case "g":   buffer = styles.Style_g; break;
+                    case "y":   buffer = styles.Style_y; break;
+                    case "b":   buffer = styles.Style_b; break;
+                    case "a":   buffer = styles.Style_a; break;
+                    case "m":   buffer = styles.Style_m; break;
+                    case "s":   buffer = styles.Style_s; break;
+                    case "Lg":  buffer = styles.Style_Lg; break;
+                    case "Lw":  buffer = styles.Style_Lw; break;
+                }
+                if(buffer != null) {
+                    buffer.Clear();
+                    buffer.Append(text);
+                }
+            }
+        }
+
+        private void SetCell(string style, char ch, int rowNumber, int columnNumber, Variant rowVariant)
+        {
+            if(columnNumber >= 0 && columnNumber < Metrics.Columns) {
+                var flavours = _Rows[rowNumber];
+                var styles = flavours.RowStyles[(int)rowVariant];
+                if(styles == null) {
+                    styles = new RowStyles();
+                    flavours.RowStyles[(int)rowVariant] = styles;
+                }
+
+                StringBuilder buffer = null;
+                switch(style) {
+                    case "w":   buffer = styles.Style_w; break;
+                    case "g":   buffer = styles.Style_g; break;
+                    case "y":   buffer = styles.Style_y; break;
+                    case "b":   buffer = styles.Style_b; break;
+                    case "a":   buffer = styles.Style_a; break;
+                    case "m":   buffer = styles.Style_m; break;
+                    case "s":   buffer = styles.Style_s; break;
+                    case "Lg":  buffer = styles.Style_Lg; break;
+                    case "Lw":  buffer = styles.Style_Lw; break;
+                }
+                if(buffer != null) {
+                    while(buffer.Length <= columnNumber) {
+                        buffer.Append(' ');
+                    }
+                    buffer[columnNumber] = ch;
                 }
             }
         }
@@ -168,7 +276,7 @@ namespace McduDotNet.FlightSim
 
             for(var rowIdx = 0;rowIdx < _Rows.Length;++rowIdx) {
                 screen.Line = rowIdx;
-                var defaultSmall = rowIdx > 1 && rowIdx < 13 && rowIdx % 2 == 1;
+                var defaultSmall = rowIdx < 13 && rowIdx % 2 == 1;
                 ApplyVariant(screen, _Rows[rowIdx], Variant.Normal, defaultSmall);
                 ApplyVariant(screen, _Rows[rowIdx], Variant.Small, true);
             }
@@ -194,48 +302,46 @@ namespace McduDotNet.FlightSim
             }
         }
 
-        private static void OverlayText(Screen screen, string overlay, Action setupStyle)
+        private static void OverlayText(Screen screen, StringBuilder overlayBuffer, Action setupStyle)
         {
-            if(!String.IsNullOrEmpty(overlay)) {
-                screen.GotoStartOfLine();
-                setupStyle?.Invoke();
-                foreach(var ch in overlay) {
-                    var put = ch;
-                    switch(ch) {
-                        case '`':   put = '°'; break;
-                        case '|':   put = 'Δ'; break;
-                    }
-                    if(ch == ' ') {
-                        screen.AdvanceColumn();
-                    } else {
-                        screen.Put(put, advanceColumn: true);
-                    }
+            screen.GotoStartOfLine();
+            setupStyle?.Invoke();
+            for(var idx = 0;idx < overlayBuffer.Length;++idx) {
+                var ch = overlayBuffer[idx];
+                var put = ch;
+                switch(ch) {
+                    case '`':   put = '°'; break;
+                    case '|':   put = 'Δ'; break;
+                }
+                if(ch == ' ' || ch == '\0') {
+                    screen.AdvanceColumn();
+                } else {
+                    screen.Put(put, advanceColumn: true);
                 }
             }
         }
 
-        private static void OverlaySubstitutedText(Screen screen, string overlay)
+        private static void OverlaySubstitutedText(Screen screen, StringBuilder overlayBuffer)
         {
-            if(!String.IsNullOrEmpty(overlay)) {
-                screen.GotoStartOfLine();
-                foreach(var ch in overlay) {
-                    var put = '\0';
-                    switch(ch) {
-                        case 'A':   put = '['; screen.Colour = Colour.Cyan; break;
-                        case 'B':   put = ']'; screen.Colour = Colour.Cyan; break;
-                        case 'E':   put = '☐'; screen.Colour = Colour.Amber; break;
-                        case '0':   put = '←'; screen.Colour = Colour.Cyan; break;
-                        case '1':   put = '→'; screen.Colour = Colour.Cyan; break;
-                        case '2':   put = '←'; screen.Colour = Colour.White; break;
-                        case '3':   put = '→'; screen.Colour = Colour.White; break;
-                        case '4':   put = '←'; screen.Colour = Colour.Amber; break;
-                        case '5':   put = '→'; screen.Colour = Colour.Amber; break;
-                    }
-                    if(put == '\0') {
-                        screen.AdvanceColumn();
-                    } else {
-                        screen.Put(put, advanceColumn: true);
-                    }
+            screen.GotoStartOfLine();
+            for(var idx = 0;idx < overlayBuffer.Length;++idx) {
+                var ch = overlayBuffer[idx];
+                var put = '\0';
+                switch(ch) {
+                    case 'A':   put = '['; screen.Colour = Colour.Cyan; break;
+                    case 'B':   put = ']'; screen.Colour = Colour.Cyan; break;
+                    case 'E':   put = '☐'; screen.Colour = Colour.Amber; break;
+                    case '0':   put = '←'; screen.Colour = Colour.Cyan; break;
+                    case '1':   put = '→'; screen.Colour = Colour.Cyan; break;
+                    case '2':   put = '←'; screen.Colour = Colour.White; break;
+                    case '3':   put = '→'; screen.Colour = Colour.White; break;
+                    case '4':   put = '←'; screen.Colour = Colour.Amber; break;
+                    case '5':   put = '→'; screen.Colour = Colour.Amber; break;
+                }
+                if(put == '\0') {
+                    screen.AdvanceColumn();
+                } else {
+                    screen.Put(put, advanceColumn: true);
                 }
             }
         }
