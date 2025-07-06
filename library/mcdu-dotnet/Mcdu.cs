@@ -24,7 +24,7 @@ namespace McduDotNet
     /// </summary>
     class Mcdu : IMcdu
     {
-        private int _ProcessingPauseMilliseconds = 40;
+        private readonly int _ProcessingPauseMilliseconds = 40;
         private readonly object _OutputLock = new Object();
         private HidDevice _HidDevice;
         private HidStream _HidStream;
