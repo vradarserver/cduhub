@@ -23,6 +23,14 @@ This includes Windows, most major Linux distros and macOS.
 
 
 
+## Credits
+
+The MCDU image used as the basis for the Windows app logo was copied from
+FlyByWire's A320 NEO simulator:
+
+https://github.com/flybywiresim/aircraft
+
+
 ## Supported Simulators
 
 
