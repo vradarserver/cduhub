@@ -21,16 +21,16 @@ namespace Cduhub.Pages
         {
             _ClockPage = new Clock_Page(hub);
             _FlightSimsPage = new FlightSimMenu_Page(hub);
+        }
 
+        public override void OnPrepareScreen()
+        {
             Output
                 .Clear()
-                .Green()
-                .Centred("CDU Hub")
-                .White()
-                .LeftLabel(1, ">Clock")
-                .RightLabel(1, "Flight Sims<")
-                .Red()
-                .RightLabel(6, "Quit<");
+                .Centred("<green>CDU <small>HUB")
+                .LeftLabel(1, ">CLOCK")
+                .RightLabel(1, "FLIGHT SIMS<")
+                .RightLabel(6, "<red>QUIT<");
 
             Leds.Mcdu = Leds.Menu = true;
         }

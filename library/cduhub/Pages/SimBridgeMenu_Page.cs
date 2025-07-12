@@ -14,30 +14,31 @@ namespace Cduhub.Pages
 {
     class SimBridgeMenu_Page : Page
     {
-        private FlightSimMenu_Page _Parent;
         private SimBridge_Page _SimBridge_Page;
 
-        public SimBridgeMenu_Page(FlightSimMenu_Page parent, Hub hub) : base(hub)
+        public SimBridgeMenu_Page(Hub hub) : base(hub)
         {
-            _Parent = parent;
+        }
+
+        public override void OnPrepareScreen()
+        {
             Output
-                .Green()
-                .Centred("SimBridge")
-                .White()
+                .Clear()
+                .Centred("<green>SIMBRIDGE")
                 .Newline()
-                .Newline()
-                .Centred("BLANK2 for hub menu")
-                .Amber()
-                .LeftLabel(6, ">Cancel")
+                .Centred("<green><small>(FLY-BY-WIRE)")
+                .Newline(2)
+                .Centred("BLANK2 <small>FOR HUB <large>MENU")
+                .LeftLabel(6, "<red><small>>BACK")
                 .Cyan()
-                .RightLabel(5, "Reconnect<")
+                .RightLabel(5, "RECONNECT<")
                 .RightLabel(6, "MCDU<");
         }
 
         public override void OnKeyDown(Key key)
         {
             switch(key) {
-                case Key.LineSelectLeft6:   _Hub.SelectPage(_Parent); break;
+                case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
                 case Key.LineSelectRight5:  Reconnect(); break;
                 case Key.LineSelectRight6:  OpenSimBridgePage(); break;
             }

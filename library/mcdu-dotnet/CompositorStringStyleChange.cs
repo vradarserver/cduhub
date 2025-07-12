@@ -8,48 +8,35 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using McduDotNet;
-
-namespace Cduhub.Pages
+namespace McduDotNet
 {
-    class FlightSimMenu_Page : Page
+    /// <summary>
+    /// Describes the point in a string where the style changes.
+    /// </summary>
+    public class CompositorStringStyleChange
     {
-        private FenixMenu_Page _FenixMenuPage;
-        private SimBridgeMenu_Page _SimBridgeMenuPage;
-        private ToLissMenu_Page _ToLissMenuPage;
-        private XPlaneMenu_Page _XPlaneMenuPage;
+        /// <summary>
+        /// The point in the string where the style changes.
+        /// </summary>
+        public int Index { get; }
 
-        public FlightSimMenu_Page(Hub hub) : base(hub)
+        /// <summary>
+        /// The new style.
+        /// </summary>
+        public CompositorStringStyle Style { get; }
+
+        /// <summary>
+        /// Creates an object.
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="style"></param>
+        public CompositorStringStyleChange(int index, CompositorStringStyle style)
         {
-            _FenixMenuPage = new FenixMenu_Page(hub);
-            _SimBridgeMenuPage = new SimBridgeMenu_Page(hub);
-            _ToLissMenuPage = new ToLissMenu_Page(hub);
-            _XPlaneMenuPage = new XPlaneMenu_Page(hub);
+            Index = index;
+            Style = style;
         }
 
-        public override void OnPrepareScreen()
-        {
-            Output
-                .Clear()
-                .Centred("<green>FLIGHT SIMULATORS")
-                .LeftLabel(1, ">FENIX")
-                .LeftLabel(2, ">SIMBRIDGE")
-                .Newline()
-                .Write(" <small>(FLY-BY-WIRE)")
-                .RightLabel(1, "X-PLANE 12<")
-                .RightLabel(2, "TOLISS<")
-                .LeftLabel(6, "<red><small>>BACK");
-        }
-
-        public override void OnKeyDown(Key key)
-        {
-            switch(key) {
-                case Key.LineSelectLeft1:   _Hub.SelectPage(_FenixMenuPage); break;
-                case Key.LineSelectLeft2:   _Hub.SelectPage(_SimBridgeMenuPage); break;
-                case Key.LineSelectRight1:  _Hub.SelectPage(_XPlaneMenuPage); break;
-                case Key.LineSelectRight2:  _Hub.SelectPage(_ToLissMenuPage); break;
-                case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
-            }
-        }
+        /// <inheritdoc/>
+        public override string ToString() => $"[{Index}]={Style}";
     }
 }

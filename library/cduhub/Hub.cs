@@ -9,6 +9,7 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using McduDotNet;
@@ -26,6 +27,7 @@ namespace Cduhub
         private int _ConnectingCount;
         private System.Timers.Timer _ReconnectTimer;
         private bool _WaitingForConnect = true;
+        private Stack<Page> _PageHistory = new Stack<Page>();
 
         /// <summary>
         /// Gets or sets a value indicating whether the hub should perpetually try to reconnect to the MCDU if
@@ -152,6 +154,7 @@ namespace Cduhub
                 _SelectedPage?.OnSelected(false);
                 page?.OnPrepareScreen();
                 _SelectedPage = page;
+                _PageHistory.Push(page);
 
                 if(page != null) {
                     RefreshDisplay(page);
@@ -159,6 +162,21 @@ namespace Cduhub
 
                     _SelectedPage.OnSelected(true);
                 }
+            }
+        }
+
+        public void ReturnToRoot()
+        {
+            _PageHistory.Clear();
+            SelectPage(_RootPage);
+        }
+
+        public void ReturnToParent()
+        {
+            if(_PageHistory.Count > 1) {
+                var currentPage = _PageHistory.Pop();
+                var parent = _PageHistory.Pop();
+                SelectPage(parent);
             }
         }
 
@@ -188,9 +206,12 @@ namespace Cduhub
         private void Mcdu_KeyDown(object sender, McduDotNet.KeyEventArgs e)
         {
             var menuKey = _SelectedPage?.MenuKey ?? Key.McduMenu;
+            var parentKey = _SelectedPage?.ParentKey ?? Key.Blank2;
 
-            if(e.Key == menuKey) {
-                SelectPage(_RootPage);
+            if(e.Key == menuKey && !(_SelectedPage?.DisableMenuKey ?? false)) {
+                ReturnToRoot();
+            } else if(e.Key == parentKey && !(_SelectedPage?.DisableParentKey ?? false)) {
+                ReturnToParent();
             } else {
                 _SelectedPage?.OnKeyDown(e.Key);
             }

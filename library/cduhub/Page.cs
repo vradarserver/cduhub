@@ -24,6 +24,12 @@ namespace Cduhub
 
         public virtual Key MenuKey { get; } = Key.McduMenu;
 
+        public virtual bool DisableMenuKey { get; }
+
+        public virtual Key ParentKey { get; } = Key.Blank2;
+
+        public virtual bool DisableParentKey { get; }
+
         public Page(Hub hub)
         {
             _Hub = hub;

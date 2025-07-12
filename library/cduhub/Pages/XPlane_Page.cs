@@ -17,7 +17,7 @@ namespace Cduhub.Pages
     {
         private readonly XPlaneGenericMcdu _XPlaneMcdu;
 
-        public override Key MenuKey => Key.Blank2;
+        public override bool DisableMenuKey => true;
 
         public XPlane_Page(Hub hub) : base(hub)
         {

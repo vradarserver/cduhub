@@ -8,40 +8,35 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using Cduhub.FlightSim;
-using McduDotNet;
-
-namespace Cduhub.Pages
+namespace McduDotNet
 {
-    class SimBridge_Page : Page
+    /// <summary>
+    /// An enumeration of the styles that can be embedded within a composite string.
+    /// </summary>
+    public enum CompositorStringStyle
     {
-        private readonly SimBridgeA320RemoteMcdu _SimBridgeA320;
+        Small,
 
-        public override bool DisableMenuKey => true;
+        Large,
 
-        public SimBridge_Page(Hub hub) : base(hub)
-        {
-            _SimBridgeA320 = new SimBridgeA320RemoteMcdu(Screen, Leds);
-            _SimBridgeA320.DisplayRefreshRequired += SimBridgeA320_DisplayRefreshRequired;
-            _SimBridgeA320.LedsRefreshRequired += SimBridgeA320_LedsRefreshRequired;
+        Amber,
 
-            ConnectedFlightSimulators.AddFlightSimulatorMcdu(_SimBridgeA320);
-            _SimBridgeA320.ReconnectToSimulator();
-        }
+        Brown,
 
-        public override void OnKeyDown(Key key)
-        {
-            if(key != Key.Blank1) {
-                _SimBridgeA320.SendKeyToSimulator(key, pressed: true);
-            } else {
-                _SimBridgeA320.AdvanceSelectedBufferProductId();
-            }
-        }
+        Cyan,
 
-        public void Reconnect() => _SimBridgeA320.ReconnectToSimulator();
+        Grey,
 
-        private void SimBridgeA320_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
+        Green,
 
-        private void SimBridgeA320_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLeds();
+        Khaki,
+
+        Magenta,
+
+        Red,
+
+        White,
+
+        Yellow,
     }
 }

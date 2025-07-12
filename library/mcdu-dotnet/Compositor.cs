@@ -137,9 +137,9 @@ namespace McduDotNet
             return this;
         }
 
-        public Compositor Newline()
+        public Compositor Newline(int count = 1)
         {
-            _Screen.Line = Math.Min(_Screen.Rows.Length - 1, _Screen.Line + 1);
+            _Screen.Line = Math.Min(_Screen.Rows.Length - 1, _Screen.Line + count);
             return StartOfLine();
         }
 
@@ -165,19 +165,26 @@ namespace McduDotNet
 
         public Compositor Centred(string text)
         {
-            _Screen.WriteCentred(text);
+            var cstring = new CompositorString(text);
+            _Screen.CentreColumnFor(cstring.Text);
+            ApplyCompositorString(cstring);
             return this;
         }
 
         public Compositor LeftLabel(int line, string label)
         {
-            _Screen.LeftLineSelect(line, label);
+            _Screen.Line = line * 2;
+            _Screen.ForLeftToRight();
+            ApplyCompositorString(label);
             return this;
         }
 
         public Compositor RightLabel(int line, string label)
         {
-            _Screen.RightLineSelect(line, label);
+            _Screen.Line = line * 2;
+            _Screen.ForRightToLeft();
+            ApplyCompositorString(label);
+            _Screen.ForLeftToRight();
             return this;
         }
 
@@ -193,92 +200,149 @@ namespace McduDotNet
 
         public Compositor Write(string text)
         {
+            ApplyCompositorString(text);
+            return this;
+        }
+
+        private Compositor WriteRaw(string text)
+        {
             _Screen.Write(text);
             return this;
         }
 
         public Compositor Centered(string text) => Centred(text);
 
-        public Compositor Write(char value) => Write(value.ToString());
+        public Compositor Write(char value) => WriteRaw(value.ToString());
 
-        public Compositor Write(byte value) => Write(value.ToString());
+        public Compositor Write(byte value) => WriteRaw(value.ToString());
 
-        public Compositor Write(byte value, string format) => Write(value.ToString(format));
+        public Compositor Write(byte value, string format) => WriteRaw(value.ToString(format));
 
-        public Compositor Write(byte value, IFormatProvider formatProvider) => Write(value.ToString(formatProvider));
+        public Compositor Write(byte value, IFormatProvider formatProvider) => WriteRaw(value.ToString(formatProvider));
 
-        public Compositor Write(byte value, string format, IFormatProvider formatProvider) => Write(value.ToString(format, formatProvider));
+        public Compositor Write(byte value, string format, IFormatProvider formatProvider) => WriteRaw(value.ToString(format, formatProvider));
 
-        public Compositor Write(short value) => Write(value.ToString());
+        public Compositor Write(short value) => WriteRaw(value.ToString());
 
-        public Compositor Write(short value, string format) => Write(value.ToString(format));
+        public Compositor Write(short value, string format) => WriteRaw(value.ToString(format));
 
-        public Compositor Write(short value, IFormatProvider formatProvider) => Write(value.ToString(formatProvider));
+        public Compositor Write(short value, IFormatProvider formatProvider) => WriteRaw(value.ToString(formatProvider));
 
-        public Compositor Write(short value, string format, IFormatProvider formatProvider) => Write(value.ToString(format, formatProvider));
+        public Compositor Write(short value, string format, IFormatProvider formatProvider) => WriteRaw(value.ToString(format, formatProvider));
 
-        public Compositor Write(int value) => Write(value.ToString());
+        public Compositor Write(int value) => WriteRaw(value.ToString());
 
-        public Compositor Write(int value, string format) => Write(value.ToString(format));
+        public Compositor Write(int value, string format) => WriteRaw(value.ToString(format));
 
-        public Compositor Write(int value, IFormatProvider formatProvider) => Write(value.ToString(formatProvider));
+        public Compositor Write(int value, IFormatProvider formatProvider) => WriteRaw(value.ToString(formatProvider));
 
-        public Compositor Write(int value, string format, IFormatProvider formatProvider) => Write(value.ToString(format, formatProvider));
+        public Compositor Write(int value, string format, IFormatProvider formatProvider) => WriteRaw(value.ToString(format, formatProvider));
 
-        public Compositor Write(long value) => Write(value.ToString());
+        public Compositor Write(long value) => WriteRaw(value.ToString());
 
-        public Compositor Write(long value, string format) => Write(value.ToString(format));
+        public Compositor Write(long value, string format) => WriteRaw(value.ToString(format));
 
-        public Compositor Write(long value, IFormatProvider formatProvider) => Write(value.ToString(formatProvider));
+        public Compositor Write(long value, IFormatProvider formatProvider) => WriteRaw(value.ToString(formatProvider));
 
-        public Compositor Write(long value, string format, IFormatProvider formatProvider) => Write(value.ToString(format, formatProvider));
+        public Compositor Write(long value, string format, IFormatProvider formatProvider) => WriteRaw(value.ToString(format, formatProvider));
 
-        public Compositor Write(float value) => Write(value.ToString());
+        public Compositor Write(float value) => WriteRaw(value.ToString());
 
-        public Compositor Write(float value, string format) => Write(value.ToString(format));
+        public Compositor Write(float value, string format) => WriteRaw(value.ToString(format));
 
-        public Compositor Write(float value, IFormatProvider formatProvider) => Write(value.ToString(formatProvider));
+        public Compositor Write(float value, IFormatProvider formatProvider) => WriteRaw(value.ToString(formatProvider));
 
-        public Compositor Write(float value, string format, IFormatProvider formatProvider) => Write(value.ToString(format, formatProvider));
+        public Compositor Write(float value, string format, IFormatProvider formatProvider) => WriteRaw(value.ToString(format, formatProvider));
 
-        public Compositor Write(double value) => Write(value.ToString());
+        public Compositor Write(double value) => WriteRaw(value.ToString());
 
-        public Compositor Write(double value, string format) => Write(value.ToString(format));
+        public Compositor Write(double value, string format) => WriteRaw(value.ToString(format));
 
-        public Compositor Write(double value, IFormatProvider formatProvider) => Write(value.ToString(formatProvider));
+        public Compositor Write(double value, IFormatProvider formatProvider) => WriteRaw(value.ToString(formatProvider));
 
-        public Compositor Write(double value, string format, IFormatProvider formatProvider) => Write(value.ToString(format, formatProvider));
+        public Compositor Write(double value, string format, IFormatProvider formatProvider) => WriteRaw(value.ToString(format, formatProvider));
 
-        public Compositor Write(decimal value) => Write(value.ToString());
+        public Compositor Write(decimal value) => WriteRaw(value.ToString());
 
-        public Compositor Write(decimal value, string format) => Write(value.ToString(format));
+        public Compositor Write(decimal value, string format) => WriteRaw(value.ToString(format));
 
-        public Compositor Write(decimal value, IFormatProvider formatProvider) => Write(value.ToString(formatProvider));
+        public Compositor Write(decimal value, IFormatProvider formatProvider) => WriteRaw(value.ToString(formatProvider));
 
-        public Compositor Write(decimal value, string format, IFormatProvider formatProvider) => Write(value.ToString(format, formatProvider));
+        public Compositor Write(decimal value, string format, IFormatProvider formatProvider) => WriteRaw(value.ToString(format, formatProvider));
 
-        public Compositor Write(DateTime value) => Write(value.ToString());
+        public Compositor Write(DateTime value) => WriteRaw(value.ToString());
 
-        public Compositor Write(DateTime value, string format) => Write(value.ToString(format));
+        public Compositor Write(DateTime value, string format) => WriteRaw(value.ToString(format));
 
-        public Compositor Write(DateTime value, IFormatProvider formatProvider) => Write(value.ToString(formatProvider));
+        public Compositor Write(DateTime value, IFormatProvider formatProvider) => WriteRaw(value.ToString(formatProvider));
 
-        public Compositor Write(DateTime value, string format, IFormatProvider formatProvider) => Write(value.ToString(format, formatProvider));
+        public Compositor Write(DateTime value, string format, IFormatProvider formatProvider) => WriteRaw(value.ToString(format, formatProvider));
 
-        public Compositor Write(TimeSpan value) => Write(value.ToString());
+        public Compositor Write(TimeSpan value) => WriteRaw(value.ToString());
 
-        public Compositor Write(TimeSpan value, string format) => Write(value.ToString(format));
+        public Compositor Write(TimeSpan value, string format) => WriteRaw(value.ToString(format));
 
-        public Compositor Write(TimeSpan value, string format, IFormatProvider formatProvider) => Write(value.ToString(format, formatProvider));
+        public Compositor Write(TimeSpan value, string format, IFormatProvider formatProvider) => WriteRaw(value.ToString(format, formatProvider));
 
-        public Compositor Write(DateTimeOffset value) => Write(value.ToString());
+        public Compositor Write(DateTimeOffset value) => WriteRaw(value.ToString());
 
-        public Compositor Write(DateTimeOffset value, string format) => Write(value.ToString(format));
+        public Compositor Write(DateTimeOffset value, string format) => WriteRaw(value.ToString(format));
 
-        public Compositor Write(DateTimeOffset value, IFormatProvider formatProvider) => Write(value.ToString(formatProvider));
+        public Compositor Write(DateTimeOffset value, IFormatProvider formatProvider) => WriteRaw(value.ToString(formatProvider));
 
-        public Compositor Write(DateTimeOffset value, string format, IFormatProvider formatProvider) => Write(value.ToString(format, formatProvider));
+        public Compositor Write(DateTimeOffset value, string format, IFormatProvider formatProvider) => WriteRaw(value.ToString(format, formatProvider));
 
-        public Compositor Write(object obj) => Write(obj?.ToString() ?? "");
+        public Compositor Write(object obj) => WriteRaw(obj?.ToString() ?? "");
+
+        private void ApplyCompositorString(string textWithEmbedding)
+        {
+            var cstring = new CompositorString(textWithEmbedding);
+            ApplyCompositorString(cstring);
+        }
+
+        private void ApplyCompositorString(CompositorString cstring)
+        {
+            var restoreSmall = _Screen.Small;
+            var restoreColour = _Screen.Colour;
+
+            var styleChangeIdx = -1;
+            CompositorStringStyleChange nextStyleChange;
+            void selectNextStyleChange()
+            {
+                nextStyleChange = ++styleChangeIdx < cstring.StyleChanges.Length
+                    ? cstring.StyleChanges[styleChangeIdx]
+                    : null;
+            }
+            selectNextStyleChange();
+
+            if(_Screen.RightToLeft && cstring.Text.Length > 0) {
+                _Screen.Column = Math.Max(0, _Screen.Column - (cstring.Text.Length - 1));
+            }
+
+            for(var textIdx = 0;textIdx < cstring.Text.Length;++textIdx) {
+                while(textIdx == nextStyleChange?.Index) {
+                    switch(nextStyleChange.Style) {
+                        case CompositorStringStyle.Amber:       _Screen.Colour = McduDotNet.Colour.Amber; break;
+                        case CompositorStringStyle.Brown:       _Screen.Colour = McduDotNet.Colour.Brown; break;
+                        case CompositorStringStyle.Cyan:        _Screen.Colour = McduDotNet.Colour.Cyan; break;
+                        case CompositorStringStyle.Green:       _Screen.Colour = McduDotNet.Colour.Green; break;
+                        case CompositorStringStyle.Grey:        _Screen.Colour = McduDotNet.Colour.Grey; break;
+                        case CompositorStringStyle.Khaki:       _Screen.Colour = McduDotNet.Colour.Khaki; break;
+                        case CompositorStringStyle.Large:       _Screen.Small = false; break;
+                        case CompositorStringStyle.Magenta:     _Screen.Colour = McduDotNet.Colour.Magenta; break;
+                        case CompositorStringStyle.Red:         _Screen.Colour = McduDotNet.Colour.Red; break;
+                        case CompositorStringStyle.Small:       _Screen.Small = true; break;
+                        case CompositorStringStyle.White:       _Screen.Colour = McduDotNet.Colour.White; break;
+                        case CompositorStringStyle.Yellow:      _Screen.Colour = McduDotNet.Colour.Yellow; break;
+                    }
+                    selectNextStyleChange();
+                }
+                _Screen.Put(cstring.Text[textIdx]);
+                _Screen.Column = Math.Min(_Screen.CurrentRow.Cells.Length - 1, _Screen.Column + 1);
+            }
+
+            _Screen.Small = restoreSmall;
+            _Screen.Colour = restoreColour;
+        }
     }
 }

@@ -14,32 +14,32 @@ namespace Cduhub.Pages
 {
     class XPlaneMenu_Page : Page
     {
-        private FlightSimMenu_Page _Parent;
         private XPlane_Page _XPlane_Page;
 
-        public XPlaneMenu_Page(FlightSimMenu_Page parent, Hub hub) : base(hub)
+        public XPlaneMenu_Page(Hub hub) : base(hub)
         {
-            _Parent = parent;
+        }
+
+        public override void OnPrepareScreen()
+        {
             Output
-                .Green()
-                .Centred("X-Plane 12")
+                .Clear()
+                .Centred("<green>X-PLANE 12")
                 .White()
+                .Newline(2)
+                .Centred("BLANK1 <small>TO SWAP <large>MCDUs")
                 .Newline()
-                .Newline()
-                .Centred("BLANK1 to swap MCDUs")
-                .Newline()
-                .Centred("BLANK2 for hub menu")
-                .Amber()
-                .LeftLabel(6, ">Cancel")
+                .Centred("BLANK2 <small>FOR HUB <large>MENU")
+                .LeftLabel(6, "<red><small>>BACK")
                 .Cyan()
-                .RightLabel(5, "Reconnect<")
-                .RightLabel(6, "X-Plane 12<");
+                .RightLabel(5, "RECONNECT<")
+                .RightLabel(6, "MCDU<");
         }
 
         public override void OnKeyDown(Key key)
         {
             switch(key) {
-                case Key.LineSelectLeft6:   _Hub.SelectPage(_Parent); break;
+                case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
                 case Key.LineSelectRight5:  Reconnect(); break;
                 case Key.LineSelectRight6:  OpenXPlanePage(); break;
             }

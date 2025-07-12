@@ -17,7 +17,7 @@ namespace Cduhub.Pages
     {
         private readonly ToLissUdpMcdu _ToLissMcdu;
 
-        public override Key MenuKey => Key.Blank2;
+        public override bool DisableMenuKey => true;
 
         public ToLiss_Page(Hub hub) : base(hub)
         {

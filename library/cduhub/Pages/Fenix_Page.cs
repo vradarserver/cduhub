@@ -17,7 +17,7 @@ namespace Cduhub.Pages
     {
         private readonly FenixA320EfbMcdu _FenixA320;
 
-        public override Key MenuKey => Key.Blank2;
+        public override bool DisableMenuKey => true;
 
         public Fenix_Page(Hub hub) : base(hub)
         {

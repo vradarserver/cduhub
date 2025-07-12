@@ -30,11 +30,12 @@ namespace Cduhub.Pages
         private void UpdateScreen()
         {
             var now = DateTime.Now;
+            var today = now.ToString("ddd d MMM yyyy").ToUpper();
             Output
                 .Clear()
-                .Line(1).Green().Small()
-                .Centered(now.ToString("ddd d MMM yyyy"))
-                .MiddleLine().White().Large()
+                .Line(1)
+                .Centered($"<green><small>{today}")
+                .MiddleLine()
                 .Centered(now.ToString("HH:mm:ss"));
             RefreshDisplay();
         }
