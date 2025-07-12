@@ -20,10 +20,9 @@ namespace Cduhub.Pages
         {
         }
 
-        public override void OnPrepareScreen()
+        public override void OnPreparePage()
         {
             Output
-                .Clear()
                 .Centred("<green>SIMBRIDGE")
                 .Newline()
                 .Centred("<green><small>(FLY-BY-WIRE)")
@@ -31,7 +30,6 @@ namespace Cduhub.Pages
                 .Centred("BLANK2 <small>FOR HUB <large>MENU")
                 .LeftLabel(6, "<red><small>>BACK")
                 .Cyan()
-                .RightLabel(5, "RECONNECT<")
                 .RightLabel(6, "MCDU<");
         }
 
@@ -39,12 +37,9 @@ namespace Cduhub.Pages
         {
             switch(key) {
                 case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
-                case Key.LineSelectRight5:  Reconnect(); break;
                 case Key.LineSelectRight6:  OpenSimBridgePage(); break;
             }
         }
-
-        private void Reconnect() => _SimBridge_Page?.Reconnect();
 
         private void OpenSimBridgePage()
         {

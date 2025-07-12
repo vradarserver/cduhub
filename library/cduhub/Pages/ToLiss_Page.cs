@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using Cduhub.Config;
 using Cduhub.FlightSim;
 using McduDotNet;
 
@@ -15,37 +16,72 @@ namespace Cduhub.Pages
 {
     class ToLiss_Page : Page
     {
-        private readonly ToLissUdpMcdu _ToLissMcdu;
+        private ToLissUdpMcdu _ToLissMcdu;
 
         public override bool DisableMenuKey => true;
 
         public ToLiss_Page(Hub hub) : base(hub)
         {
-            _ToLissMcdu = new ToLissUdpMcdu(Screen, Leds);
-            _ToLissMcdu.DisplayRefreshRequired += ToLissMcdu_DisplayRefreshRequired;
-            _ToLissMcdu.LedsRefreshRequired += ToLissMcdu_LedsRefreshRequired;
+        }
 
-            ConnectedFlightSimulators.AddFlightSimulatorMcdu(_ToLissMcdu);
-            _ToLissMcdu.ReconnectToSimulator();
+        public override void OnSelected(bool selected)
+        {
+            if(selected) {
+                Connect();
+            } else {
+                Disconnect();
+            }
+        }
+
+        private void Connect()
+        {
+            Disconnect();
+
+            var settings = Storage.Load<ToLissUdpSettings>(ToLissUdpSettings.Name);
+            var mcdu = new ToLissUdpMcdu(Screen, Leds) {
+                Host = settings.Host,
+                Port = settings.Port,
+            };
+            _ToLissMcdu = mcdu;
+            mcdu.DisplayRefreshRequired += ToLissMcdu_DisplayRefreshRequired;
+            mcdu.LedsRefreshRequired += ToLissMcdu_LedsRefreshRequired;
+
+            ConnectedFlightSimulators.AddFlightSimulatorMcdu(mcdu);
+            mcdu.ReconnectToSimulator();
+        }
+
+        private void Disconnect()
+        {
+            if(_ToLissMcdu != null) {
+                var reference = _ToLissMcdu;
+                _ToLissMcdu = null;
+
+                try {
+                    ConnectedFlightSimulators.RemoveFlightSimulatorMcdu(reference);
+                    reference.DisplayRefreshRequired -= ToLissMcdu_DisplayRefreshRequired;
+                    reference.LedsRefreshRequired -= ToLissMcdu_LedsRefreshRequired;
+                    reference.Dispose();
+                } catch {
+                    ;
+                }
+            }
         }
 
         public override void OnKeyDown(Key key)
         {
             if(key != Key.Blank1) {
-                _ToLissMcdu.SendKeyToSimulator(key, pressed: true);
+                _ToLissMcdu?.SendKeyToSimulator(key, pressed: true);
             } else {
-                _ToLissMcdu.AdvanceSelectedBufferProductId();
+                _ToLissMcdu?.AdvanceSelectedBufferProductId();
             }
         }
 
         public override void OnKeyUp(Key key)
         {
             if(key != Key.Blank1) {
-                _ToLissMcdu.SendKeyToSimulator(key, pressed: false);
+                _ToLissMcdu?.SendKeyToSimulator(key, pressed: false);
             }
         }
-
-        public void Reconnect() => _ToLissMcdu.ReconnectToSimulator();
 
         private void ToLissMcdu_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
 

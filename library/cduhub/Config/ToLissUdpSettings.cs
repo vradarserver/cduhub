@@ -8,36 +8,14 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-
-namespace Cduhub.Pages
+namespace Cduhub.Config
 {
-    class Clock_Page : Page
+    class ToLissUdpSettings
     {
-        private readonly System.Timers.Timer _Timer = new System.Timers.Timer(100) {
-            Enabled = false,
-        };
+        public const string Name = "ToLiss UDP Settings";
 
-        public Clock_Page(Hub hub) : base(hub)
-        {
-            _Timer.Elapsed += (sender,args) => UpdateScreen();
-        }
+        public string Host { get; set; } = "127.0.0.1";
 
-        public override void OnPreparePage() => UpdateScreen();
-
-        public override void OnSelected(bool selected) => _Timer.Enabled = selected;
-
-        private void UpdateScreen()
-        {
-            var now = DateTime.Now;
-            var today = now.ToString("ddd d MMM yyyy").ToUpper();
-            Output
-                .Clear()
-                .Line(1)
-                .Centered($"<green><small>{today}")
-                .MiddleLine()
-                .Centered(now.ToString("HH:mm:ss"));
-            RefreshDisplay();
-        }
+        public int Port { get; set; } = 49000;
     }
 }

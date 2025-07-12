@@ -27,10 +27,9 @@ namespace Cduhub.Pages
             _XPlaneMenuPage = new XPlaneMenu_Page(hub);
         }
 
-        public override void OnPrepareScreen()
+        public override void OnPreparePage()
         {
             Output
-                .Clear()
                 .Centred("<green>FLIGHT SIMULATORS")
                 .LeftLabel(1, ">FENIX")
                 .LeftLabel(2, ">SIMBRIDGE")

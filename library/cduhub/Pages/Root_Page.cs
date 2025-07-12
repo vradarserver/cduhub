@@ -23,10 +23,9 @@ namespace Cduhub.Pages
             _FlightSimsPage = new FlightSimMenu_Page(hub);
         }
 
-        public override void OnPrepareScreen()
+        public override void OnPreparePage()
         {
             Output
-                .Clear()
                 .Centred("<green>CDU <small>HUB")
                 .LeftLabel(1, ">CLOCK")
                 .RightLabel(1, "FLIGHT SIMS<")

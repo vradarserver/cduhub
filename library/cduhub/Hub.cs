@@ -21,6 +21,7 @@ namespace Cduhub
     /// </summary>
     public class Hub : IDisposable
     {
+        private bool _ShuttingDown;
         private IMcdu _Mcdu;
         private Page _SelectedPage;
         private Page _RootPage;
@@ -123,8 +124,8 @@ namespace Cduhub
         public void Disconnect()
         {
             if(_Mcdu != null) {
+                CleanupPageHistory();
                 SelectPage(null);
-                _RootPage?.OnDisconnecting();
 
                 _Mcdu.KeyDown -= Mcdu_KeyDown;
                 _Mcdu.KeyUp -= Mcdu_KeyUp;
@@ -151,23 +152,27 @@ namespace Cduhub
         public void SelectPage(Page page)
         {
             if(page != _SelectedPage) {
-                _SelectedPage?.OnSelected(false);
-                page?.OnPrepareScreen();
+                DeselectPage(_SelectedPage);
+                page?.PreparePage();
                 _SelectedPage = page;
-                _PageHistory.Push(page);
 
                 if(page != null) {
+                    _PageHistory.Push(page);
                     RefreshDisplay(page);
                     RefreshLeds(page);
-
                     _SelectedPage.OnSelected(true);
                 }
             }
         }
 
+        private void DeselectPage(Page page)
+        {
+            page?.OnSelected(false);
+        }
+
         public void ReturnToRoot()
         {
-            _PageHistory.Clear();
+            CleanupPageHistory();
             SelectPage(_RootPage);
         }
 
@@ -175,6 +180,9 @@ namespace Cduhub
         {
             if(_PageHistory.Count > 1) {
                 var currentPage = _PageHistory.Pop();
+                DeselectPage(currentPage);
+                _SelectedPage = null;
+
                 var parent = _PageHistory.Pop();
                 SelectPage(parent);
             }
@@ -196,7 +204,25 @@ namespace Cduhub
             }
         }
 
-        public void Shutdown() => OnCloseApplication();
+        public void Shutdown()
+        {
+            try {
+                _ShuttingDown = true;
+                _SelectedPage = null;
+                CleanupPageHistory();
+            } finally {
+                OnCloseApplication();
+            }
+        }
+
+        private void CleanupPageHistory()
+        {
+            _SelectedPage = null;
+            while(_PageHistory.Count > 0) {
+                var page = _PageHistory.Pop();
+                DeselectPage(page);
+            }
+        }
 
         private void Mcdu_Disconnected(object sender, EventArgs e)
         {
@@ -205,30 +231,38 @@ namespace Cduhub
 
         private void Mcdu_KeyDown(object sender, McduDotNet.KeyEventArgs e)
         {
-            var menuKey = _SelectedPage?.MenuKey ?? Key.McduMenu;
-            var parentKey = _SelectedPage?.ParentKey ?? Key.Blank2;
+            if(!_ShuttingDown) {
+                var menuKey = _SelectedPage?.MenuKey ?? Key.McduMenu;
+                var parentKey = _SelectedPage?.ParentKey ?? Key.Blank2;
 
-            if(e.Key == menuKey && !(_SelectedPage?.DisableMenuKey ?? false)) {
-                ReturnToRoot();
-            } else if(e.Key == parentKey && !(_SelectedPage?.DisableParentKey ?? false)) {
-                ReturnToParent();
-            } else {
-                _SelectedPage?.OnKeyDown(e.Key);
+                if(e.Key == menuKey && !(_SelectedPage?.DisableMenuKey ?? false)) {
+                    ReturnToRoot();
+                } else if(e.Key == parentKey && !(_SelectedPage?.DisableParentKey ?? false)) {
+                    ReturnToParent();
+                } else {
+                    _SelectedPage?.OnKeyDown(e.Key);
+                }
             }
         }
 
         private void Mcdu_KeyUp(object sender, McduDotNet.KeyEventArgs e)
         {
-            _SelectedPage?.OnKeyUp(e.Key);
+            if(!_ShuttingDown) {
+                _SelectedPage?.OnKeyUp(e.Key);
+            }
         }
 
         private void ReconnectTimer_Elapsed(object sender, EventArgs e)
         {
             try {
-                PerformAutoReconnect();
+                if(!_ShuttingDown) {
+                    PerformAutoReconnect();
+                }
             } finally {
-                var timer = _ReconnectTimer;
-                timer?.Start();
+                if(!_ShuttingDown) {
+                    var timer = _ReconnectTimer;
+                    timer?.Start();
+                }
             }
         }
     }

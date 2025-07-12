@@ -20,10 +20,9 @@ namespace Cduhub.Pages
         {
         }
 
-        public override void OnPrepareScreen()
+        public override void OnPreparePage()
         {
             Output
-                .Clear()
                 .Centred("<green>TOLISS")
                 .Newline(2)
                 .Centred("BLANK1 <small>TO SWAP <large>MCDUs")
@@ -31,7 +30,6 @@ namespace Cduhub.Pages
                 .Centred("BLANK2 <small>FOR HUB <large>MENU")
                 .LeftLabel(6, "<red><small>>BACK")
                 .Cyan()
-                .RightLabel(5, "RECONNECT<")
                 .RightLabel(6, "MCDU<");
         }
 
@@ -39,12 +37,9 @@ namespace Cduhub.Pages
         {
             switch(key) {
                 case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
-                case Key.LineSelectRight5:  Reconnect(); break;
                 case Key.LineSelectRight6:  OpenXPlanePage(); break;
             }
         }
-
-        private void Reconnect() => _ToLiss_Page?.Reconnect();
 
         private void OpenXPlanePage()
         {

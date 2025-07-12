@@ -24,10 +24,10 @@ namespace Cduhub.FlightSim
     /// <summary>
     /// Another day, another attempt at getting sensible communication with XPlane. This would not be as sensible
     /// as WebSockets, but ClientWebSocket or X-Plane aborts after 100 seconds (no problems with SimBridge, so I
-    /// suspect something about X-Plane's WebSocket server triggers the old 100 second abort issue)... but it is
-    /// a lot more sensible that subscribing to 3200+ datarefs over UDP.
+    /// suspect something about X-Plane's WebSocket server triggers a 100 second abort issue in .NET/Windows)...
+    /// but it is a lot more sensible that subscribing to 3200+ datarefs over UDP.
     /// </summary>
-    public abstract class XPlaneRestMcdus : SimulatedMcdus
+    public abstract class XPlaneRestMcdus : SimulatedMcdus, IDisposable
     {
         private CancellationTokenSource _DownloadBaseDataCancellationTokenSource;
         private Task _DownloadBaseDataTask;
@@ -69,6 +69,33 @@ namespace Cduhub.FlightSim
             HttpClient = httpClient;
             _RefreshDisplayTimer.Elapsed += Timer_Elapsed;
             _RefreshDisplayTimer.Start();
+        }
+
+        /// <summary>
+        /// Finalises the object.
+        /// </summary>
+        ~XPlaneRestMcdus() => Dispose(false);
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if(disposing) {
+                try {
+                    var timer = _RefreshDisplayTimer;
+                    _RefreshDisplayTimer = null;
+                    if(timer != null) {
+                        timer.Stop();
+                        timer.Dispose();
+                    }
+                } catch {
+                }
+            }
         }
 
         protected override void OnDisplayRefreshRequired()
@@ -261,7 +288,7 @@ namespace Cduhub.FlightSim
             } catch {
                 InitialiseConnection();
             }
-            _RefreshDisplayTimer.Start();
+            _RefreshDisplayTimer?.Start();
         }
     }
 }

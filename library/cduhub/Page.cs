@@ -15,6 +15,7 @@ namespace Cduhub
     public class Page
     {
         protected readonly Hub _Hub;
+        protected bool _Prepared;
 
         public Screen Screen { get; }
 
@@ -42,7 +43,15 @@ namespace Cduhub
 
         public virtual void RefreshLeds() => _Hub.RefreshLeds(this);
 
-        public virtual void OnPrepareScreen()
+        public void PreparePage()
+        {
+            if(!_Prepared) {
+                _Prepared = true;
+                OnPreparePage();
+            }
+        }
+
+        public virtual void OnPreparePage()
         {
         }
 
@@ -55,10 +64,6 @@ namespace Cduhub
         }
 
         public virtual void OnKeyUp(Key key)
-        {
-        }
-
-        public virtual void OnDisconnecting()
         {
         }
     }

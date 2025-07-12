@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using Cduhub.Config;
 using Cduhub.FlightSim;
 using McduDotNet;
 
@@ -15,37 +16,72 @@ namespace Cduhub.Pages
 {
     class Fenix_Page : Page
     {
-        private readonly FenixA320EfbMcdu _FenixA320;
+        private FenixA320EfbMcdu _FenixA320;
 
         public override bool DisableMenuKey => true;
 
         public Fenix_Page(Hub hub) : base(hub)
         {
-            _FenixA320 = new FenixA320EfbMcdu(Screen, Leds);
-            _FenixA320.DisplayRefreshRequired += FenixA320_DisplayRefreshRequired;
-            _FenixA320.LedsRefreshRequired += FenixA320_LedsRefreshRequired;
+        }
 
-            ConnectedFlightSimulators.AddFlightSimulatorMcdu(_FenixA320);
-            _FenixA320.ReconnectToSimulator();
+        public override void OnSelected(bool selected)
+        {
+            if(selected) {
+                Connect();
+            } else {
+                Disconnect();
+            }
+        }
+
+        private void Connect()
+        {
+            Disconnect();
+
+            var settings = Storage.Load<FenixEfbSettings>(FenixEfbSettings.Name);
+            var mcdu = new FenixA320EfbMcdu(Screen, Leds) {
+                Host = settings.Host,
+                Port = settings.Port,
+            };
+            _FenixA320 = mcdu;
+            mcdu.DisplayRefreshRequired += FenixA320_DisplayRefreshRequired;
+            mcdu.LedsRefreshRequired += FenixA320_LedsRefreshRequired;
+
+            ConnectedFlightSimulators.AddFlightSimulatorMcdu(mcdu);
+            mcdu.ReconnectToSimulator();
+        }
+
+        private void Disconnect()
+        {
+            if(_FenixA320 != null) {
+                var reference = _FenixA320;
+                _FenixA320 = null;
+
+                try {
+                    ConnectedFlightSimulators.RemoveFlightSimulatorMcdu(reference);
+                    reference.DisplayRefreshRequired -= FenixA320_DisplayRefreshRequired;
+                    reference.LedsRefreshRequired -= FenixA320_LedsRefreshRequired;
+                    reference.Dispose();
+                } catch {
+                    ;
+                }
+            }
         }
 
         public override void OnKeyDown(Key key)
         {
             if(key != Key.Blank1) {
-                _FenixA320.SendKeyToSimulator(key, pressed: true);
+                _FenixA320?.SendKeyToSimulator(key, pressed: true);
             } else {
-                _FenixA320.AdvanceSelectedBufferProductId();
+                _FenixA320?.AdvanceSelectedBufferProductId();
             }
         }
 
         public override void OnKeyUp(Key key)
         {
             if(key != Key.Blank1) {
-                _FenixA320.SendKeyToSimulator(key, pressed: false);
+                _FenixA320?.SendKeyToSimulator(key, pressed: false);
             }
         }
-
-        public void Reconnect() => _FenixA320.ReconnectToSimulator();
 
         private void FenixA320_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
 

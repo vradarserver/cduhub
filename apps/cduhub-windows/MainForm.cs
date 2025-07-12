@@ -20,6 +20,7 @@ namespace Cduhub.WindowsGui
         private ListViewHelper<IFlightSimulatorMcdu, object> _ConnectedFlightSimulatorsListView;
         private bool _HookedConnectedFlightSimulators;
         private int _ConnectedFlightSimulatorsChanged = 0;
+        private bool _HubShutdownRequired = true;
 
         public Hub Hub => Program.Hub;
 
@@ -68,6 +69,16 @@ namespace Cduhub.WindowsGui
             );
         }
 
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            base.OnFormClosing(e);
+
+            if(!e.Cancel && _HubShutdownRequired) {
+                _HubShutdownRequired = false;
+                Hub.Shutdown();
+            }
+        }
+
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -101,6 +112,7 @@ namespace Cduhub.WindowsGui
             if(InvokeRequired) {
                 BeginInvoke(new MethodInvoker(() => Hub_CloseApplication(sender, e)));
             } else {
+                _HubShutdownRequired = false;
                 Close();
             }
         }
