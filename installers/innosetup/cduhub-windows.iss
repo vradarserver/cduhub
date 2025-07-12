@@ -14,7 +14,7 @@ LicenseFile={#Root}\LICENSE
 ArchitecturesInstallIn64BitMode=x64
 MinVersion=6.3
 OutputBaseFileName=cduhub-windows-{#VERSION}
-SetupIconFile={#Root}\images\win32.ico
+SetupIconFile={#Root}\apps\cduhub-windows\app.ico
 UninstallDisplayIcon={app}\cduhub-windows.exe
 
 [Files]
