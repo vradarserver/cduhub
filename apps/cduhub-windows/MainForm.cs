@@ -43,7 +43,7 @@ namespace Cduhub.WindowsGui
                 flightsim => new string[] {
                     flightsim.FlightSimulatorName,
                     flightsim.AircraftName,
-                    flightsim.IsConnected ? "Yes" : "No",
+                    flightsim.ConnectionState.ToString(),
                     flightsim.LastMessageTimeUtc == default
                         ? ""
                         : flightsim.LastMessageTimeUtc.ToLocalTime().ToString("dd-MMM-yyyy HH:mm:ss"),

@@ -48,7 +48,9 @@ namespace Cduhub.FlightSim
         }
 
         /// <inheritdoc/>
-        public bool IsConnected { get; private set; }
+        public ConnectionState ConnectionState { get; private set; }
+
+        protected bool IsConnected => ConnectionState == ConnectionState.Connected;
 
         /// <inheritdoc/>
         public long CountMessagesFromSimulator { get; private set; }
@@ -57,9 +59,9 @@ namespace Cduhub.FlightSim
         public DateTime LastMessageTimeUtc { get; private set; }
 
         /// <inheritdoc/>
-        public event EventHandler IsConnectedChanged;
+        public event EventHandler ConnectionStateChanged;
 
-        protected virtual void OnIsConnectedChanged() => IsConnectedChanged?.Invoke(this, EventArgs.Empty);
+        protected virtual void OnConnectionStateChanged() => ConnectionStateChanged?.Invoke(this, EventArgs.Empty);
 
         /// <inheritdoc/>
         public event EventHandler DisplayRefreshRequired;
@@ -126,14 +128,14 @@ namespace Cduhub.FlightSim
         public abstract void ReconnectToSimulator();
 
         /// <summary>
-        /// Sets or clears <see cref="IsConnected"/> and raises <see cref="IsConnectedChanged"/>.
+        /// Assigns <see cref="ConnectionState"/> and raises <see cref="ConnectionStateChanged"/>.
         /// </summary>
         /// <param name="connected"></param>
-        protected void RecordConnection(bool connected)
+        protected void RecordConnectionState(ConnectionState state)
         {
-            if(IsConnected != connected) {
-                IsConnected = connected;
-                OnIsConnectedChanged();
+            if(ConnectionState != state) {
+                ConnectionState = state;
+                OnConnectionStateChanged();
             }
         }
 

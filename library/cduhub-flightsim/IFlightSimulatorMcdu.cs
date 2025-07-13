@@ -59,7 +59,7 @@ namespace Cduhub.FlightSim
         /// <summary>
         /// True if we have an active connection to the simulated MCDU.
         /// </summary>
-        bool IsConnected { get; }
+        ConnectionState ConnectionState { get; }
 
         /// <summary>
         /// The number of messages received from the simulator.
@@ -72,9 +72,9 @@ namespace Cduhub.FlightSim
         DateTime LastMessageTimeUtc { get; }
 
         /// <summary>
-        /// Raised when <see cref="IsConnected"/> changes.
+        /// Raised when <see cref="ConnectionState"/> changes.
         /// </summary>
-        event EventHandler IsConnectedChanged;
+        event EventHandler ConnectionStateChanged;
 
         /// <summary>
         /// Raised when the USB MCDU needs to have its display updated.

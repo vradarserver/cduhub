@@ -51,7 +51,7 @@ namespace Cduhub
                     }
                 }
                 if(result) {
-                    mcdu.IsConnectedChanged += FlightSimulatorMcdu_IsConnectedChanged;
+                    mcdu.ConnectionStateChanged += FlightSimulatorMcdu_ConnectionStateChanged;
                     mcdu.MessageReceived += FlightSimulatorMcdu_MessageReceived;
                     OnFlightSimulatorStateChanged();
                 }
@@ -91,7 +91,7 @@ namespace Cduhub
                     // coming during shutdown of the simulator connection and the odds of getting any messages may
                     // be quite low.
                     mcdu.MessageReceived -= FlightSimulatorMcdu_MessageReceived;
-                    mcdu.IsConnectedChanged -= FlightSimulatorMcdu_IsConnectedChanged;
+                    mcdu.ConnectionStateChanged -= FlightSimulatorMcdu_ConnectionStateChanged;
                     OnFlightSimulatorStateChanged();
                 }
             }
@@ -108,7 +108,7 @@ namespace Cduhub
             return result;
         }
 
-        private static void FlightSimulatorMcdu_IsConnectedChanged(object sender, EventArgs e)
+        private static void FlightSimulatorMcdu_ConnectionStateChanged(object sender, EventArgs e)
         {
             OnFlightSimulatorStateChanged();
         }

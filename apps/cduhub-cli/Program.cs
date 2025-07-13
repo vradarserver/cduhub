@@ -126,18 +126,18 @@ namespace Cduhub.CommandLineInterface
 
         private static void HookFlightSim(IFlightSimulatorMcdu flightSim)
         {
-            flightSim.IsConnectedChanged += FlightSimState_IsConnectedChanged;
+            flightSim.ConnectionStateChanged += FlightSimState_ConnectionStateChanged;
         }
 
         private static void UnhookFlightSim(IFlightSimulatorMcdu flightSim)
         {
-            flightSim.IsConnectedChanged -= FlightSimState_IsConnectedChanged;
+            flightSim.ConnectionStateChanged -= FlightSimState_ConnectionStateChanged;
         }
 
-        private static void FlightSimState_IsConnectedChanged(object sender, EventArgs _)
+        private static void FlightSimState_ConnectionStateChanged(object sender, EventArgs _)
         {
             var flightSim = sender as IFlightSimulatorMcdu;
-            OutputTimestamped($"{flightSim.AircraftName} {(flightSim.IsConnected ? "connected" :"disconnected")}");
+            OutputTimestamped($"{flightSim.AircraftName} {(flightSim.ConnectionState.ToString().ToLower())}");
         }
     }
 }

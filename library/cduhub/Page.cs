@@ -111,6 +111,25 @@ namespace Cduhub
             RefreshDisplay();
         }
 
+        protected virtual void ShowConnectionState(Cduhub.FlightSim.ConnectionState? state)
+        {
+            string stateText = null;
+            bool showQuitKey = true;
+            switch(state ?? FlightSim.ConnectionState.Disconnected) {
+                case FlightSim.ConnectionState.Connecting:      stateText = "CONNECTING"; break;
+                case FlightSim.ConnectionState.Disconnected:    stateText = "WAITING"; break;
+                case FlightSim.ConnectionState.Disconnecting:   stateText = "DISCONNECTING"; showQuitKey = false; break;
+            }
+            if(stateText != null) {
+                FullPageStatusMessage(
+                    $"<grey>{stateText}",
+                    showQuitKey
+                        ? "<grey><small>(BLANK2 TO QUIT)"
+                        : "<grey><small>PLEASE WAIT"
+                );
+            }
+        }
+
         protected virtual void HookScratchpad(Scratchpad scratchpad)
         {
             if(scratchpad != null) {

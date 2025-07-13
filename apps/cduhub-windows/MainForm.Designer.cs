@@ -42,7 +42,7 @@ namespace Cduhub.WindowsGui
             this._ListView_ConnectedFlightSimulators = new Cduhub.WindowsGui.ListViewEx();
             this._Col_FlightSim_Name = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this._Col_FlightSim_Aircraft = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this._Col_FlightSim_Connected = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this._Col_FlightSim_ConnectionState = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this._Col_FlightSim_LastMessageUtc = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this._Col_FlightSim_CountMessages = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this._RefreshDisplayTimer = new System.Windows.Forms.Timer(this.components);
@@ -91,7 +91,7 @@ namespace Cduhub.WindowsGui
             this._ListView_ConnectedFlightSimulators.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this._Col_FlightSim_Name,
             this._Col_FlightSim_Aircraft,
-            this._Col_FlightSim_Connected,
+            this._Col_FlightSim_ConnectionState,
             this._Col_FlightSim_LastMessageUtc,
             this._Col_FlightSim_CountMessages});
             this._ListView_ConnectedFlightSimulators.Font = new System.Drawing.Font("Consolas", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -114,10 +114,10 @@ namespace Cduhub.WindowsGui
             // 
             this._Col_FlightSim_Aircraft.Text = "Aircraft";
             // 
-            // _Col_FlightSim_Connected
+            // _Col_FlightSim_ConnectionState
             // 
-            this._Col_FlightSim_Connected.Text = "Connected";
-            this._Col_FlightSim_Connected.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this._Col_FlightSim_ConnectionState.Text = "State";
+            this._Col_FlightSim_ConnectionState.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // _Col_FlightSim_LastMessageUtc
             // 
@@ -165,7 +165,7 @@ namespace Cduhub.WindowsGui
         private ColumnHeader _Col_FlightSim_LastMessageUtc;
         private ColumnHeader _Col_FlightSim_CountMessages;
         private ColumnHeader _Col_FlightSim_Aircraft;
-        private ColumnHeader _Col_FlightSim_Connected;
+        private ColumnHeader _Col_FlightSim_ConnectionState;
         private Timer _RefreshDisplayTimer;
     }
 }

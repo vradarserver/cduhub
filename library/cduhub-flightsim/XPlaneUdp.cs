@@ -72,11 +72,21 @@ namespace Cduhub.FlightSim
         /// </summary>
         public int MillisecondPauseDuringSubscriptions { get; set; } = 100;
 
+        private ConnectionState _ConnectionState = ConnectionState.Disconnected;
         /// <summary>
-        /// True if the UDP client exists. It might not actually be "connected" to anything, UDP doesn't do
-        /// persistent connections.
+        /// Reflects the hopeful connection state. It might not actually be "connected" to anything, UDP doesn't do
+        /// persistent connections and it doesn't tell us if our messages are going anywhere.
         /// </summary>
-        public bool IsConnected => _UdpClient != null;
+        public ConnectionState ConnectionState
+        {
+            get => _ConnectionState;
+            set {
+                if(value != ConnectionState) {
+                    _ConnectionState = value;
+                    OnConnectionStateChanged();
+                }
+            }
+        }
 
         /// <summary>
         /// All of the dataref subscriptions.
@@ -94,14 +104,14 @@ namespace Cduhub.FlightSim
         public Action FrameReceived { get; set; }
 
         /// <summary>
-        /// Raised when <see cref="IsConnected"/> changes.
+        /// Raised when <see cref="ConnectionState"/> changes.
         /// </summary>
-        public event EventHandler IsConnectedChanged;
+        public event EventHandler ConnectionStateChanged;
 
         /// <summary>
-        /// Raises <see cref="IsConnectedChanged"/>.
+        /// Raises <see cref="ConnectionStateChanged"/>.
         /// </summary>
-        protected virtual void OnIsConnectedChanged() => IsConnectedChanged?.Invoke(this, EventArgs.Empty);
+        protected virtual void OnConnectionStateChanged() => ConnectionStateChanged?.Invoke(this, EventArgs.Empty);
 
         /// <summary>
         /// Raised when a packet has been received, regardless of whether we could parse it.
@@ -141,6 +151,10 @@ namespace Cduhub.FlightSim
         /// </summary>
         protected virtual void DisposeUdpClient()
         {
+            if(ConnectionState != ConnectionState.Disconnected) {
+                ConnectionState = ConnectionState.Disconnecting;
+            }
+
             var udpClient = _UdpClient;
             var xplaneEndpoint = _XPlaneSendEndpoint;
             var subscriptions = _Subscriptions.ToArray();
@@ -156,9 +170,9 @@ namespace Cduhub.FlightSim
                 try {
                     udpClient.Dispose();
                 } catch { }
-
-                OnIsConnectedChanged();
             }
+
+            ConnectionState = ConnectionState.Disconnected;
         }
 
         /// <summary>
@@ -170,7 +184,7 @@ namespace Cduhub.FlightSim
         /// <exception cref="InvalidOperationException"></exception>
         public void AddSubscription(string dataRef, object tag = null, bool includeInFrameEvent = false)
         {
-            if(IsConnected) {
+            if(ConnectionState == ConnectionState.Connected) {
                 throw new InvalidOperationException(
                     "You cannot set a subscription after the connection to X-Plane has been established"
                 );
@@ -214,9 +228,9 @@ namespace Cduhub.FlightSim
 
                             _UdpClient = client;
                             try {
-                                OnIsConnectedChanged();
-
+                                ConnectionState = ConnectionState.Connecting;
                                 SendSubscriptions(client, remoteEndpoint, subscriptions, enable: true);
+                                ConnectionState = ConnectionState.Connected;
 
                                 _IdleReceiveTimeoutFromUtc = DateTime.UtcNow;
                                 var receiveLoopTask = ReceiveLoop(client, subscriptions, mergedToken);

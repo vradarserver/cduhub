@@ -97,7 +97,7 @@ namespace Cduhub.FlightSim
         {
             while(!cancellationToken.IsCancellationRequested) {
                 try {
-                    RecordConnection(connected: false);
+                    RecordConnectionState(ConnectionState.Connecting);
                     using(var client = new ClientWebSocket()) {
                         await client.ConnectAsync(WebSocketUri, cancellationToken);
                         await InitialiseNewConnection(client, cancellationToken);
@@ -132,11 +132,14 @@ namespace Cduhub.FlightSim
         {
             while(client != null && !cancellationToken.IsCancellationRequested) {
                 try {
-                    RecordConnection(client.State == WebSocketState.Open);
+                    RecordConnectionState(client.State == WebSocketState.Open
+                        ? ConnectionState.Connected
+                        : ConnectionState.Disconnected
+                    );
                 } catch {
                     // We can get all sorts of errors - client can be disposed, state is garbage etc.
                     // I think if it's erroring then we should assume that the connection is bad.
-                    RecordConnection(connected: false);
+                    RecordConnectionState(ConnectionState.Disconnected);
                 }
                 await Task.Delay(100);
             }

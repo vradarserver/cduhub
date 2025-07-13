@@ -27,7 +27,6 @@ namespace Cduhub.Pages
         public override void OnSelected(bool selected)
         {
             if(selected) {
-                ShowConnecting();
                 Connect();
             } else {
                 Disconnect();
@@ -44,9 +43,10 @@ namespace Cduhub.Pages
                 Port = settings.Port,
             };
             _FenixA320 = mcdu;
+            ShowConnectionState(_FenixA320?.ConnectionState);
             mcdu.DisplayRefreshRequired += FenixA320_DisplayRefreshRequired;
             mcdu.LedsRefreshRequired += FenixA320_LedsRefreshRequired;
-            mcdu.IsConnectedChanged += FenixA320_ConnectedChanged;
+            mcdu.ConnectionStateChanged += FenixA320_ConnectionStateChanged;
 
             ConnectedFlightSimulators.AddFlightSimulatorMcdu(mcdu);
             mcdu.ReconnectToSimulator();
@@ -62,7 +62,7 @@ namespace Cduhub.Pages
                     ConnectedFlightSimulators.RemoveFlightSimulatorMcdu(reference);
                     reference.DisplayRefreshRequired -= FenixA320_DisplayRefreshRequired;
                     reference.LedsRefreshRequired -= FenixA320_LedsRefreshRequired;
-                    reference.IsConnectedChanged -= FenixA320_ConnectedChanged;
+                    reference.ConnectionStateChanged -= FenixA320_ConnectionStateChanged;
                     reference.Dispose();
                 } catch {
                     ;
@@ -86,17 +86,13 @@ namespace Cduhub.Pages
             }
         }
 
-        private void ShowConnecting() => FullPageStatusMessage("<grey>CONNECTING", "<grey><small>(BLANK2 TO QUIT)");
-
         private void FenixA320_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
 
         private void FenixA320_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLeds();
 
-        private void FenixA320_ConnectedChanged(object sender, System.EventArgs e)
+        private void FenixA320_ConnectionStateChanged(object sender, System.EventArgs e)
         {
-            if(!(_FenixA320?.IsConnected ?? false)) {
-                ShowConnecting();
-            }
+            ShowConnectionState(_FenixA320?.ConnectionState);
         }
     }
 }

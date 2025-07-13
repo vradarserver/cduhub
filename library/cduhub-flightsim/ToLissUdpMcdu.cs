@@ -55,7 +55,7 @@ namespace Cduhub.FlightSim
 
         public ToLissUdpMcdu(Screen masterScreen, Leds masterLeds) : base(masterScreen, masterLeds)
         {
-            _XPlaneUdp.IsConnectedChanged += (sender,args) => RecordConnection(_XPlaneUdp.IsConnected);
+            _XPlaneUdp.ConnectionStateChanged += (sender,args) => RecordConnectionState(_XPlaneUdp?.ConnectionState ?? ConnectionState.Disconnected);
             _XPlaneUdp.PacketReceived += (sender,args) => RecordMessageReceivedFromSimulator();
             _XPlaneUdp.DataRefRefreshIntervalTimesPerSecond = 5;
             _XPlaneUdp.DataRefUpdatesReceived = DataRefUpdatesReceived;

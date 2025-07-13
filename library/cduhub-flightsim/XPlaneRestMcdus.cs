@@ -120,6 +120,8 @@ namespace Cduhub.FlightSim
             var cts = _DownloadBaseDataCancellationTokenSource;
             var downloadTask = _DownloadBaseDataTask;
 
+            RecordConnectionState(ConnectionState.Disconnecting);
+
             _DownloadBaseDataCancellationTokenSource = null;
             _DownloadBaseDataTask = null;
             _DatarefsById = null;
@@ -139,7 +141,7 @@ namespace Cduhub.FlightSim
                 } catch {}
             }
 
-            RecordConnection(connected: false);
+            RecordConnectionState(ConnectionState.Disconnected);
         }
 
         private async Task DownloadBaseData(CancellationToken cancellationToken)
@@ -148,11 +150,13 @@ namespace Cduhub.FlightSim
             var downloaded = false;
             while(!cancellationToken.IsCancellationRequested && !downloaded) {
                 try {
+                    RecordConnectionState(ConnectionState.Connecting);
                     await FetchKnownDatarefs(httpClient, cancellationToken);
                     await FetchKnownCommands(httpClient, cancellationToken);
                     downloaded = true;
-                    RecordConnection(connected: true);
+                    RecordConnectionState(ConnectionState.Connected);
                 } catch(HttpRequestException) {
+                    RecordConnectionState(ConnectionState.Disconnected);
                     _DatarefsById = null;
                     _DatarefsByName = null;
                     _CommandsById = null;

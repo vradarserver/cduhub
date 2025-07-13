@@ -136,6 +136,11 @@ namespace Cduhub.FlightSim
             var connectionStateSubscription = _ConnectionStateSubscription;
             var pushSubscription = _PushSubscription;
 
+            RecordConnectionState(client == null
+                ? ConnectionState.Disconnected
+                : ConnectionState.Disconnecting
+            );
+
             _GraphQLClient = null;
             _ConnectionStateSubscription = null;
             _PushSubscriptionStream = null;
@@ -151,7 +156,7 @@ namespace Cduhub.FlightSim
                 client?.Dispose();
             } catch {;}
 
-            RecordConnection(connected: false);
+            RecordConnectionState(ConnectionState.Disconnected);
         }
 
         private void SetupConnectionStateSubscription()
@@ -166,7 +171,14 @@ namespace Cduhub.FlightSim
 
         private void ConnectionStateUpdate(GraphQLWebsocketConnectionState state)
         {
-            RecordConnection(state == GraphQLWebsocketConnectionState.Connected);
+            switch(state) {
+                case GraphQLWebsocketConnectionState.Connecting:
+                    RecordConnectionState(ConnectionState.Connecting);
+                    break;
+                case GraphQLWebsocketConnectionState.Connected:
+                    RecordConnectionState(ConnectionState.Connected);
+                    break;
+            }
         }
 
         private void SetupPushedDataSubscription()
