@@ -8,17 +8,16 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
 using Cduhub.Config;
 using McduDotNet;
 
 namespace Cduhub.Pages
 {
-    class FenixInit_Page : Page
+    class SimBridgeInit_Page : Page
     {
-        private FenixEfbSettings _Settings;
+        private SimBridgeEfbSettings _Settings;
 
-        public FenixInit_Page(Hub hub) : base(hub)
+        public SimBridgeInit_Page(Hub hub) : base(hub)
         {
             Scratchpad = new Scratchpad();
         }
@@ -34,7 +33,7 @@ namespace Cduhub.Pages
 
         private void LoadSettings()
         {
-            _Settings = Storage.Load<FenixEfbSettings>(FenixEfbSettings.Name);
+            _Settings = Storage.Load<SimBridgeEfbSettings>(SimBridgeEfbSettings.Name);
             DrawPage();
         }
 
@@ -42,7 +41,7 @@ namespace Cduhub.Pages
         {
             Output
                 .Clear()
-                .Centred("<green>FENIX EFB CONFIG")
+                .Centred("<green>SIMBRIDGE EFB CONFIG")
                 .LeftLabelTitle(1, "<small>HOST")
                 .LeftLabel(1, $"<cyan>{SanitiseInput(_Settings.Host)}")
                 .LeftLabelTitle(2, "<small>PORT")
@@ -55,7 +54,7 @@ namespace Cduhub.Pages
 
         private void SaveSettings()
         {
-            Storage.Save(FenixEfbSettings.Name, _Settings);
+            Storage.Save(SimBridgeEfbSettings.Name, _Settings);
         }
 
         public override void OnKeyDown(Key key)
@@ -71,7 +70,7 @@ namespace Cduhub.Pages
 
         private void ResetToDefaults()
         {
-            var defaults = new FenixEfbSettings();
+            var defaults = new SimBridgeEfbSettings();
             _Settings.Host = defaults.Host;
             _Settings.Port = defaults.Port;
             DrawPage();

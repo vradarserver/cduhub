@@ -46,7 +46,7 @@ namespace Cduhub
 
         public string Text => GetDataEntryText();
 
-        public bool OverflyTogglesCase { get; set; }
+        public bool OverflyTogglesCase { get; set; } = true;
 
         public bool IsLowerCase { get; set; }
 
