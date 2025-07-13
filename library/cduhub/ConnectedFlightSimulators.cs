@@ -24,6 +24,16 @@ namespace Cduhub
         private static volatile IFlightSimulatorMcdu[] _FlightSimulatorMcdus = Array.Empty<IFlightSimulatorMcdu>();
 
         /// <summary>
+        /// Raised when a flight simulator is added or removed from the set of connected flight simulators.
+        /// </summary>
+        public static event EventHandler ConnectedFlightSimulatorsChanged;
+
+        /// <summary>
+        /// Raises <see cref="ConnectedFlightSimulatorsChanged"/>.
+        /// </summary>
+        private static void OnConnectedFlightSimulatorsChanged() => ConnectedFlightSimulatorsChanged?.Invoke(null, EventArgs.Empty);
+
+        /// <summary>
         /// Raised when one of the connected flight simulators raises an event.
         /// </summary>
         public static event EventHandler FlightSimulatorStateChanged;
@@ -53,6 +63,7 @@ namespace Cduhub
                 if(result) {
                     mcdu.ConnectionStateChanged += FlightSimulatorMcdu_ConnectionStateChanged;
                     mcdu.MessageReceived += FlightSimulatorMcdu_MessageReceived;
+                    OnConnectedFlightSimulatorsChanged();
                     OnFlightSimulatorStateChanged();
                 }
             }
@@ -92,6 +103,7 @@ namespace Cduhub
                     // be quite low.
                     mcdu.MessageReceived -= FlightSimulatorMcdu_MessageReceived;
                     mcdu.ConnectionStateChanged -= FlightSimulatorMcdu_ConnectionStateChanged;
+                    OnConnectedFlightSimulatorsChanged();
                     OnFlightSimulatorStateChanged();
                 }
             }

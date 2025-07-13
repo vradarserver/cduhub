@@ -40,7 +40,7 @@ namespace Cduhub.CommandLineInterface
                         hasBeenConnected = true;
                     }
                 };
-                ConnectedFlightSimulators.FlightSimulatorStateChanged += (_,_) => {
+                ConnectedFlightSimulators.ConnectedFlightSimulatorsChanged += (_,_) => {
                     HookAndUnhookFlightSimulatorStates(ConnectedFlightSimulators.GetFlightSimulatorMcdus());
                 };
             } catch(Exception ex) {
