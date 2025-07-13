@@ -14,8 +14,6 @@ namespace Cduhub.Pages
 {
     class FenixMenu_Page : Page
     {
-        private Fenix_Page _FenixPage;
-
         public FenixMenu_Page(Hub hub) : base(hub)
         {
         }
@@ -28,6 +26,7 @@ namespace Cduhub.Pages
                 .Centred("BLANK1 <small>TO SWAP <large>MCDUs")
                 .Newline()
                 .Centred("BLANK2 <small>FOR HUB <large>MENU")
+                .LeftLabel(5, "<amber><small>>INIT")
                 .LeftLabel(6, "<red><small>>BACK")
                 .Cyan()
                 .RightLabel(6, "MCDU<");
@@ -36,17 +35,10 @@ namespace Cduhub.Pages
         public override void OnKeyDown(Key key)
         {
             switch(key) {
+                case Key.LineSelectLeft5:   _Hub.CreateAndSelectPage<FenixInit_Page>(); break;
                 case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
-                case Key.LineSelectRight6:  OpenFenixPage(); break;
+                case Key.LineSelectRight6:  _Hub.CreateAndSelectPage<Fenix_Page>(); break;
             }
-        }
-
-        private void OpenFenixPage()
-        {
-            if(_FenixPage == null) {
-                _FenixPage = new Fenix_Page(_Hub);
-            }
-            _Hub.SelectPage(_FenixPage);
         }
     }
 }

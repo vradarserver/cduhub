@@ -15,6 +15,7 @@ namespace McduDotNet
     public class Compositor
     {
         private Screen _Screen;
+        private bool _ShowLowercaseInSmallUppercase = true;
 
         public Compositor(Screen screen)
         {
@@ -30,6 +31,18 @@ namespace McduDotNet
         public Compositor ClearRow()
         {
             _Screen.CurrentRow.Clear();
+            return this;
+        }
+
+        /// <summary>
+        /// Assume that the current font has lowercase glyphs and use them instead of
+        /// turning lowercase text into small uppercase.
+        /// </summary>
+        /// <param name="useLowercaseFont"></param>
+        /// <returns></returns>
+        public Compositor UseLowercaseFont(bool useLowercaseFont = true)
+        {
+            _ShowLowercaseInSmallUppercase = !useLowercaseFont;
             return this;
         }
 
@@ -171,11 +184,28 @@ namespace McduDotNet
             return this;
         }
 
+        public Compositor LeftLabelTitle(int line, string labelTitle)
+        {
+            _Screen.Line = (line * 2) - 1;
+            _Screen.ForLeftToRight();
+            ApplyCompositorString(labelTitle);
+            return this;
+        }
+
         public Compositor LeftLabel(int line, string label)
         {
             _Screen.Line = line * 2;
             _Screen.ForLeftToRight();
             ApplyCompositorString(label);
+            return this;
+        }
+
+        public Compositor RightLabelTitle(int line, string labelTitle)
+        {
+            _Screen.Line = (line * 2) - 1;
+            _Screen.ForRightToLeft();
+            ApplyCompositorString(labelTitle);
+            _Screen.ForLeftToRight();
             return this;
         }
 
@@ -185,6 +215,16 @@ namespace McduDotNet
             _Screen.ForRightToLeft();
             ApplyCompositorString(label);
             _Screen.ForLeftToRight();
+            return this;
+        }
+
+        public Compositor LabelTitle(bool left, int line, string labelTitle)
+        {
+            if(left) {
+                LeftLabelTitle(line, labelTitle);
+            } else {
+                RightLabelTitle(line, labelTitle);
+            }
             return this;
         }
 
@@ -206,7 +246,7 @@ namespace McduDotNet
 
         private Compositor WriteRaw(string text)
         {
-            _Screen.Write(text);
+            _Screen.Write(text, showLowercaseInSmallUppercase: _ShowLowercaseInSmallUppercase);
             return this;
         }
 
@@ -337,7 +377,10 @@ namespace McduDotNet
                     }
                     selectNextStyleChange();
                 }
-                _Screen.Put(cstring.Text[textIdx]);
+                _Screen.Put(
+                    cstring.Text[textIdx],
+                    showLowercaseInSmallUppercase: _ShowLowercaseInSmallUppercase
+                );
                 _Screen.Column = Math.Min(_Screen.CurrentRow.Cells.Length - 1, _Screen.Column + 1);
             }
 

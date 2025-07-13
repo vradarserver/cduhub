@@ -155,12 +155,23 @@ namespace McduDotNet
 
         public void CopyTo(Screen other) => other?.CopyFrom(this);
 
-        public void Put(char ch, bool advanceColumn = false)
+        public void Put(
+            char ch,
+            bool advanceColumn = false,
+            bool showLowercaseInSmallUppercase = false
+        )
         {
             if(ch == ' ') { // <-- non-breaking space
                 ch = ' ';   // <-- bog-standard space
             }
-            Rows[Line].Cells[Column].Set(ch, Colour, Small);
+            var small = Small;
+            if(showLowercaseInSmallUppercase) {
+                if(ch >= 'a' && ch <= 'z') {
+                    small = true;
+                    ch = char.ToUpper(ch);
+                }
+            }
+            Rows[Line].Cells[Column].Set(ch, Colour, small);
             if(advanceColumn) {
                 AdvanceColumn();
             }
@@ -175,15 +186,23 @@ namespace McduDotNet
             }
         }
 
-        public void Write(string text)
+        public void Write(string text, bool showLowercaseInSmallUppercase = false)
         {
             if(!RightToLeft) {
                 foreach(var ch in text) {
-                    Put(ch, advanceColumn: true);
+                    Put(
+                        ch,
+                        advanceColumn: true,
+                        showLowercaseInSmallUppercase: showLowercaseInSmallUppercase
+                    );
                 }
             } else {
                 for(var idx = text.Length - 1;idx >= 0;--idx) {
-                    Put(text[idx], advanceColumn: true);
+                    Put(
+                        text[idx],
+                        advanceColumn: true,
+                        showLowercaseInSmallUppercase: showLowercaseInSmallUppercase
+                    );
                 }
             }
         }

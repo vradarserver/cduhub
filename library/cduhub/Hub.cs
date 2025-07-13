@@ -29,6 +29,7 @@ namespace Cduhub
         private System.Timers.Timer _ReconnectTimer;
         private bool _WaitingForConnect = true;
         private Stack<Page> _PageHistory = new Stack<Page>();
+        private Dictionary<Type, Page> _PageTypeMap = new Dictionary<Type, Page>();
 
         /// <summary>
         /// Gets or sets a value indicating whether the hub should perpetually try to reconnect to the MCDU if
@@ -213,6 +214,36 @@ namespace Cduhub
             } finally {
                 OnCloseApplication();
             }
+        }
+
+        public Page CreatePage(Type pageType)
+        {
+            lock(_PageTypeMap) {
+                if(!_PageTypeMap.TryGetValue(pageType, out var result)) {
+                    result = (Page)Activator.CreateInstance(pageType, new object[] { this });
+                    _PageTypeMap.Add(pageType, result);
+                }
+                return result;
+            }
+        }
+
+        public T CreatePage<T>() where T: Page
+        {
+            return (T)CreatePage(typeof(T));
+        }
+
+        public Page CreateAndSelectPage(Type pageType)
+        {
+            var result = CreatePage(pageType);
+            SelectPage(result);
+            return result;
+        }
+
+        public T CreateAndSelectPage<T>() where T: Page
+        {
+            var result = CreatePage<T>();
+            SelectPage(result);
+            return result;
         }
 
         private void CleanupPageHistory()

@@ -8,6 +8,8 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System;
+using System.Text;
 using McduDotNet;
 
 namespace Cduhub
@@ -30,6 +32,19 @@ namespace Cduhub
         public virtual Key ParentKey { get; } = Key.Blank2;
 
         public virtual bool DisableParentKey { get; }
+
+        private Scratchpad _Scratchpad;
+        public Scratchpad Scratchpad
+        {
+            get => _Scratchpad;
+            set {
+                if(_Scratchpad != value) {
+                    UnhookScratchpad(_Scratchpad);
+                    _Scratchpad = value;
+                    HookScratchpad(_Scratchpad);
+                }
+            }
+        }
 
         public Page(Hub hub)
         {
@@ -61,10 +76,51 @@ namespace Cduhub
 
         public virtual void OnKeyDown(Key key)
         {
+            Scratchpad?.KeyDown(key);
         }
 
         public virtual void OnKeyUp(Key key)
         {
+            Scratchpad?.KeyUp(key);
+        }
+
+        protected virtual string SanitiseInput(string input)
+        {
+            (var text, var styleChanges) = CompositorString.Parse(input);
+            var buffer = new StringBuilder(text);
+            for(var idx = styleChanges.Length - 1;idx >= 0;--idx) {
+                var styleChange = styleChanges[idx];
+                var tagText = $"<<{styleChange.Style.ToString().ToLower()}>";
+                buffer.Insert(styleChange.Index, tagText);
+            }
+
+            return buffer.ToString();
+        }
+
+        protected virtual void HookScratchpad(Scratchpad scratchpad)
+        {
+            if(scratchpad != null) {
+                scratchpad.RefreshRowDisplay += Scratchpad_RefreshRowDisplay;
+            }
+        }
+
+        protected virtual void UnhookScratchpad(Scratchpad scratchpad)
+        {
+            if(scratchpad != null) {
+                scratchpad.RefreshRowDisplay -= Scratchpad_RefreshRowDisplay;
+            }
+        }
+
+        protected virtual void CopyScratchpadIntoDisplay()
+        {
+            var screenRow = Screen.Rows[Screen.Rows.Length - 1];
+            _Scratchpad?.Row.CopyTo(screenRow);
+        }
+
+        protected virtual void Scratchpad_RefreshRowDisplay(object sender, EventArgs args)
+        {
+            CopyScratchpadIntoDisplay();
+            RefreshDisplay();
         }
     }
 }

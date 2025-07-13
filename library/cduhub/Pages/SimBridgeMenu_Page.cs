@@ -14,8 +14,6 @@ namespace Cduhub.Pages
 {
     class SimBridgeMenu_Page : Page
     {
-        private SimBridge_Page _SimBridge_Page;
-
         public SimBridgeMenu_Page(Hub hub) : base(hub)
         {
         }
@@ -37,16 +35,8 @@ namespace Cduhub.Pages
         {
             switch(key) {
                 case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
-                case Key.LineSelectRight6:  OpenSimBridgePage(); break;
+                case Key.LineSelectRight6:  _Hub.CreateAndSelectPage<SimBridge_Page>(); break;
             }
-        }
-
-        private void OpenSimBridgePage()
-        {
-            if(_SimBridge_Page == null) {
-                _SimBridge_Page = new SimBridge_Page(_Hub);
-            }
-            _Hub.SelectPage(_SimBridge_Page);
         }
     }
 }

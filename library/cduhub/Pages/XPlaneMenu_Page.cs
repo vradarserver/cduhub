@@ -14,8 +14,6 @@ namespace Cduhub.Pages
 {
     class XPlaneMenu_Page : Page
     {
-        private XPlane_Page _XPlane_Page;
-
         public XPlaneMenu_Page(Hub hub) : base(hub)
         {
         }
@@ -38,16 +36,8 @@ namespace Cduhub.Pages
         {
             switch(key) {
                 case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
-                case Key.LineSelectRight6:  OpenXPlanePage(); break;
+                case Key.LineSelectRight6:  _Hub.CreateAndSelectPage<XPlane_Page>(); break;
             }
-        }
-
-        private void OpenXPlanePage()
-        {
-            if(_XPlane_Page == null) {
-                _XPlane_Page = new XPlane_Page(_Hub);
-            }
-            _Hub.SelectPage(_XPlane_Page);
         }
     }
 }

@@ -8,34 +8,22 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using McduDotNet;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace Cduhub.Pages
+namespace Cduhub
 {
-    class Root_Page : Page
+    public enum ScratchpadPlusMinusBehaviour
     {
-        public Root_Page(Hub hub) : base(hub)
-        {
-        }
+        ToggleMinusFirst,
 
-        public override void OnPreparePage()
-        {
-            Output
-                .Centred("<green>CDU <small>HUB")
-                .LeftLabel(1, ">CLOCK")
-                .RightLabel(1, "FLIGHT SIMS<")
-                .RightLabel(6, "<red>QUIT<");
+        TogglePlusFirst,
 
-            Leds.Mcdu = Leds.Menu = true;
-        }
+        AlwaysPlus,
 
-        public override void OnKeyDown(Key key)
-        {
-            switch(key) {
-                case Key.LineSelectLeft1:   _Hub.CreateAndSelectPage<Clock_Page>(); break;
-                case Key.LineSelectRight1:  _Hub.CreateAndSelectPage<FlightSimMenu_Page>(); break;
-                case Key.LineSelectRight6:  _Hub.Shutdown(); break;
-            }
-        }
+        AlwaysMinus,
+
+        Suppress,
     }
 }

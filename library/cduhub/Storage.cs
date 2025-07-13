@@ -75,7 +75,7 @@ namespace Cduhub
             var fileName = BuildFileName(name);
 
             if(obj != null) {
-                var json = JsonConvert.SerializeObject(obj);
+                var json = JsonConvert.SerializeObject(obj, Formatting.Indented);
                 File.WriteAllText(fileName, json);
             } else {
                 if(File.Exists(fileName)) {

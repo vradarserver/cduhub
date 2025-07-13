@@ -14,17 +14,8 @@ namespace Cduhub.Pages
 {
     class FlightSimMenu_Page : Page
     {
-        private FenixMenu_Page _FenixMenuPage;
-        private SimBridgeMenu_Page _SimBridgeMenuPage;
-        private ToLissMenu_Page _ToLissMenuPage;
-        private XPlaneMenu_Page _XPlaneMenuPage;
-
         public FlightSimMenu_Page(Hub hub) : base(hub)
         {
-            _FenixMenuPage = new FenixMenu_Page(hub);
-            _SimBridgeMenuPage = new SimBridgeMenu_Page(hub);
-            _ToLissMenuPage = new ToLissMenu_Page(hub);
-            _XPlaneMenuPage = new XPlaneMenu_Page(hub);
         }
 
         public override void OnPreparePage()
@@ -43,10 +34,10 @@ namespace Cduhub.Pages
         public override void OnKeyDown(Key key)
         {
             switch(key) {
-                case Key.LineSelectLeft1:   _Hub.SelectPage(_FenixMenuPage); break;
-                case Key.LineSelectLeft2:   _Hub.SelectPage(_SimBridgeMenuPage); break;
-                case Key.LineSelectRight1:  _Hub.SelectPage(_XPlaneMenuPage); break;
-                case Key.LineSelectRight2:  _Hub.SelectPage(_ToLissMenuPage); break;
+                case Key.LineSelectLeft1:   _Hub.CreateAndSelectPage<FenixMenu_Page>(); break;
+                case Key.LineSelectLeft2:   _Hub.CreateAndSelectPage<SimBridgeMenu_Page>(); break;
+                case Key.LineSelectRight1:  _Hub.CreateAndSelectPage<XPlaneMenu_Page>(); break;
+                case Key.LineSelectRight2:  _Hub.CreateAndSelectPage<ToLissMenu_Page>(); break;
                 case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
             }
         }

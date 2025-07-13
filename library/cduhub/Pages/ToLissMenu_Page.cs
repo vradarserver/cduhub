@@ -14,8 +14,6 @@ namespace Cduhub.Pages
 {
     class ToLissMenu_Page : Page
     {
-        private ToLiss_Page _ToLiss_Page;
-
         public ToLissMenu_Page(Hub hub) : base(hub)
         {
         }
@@ -37,16 +35,8 @@ namespace Cduhub.Pages
         {
             switch(key) {
                 case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
-                case Key.LineSelectRight6:  OpenXPlanePage(); break;
+                case Key.LineSelectRight6:  _Hub.CreateAndSelectPage<ToLiss_Page>(); break;
             }
-        }
-
-        private void OpenXPlanePage()
-        {
-            if(_ToLiss_Page == null) {
-                _ToLiss_Page = new ToLiss_Page(_Hub);
-            }
-            _Hub.SelectPage(_ToLiss_Page);
         }
     }
 }
