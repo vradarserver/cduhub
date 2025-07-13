@@ -31,8 +31,27 @@ FlyByWire's A320 simulator:
 https://github.com/flybywiresim/aircraft
 
 
-## Supported Simulators
 
+## Installers
+
+### Windows
+
+Download and run the latest Windows installer from the release page here:
+
+https://github.com/vradarserver/cduhub/releases
+
+
+### Unix-like Operating Systems
+
+*Coming soon*
+
+If you're comfortable with compiling .NET Core applications on your machine,
+and you have the .NET Core 8 SDK installed, then you can build and run the
+CLI version of the application by cloning the repository and running this:
+
+```bash
+dotnet run --project apps/cduhub-cli/cduhub-cli.csproj
+```
 
 
 ### MSFS2020 / 2024: Fenix A320
@@ -100,6 +119,11 @@ first-officer MCDUs. You can flip between the two MCDUs using the BLANK1 button
 
 Known issues:
 
+* Only works on local machine. I think I read somewhere that X-Plane 12's
+  web server doesn't accept connections from non-local addresses? Not sure.
+  However you can configure any address for the sim, if Laminar adds support
+  for non-local addresses in the future then it should work with no code
+  changes here.
 * Bit laggy. This is a by-product of fetching the MCDU datarefs by REST instead of
   WebSockets (which gets aborted after 100 seconds) or UDP (which requires 3200+
   datarefs for the generic MCDUs - it's too many, that's 3200 UDP packets to process
