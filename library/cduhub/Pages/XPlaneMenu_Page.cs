@@ -27,6 +27,7 @@ namespace Cduhub.Pages
                 .Centred("BLANK1 <small>TO SWAP <large>MCDUs")
                 .Newline()
                 .Centred("BLANK2 <small>FOR HUB <large>MENU")
+                .LeftLabel(5, "<amber><small>>INIT")
                 .LeftLabel(6, "<red><small>>BACK")
                 .Cyan()
                 .RightLabel(6, "MCDU<");
@@ -35,6 +36,7 @@ namespace Cduhub.Pages
         public override void OnKeyDown(Key key)
         {
             switch(key) {
+                case Key.LineSelectLeft5:   _Hub.CreateAndSelectPage<XPlaneInit_Page>(); break;
                 case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
                 case Key.LineSelectRight6:  _Hub.CreateAndSelectPage<XPlane_Page>(); break;
             }

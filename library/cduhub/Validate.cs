@@ -30,6 +30,21 @@ namespace Cduhub
             return result;
         }
 
+        public static bool IsValidForHttpEndPoint(
+            string host = "127.0.0.1",
+            int port = 1234
+        )
+        {
+            bool result;
+            try {
+                result = Uri.TryCreate($"http://{host}:{port}/endpoint", UriKind.Absolute, out _);
+            } catch {
+                result = false;
+            }
+
+            return result;
+        }
+
         public static bool IsValidForUdpEndPoint(
             string host = "127.0.0.1",
             int port = 1234
