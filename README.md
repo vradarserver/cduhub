@@ -53,6 +53,7 @@ CLI version of the application by cloning the repository and running this:
 dotnet run --project apps/cduhub-cli/cduhub-cli.csproj
 ```
 
+## Supported Flight Simulators
 
 ### MSFS2020 / 2024: Fenix A320
 
