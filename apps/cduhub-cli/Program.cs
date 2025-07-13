@@ -8,22 +8,40 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using Cduhub.FlightSim;
+
 namespace Cduhub.CommandLineInterface
 {
     class Program
     {
-        static void Main(string[] args)
+        private static readonly object _SyncLock = new();
+        private static readonly List<FlightSim.IFlightSimulatorMcdu> _HookedFlightSimulatorStates = [];
+
+        static void Main(string[] _)
         {
             var exitCode = 0;
 
             Hub hub = null;
             var cancelSource = new CancellationTokenSource();
+            var hasBeenConnected = false;
 
             try {
                 hub = new();
                 hub.CloseApplication += (_,_) => {
-                    Console.WriteLine("Quit selected on the MCDU");
+                    OutputTimestamped("Quit selected on the CDU");
                     cancelSource.Cancel();
+                };
+                hub.ConnectedDeviceChanged += (_,_) => {
+                    var connectedDevice = hub.ConnectedDevice;
+                    if(connectedDevice == null && hasBeenConnected) {
+                        OutputTimestamped("Disconnected from CDU");
+                    } else {
+                        OutputTimestamped($"Connected to {connectedDevice} CDU");
+                        hasBeenConnected = true;
+                    }
+                };
+                ConnectedFlightSimulators.FlightSimulatorStateChanged += (_,_) => {
+                    HookAndUnhookFlightSimulatorStates(ConnectedFlightSimulators.GetFlightSimulatorMcdus());
                 };
             } catch(Exception ex) {
                 Console.WriteLine("Caught exception when instantiating the CDU Hub");
@@ -32,12 +50,9 @@ namespace Cduhub.CommandLineInterface
             }
 
             if(exitCode == 0 && hub != null) {
+                Console.WriteLine("Press Q to quit");
                 try {
-                    Console.WriteLine("Connecting to CDU");
                     hub.Connect();
-                    Console.WriteLine($"Connected to {hub.ConnectedDevice}");
-                    Console.WriteLine("Press Q to quit");
-
                     while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
                         if(cancelSource.Token.IsCancellationRequested) {
                             break;
@@ -45,11 +60,13 @@ namespace Cduhub.CommandLineInterface
                         Thread.Sleep(1);
                     }
                 } catch(Exception ex) {
-                    Console.WriteLine("Caught exception while running the CDU Hub");
+                    OutputTimestamped("Caught exception while running the CDU Hub");
                     Console.WriteLine(ex);
                     exitCode = 2;
                 }
             }
+
+            UnhookFlightSimulatorStates();
 
             if(hub != null) {
                 try {
@@ -60,6 +77,67 @@ namespace Cduhub.CommandLineInterface
             }
 
             Environment.Exit(exitCode);
+        }
+
+        private static void OutputTimestamped(string note)
+        {
+            if(String.IsNullOrEmpty(note)) {
+                Console.WriteLine();
+            } else {
+                var localNow = DateTime.Now;
+                Console.WriteLine($"[{localNow.ToString("dd-MMM").ToUpperInvariant()} {localNow:HH:mm:ss}] {note}");
+            }
+        }
+
+        private static void HookAndUnhookFlightSimulatorStates(IFlightSimulatorMcdu[] flightSimulatorMcdus)
+        {
+            lock(_SyncLock) {
+                var newFlightSimulators = flightSimulatorMcdus
+                    .Except(_HookedFlightSimulatorStates)
+                    .ToArray();
+
+                var oldFlightSimulators = _HookedFlightSimulatorStates
+                    .Except(flightSimulatorMcdus)
+                    .ToArray();
+
+                foreach(var newFlightSim in newFlightSimulators) {
+                    OutputTimestamped($"{newFlightSim.AircraftName} CDU mirror started");
+                    HookFlightSim(newFlightSim);
+                    _HookedFlightSimulatorStates.Add(newFlightSim);
+                }
+
+                foreach(var oldFlightSim in oldFlightSimulators) {
+                    OutputTimestamped($"{oldFlightSim.AircraftName} CDU mirror stopped");
+                    UnhookFlightSim(oldFlightSim);
+                    _HookedFlightSimulatorStates.Remove(oldFlightSim);
+                }
+            }
+        }
+
+        private static void UnhookFlightSimulatorStates()
+        {
+            lock(_SyncLock) {
+                foreach(var flightSim in _HookedFlightSimulatorStates) {
+                    UnhookFlightSim(flightSim);
+                }
+                _HookedFlightSimulatorStates.Clear();
+            }
+        }
+
+        private static void HookFlightSim(IFlightSimulatorMcdu flightSim)
+        {
+            flightSim.IsConnectedChanged += FlightSimState_IsConnectedChanged;
+        }
+
+        private static void UnhookFlightSim(IFlightSimulatorMcdu flightSim)
+        {
+            flightSim.IsConnectedChanged -= FlightSimState_IsConnectedChanged;
+        }
+
+        private static void FlightSimState_IsConnectedChanged(object sender, EventArgs _)
+        {
+            var flightSim = sender as IFlightSimulatorMcdu;
+            OutputTimestamped($"{flightSim.AircraftName} {(flightSim.IsConnected ? "connected" :"disconnected")}");
         }
     }
 }
