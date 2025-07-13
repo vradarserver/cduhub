@@ -27,6 +27,7 @@ namespace Cduhub.Pages
         public override void OnSelected(bool selected)
         {
             if(selected) {
+                ShowConnecting();
                 Connect();
             } else {
                 Disconnect();
@@ -45,6 +46,7 @@ namespace Cduhub.Pages
             _FenixA320 = mcdu;
             mcdu.DisplayRefreshRequired += FenixA320_DisplayRefreshRequired;
             mcdu.LedsRefreshRequired += FenixA320_LedsRefreshRequired;
+            mcdu.IsConnectedChanged += FenixA320_ConnectedChanged;
 
             ConnectedFlightSimulators.AddFlightSimulatorMcdu(mcdu);
             mcdu.ReconnectToSimulator();
@@ -83,8 +85,17 @@ namespace Cduhub.Pages
             }
         }
 
+        private void ShowConnecting() => FullPageStatusMessage("<grey>CONNECTING", "<grey><small>(BLANK2 TO QUIT)");
+
         private void FenixA320_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
 
         private void FenixA320_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLeds();
+
+        private void FenixA320_ConnectedChanged(object sender, System.EventArgs e)
+        {
+            if(!(_FenixA320?.IsConnected ?? false)) {
+                ShowConnecting();
+            }
+        }
     }
 }

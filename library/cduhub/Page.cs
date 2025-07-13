@@ -97,6 +97,20 @@ namespace Cduhub
             return buffer.ToString();
         }
 
+        protected virtual void FullPageStatusMessage(
+            params string[] lines
+        )
+        {
+            var startLine = (Screen.Rows.Length - lines.Length) / 2;
+            Screen.Clear();
+            for(var idx = 0;idx < lines.Length;++idx) {
+                Output
+                    .Line(startLine + idx)
+                    .Centered(lines[idx]);
+            }
+            RefreshDisplay();
+        }
+
         protected virtual void HookScratchpad(Scratchpad scratchpad)
         {
             if(scratchpad != null) {

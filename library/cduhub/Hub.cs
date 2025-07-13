@@ -154,10 +154,10 @@ namespace Cduhub
         {
             if(page != _SelectedPage) {
                 DeselectPage(_SelectedPage);
-                page?.PreparePage();
                 _SelectedPage = page;
 
                 if(page != null) {
+                    page?.PreparePage();
                     _PageHistory.Push(page);
                     RefreshDisplay(page);
                     RefreshLeds(page);

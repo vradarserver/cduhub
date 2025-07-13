@@ -150,6 +150,8 @@ namespace Cduhub.FlightSim
             try {
                 client?.Dispose();
             } catch {;}
+
+            RecordConnection(connected: false);
         }
 
         private void SetupConnectionStateSubscription()
