@@ -12,33 +12,28 @@ using McduDotNet;
 
 namespace Cduhub.Pages
 {
-    class FlightSimMenu_Page : Page
+    class PassthruMenu_Page : Page
     {
-        public FlightSimMenu_Page(Hub hub) : base(hub)
+        public PassthruMenu_Page(Hub hub) : base(hub)
         {
         }
 
         public override void OnPreparePage()
         {
             Output
-                .Centred("<green>FLIGHT SIMULATORS")
-                .LeftLabel(1, ">FENIX")
-                .LeftLabel(2, ">SIMBRIDGE")
-                .RightLabel(1, "X-PLANE 12<")
-                .RightLabel(2, "TOLISS<")
-                .RightLabel(3, "PASSTHRU<")
-                .LeftLabel(6, "<red><small>>BACK");
+                .Centred("<green>PASSTHROUGH")
+                .Newline(2)
+                .Centred("BLANK2 <small>FOR HUB <large>MENU")
+                .LeftLabel(6, "<red><small>>BACK")
+                .Cyan()
+                .RightLabel(6, "PASSTHRU<");
         }
 
         public override void OnKeyDown(Key key)
         {
             switch(key) {
-                case Key.LineSelectLeft1:   _Hub.CreateAndSelectPage<FenixMenu_Page>(); break;
-                case Key.LineSelectLeft2:   _Hub.CreateAndSelectPage<SimBridgeMenu_Page>(); break;
-                case Key.LineSelectRight1:  _Hub.CreateAndSelectPage<XPlaneMenu_Page>(); break;
-                case Key.LineSelectRight2:  _Hub.CreateAndSelectPage<ToLissMenu_Page>(); break;
-                case Key.LineSelectRight3:  _Hub.CreateAndSelectPage<PassthruMenu_Page>(); break;
                 case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
+                case Key.LineSelectRight6:  _Hub.CreateAndSelectPage<Passthru_Page>(); break;
             }
         }
     }

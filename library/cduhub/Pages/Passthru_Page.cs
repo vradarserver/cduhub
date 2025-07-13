@@ -8,38 +8,14 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using McduDotNet;
-
 namespace Cduhub.Pages
 {
-    class FlightSimMenu_Page : Page
+    class Passthru_Page : Page
     {
-        public FlightSimMenu_Page(Hub hub) : base(hub)
-        {
-        }
+        public override bool DisableMenuKey => true;
 
-        public override void OnPreparePage()
+        public Passthru_Page(Hub hub) : base(hub)
         {
-            Output
-                .Centred("<green>FLIGHT SIMULATORS")
-                .LeftLabel(1, ">FENIX")
-                .LeftLabel(2, ">SIMBRIDGE")
-                .RightLabel(1, "X-PLANE 12<")
-                .RightLabel(2, "TOLISS<")
-                .RightLabel(3, "PASSTHRU<")
-                .LeftLabel(6, "<red><small>>BACK");
-        }
-
-        public override void OnKeyDown(Key key)
-        {
-            switch(key) {
-                case Key.LineSelectLeft1:   _Hub.CreateAndSelectPage<FenixMenu_Page>(); break;
-                case Key.LineSelectLeft2:   _Hub.CreateAndSelectPage<SimBridgeMenu_Page>(); break;
-                case Key.LineSelectRight1:  _Hub.CreateAndSelectPage<XPlaneMenu_Page>(); break;
-                case Key.LineSelectRight2:  _Hub.CreateAndSelectPage<ToLissMenu_Page>(); break;
-                case Key.LineSelectRight3:  _Hub.CreateAndSelectPage<PassthruMenu_Page>(); break;
-                case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
-            }
         }
     }
 }
