@@ -62,6 +62,7 @@ namespace Cduhub.Pages
                     ConnectedFlightSimulators.RemoveFlightSimulatorMcdu(reference);
                     reference.DisplayRefreshRequired -= FenixA320_DisplayRefreshRequired;
                     reference.LedsRefreshRequired -= FenixA320_LedsRefreshRequired;
+                    reference.IsConnectedChanged -= FenixA320_ConnectedChanged;
                     reference.Dispose();
                 } catch {
                     ;

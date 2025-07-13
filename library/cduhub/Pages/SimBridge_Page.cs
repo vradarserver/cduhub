@@ -27,6 +27,7 @@ namespace Cduhub.Pages
         public override void OnSelected(bool selected)
         {
             if(selected) {
+                ShowConnecting();
                 Connect();
             } else {
                 Disconnect();
@@ -45,6 +46,7 @@ namespace Cduhub.Pages
             _SimBridgeA320 = mcdu;
             mcdu.DisplayRefreshRequired += SimBridgeA320_DisplayRefreshRequired;
             mcdu.LedsRefreshRequired += SimBridgeA320_LedsRefreshRequired;
+            mcdu.IsConnectedChanged += SimBridgeA320_IsConnectedChanged;
 
             ConnectedFlightSimulators.AddFlightSimulatorMcdu(mcdu);
             mcdu.ReconnectToSimulator();
@@ -60,6 +62,7 @@ namespace Cduhub.Pages
                     ConnectedFlightSimulators.RemoveFlightSimulatorMcdu(reference);
                     reference.DisplayRefreshRequired -= SimBridgeA320_DisplayRefreshRequired;
                     reference.LedsRefreshRequired -= SimBridgeA320_LedsRefreshRequired;
+                    reference.IsConnectedChanged -= SimBridgeA320_IsConnectedChanged;
                     reference.Dispose();
                 } catch {
                     ;
@@ -76,8 +79,17 @@ namespace Cduhub.Pages
             }
         }
 
+        private void ShowConnecting() => FullPageStatusMessage("<grey>CONNECTING", "<grey><small>(BLANK2 TO QUIT)");
+
         private void SimBridgeA320_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
 
         private void SimBridgeA320_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLeds();
+
+        private void SimBridgeA320_IsConnectedChanged(object sender, System.EventArgs e)
+        {
+            if(!(_SimBridgeA320?.IsConnected ?? false)) {
+                ShowConnecting();
+            }
+        }
     }
 }
