@@ -103,7 +103,7 @@ AIRPORT).
 Known issues:
 
 * Pauses at startup. This is a side-effect of the mechanism used to interact with
-  X-Plane. I'll add a progress bar in a future update.
+  X-Plane.
 * LEDs don't work. I've not actually seen them light up in the simulator yet so
   I'm not sure whether ToLiss simulate them.
 * BRT and DIM only affect the simulated MCDU, not the real one. I'll look at this
@@ -127,8 +127,7 @@ Known issues:
   changes here.
 * Bit laggy. This is a by-product of fetching the MCDU datarefs by REST instead of
   WebSockets (which gets aborted after 100 seconds) or UDP (which requires 3200+
-  datarefs for the generic MCDUs - it's too many, that's 3200 UDP packets to process
-  every *n*th of a second).
+  datarefs for the generic MCDUs).
 * SEC F-PLN and ATC-COMM don't appear to have commands for them. They don't do
   anything in the A330 so I'm assuming they're just not present.
 * MCDU MENU doesn't do anything, I'm not sure I'm sending the right command there.

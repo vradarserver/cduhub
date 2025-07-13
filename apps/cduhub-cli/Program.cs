@@ -89,6 +89,8 @@ namespace Cduhub.CommandLineInterface
             }
         }
 
+        private static string DescribeFlightSim(IFlightSimulatorMcdu flightSim) => $"{flightSim.FlightSimulatorName} {flightSim.AircraftName}";
+
         private static void HookAndUnhookFlightSimulatorStates(IFlightSimulatorMcdu[] flightSimulatorMcdus)
         {
             lock(_SyncLock) {
@@ -101,13 +103,13 @@ namespace Cduhub.CommandLineInterface
                     .ToArray();
 
                 foreach(var newFlightSim in newFlightSimulators) {
-                    OutputTimestamped($"{newFlightSim.AircraftName} CDU mirror started");
+                    OutputTimestamped($"{DescribeFlightSim(newFlightSim)} CDU mirror started");
                     HookFlightSim(newFlightSim);
                     _HookedFlightSimulatorStates.Add(newFlightSim);
                 }
 
                 foreach(var oldFlightSim in oldFlightSimulators) {
-                    OutputTimestamped($"{oldFlightSim.AircraftName} CDU mirror stopped");
+                    OutputTimestamped($"{DescribeFlightSim(oldFlightSim)} CDU mirror stopped");
                     UnhookFlightSim(oldFlightSim);
                     _HookedFlightSimulatorStates.Remove(oldFlightSim);
                 }
@@ -137,7 +139,7 @@ namespace Cduhub.CommandLineInterface
         private static void FlightSimState_ConnectionStateChanged(object sender, EventArgs _)
         {
             var flightSim = sender as IFlightSimulatorMcdu;
-            OutputTimestamped($"{flightSim.AircraftName} {(flightSim.ConnectionState.ToString().ToLower())}");
+            OutputTimestamped($"{DescribeFlightSim(flightSim)} {(flightSim.ConnectionState.ToString().ToLower())}");
         }
     }
 }

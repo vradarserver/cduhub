@@ -59,11 +59,11 @@ namespace Cduhub.Pages
                 _SimBridgeA320 = null;
 
                 try {
-                    ConnectedFlightSimulators.RemoveFlightSimulatorMcdu(reference);
                     reference.DisplayRefreshRequired -= SimBridgeA320_DisplayRefreshRequired;
                     reference.LedsRefreshRequired -= SimBridgeA320_LedsRefreshRequired;
-                    reference.ConnectionStateChanged -= SimBridgeA320_ConnectionStateChanged;
                     reference.Dispose();
+                    reference.ConnectionStateChanged -= SimBridgeA320_ConnectionStateChanged;
+                    ConnectedFlightSimulators.RemoveFlightSimulatorMcdu(reference);
                 } catch {
                     ;
                 }

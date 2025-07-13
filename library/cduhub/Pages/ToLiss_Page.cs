@@ -43,8 +43,10 @@ namespace Cduhub.Pages
                 Port = settings.Port,
             };
             _ToLissMcdu = mcdu;
+            ShowConnectionState(_ToLissMcdu?.ConnectionState);
             mcdu.DisplayRefreshRequired += ToLissMcdu_DisplayRefreshRequired;
             mcdu.LedsRefreshRequired += ToLissMcdu_LedsRefreshRequired;
+            mcdu.ConnectionStateChanged += ToLissMcdu_ConnectionStateChanged;
 
             ConnectedFlightSimulators.AddFlightSimulatorMcdu(mcdu);
             mcdu.ReconnectToSimulator();
@@ -57,10 +59,11 @@ namespace Cduhub.Pages
                 _ToLissMcdu = null;
 
                 try {
-                    ConnectedFlightSimulators.RemoveFlightSimulatorMcdu(reference);
                     reference.DisplayRefreshRequired -= ToLissMcdu_DisplayRefreshRequired;
                     reference.LedsRefreshRequired -= ToLissMcdu_LedsRefreshRequired;
                     reference.Dispose();
+                    reference.ConnectionStateChanged -= ToLissMcdu_ConnectionStateChanged;
+                    ConnectedFlightSimulators.RemoveFlightSimulatorMcdu(reference);
                 } catch {
                     ;
                 }
@@ -86,5 +89,10 @@ namespace Cduhub.Pages
         private void ToLissMcdu_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
 
         private void ToLissMcdu_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLeds();
+
+        private void ToLissMcdu_ConnectionStateChanged(object sender, System.EventArgs e)
+        {
+            ShowConnectionState(_ToLissMcdu?.ConnectionState);
+        }
     }
 }

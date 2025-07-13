@@ -24,8 +24,8 @@ namespace Cduhub.FlightSim
     /// <summary>
     /// Another day, another attempt at getting sensible communication with XPlane. This would not be as sensible
     /// as WebSockets, but ClientWebSocket or X-Plane aborts after 100 seconds (no problems with SimBridge, so I
-    /// suspect something about X-Plane's WebSocket server triggers a 100 second abort issue in .NET/Windows)...
-    /// but it is a lot more sensible that subscribing to 3200+ datarefs over UDP.
+    /// suspect something about X-Plane's WebSocket server triggers a 100 second abort issue in .NET/Windows) but
+    /// it is a lot more sensible than subscribing to 3200+ datarefs over UDP.
     /// </summary>
     public abstract class XPlaneRestMcdus : SimulatedMcdus, IDisposable
     {
