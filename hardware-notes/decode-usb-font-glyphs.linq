@@ -23,6 +23,9 @@
 //     32 bb 00 00 07 01 00 00 ea 90 06 00 00 0c 02 00 00 05 00 00 00 00 04 00 00 00 02 00 00 00 00 (and previous two are:)
 //     32 bb 00 00 07 01 00 00 d4 90 06 00 00 0c 02 00 00 05 00 00 00 00 02 00 00 00 02 00 00 f0 01
 //     32 bb 00 00 07 01 00 00 be 90 06 00 00 0c 02 00 00 05 00 00 00 00 00 00 00 00 02 00 00
+//
+// Whatever the preambles are they don't seem to be influenced by the content of the glyphs - I can change the bit patterns
+// and the modified glyphs upload just fine.
 
 var text = "000000000000000000000000000000000000000000"
         // assuming 31 preamble
