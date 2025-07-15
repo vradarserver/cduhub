@@ -11,6 +11,7 @@ namespace Characters
                 Console.WriteLine($"Using {mcdu.ProductId} MCDU");
                 Console.WriteLine($"Press Q to quit");
                 mcdu.Output
+                    .UseLowercaseFont()
                     .WriteLine(" 0123456789ABCDEF UDLR")
                     .WriteLine("2<grey> !\"#$%&'()*+,-./ ↑↓←→")
                     .WriteLine("3<grey>0123456789:;<=>? ▲▼◀▶")
