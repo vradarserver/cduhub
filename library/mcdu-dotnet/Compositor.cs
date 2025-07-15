@@ -244,6 +244,13 @@ namespace McduDotNet
             return this;
         }
 
+        public Compositor WriteLine(string text)
+        {
+            ApplyCompositorString(text);
+            Newline();
+            return this;
+        }
+
         private Compositor WriteRaw(string text)
         {
             _Screen.Write(text, showLowercaseInSmallUppercase: _ShowLowercaseInSmallUppercase);

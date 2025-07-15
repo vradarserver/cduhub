@@ -5,7 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\mcdu-dotnet\mcdu-dotnet.csproj" />
+      <ProjectReference Include="..\..\mcdu-dotnet\mcdu-dotnet.csproj" />
     </ItemGroup>
 
 </Project>

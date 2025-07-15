@@ -20,6 +20,7 @@ set RUNARGS=
     if "%1"=="console"       set BADARG=OK & set TARGET=CONSOLE
     if "%1"=="restore"       set BADARG=OK & set TARGET=RESTORE
 
+    if "%1"=="characters"    set BADARG=OK & set TARGET=SAMCHAR
     if "%1"=="clock"         set BADARG=OK & set TARGET=SAMCLOCK
     if "%1"=="colours"       set BADARG=OK & set TARGET=SAMCOLS
     if "%1"=="cooked-input"  set BADARG=OK & set TARGET=SAMCOOKI
@@ -45,6 +46,7 @@ set RUNARGS=
     if "%TARGET%"=="CONSOLE"    goto :CONSOLE
     if "%TARGET%"=="RESTORE"    goto :RESTORE
     if "%TARGET%"=="SLN"        goto :SLN
+    if "%TARGET%"=="SAMCHAR"    goto :SAMCHAR
     if "%TARGET%"=="SAMCLOCK"   goto :SAMCLOCK
     if "%TARGET%"=="SAMCOLS"    goto :SAMCOLS
     if "%TARGET%"=="SAMCOOKI"   goto :SAMCOOKI
@@ -59,6 +61,7 @@ echo restore      Restore all NuGet packages
 echo solution     Build the solution
 echo console      Build cduhub-cli
 echo.
+echo characters   Build the characters mcdu-dotnet sample
 echo clock        Build the clock mcdu-dotnet sample
 echo colours      Build the colours mcdu-dotnet sample
 echo cooked-input Build the cooked-input mcdu-dotnet sample
@@ -113,6 +116,11 @@ rem ## Build targets
     if "%RUN%"=="YES" echo "The run option doesn't make sense for the solution, ignoring it"
     set RUN=NO
     set "PROJ=%BATDIR%cduhub.sln"
+    call :DOTNET
+    goto :EOF
+
+:SAMCHAR
+    set "PROJ=%BATDIR%library\samples\characters\characters.csproj"
     call :DOTNET
     goto :EOF
 
