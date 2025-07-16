@@ -37,29 +37,43 @@ class McduGlyph
     public List<string> BitArray { get; set; } = new List<string>();
 }
 
-McduFontFile ParseUsbPacketsIntoFont(string fontName, IEnumerable<string> packetPayloads)
+McduFontFile ParseUsbPacketsIntoFont(string fontName, string[] packetPayloads)
 {
     McduFontFile result = new McduFontFile() {
         Name = fontName,
         GlyphWidth = 24,
-        GlyphHeight = 30,
+        GlyphHeight = 29,
     };
     var glyphs = new List<McduGlyph>();
     
-    var isFirst3C = true;
     var seenInterruption = true;
-    var byteWidth = result.GlyphWidth / 8;
     McduGlyph glyph = null;
     var bitlineBuffer = new StringBuilder();
+    byte[] codepointBytes = new byte[4];
+    int codepointOffset = 0;
     
-    void parse3C(byte[] pkt, int offset, int length)
+    void parse3C(byte[] pkt, int offset, int toOffset)
     {
-        for(;offset < length;++offset) {
+        for(;offset < toOffset;++offset) {
             var b = pkt[offset];
             if(glyph == null) {
-                glyph = new McduGlyph() {
-                    Character = (char)b,
-                };
+                if(codepointOffset < 4) {
+                    codepointBytes[codepointOffset++] = b;
+                }
+                if(codepointOffset == 4) {
+                    var codepoint = (uint)(
+                           codepointBytes[0]
+                        | (codepointBytes[1] << 8)
+                        | (codepointBytes[2] << 16)
+                        | (codepointBytes[3] << 24)
+                    );
+                    //Console.WriteLine(codepoint.ToString("X8"));
+                    var characterString = char.ConvertFromUtf32((int)codepoint);
+                    glyph = new McduGlyph() {
+                        Character = characterString[0],
+                    };
+                    codepointOffset = 0;
+                }
             } else {
                 for(var bit = 0x80;bit > 0;bit >>= 1) {
                     var isolated = (b & bit) != 0 ? 1 : 0;
@@ -79,7 +93,8 @@ McduFontFile ParseUsbPacketsIntoFont(string fontName, IEnumerable<string> packet
     }
 
     var packet = new byte[64];
-    foreach(var packetText in packetPayloads) {
+    for(var packetIdx = 0;packetIdx < packetPayloads.Length;++packetIdx) {
+        var packetText = packetPayloads[packetIdx];
         var packetLen = 0;
         var trimmed = packetText.Trim();
         for(var idx = 0;idx + 1 < trimmed.Length;idx += 2) {
@@ -94,14 +109,21 @@ McduFontFile ParseUsbPacketsIntoFont(string fontName, IEnumerable<string> packet
                 if(packet[0] == 0xf0 && packet[1] == 0x00 && packet[3] == 0x3c) {
                     var offset = 4;
                     if(seenInterruption) {
-                        offset += (isFirst3C ? 29 : 28);
+                        offset = 0x21;
                         seenInterruption = false;
-                        isFirst3C = false;
                     }
-                    parse3C(packet, offset, packetLen);
+                    try {
+                        parse3C(packet, offset, packetLen);
+                    } catch(Exception ex) {
+                        Console.WriteLine($"Bailed on packet {packetIdx + 1} \"{packetText}\"");
+                        Console.WriteLine(ex.ToString());
+                        packetIdx = int.MaxValue - 1;
+                    }
+                } else if(packet[0] == 0xf0 && packet[1] == 0x00 && packet[3] == 0x12) {
+                    parse3C(packet, 4, 4 + 1);
                 } else {
                     if(!seenInterruption) {
-                        bitlineBuffer.Append("#");
+                        //bitlineBuffer.Append("#");
                     }
                     seenInterruption = true;
                 }

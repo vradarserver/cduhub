@@ -3,37 +3,68 @@
 // Find packets in the output that start f0 00 ?? 3c
 // The first 3c entry has a preamble - this is the preamble for the WWT font:
 //     32 bb 00 00 07 01 00 00 be 90 06 00 00 0c 02 00 00 05 00 00 00 00 00 00 00 00 02 00 00
-// and then you get the character code:
-//     20 = space
-// and then the next 90 bytes are the glyph bitmap arranged as 30 lines of 3 bytes. The next
-// glyph immediately follows the last. Only look at the f0 00 ?? 3c lines.
+// and then you get the character code over 4 bytes:
+//     20 00 00 00 = space (little endian)
+// and then the next 90 bytes are the glyph bitmap arranged as 29 lines of 3 bytes. The glyph
+// is actually 23 bits wide, the last bit of each line is ignored. The next glyph immediately
+// follows the last. Only look at the f0 00 ?? 3c lines.
 //
 // The font glyphs are interspersed with other row types, three packets with these headers:
 //    f0 01 ?? 00  (the ?? continues the established sequence of ??)
 //    f0 01 XX 00  (the XX is not in the established sequence, but appears to be in a sequence relative to other 2nd line f0 01 sets)
 //    f0 01 YY 00  (as per XX)
 //
-// The first 3c following those has a preamble that is similar to but not the same as the first preamble - this
-// is the first preamble that appears midway through 0x25's (%) glyph. It is 2 bytes longer (31 / 0x1f) than first one for space (29 / 0x1d)
-//     32 bb 00 00 07 01 00 00 d4 90 06 00 00 0c 02 00 00 05 00 00 00 00 02 00 00 00 02 00 00 f0 01 (and previous is:)
-//     32 bb 00 00 07 01 00 00 be 90 06 00 00 0c 02 00 00 05 00 00 00 00 00 00 00 00 02 00 00
+// The first 3c following those has a preamble that is similar to but not the same as the first preamble - these are the first few
+// preambles collected together, you can see the pattern:
+// 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d      0e 0f 10 11 12 13 14 15 16 17 18 19 1a      1b 1c 1d 1e 1f 20
+// -- -- -- -- -- -- -- -- -- -- -- -- -- --      -- -- -- -- -- -- -- -- -- -- -- -- --      -- -- -- -- -- --
+// f0 00 ce 3c 32 bb 00 00 07 01 00 00 be 90      06 00 00 0c 02 00 00 05 00 00 00 00 00      00 00 00 02 00 00
+// f0 00 d9 3c 32 bb 00 00 07 01 00 00 d4 90 +16  06 00 00 0c 02 00 00 05 00 00 00 00 02 +02  00 00 00 02 00 00
+// f0 00 e4 3c 32 bb 00 00 07 01 00 00 ea 90 +16  06 00 00 0c 02 00 00 05 00 00 00 00 04 +02  00 00 00 02 00 00
+// f0 00 ef 3c 32 bb 00 00 07 01 00 00 02 91 +18  06 00 00 0c 02 00 00 05 00 00 00 00 06 +02  00 00 00 02 00 00
+// f0 00 fa 3c 32 bb 00 00 07 01 00 00 19 91 +17  06 00 00 0c 02 00 00 05 00 00 00 00 08 +02  00 00 00 02 00 00
+// f0 00 05 3c 32 bb 00 00 07 01 00 00 2f 91 +16  06 00 00 0c 02 00 00 05 00 00 00 00 0a +02  00 00 00 02 00 00
+// f0 00 10 3c 32 bb 00 00 07 01 00 00 47 91 +18  06 00 00 0c 02 00 00 05 00 00 00 00 0c +02  00 00 00 02 00 00
+// f0 00 1b 3c 32 bb 00 00 07 01 00 00 5d 91 +16  06 00 00 0c 02 00 00 05 00 00 00 00 0e +02  00 00 00 02 00 00
+// f0 00 26 3c 32 bb 00 00 07 01 00 00 75 91 +18  06 00 00 0c 02 00 00 05 00 00 00 00 10 +02  00 00 00 02 00 00
+//       SEQ                           LL HH                                          ^^
 //
-// Next interruption is within 2b (+)'s glyph. This was interrupted by 4 lines and then the next 3c had this preamble:
-//-----00-01-02-03-04-05-06-07-08-09-0a-0b-0c-0d-0e-0f-10-11-12-13-14-15-16-17-18-19-1a-1b-1c-1d-1e-----
-//     32 bb 00 00 07 01 00 00 ea 90 06 00 00 0c 02 00 00 05 00 00 00 00 04 00 00 00 02 00 00 00 00 (and previous two are:)
-//     32 bb 00 00 07 01 00 00 d4 90 06 00 00 0c 02 00 00 05 00 00 00 00 02 00 00 00 02 00 00 f0 01
-//     32 bb 00 00 07 01 00 00 be 90 06 00 00 0c 02 00 00 05 00 00 00 00 00 00 00 00 02 00 00
+// It is clear that all the preambles are the same length - but if I start taking bits straight after the end of the preamble then
+// (a) I am one byte short of getting me to the start of the next character and (b) the first two or three bytes after the preamble are
+// wrong.
 //
-// Whatever the preambles are they don't seem to be influenced by the content of the glyphs - I can change the bit patterns
-// and the modified glyphs upload just fine.
+// OK - turns out when the 3C stream is interrupted the first packet in the interruption is an f0 00 xx 12 packet. The first byte
+// after the 12 is the missing byte:
+//
+// 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11
+// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+// f0 00 d7 12 cf 32 bb 00 00 05 01 00 00 be 90 06 00 01 (zero padding to 0x40 bytes)
+// f0 00 e2 12 00 32 bb 00 00 05 01 00 00 d4 90 06 00 01
+//             BIT
+//
+// The portion after the missing byte is very similar to the start of the following preamble, E.G.:
+// f0 00 d7 12 cf 32 bb 00 00 05 01 00 00 be 90 06 00 01
+// f0 00 ce 3c    32 bb 00 00 07 01 00 00 be 90 06 00 00
+//
+// That pattern repeats for all of the large font glyphs. Then things get freaky before the small font begins. It looks
+// like I definitely need to figure these preamble blocks out. Also it's wrong to describe them as a preamble, because
+// on the small font the "preamble" preceeding the small space glyph starts at the end of a packet that contains an
+// earlier preamble, and finishes at the start of the next packet.
+//
+// In the case of the small font the interruption in the 3c stream takes the same form as before - lots of zeros - and
+// then the next preamble starts at the beginning of the packet.
+// 
 
-var text = "000000000000000000000000000000000000000000"
-        // assuming 31 preamble
-         + "0000000000000038000038000038000038000038000fffe00fffe00fff"
-         + "e0003800003800003800003800003800003800000000000000000000000000000000000000"
+var text = "00000000000000000007c0301fe0701cf0e01c70c03c71803c73801c77001ef6000fee00079c0000180000380000700000e7e000"
+         //+ "\n"
+         + "cf"
+         + "f001de70039c78031c78071c780e1c701c1ef01c0fe0380100000000000000"
+         //+ "\n"
+         + "000000"
          ;
 
-var bitsPerLine = 24;
+var showBitsPerLine = 24;
+var actualBitsPerLine = 23;
 var lineNumber = 0;
 var bitNumber = 0;
 
@@ -44,7 +75,7 @@ void showLineNumber()
 }
 
 Console.Write("     ");
-for(var idx = 0;idx < bitsPerLine;++idx) {
+for(var idx = 0;idx < showBitsPerLine;++idx) {
     var ch = ((idx + 1) % 10).ToString();
     if(ch == "0") {
         ch = ".";
@@ -54,18 +85,32 @@ for(var idx = 0;idx < bitsPerLine;++idx) {
 Console.WriteLine();
 
 foreach(var ch in text) {
-    var nibble = ch >= '0' && ch <= '9'
-        ? ch - '0'
-        : ((char.ToLower(ch)) - 'a') + 10;
-    for(var bit = 8;bit > 0;bit /= 2) {
-        if(bitNumber == 0) {
-            showLineNumber();            
+    if(ch == '\n') {
+        Console.WriteLine();
+        if(bitNumber > 0) {
+            Console.Write("     ");
+            for(var idx = 0;idx < bitNumber;++idx) {
+                Console.Write(' ');
+            }
         }
-        var isolated = (nibble & bit) != 0 ? 1 : 0;
-        Console.Write(isolated);
-        if(++bitNumber == bitsPerLine) {
-            Console.WriteLine();
-            bitNumber = 0;
+    } else {
+        var nibble = ch >= '0' && ch <= '9'
+            ? ch - '0'
+            : ((char.ToLower(ch)) - 'a') + 10;
+        for(var bit = 8;bit > 0;bit /= 2) {
+            if(bitNumber == 0) {
+                showLineNumber();            
+            }
+            if(bitNumber >= actualBitsPerLine) {
+                Console.Write('.');
+            } else {
+                var isolated = (nibble & bit) != 0 ? 1 : 0;
+                Console.Write(isolated);
+            }
+            if(++bitNumber == showBitsPerLine) {
+                Console.WriteLine();
+                bitNumber = 0;
+            }
         }
     }
 }
