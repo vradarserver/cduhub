@@ -19,51 +19,49 @@ namespace ExtractFont
     /// </summary>
     class WinwingMcduUsbExtractor
     {
-        // See notes elsewhere. Basic steps to extract font glyphs are:
-        //
-        // Look for an f0 00 xx 2a report as the start of font marker.
-        //
-        // Within that packet look for a 32bb...0601 block and read the font ID from offset 11
-        // 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11
-        // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-        // 32 bb 00 00 06 01 00 00 be 90 06 00 00 19 00 00 00 05 +24 bytes
-        // 05 = large font follows
-        // 06 = small font follows
-        //
-        // Look for a 32bb...0701 block in an fc 00 xx 3c packet and skip past it:
-        // 00 01 02 03 04 05
-        // -- -- -- -- -- --
-        // 32 bb 00 00 07 01 + 23 bytes
-        //
-        // Glyphs are only in f0 00 xx 3c reports (almost...).
-        //
-        // Each glyph starts with a 4 byte unicode codepoint (which is ignored by the device?) and then
-        // 29 triplets of three bytes. The three bytes describe the 1 bpp 23 pixel row with the lsb of
-        // the 3rd byte discarded by the device.
-        //
-        // Each glyph follows on from the next with no padding.
-        //
-        // The stream of f0 00 xx 3c reports is occasionally interrupted by an f0 00 xx 12 report.
-        //
-        // The first byte after the f0 00 xx 12 is a part of the current glyph.
-        //
-        // Ignore the rest of the xx 12 report, and the subsequent f0 01 xx 00 reports. I think they might
-        // be padding to give the device time to process what's been sent so far?
-        //
-        // After either the xx 12 or the f0 01 xx 00 reports you need to start looking for another
-        // 32bb...0701 and continue reading bitmaps after that. Note that you don't always get the xx 12,
-        // but you do always get the f0 01 xx 00.
-        //
-        // Continue until you see a codepoint of 0000. The font set is complete.
-        //
-        // Start looking for another 32bb...0601, but this time in a fc 00 xx 3c report.
-        //
-        // The following 32bb...0701 might be within the same fc 00 xx 3c report as the 32bb..0601. There
-        // will not be enough room for it, in which case it will continue into the next 3c report.
-        //
-        // Once you see the end of the 32bb...0701 report resume processing as per above.
-        //
-        // Once you see the second codepoint 0000 then you are done.
+        /*
+            Excerpt from notes elsewhere:
+
+            1. Look for f0 00 xx 2a as the start of font marker.
+
+            2. Within that packet look for a 32bb...0601 block and read the font ID from offset 11
+               00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11
+               -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+               32 bb 00 00 06 01 00 00 be 90 06 00 00 19 00 00 00 05 +24 bytes
+               05 = large font follows
+               06 = small font follows
+
+            3. Look for a 32bb...0701 block in an fc 00 xx 3c packet and skip past it:
+               00 01 02 03 04 05
+               -- -- -- -- -- --
+               32 bb 00 00 07 01 + 23 bytes
+
+            4. Read 512 bytes (1024 characters) of glyph data from f0 00 xx 3c and f0 00 xx 12 packets.
+
+            5. Each glyph starts with a 4 byte unicode codepoint (which is ignored by the device?) and then
+               29 triplets of three bytes. The three bytes describe the 1 bpp 23 pixel row with the lsb
+               discarded by the device.
+
+            6. Each glyph follows on from the next with no padding.
+
+            7. The 512 byte chunk can run out anywhere within a glyph. It does not fall on glyph boundaries.
+
+            8. After the 512 bytes are read you will get some f0 01 xx 00 packets full of zeros. They can be
+               ignored. Instead you need to look for the next 32bb...0701 block in an fc 00 xx 3c packet.
+               After that you can start reading the next block of 512 bytes.
+   
+            9. Continue until you see a codepoint of 0000. The font is complete.
+
+            10. Start looking for another 32bb...0601, but this time in a fc 00 xx 3c packet.
+
+            11. The following 32bb...0701 might be within the same fc 00 xx 3c packet as the 32bb..0601. There
+                will not be enough room for it, in which case it will continue into the next 3c packet.
+
+            12. Once you see the end of the 32bb...0701 packet resume processing as per above.
+
+            13. Once you see the second 0000 codepoint then you are done.
+
+        */
 
         enum Status
         {
@@ -79,9 +77,10 @@ namespace ExtractFont
         // Font parser state
         private Status _Status;
         private Status _StatusAfter0701;
-        private int _ExtraOffsetAfter0701;
         private McduFontFile _FontFile;
         private List<McduFontGlyph> _Glyphs;
+        private int _GlyphChunkIndex;
+        private const int _GlyphChunkSize = 512;
         private bool _BuildingLarge;
         private int _SkipStartLength;
         private byte[] _CodepointBytes = new byte[4];
@@ -125,6 +124,7 @@ namespace ExtractFont
 
             _Status = Status.LookingForOpeningReport;
             _CountGlyphSetsRead = 0;
+            _GlyphChunkIndex = 0;
 
             FontPacketMap = new McduFontPacketMap() {
                 GlyphWidth = _FontFile.GlyphWidth,
@@ -147,17 +147,6 @@ namespace ExtractFont
                     _ReportProcessed = false;
                     while(!_ReportProcessed) {
                         _ReportProcessed = true;
-
-                        if(IsReportType(0xf0, 0x01, -1, 0x00)) {
-                            switch(_Status) {
-                                case Status.ReadingBitmap:
-                                case Status.ReadingCodepoint:
-                                    _ExtraOffsetAfter0701 = 17;
-                                    _StatusAfter0701 = _Status;
-                                    _Status = Status.LookingFor32BB0701Head;
-                                    break;
-                            }
-                        }
 
                         switch(_Status) {
                             case Status.LookingForOpeningReport:
@@ -208,6 +197,7 @@ namespace ExtractFont
                     _Status = Status.LookingFor32BB0701Head;
                     _StatusAfter0701 = Status.ReadingCodepoint;
                     _CodepointOffset = 0;
+                    _GlyphChunkIndex = 0;
                     _ReportProcessed = false;
                 }
             }
@@ -237,31 +227,27 @@ namespace ExtractFont
 
         private void SetStatusAfter0701Read(int offset)
         {
-            _ReadOffset = offset + _ExtraOffsetAfter0701;
-            _ExtraOffsetAfter0701 = 0;
+            _ReadOffset = offset;
+            _GlyphChunkIndex = 0;
             _Status = _StatusAfter0701;
             _ReportProcessed = false;
         }
 
         private void ReadCodepoint()
         {
-            if(IsFullSize(_Report)) {
-                var isInterruption = IsInterruptionReportType();
-                if(isInterruption || IsReportType(0xf0, 00, -1, 0x3c)) {
-                    var length = isInterruption
-                        ? 1
-                        : _Report.Length - _ReadOffset;
-                    for(var count = 0;count < length && _ReadOffset < _Report.Length;++_ReadOffset, ++count) {
-                        _CodepointBytes[_CodepointOffset] = _Report[_ReadOffset];
-                        _CodepointMap[_CodepointOffset] = _PacketOffset + _ReadOffset;
-
-                        if(++_CodepointOffset == 4) {
-                            CodepointHasBeenRead();
-                            break;
-                        }
+            if(IsGlyphDataReportType()) {
+                for(;_ReadOffset < _Report.Length;++_ReadOffset) {
+                    if(!IsWithinGlyphChunk()) {
+                        SearchFor0701HeadAfterGlyphChunk();
+                        break;
                     }
-                    if(isInterruption) {
-                        SearchFor0701HeadAfterInterruption();
+
+                    _CodepointBytes[_CodepointOffset] = _Report[_ReadOffset];
+                    _CodepointMap[_CodepointOffset] = _PacketOffset + _ReadOffset;
+
+                    if(++_CodepointOffset == 4) {
+                        CodepointHasBeenRead();
+                        break;
                     }
                 }
             }
@@ -295,29 +281,25 @@ namespace ExtractFont
 
         private void ReadBitmap()
         {
-            if(IsFullSize(_Report)) {
-                var isInterruption = IsInterruptionReportType();
-                if(isInterruption || IsReportType(0xf0, 00, -1, 0x3c)) {
-                    var length = isInterruption
-                        ? 1
-                        : _Report.Length - _ReadOffset;
-                    for(var count = 0;count < length && _ReadOffset < _Report.Length;++count, ++_ReadOffset) {
-                        var b = _Report[_ReadOffset];
-                        _GlyphMap[_GlyphMapIndex++] = _PacketOffset + _ReadOffset;
-                        ReplacePacketMapBytes(_ReadOffset, '_');
-
-                        for(var bit = 0x80;bit > 0;bit >>= 1) {
-                            var isolated = (b & bit) != 0 ? 'X' : '.';
-                            _RowBuffer.Append(isolated);
-                        }
-                        if(_RowBuffer.Length >= _FontFile.GlyphWidth) {
-                            if(!RowHasBeenRead()) {
-                                break;
-                            }
-                        }
+            if(IsGlyphDataReportType()) {
+                for(;_ReadOffset < _Report.Length;++_ReadOffset) {
+                    if(!IsWithinGlyphChunk()) {
+                        SearchFor0701HeadAfterGlyphChunk();
+                        break;
                     }
-                    if(isInterruption) {
-                        SearchFor0701HeadAfterInterruption();
+
+                    var b = _Report[_ReadOffset];
+                    _GlyphMap[_GlyphMapIndex++] = _PacketOffset + _ReadOffset;
+                    ReplacePacketMapBytes(_ReadOffset, '_');
+
+                    for(var bit = 0x80;bit > 0;bit >>= 1) {
+                        var isolated = (b & bit) != 0 ? 'X' : '.';
+                        _RowBuffer.Append(isolated);
+                    }
+                    if(_RowBuffer.Length >= _FontFile.GlyphWidth) {
+                        if(!RowHasBeenRead()) {
+                            break;
+                        }
                     }
                 }
             }
@@ -384,9 +366,15 @@ namespace ExtractFont
             _CodepointOffset = 0;
         }
 
-        private bool IsInterruptionReportType() => IsReportType(0xf0, 0x00, -1, 0x12);
+        private bool IsGlyphDataReportType()
+        {
+            return IsFullSize(_Report)
+                && (IsReportType(0xf0, 0x00, -1, 0x3c) || IsReportType(0xf0, 0x00, -1, 0x12));
+        }
 
-        private void SearchFor0701HeadAfterInterruption()
+        private bool IsWithinGlyphChunk() => _GlyphChunkIndex++ < _GlyphChunkSize;
+
+        private void SearchFor0701HeadAfterGlyphChunk()
         {
             _StatusAfter0701 = _Status;
             _Status = Status.LookingFor32BB0701Head;
