@@ -1,0 +1,120 @@
+Each of the 32 bb blocks within f0 00 xx 3c packets for the large font:
+
+32bb000007010000be900600000c020000050000000000000000020000
+32bb000007010000d4900600000c020000050000000002000000020000
+32bb000007010000ea900600000c020000050000000004000000020000
+32bb00000701000002910600000c020000050000000006000000020000
+32bb00000701000019910600000c020000050000000008000000020000
+32bb0000070100002f910600000c02000005000000000a000000020000
+32bb00000701000047910600000c02000005000000000c000000020000
+32bb0000070100005d910600000c02000005000000000e000000020000
+32bb00000701000075910600000c020000050000000010000000020000
+32bb0000070100008c910600000c020000050000000012000000020000
+32bb000007010000a2910600000c020000050000000014000000020000
+32bb000007010000b9910600000c020000050000000016000000020000
+32bb000007010000d1910600000c020000050000000018000000020000
+32bb000007010000e7910600000c02000005000000001a000000020000
+32bb000007010000ff910600000c02000005000000001c000000020000
+32bb00000701000015920600000c02000005000000001e000000020000
+32bb0000070100002c920600000c020000050000000020000000020000
+32bb00000701000044920600000c020000050000000022000000020000
+32bb0000070100005b920600000c020000050000000024000000020000
+32bb00000701000072920600000c020000050000000026000000020000
+
+End of the large font seems to be denoted by a 3c packet that has
+bit information and then pads out with zeros:
+
+f000 a4 3c 0006fffffefffffefffffe00<pad to end with zeros>
+
+Then there are three f0 00 xx 3c packets of all zeros
+Then there is this 32 bb in a 12 packet:
+
+f000 a8 12 0032bb000005010000729206000100<pad to end with zeros>
+
+Then there's another three all-zero packets, this time with a type of
+f0 01 xx 00, which is the usual padding packet sequence.
+
+Then this 3c packet with a 32 bb preamble, but unlike previous examples the 0c02 is different:
+
+f000 aa 3c 32bb00000701000088920600004801000005000000002800003c0100<pad to end with zeros>
+compare:   32bb00000701000072920600000c020000050000000026000000020000
+ 
+Then 4.5 ish packets of zeros - unusually a 32 bb starts towards the end of the 5th:
+
+<45 bytes of zero> 32bb00000501000089920600010000
+
+A bunch of other packets and then the next f0 00 xx 3c seems to have 1.5 32 bb blocks on it:
+
+f000 b2 3c 32bb0000060100009a92060000190000000600000017001d005b0000007400000000000000552900000032bb0000070100009a920600000c02000006
+
+Isolating those:
+
+32bb0000060100009a92060000190000000600000017001d005b00000074000000000000005529000000
+32bb0000070100009a920600000c02000006
+
+the second half of the second 32bb is at the start of the next packet, and together they seem to
+indicate the start of the small font glyph stream:
+
+f000 b3 3c 000000000000000002000020<zeros to end of packet, but they're the bits for the space char).
+
+Gluing the two 32 bb halves together and showing last 32 bb from large glyph for comparison:
+
+PO
+00 32bb0000060100009a92060000190000000600000017001d005b00000074000000000000005529000000
+00 32bb0000070100009a920600000c02000006
++1                                     0000000000000000020000
+LG 32bb00000701000072920600000c020000050000000026000000020000
+
+
+The 32bb..0601 block is interesting, as that was the sole occupant of the first font packet, albeit on
+a different 4th byte type:
+
+f000 cd 2a 32bb000006010000be9006000019000000 05 00000017001d005b00000074000000000000005529000000000000000000000000000000000000000000
+..                                            FI                                                 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+f000 b2 3c 32bb0000060100009a9206000019000000 06 00000017001d005b0000007400000000000000552900000032bb0000070100009a920600000c02000006
+
+I remember seeing font IDs 5 and 6 in the JSON for the font, so I think FI is at least one byte of font ID,
+and distinguishes between large and small.
+
+
+So I think basically if we only care about font glyph bitmaps then we can follow these rules:
+
+1. Look for f0 00 xx 2a as the start of font marker.
+
+2. Within that packet look for a 32bb...0601 block and read the font ID from offset 11
+   00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11
+   -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+   32 bb 00 00 06 01 00 00 be 90 06 00 00 19 00 00 00 05 +24 bytes
+   05 = large font follows
+   06 = small font follows
+
+3. Look for a 32bb...0701 block in an fc 00 xx 3c packet and skip past it:
+   00 01 02 03 04 05
+   -- -- -- -- -- --
+   32 bb 00 00 07 01 + 23 bytes
+
+4. Glyphs are only in f0 00 xx 3c packets.
+
+4. Each glyph starts with a 4 byte unicode codepoint (which is ignored by the device?) and then
+   29 triplets of three bytes. The three bytes describe the 1 bpp 23 pixel row with the lsb
+   discarded by the device.
+
+5. Each glyph follows on from the next with no padding.
+
+6. The f0 00 xx 3c stream is occasionally interrupted by an f0 00 xx 12 packet.
+
+7. The first byte after the f0 00 xx 12 is a part of the current glyph.
+
+8. Ignore the rest of the xx 12 packet, and the subsequent f0 01 xx 00 packets. I think they might
+   be padding to give the device time to process what's been sent so far?
+
+9. Continue until you see a codepoint of 0000. The font is complete.
+
+10. Start looking for another 32bb...0601, but this time in a fc 00 xx 3c packet.
+
+11. The following 32bb...0701 might be within the same fc 00 xx 3c packet as the 32bb..0601. There
+    will not be enough room for it, in which case it will continue into the next 3c packet.
+
+12. Once you see the end of the 32bb...0701 packet resume processing as per above.
+
+13. Once you see the second codepoint 0000 then you are done.

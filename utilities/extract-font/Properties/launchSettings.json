@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "extract-font": {
+      "commandName": "Project",
+      "commandLineArgs": "--packets ..\\..\\hardware-notes\\2025-07-14-font-upload-packets.txt --font ..\\..\\hardware-notes\\extracted-font.json --name Test",
+      "workingDirectory": "$(ProjectDir)"
+    }
+  }
+}

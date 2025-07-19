@@ -28,6 +28,8 @@ set RUNARGS=
     if "%1"=="fenix-mcdu"    set BADARG=OK & set TARGET=SAMFENIX
     if "%1"=="leds"          set BADARG=OK & set TARGET=SAMLEDS
 
+    if "%1"=="extract-font"  set BADARG=OK & set TARGET=EXFONT
+
     if "%1"=="-debug"        set BADARG=OK & set CONFIG=Debug
     if "%1"=="-nobuild"      set BADARG=OK & set BUILD=NO
     if "%1"=="-release"      set BADARG=OK & set CONFIG=Release
@@ -44,8 +46,8 @@ set RUNARGS=
     
 :ENDARGS
     if "%TARGET%"=="CONSOLE"    goto :CONSOLE
+    if "%TARGET%"=="EXFONT"     goto :EXFONT
     if "%TARGET%"=="RESTORE"    goto :RESTORE
-    if "%TARGET%"=="SLN"        goto :SLN
     if "%TARGET%"=="SAMCHAR"    goto :SAMCHAR
     if "%TARGET%"=="SAMCLOCK"   goto :SAMCLOCK
     if "%TARGET%"=="SAMCOLS"    goto :SAMCOLS
@@ -53,6 +55,7 @@ set RUNARGS=
     if "%TARGET%"=="SAMFENIX"   goto :SAMFENIX
     if "%TARGET%"=="SAMFSTUP"   goto :SAMFSTUP
     if "%TARGET%"=="SAMLEDS"    goto :SAMLEDS
+    if "%TARGET%"=="SLN"        goto :SLN
 
 :USAGE
 
@@ -60,6 +63,8 @@ echo Usage: build command options
 echo restore      Restore all NuGet packages
 echo solution     Build the solution
 echo console      Build cduhub-cli
+echo.
+echo extract-font Build the extract-font utility
 echo.
 echo characters   Build the characters mcdu-dotnet sample
 echo clock        Build the clock mcdu-dotnet sample
@@ -87,8 +92,8 @@ rem ## Common actions
     if %RUN%==NO goto :DNBUILD
     set "NOBUILD= "
     if %BUILD%==NO set "NOBUILD=--no-build "
-    echo dotnet run %NOBUILD%-c %CONFIG% --project "%PROJ%"
-         dotnet run %NOBUILD%-c %CONFIG% --project "%PROJ%"
+    echo dotnet run %NOBUILD%-c %CONFIG% --project "%PROJ%" -- %RUNARGS%
+         dotnet run %NOBUILD%-c %CONFIG% --project "%PROJ%" -- %RUNARGS%
     if ERRORLEVEL 1 goto :EOF
     exit /b 0
 :DNBUILD
@@ -109,6 +114,11 @@ rem ## Build targets
 
 :CONSOLE
     set "PROJ=%BATDIR%apps\cduhub-cli\cduhub-cli.csproj"
+    call :DOTNET
+    goto :EOF
+
+:EXFONT
+    set "PROJ=%BATDIR%utilities\extract-font\extract-font.csproj"
     call :DOTNET
     goto :EOF
 
