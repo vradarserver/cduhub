@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Linq;
 using System.Text;
 using McduDotNet;
 
@@ -75,6 +76,7 @@ namespace ExtractFont
             Finished
         }
 
+        // Font parser state
         private Status _Status;
         private Status _StatusAfter0701;
         private int _ExtraOffsetAfter0701;
@@ -93,6 +95,19 @@ namespace ExtractFont
         private readonly StringBuilder _RowBuffer = new();
         private int _RowIndex;
 
+        // Font mapper state
+        private int _PacketOffset;
+        private List<string> _MapPackets;
+        private int[] _CodepointMap;
+        private int[] _GlyphMap;
+        private int _GlyphMapIndex;
+        private List<McduFontGlyphOffsets> _GlyphMaps;
+
+        /// <summary>
+        /// Gets the font packet map as built during the last call to <see cref="ExtractFont"/>.
+        /// </summary>
+        public McduFontPacketMap FontPacketMap { get; private set; }
+
         /// <summary>
         /// Extracts the font glyphs from a set of USB reports wherein each array of bytes represents a single
         /// report sent to the MCDU device.
@@ -106,12 +121,27 @@ namespace ExtractFont
                 GlyphHeight = 29,
             };
             _Glyphs = [];
+            var rowBytes = (_FontFile.GlyphWidth / 8) + (_FontFile.GlyphWidth % 8 != 0 ? 1 : 0);
 
             _Status = Status.LookingForOpeningReport;
             _CountGlyphSetsRead = 0;
 
+            FontPacketMap = new McduFontPacketMap() {
+                GlyphWidth = _FontFile.GlyphWidth,
+                GlyphHeight = _FontFile.GlyphHeight,
+            };
+            _GlyphMaps = [];
+            _MapPackets = [];
+            _CodepointMap = new int[_CodepointBytes.Length];
+            _GlyphMap = new int[rowBytes * FontPacketMap.GlyphHeight];
+            _PacketOffset = 0;
+
             foreach(var report in usbReports) {
-                if(report?.Length > 4) {
+                _MapPackets.Add(
+                    String.Join("", report.Select(b => b.ToString("x2")))
+                );
+
+                if(report.Length > 4 && _Status != Status.Finished) {
                     _Report = report;
                     _ReadOffset = 4;
                     _ReportProcessed = false;
@@ -151,10 +181,11 @@ namespace ExtractFont
                         }
                     }
                 }
-                if(_Status == Status.Finished) {
-                    break;
-                }
+
+                _PacketOffset += _Report.Length;
             }
+
+            FontPacketMap.Packets = [.._MapPackets];
 
             return _FontFile;
         }
@@ -221,8 +252,10 @@ namespace ExtractFont
                         ? 1
                         : _Report.Length - _ReadOffset;
                     for(var count = 0;count < length && _ReadOffset < _Report.Length;++_ReadOffset, ++count) {
-                        _CodepointBytes[_CodepointOffset++] = _Report[_ReadOffset];
-                        if(_CodepointOffset == 4) {
+                        _CodepointBytes[_CodepointOffset] = _Report[_ReadOffset];
+                        _CodepointMap[_CodepointOffset] = _PacketOffset + _ReadOffset;
+
+                        if(++_CodepointOffset == 4) {
                             CodepointHasBeenRead();
                             break;
                         }
@@ -253,6 +286,7 @@ namespace ExtractFont
                 _RowIndex = 0;
                 _RowBuffer.Clear();
                 _GlyphBitArray = new string[_FontFile.GlyphHeight];
+                _GlyphMapIndex = 0;
                 _Status = Status.ReadingBitmap;
                 _ReportProcessed = false;
                 ++_ReadOffset;
@@ -269,6 +303,9 @@ namespace ExtractFont
                         : _Report.Length - _ReadOffset;
                     for(var count = 0;count < length && _ReadOffset < _Report.Length;++count, ++_ReadOffset) {
                         var b = _Report[_ReadOffset];
+                        _GlyphMap[_GlyphMapIndex++] = _PacketOffset + _ReadOffset;
+                        ReplacePacketMapBytes(_ReadOffset, '_');
+
                         for(var bit = 0x80;bit > 0;bit >>= 1) {
                             var isolated = (b & bit) != 0 ? 'X' : '.';
                             _RowBuffer.Append(isolated);
@@ -286,6 +323,19 @@ namespace ExtractFont
             }
         }
 
+        private void ReplacePacketMapBytes(int byteOffset, char replaceWith)
+        {
+            if(_MapPackets.Count > 0) {
+                var buffer = new StringBuilder(_MapPackets[^1]);
+                var textOffset = byteOffset * 2;
+                if(textOffset + 2 <= buffer.Length) {
+                    buffer[textOffset] = replaceWith;
+                    buffer[textOffset + 1] = replaceWith;
+                }
+                _MapPackets[^1] = buffer.ToString();
+            }
+        }
+
         private bool RowHasBeenRead()
         {
             _GlyphBitArray[_RowIndex++] = _RowBuffer.ToString();
@@ -294,6 +344,15 @@ namespace ExtractFont
             if(_RowIndex == _FontFile.GlyphHeight) {
                 _Glyph.BitArray = _GlyphBitArray;
                 _Glyphs.Add(_Glyph);
+
+                var offsets = new McduFontGlyphOffsets() {
+                    Character = _Glyph.Character,
+                    CodepointMap = McduFontGlyphOffsets.CompressOffsetMap(_CodepointMap),
+                    GlyphMap = McduFontGlyphOffsets.CompressOffsetMap(_GlyphMap),
+                };
+                _GlyphMaps.Add(offsets);
+                _GlyphMapIndex = 0;
+
                 SetReadingCodepointStatus(_ReadOffset + 1);
             }
 
@@ -304,10 +363,13 @@ namespace ExtractFont
         {
             if(_BuildingLarge) {
                 _FontFile.LargeGlyphs = [.._Glyphs];
+                FontPacketMap.LargeGlyphOffsets = [.._GlyphMaps];
             } else {
                 _FontFile.SmallGlyphs = [.._Glyphs];
+                FontPacketMap.SmallGlyphOffsets = [.._GlyphMaps];
             }
             _Glyphs.Clear();
+            _GlyphMaps.Clear();
 
             _Status = ++_CountGlyphSetsRead == 1
                 ? Status.LookingForFontStart

@@ -34,9 +34,10 @@ namespace ExtractFont
                 var worked = true;
 
                 RootCommand rootCommand = new("Builds CDU Hub JSON font files from USB packet captures") {
+                    Options.NameOption,
                     Options.PacketsFileOption,
                     Options.FontFileOption,
-                    Options.NameOption,
+                    Options.MapFileOption,
                 };
                 rootCommand.TreatUnmatchedTokensAsErrors = true;
                 rootCommand.SetAction(
@@ -44,7 +45,8 @@ namespace ExtractFont
                         worked = ExtractAndSaveFont(
                             parseResult.GetValue(Options.NameOption),
                             parseResult.GetRequiredValue(Options.PacketsFileOption),
-                            parseResult.GetValue(Options.FontFileOption)
+                            parseResult.GetValue(Options.FontFileOption),
+                            parseResult.GetValue(Options.MapFileOption)
                         );
                     }
                 );
@@ -61,7 +63,12 @@ namespace ExtractFont
             return exitCode;
         }
 
-        private static bool ExtractAndSaveFont(string fontName, FileInfo packetsFileInfo, FileInfo fontFileInfo)
+        private static bool ExtractAndSaveFont(
+            string fontName,
+            FileInfo packetsFileInfo,
+            FileInfo fontFileInfo,
+            FileInfo mapFileInfo
+        )
         {
             ArgumentNullException.ThrowIfNullOrEmpty(fontName);
             ArgumentNullException.ThrowIfNull(packetsFileInfo);
@@ -71,15 +78,23 @@ namespace ExtractFont
             Console.WriteLine($"Font name:          {fontName}");
             Console.WriteLine($"Packet dump file:   {packetsFileInfo.FullName}");
             Console.WriteLine($"Output file:        {fontFileInfo.FullName}");
+            Console.WriteLine($"Map file:           {(mapFileInfo?.FullName ?? "none")}");
 
             var allGood = true;
             try {
                 var extractor = new WinwingMcduUsbExtractor();
                 var fontFile = extractor.ExtractFont(ReadByteArraysFromFile(packetsFileInfo));
+                fontFile.Name = fontName;
 
-                var json = JsonConvert.SerializeObject(fontFile, Formatting.Indented);
-                File.WriteAllText(fontFileInfo.FullName, json);
-                Console.WriteLine($"Saved {json.Length:N0} bytes to {fontFileInfo.FullName}");
+                var fontFileJson = JsonConvert.SerializeObject(fontFile, Formatting.Indented);
+                File.WriteAllText(fontFileInfo.FullName, fontFileJson);
+                Console.WriteLine($"Saved {fontFileJson.Length:N0} characters to {fontFileInfo.FullName}");
+
+                if(mapFileInfo != null) {
+                    var mapFileJson = JsonConvert.SerializeObject(extractor.FontPacketMap, Formatting.Indented);
+                    File.WriteAllText(mapFileInfo.FullName, mapFileJson);
+                    Console.WriteLine($"Saved {mapFileJson.Length:N0} characters to {mapFileInfo.FullName}");
+                }
             } catch(InvalidDataException ex) {
                 allGood = false;
                 Console.WriteLine($"Found error in {packetsFileInfo.FullName}:");

@@ -28,6 +28,12 @@ namespace ExtractFont
             CustomParser = result => GetFileInfo(result, mustExist: false),
         };
 
+        public static readonly Option<FileInfo> MapFileOption = new("--map") {
+            Description = "The name of the optional packet map file to write",
+            Required = false,
+            CustomParser = result => GetFileInfo(result, mustExist: false),
+        };
+
         public static readonly Option<string> NameOption = new("--name") {
             Description = "The name of the font",
             Required = false,
