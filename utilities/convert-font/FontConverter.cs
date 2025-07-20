@@ -55,9 +55,14 @@ namespace ConvertFont
         {
             var result = new List<string>();
 
-            using(var bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb)) {
+            var bitmapWidth = width + (width % 2);
+            var bitmapHeight = height + (height % 2);
+
+            using(var bitmap = new Bitmap(bitmapWidth, bitmapHeight, PixelFormat.Format32bppArgb)) {
                 using(var graphics = Graphics.FromImage(bitmap)) {
                     graphics.Clear(Color.White);
+                    graphics.TextContrast = 0;
+                    graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
                     graphics.DrawString(
                         new String(character, 1),
                         font,

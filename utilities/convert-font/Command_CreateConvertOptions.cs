@@ -15,12 +15,20 @@ namespace ConvertFont
 {
     static class Command_CreateConvertOptions
     {
-        public static bool Run(FileInfo outputFileInfo)
+        public static bool Run(FileInfo outputFileInfo, bool overwrite)
         {
             var model = new ConvertOptions();
+            var action = "Saved blank";
+
+            if(File.Exists(outputFileInfo.FullName)) {
+                var extantJson = File.ReadAllText(outputFileInfo.FullName);
+                model = JsonConvert.DeserializeObject<ConvertOptions>(extantJson);
+                action = "Updated existing";
+            }
+
             var json = JsonConvert.SerializeObject(model, Formatting.Indented, new StringEnumConverter());
             File.WriteAllText(outputFileInfo.FullName, json);
-            Console.WriteLine($"Saved blank conversion options JSON to {outputFileInfo.FullName}");
+            Console.WriteLine($"{action} conversion options in {outputFileInfo.FullName}");
 
             return true;
         }

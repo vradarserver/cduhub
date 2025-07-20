@@ -165,6 +165,12 @@ namespace McduDotNet
 
         private void UseMobiFlightInitialisationSequence()
         {
+            SendMobiFlightf0Initialisation();
+            SendBacklightInitialisation();
+        }
+
+        private void SendMobiFlightf0Initialisation()
+        {
             var packets = new string[] {
                 "f000013832bb00001e0100005f633100000000000032bb0000180100005f6331000008000000340018000e00180032bb0000190100005f633100000e00000000",
                 "f0000238000000010005000000020000000000000032bb0000190100005f633100000e000000010006000000030000000000000032bb00001901000000000000",
@@ -183,6 +189,15 @@ namespace McduDotNet
                 "f0000f38000032bb0000190100005f633100000e0000000400000000001a0000000000000032bb0000190100005f633100000e00000004000100000000000000",
                 "f00010381b0000000000000032bb0000190100005f633100000e0000000400020000001c0000000000000032bb00001a0100005f633100000100000000000000",
                 "f00011120232bb00001c0100005f6331000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            };
+            foreach(var packet in packets) {
+                SendStringPacket(packet);
+            }
+        }
+
+        private void SendBacklightInitialisation()
+        {
+            var packets = new string[] {
                 "0232bb0000034900cc0000000000", // <-- set button backlight to 0xcc out of 0xff
                 "0232bb0000034901ff0000000000", // <-- set display backlight to full
             };

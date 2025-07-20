@@ -72,6 +72,11 @@ namespace ConvertFont
             Required = true,
         };
 
+        public static readonly Option<bool> OverwriteOptionsFileOption = new("--overwrite") {
+            Description = "Overwrite the options file instead of modifying it",
+            DefaultValueFactory = _ => false,
+        };
+
         public static readonly Option<float> PointSizeOption = new("--point") {
             Description = "The point size to use when rendering font glyphs into bitmaps to extract pixels",
             DefaultValueFactory = _ => 20F,

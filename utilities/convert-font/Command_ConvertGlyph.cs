@@ -26,11 +26,19 @@ namespace ConvertFont
         {
             using(var font = FontConverter.CreateFont(fontFamily, fontStyle, pointSize)) {
                 var bitmap = FontConverter.CreateBitmap(font, character, baseX, baseY, brightnessThreshold);
+
+                Console.WriteLine(" 012345678.012345678.012");
+                var lineNum = 0;
                 foreach(var line in bitmap) {
-                    Console.WriteLine(line);
+                    Console.WriteLine($"{(lineNum % 10 == 9 ? "." : (lineNum % 10).ToString())}{line}");
+                    ++lineNum;
                 }
                 Console.WriteLine();
-                Console.WriteLine($"\"{character}\" in {fontFamily.Name} {pointSize}pt @{baseX},{baseY} threshold {brightnessThreshold}");
+                Console.WriteLine(
+                    $"\"{character}\" in {fontFamily.Name} " +
+                    $"{pointSize}pt @{baseX},{baseY} " +
+                    $"threshold {brightnessThreshold}"
+                );
             }
 
             return true;

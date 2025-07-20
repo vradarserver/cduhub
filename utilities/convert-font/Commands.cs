@@ -31,6 +31,7 @@ namespace ConvertFont
 
         public static Command CreateConvertOptions = new("create-options", "Write an empty conversion options JSON file") {
             Options.MandatoryFileOption,
+            Options.OverwriteOptionsFileOption,
         };
 
         public static Command DumpFontFamilies = new("fonts", "Show all of the installed fonts") {
@@ -59,7 +60,8 @@ namespace ConvertFont
 
             CreateConvertOptions.SetAction(parse => {
                 Program.Worked = Command_CreateConvertOptions.Run(
-                    parse.GetRequiredValue(Options.MandatoryFileOption)
+                    parse.GetRequiredValue(Options.MandatoryFileOption),
+                    parse.GetValue(Options.OverwriteOptionsFileOption)
                 );
             });
 
