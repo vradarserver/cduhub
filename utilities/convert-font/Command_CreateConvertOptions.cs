@@ -8,51 +8,21 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Runtime.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
-namespace McduDotNet
+namespace ConvertFont
 {
-    /// <summary>
-    /// Holds the collections of glyphs that together describe a font for a CDU device.
-    /// </summary>
-    [DataContract]
-    public class McduFontFile
+    static class Command_CreateConvertOptions
     {
-        public const string CharacterSet =
-            " !\"#$%&'()*+,-./0123456789" +
-            ":;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-            "[\\]^_`abcdefghijklmnopqrstuvwxyz" +
-            "{|}~°☐←↑→↓Δ⬡◀▶█▲▼■□";
+        public static bool Run(FileInfo outputFileInfo)
+        {
+            var model = new ConvertOptions();
+            var json = JsonConvert.SerializeObject(model, Formatting.Indented, new StringEnumConverter());
+            File.WriteAllText(outputFileInfo.FullName, json);
+            Console.WriteLine($"Saved blank conversion options JSON to {outputFileInfo.FullName}");
 
-        /// <summary>
-        /// The name of the font.
-        /// </summary>
-        [DataMember]
-        public string Name { get; set; }
-
-        /// <summary>
-        /// The width in pixels for each glyph.
-        /// </summary>
-        [DataMember]
-        public int GlyphWidth { get; set; }
-
-        /// <summary>
-        /// The height in pixels for each glyph.
-        /// </summary>
-        [DataMember]
-        public int GlyphHeight { get; set; }
-
-        /// <summary>
-        /// A collection of glyphs that together describe the CDU's large font.
-        /// </summary>
-        [DataMember]
-        public McduFontGlyph[] LargeGlyphs { get; set; } = Array.Empty<McduFontGlyph>();
-
-        /// <summary>
-        /// A collection of glyphs that together describe the CDU's small font.
-        /// </summary>
-        [DataMember]
-        public McduFontGlyph[] SmallGlyphs { get; set; } = Array.Empty<McduFontGlyph>();
+            return true;
+        }
     }
 }

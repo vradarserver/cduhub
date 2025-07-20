@@ -25,6 +25,22 @@
 
     <ItemGroup>
       <PackageReference Include="HidSharp" Version="2.1.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="CduResources.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>CduResources.resx</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Update="CduResources.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>CduResources.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>

@@ -9,6 +9,8 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 
 namespace McduDotNet
@@ -36,5 +38,91 @@ namespace McduDotNet
 
         [DataMember]
         public McduFontGlyphOffsets[] SmallGlyphOffsets { get; set; } = Array.Empty<McduFontGlyphOffsets>();
+
+        public void FillPacketsWithGlyphs(McduFontGlyph[] largeGlyphs, McduFontGlyph[] smallGlyphs)
+        {
+            var packetBlob = BuildPacketBlob();
+
+            FillPacketsWithGlyphs(packetBlob, largeGlyphs, LargeGlyphOffsets, isLarge: true);
+            FillPacketsWithGlyphs(packetBlob, smallGlyphs, SmallGlyphOffsets, isLarge: false);
+
+            Packets = RebuildPacketsFromBlob(packetBlob);
+        }
+
+        private byte[] BuildPacketBlob()
+        {
+            var blobSize = Packets
+                .Select(packet => packet.Length / 2)
+                .Sum();
+            var result = new byte[blobSize];
+            var offset = 0;
+            foreach(var packet in Packets) {
+                var packetBytes = packet
+                    .Replace('_', '0')
+                    .ToByteArray();
+                Array.Copy(
+                    packetBytes, 0,
+                    result, offset,
+                    packetBytes.Length
+                );
+                offset += packetBytes.Length;
+            }
+
+            return result;
+        }
+
+        private string[] RebuildPacketsFromBlob(byte[] packetBlob)
+        {
+            var result = new List<string>();
+
+            var offset = 0;
+            foreach(var packet in Packets) {
+                var packetLength = packet.Length / 2;
+                var packetBytes = new byte[packetLength];
+                Array.Copy(packetBlob, offset, packetBytes, 0, packetLength);
+                offset += packetLength;
+
+                result.Add(
+                    String.Join("", packetBytes.Select(r => r.ToString("x2")))
+                );
+            }
+
+            return result.ToArray();
+        }
+
+        private void FillPacketsWithGlyphs(
+            byte[] packetBlob,
+            McduFontGlyph[] fontGlyphs,
+            McduFontGlyphOffsets[] fontGlyphOffsets,
+            bool isLarge
+        )
+        {
+            var indexedOffsets = fontGlyphOffsets
+                .GroupBy(r => r.Character)
+                .ToDictionary(k => k.Key, g => g.First());
+
+            foreach(var glyph in (fontGlyphs ?? Array.Empty<McduFontGlyph>())) {
+                if(indexedOffsets.TryGetValue(glyph.Character, out var glyphOffsets)) {
+                    var offsets = McduFontGlyphOffsets.DecompressMap(glyphOffsets.GlyphMap);
+                    var glyphBitmap = glyph.GetBytes();
+                    if(offsets.Length != glyphBitmap.Length) {
+                        throw new InvalidOperationException(
+                            $"{(isLarge ? "Large" : "Small")} character '{glyph.Character}' " +
+                            $"is {glyphBitmap.Length} bytes but {offsets.Length} have been mapped"
+                        );
+                    }
+                    var rows = glyphBitmap.GetLength(0);
+                    var cols = glyphBitmap.GetLength(1);
+                    var offsetIdx = 0;
+                    for(var rowIdx = 0;rowIdx < rows;++rowIdx) {
+                        for(var colIdx = 0;colIdx < cols;++colIdx) {
+                            var packetOffset = offsets[offsetIdx++];
+                            var glyphByte = glyphBitmap[rowIdx, colIdx];
+                            packetBlob[packetOffset] = glyphByte;
+                        }
+                    }
+                }
+            }
+        }
     }
 }

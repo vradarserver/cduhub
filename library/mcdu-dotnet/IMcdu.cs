@@ -71,6 +71,12 @@ namespace McduDotNet
         void RefreshLeds(bool skipDuplicateCheck = false);
 
         /// <summary>
+        /// Sends a font to the device.
+        /// </summary>
+        /// <param name="fontFileContent"></param>
+        void UseFont(McduFontFile fontFileContent);
+
+        /// <summary>
         /// Resets the display and turns everything off.
         /// </summary>
         void Cleanup();

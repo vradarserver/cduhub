@@ -76,12 +76,30 @@ f000 b2 3c 32bb0000060100009a9206000019000000 06 00000017001d005b000000740000000
 I remember seeing font IDs 5 and 6 in the JSON for the font, so I think FI is at least one byte of font ID,
 and distinguishes between large and small.
 
+There is an example in the small font where the first "interruption", which occurs within the 0x25 %
+glyph, does not start with an fc 00 xx 12 block. Instead it just has a 32bb...0501 right at the end
+of an 3c block.
 
-So I think basically if we only care about font glyph bitmaps then we can follow these rules:
+Looking closer at the intervals between the interruptions, it turns out that they are always 512 bytes
+of glyph data apart. So I think the 32bb...0701 is saying "N bytes of glyph data follows" (probably one
+of the 02 00 or 00 02 instances in the block) and then the glyph data is spread out over fc 00 xx 3c
+and fc 00 xx 12 blocks. Once the 512 bytes are up you can ignore everything else until the next
+32bb...0701.
+
+I think the packets full of zeros between the 512 byte chunks are perhaps to give the microprocessor time
+to process the fonts that it's accepted thus far?
+
+There isn't an obvious count of glyphs in the 32bb blocks preceeding each tranche. There are 110 glyphs in
+my sample, but no 0x6e (or close) in the 32bb blocks before the first glyph. However, if you follow the 512
+byte chunk rule then you hit a 0 codepoint immediately after the last glyph, so that could be used as a
+marker.
+
+I think if we only care about font glyph bitmaps then we can follow these rules to identify all of the glyph
+bytes that we need to extract and/or replace:
 
 1. Look for f0 00 xx 2a as the start of font marker.
 
-2. Within that packet look for a 32bb...0601 block and read the font ID from offset 11
+2. Within that packet look for a 32bb...0601 block and read the font ID from offset 0x11
    00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11
    -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
    32 bb 00 00 06 01 00 00 be 90 06 00 00 19 00 00 00 05 +24 bytes
@@ -93,21 +111,20 @@ So I think basically if we only care about font glyph bitmaps then we can follow
    -- -- -- -- -- --
    32 bb 00 00 07 01 + 23 bytes
 
-4. Glyphs are only in f0 00 xx 3c packets.
+4. Read 512 bytes (1024 characters) of glyph data from f0 00 xx 3c and f0 00 xx 12 packets.
 
-4. Each glyph starts with a 4 byte unicode codepoint (which is ignored by the device?) and then
+5. Each glyph starts with a 4 byte unicode codepoint (which is ignored by the device?) and then
    29 triplets of three bytes. The three bytes describe the 1 bpp 23 pixel row with the lsb
    discarded by the device.
 
-5. Each glyph follows on from the next with no padding.
+6. Each glyph follows on from the next with no padding.
 
-6. The f0 00 xx 3c stream is occasionally interrupted by an f0 00 xx 12 packet.
+7. The 512 byte chunk can run out anywhere within a glyph. It does not fall on glyph boundaries.
 
-7. The first byte after the f0 00 xx 12 is a part of the current glyph.
-
-8. Ignore the rest of the xx 12 packet, and the subsequent f0 01 xx 00 packets. I think they might
-   be padding to give the device time to process what's been sent so far?
-
+8. After the 512 bytes are read you will get some f0 01 xx 00 packets full of zeros. They can be
+   ignored. Instead you need to look for the next 32bb...0701 block in an fc 00 xx 3c packet.
+   After that you can start reading the next block of 512 bytes.
+   
 9. Continue until you see a codepoint of 0000. The font is complete.
 
 10. Start looking for another 32bb...0601, but this time in a fc 00 xx 3c packet.
@@ -117,4 +134,4 @@ So I think basically if we only care about font glyph bitmaps then we can follow
 
 12. Once you see the end of the 32bb...0701 packet resume processing as per above.
 
-13. Once you see the second codepoint 0000 then you are done.
+13. Once you see the second 0000 codepoint then you are done.

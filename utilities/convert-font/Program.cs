@@ -8,51 +8,40 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Runtime.Serialization;
+using System.CommandLine;
 
-namespace McduDotNet
+namespace ConvertFont
 {
-    /// <summary>
-    /// Holds the collections of glyphs that together describe a font for a CDU device.
-    /// </summary>
-    [DataContract]
-    public class McduFontFile
+    class Program
     {
-        public const string CharacterSet =
-            " !\"#$%&'()*+,-./0123456789" +
-            ":;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-            "[\\]^_`abcdefghijklmnopqrstuvwxyz" +
-            "{|}~°☐←↑→↓Δ⬡◀▶█▲▼■□";
+        public static bool Worked { get; set; }
 
-        /// <summary>
-        /// The name of the font.
-        /// </summary>
-        [DataMember]
-        public string Name { get; set; }
+        static int Main(string[] args)
+        {
+            var exitCode = 0;
 
-        /// <summary>
-        /// The width in pixels for each glyph.
-        /// </summary>
-        [DataMember]
-        public int GlyphWidth { get; set; }
+            try {
+                Worked = true;
 
-        /// <summary>
-        /// The height in pixels for each glyph.
-        /// </summary>
-        [DataMember]
-        public int GlyphHeight { get; set; }
+                RootCommand rootCommand = new("Converts font resources into MCDU-DOTNET font files.") {
+                    Commands.ConvertInstalledFont,
+                    Commands.CreateConvertOptions,
+                    Commands.ConvertGlyph,
+                    Commands.DumpFontFamilies,
+                };
+                rootCommand.TreatUnmatchedTokensAsErrors = true;
+                exitCode = rootCommand.Parse(args).Invoke();
 
-        /// <summary>
-        /// A collection of glyphs that together describe the CDU's large font.
-        /// </summary>
-        [DataMember]
-        public McduFontGlyph[] LargeGlyphs { get; set; } = Array.Empty<McduFontGlyph>();
+                if(!Worked) {
+                    exitCode = 1;
+                }
+            } catch(Exception ex) {
+                Console.WriteLine("Caught exception during processing:");
+                Console.WriteLine(ex);
+                exitCode = 2;
+            }
 
-        /// <summary>
-        /// A collection of glyphs that together describe the CDU's small font.
-        /// </summary>
-        [DataMember]
-        public McduFontGlyph[] SmallGlyphs { get; set; } = Array.Empty<McduFontGlyph>();
+            return exitCode;
+        }
     }
 }

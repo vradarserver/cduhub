@@ -1,14 +1,32 @@
 ﻿using System;
 using McduDotNet;
+using Newtonsoft.Json;
 
 namespace Characters
 {
     class Program
     {
-        static void Main(string[] _)
+        static void Main(string[] args)
         {
+            McduFontFile fontFile = null;
+            if(args.Length == 1) {
+                var fontFileName = args[0];
+                if(!File.Exists(fontFileName)) {
+                    Console.WriteLine($"{fontFileName} does not exist");
+                } else {
+                    Console.WriteLine($"Loading font file {fontFileName}");
+                    var json = File.ReadAllText(fontFileName);
+                    fontFile = JsonConvert.DeserializeObject<McduFontFile>(json);
+                }
+            }
             using(var mcdu = McduFactory.ConnectLocal()) {
                 Console.WriteLine($"Using {mcdu.ProductId} MCDU");
+
+                if(fontFile != null) {
+                    Console.WriteLine("Uploading font");
+                    mcdu.UseFont(fontFile);
+                }
+
                 Console.WriteLine($"Press Q to quit");
                 mcdu.Output
                     .UseLowercaseFont()

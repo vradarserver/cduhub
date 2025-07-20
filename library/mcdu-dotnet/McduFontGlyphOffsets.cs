@@ -51,5 +51,25 @@ namespace McduDotNet
 
             return result.ToArray();
         }
+
+        public static int[] DecompressMap(int[] map)
+        {
+            var result = new List<int>();
+
+            for(var idx = 0;idx < map.Length;++idx) {
+                var offset = map[idx];
+                if(offset != -1) {
+                    result.Add(offset);
+                } else if(offset == -1 && idx + 2 < map.Length) {
+                    var endOffset = map[idx + 2];
+                    for(offset = map[idx + 1];offset <= endOffset;++offset) {
+                        result.Add(offset);
+                    }
+                    idx += 2;
+                }
+            }
+
+            return result.ToArray();
+        }
     }
 }

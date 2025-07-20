@@ -28,6 +28,7 @@ set RUNARGS=
     if "%1"=="fenix-mcdu"    set BADARG=OK & set TARGET=SAMFENIX
     if "%1"=="leds"          set BADARG=OK & set TARGET=SAMLEDS
 
+    if "%1"=="convert-font"  set BADARG=OK & set TARGET=COFONT
     if "%1"=="extract-font"  set BADARG=OK & set TARGET=EXFONT
 
     if "%1"=="-debug"        set BADARG=OK & set CONFIG=Debug
@@ -45,6 +46,7 @@ set RUNARGS=
     goto :NEXTARG
     
 :ENDARGS
+    if "%TARGET%"=="COFONT"     goto :COFONT
     if "%TARGET%"=="CONSOLE"    goto :CONSOLE
     if "%TARGET%"=="EXFONT"     goto :EXFONT
     if "%TARGET%"=="RESTORE"    goto :RESTORE
@@ -64,6 +66,7 @@ echo restore      Restore all NuGet packages
 echo solution     Build the solution
 echo console      Build cduhub-cli
 echo.
+echo convert-font Convert font resources to MCDU-DOTNET font files
 echo extract-font Build the extract-font utility
 echo.
 echo characters   Build the characters mcdu-dotnet sample
@@ -111,6 +114,11 @@ rem ## Pseudo targets
 
 rem ##################################################
 rem ## Build targets
+
+:COFONT
+    set "PROJ=%BATDIR%utilities\convert-font\convert-font.csproj"
+    call :DOTNET
+    goto :EOF
 
 :CONSOLE
     set "PROJ=%BATDIR%apps\cduhub-cli\cduhub-cli.csproj"

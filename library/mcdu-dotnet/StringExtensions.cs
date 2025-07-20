@@ -8,51 +8,46 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Runtime.Serialization;
+using System.IO;
 
 namespace McduDotNet
 {
-    /// <summary>
-    /// Holds the collections of glyphs that together describe a font for a CDU device.
-    /// </summary>
-    [DataContract]
-    public class McduFontFile
+    public static class StringExtensions
     {
-        public const string CharacterSet =
-            " !\"#$%&'()*+,-./0123456789" +
-            ":;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-            "[\\]^_`abcdefghijklmnopqrstuvwxyz" +
-            "{|}~°☐←↑→↓Δ⬡◀▶█▲▼■□";
+        public static byte[] ToByteArray(this string hexString)
+        {
+            hexString = hexString ?? "";
 
-        /// <summary>
-        /// The name of the font.
-        /// </summary>
-        [DataMember]
-        public string Name { get; set; }
+            var buffer = new byte[hexString.Length / 2];
+            byte b = 0;
+            var low = false;
 
-        /// <summary>
-        /// The width in pixels for each glyph.
-        /// </summary>
-        [DataMember]
-        public int GlyphWidth { get; set; }
+            for(int chIdx = 0, bufferIdx = 0;chIdx < hexString.Length;++chIdx) {
+                var nibble = ConvertNibble(hexString[chIdx]);
+                b |= low
+                    ? (byte)nibble
+                    : (byte)(nibble << 4);
+                if(low) {
+                    buffer[bufferIdx++] = b;
+                    b = 0;
+                }
+                low = !low;
+            }
+            if(low) {
+                throw new InvalidDataException($"{hexString} is missing a hex digit");
+            }
 
-        /// <summary>
-        /// The height in pixels for each glyph.
-        /// </summary>
-        [DataMember]
-        public int GlyphHeight { get; set; }
+            return buffer;
+        }
 
-        /// <summary>
-        /// A collection of glyphs that together describe the CDU's large font.
-        /// </summary>
-        [DataMember]
-        public McduFontGlyph[] LargeGlyphs { get; set; } = Array.Empty<McduFontGlyph>();
-
-        /// <summary>
-        /// A collection of glyphs that together describe the CDU's small font.
-        /// </summary>
-        [DataMember]
-        public McduFontGlyph[] SmallGlyphs { get; set; } = Array.Empty<McduFontGlyph>();
+        private static int ConvertNibble(char ch)
+        {
+            ch = char.ToLower(ch);
+            return ch >= '0' && ch <= '9'
+                ? ch - '0'
+                : ch >= 'a' && ch <= 'f'
+                    ? (ch - 'a') + 10
+                    : throw new InvalidDataException($"{ch} is not a hex digit");
+        }
     }
 }
