@@ -42,7 +42,7 @@ namespace Characters
                         .Clear()
                         .UseLowercaseFont()
                         .WriteLine(" 0123456789ABCDEF UDLR")
-                        .WriteLine("2<grey> !\"#$%&'()*+,-./ ↑↓←→"0
+                        .WriteLine("2<grey> !\"#$%&'()*+,-./ ↑↓←→")
                         .WriteLine("3<grey>0123456789:;<=>? ▲▼◀▶")
                         .WriteLine("4<grey>@ABCDEFGHIJKLMNO ☐°Δ⬡")
                         .WriteLine("5<grey>PQRSTUVWXYZ[\\]^_ █□■")
