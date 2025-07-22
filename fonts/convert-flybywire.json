@@ -1,0 +1,19 @@
+{
+  "characters": " \"()*+-./0123456789<=>ABCDEFGHIJKLMNOPQRSTUVWXYZ[]↑↓←→☐°Δ⬡█□■",
+  "large": {
+    "font": "HoneywellMCDU",
+    "point": 25,
+    "style": "Regular",
+    "drawX": -2,
+    "drawY": 2,
+    "brightness": 0.75
+  },
+  "small": {
+    "font": "HoneywellMCDUSmall",
+    "point": 25,
+    "style": "Regular",
+    "drawX": -2,
+    "drawY": 2,
+    "brightness": 0.75
+  }
+}

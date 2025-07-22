@@ -25,23 +25,31 @@ namespace ConvertFont
             var json = File.ReadAllText(optionsFileInfo.FullName);
             var options = JsonConvert.DeserializeObject<ConvertOptions>(json);
 
-            Console.WriteLine($"Loading {options.FontFamily} font");
-            var fontFamily = FontFamily
-                .Families
-                .FirstOrDefault(f => String.Equals(f.Name, options.FontFamily, StringComparison.InvariantCultureIgnoreCase));
-            var worked = fontFamily != null;
-            if(!worked) {
-                Console.WriteLine($"There is no installed font for \"{options.FontFamily}\"");
+            FontFamily lookupFontFamily(string name)
+            {
+                Console.WriteLine($"Loading {name} font");
+                var fontFamily = FontFamily
+                    .Families
+                    .FirstOrDefault(f => String.Equals(f.Name, name, StringComparison.InvariantCultureIgnoreCase));
+                var worked = fontFamily != null;
+                if(!worked) {
+                    Console.WriteLine($"There is no installed font called \"{name}\"");
+                }
+                return fontFamily;
             }
+            var largeFontFamily = lookupFontFamily(options.Large.FontFamily);
+            var smallFontFamily = options.Small.FontFamily == options.Large.FontFamily
+                ? largeFontFamily
+                : lookupFontFamily(options.Small.FontFamily);
 
-            outputFileInfo ??= new FileInfo(Options.SanitiseFileName($"{fontFamily.Name}.json"));
+            outputFileInfo ??= new FileInfo(Options.SanitiseFileName($"{largeFontFamily.Name}.json"));
 
             var fontFile = new McduFontFile() {
                 GlyphWidth = 23,
                 GlyphHeight = 29,
-                Name = fontFamily.Name,
-                LargeGlyphs = BuildGlyphs(options.Large, fontFamily, isLarge: true),
-                SmallGlyphs = BuildGlyphs(options.Small, fontFamily, isLarge: false),
+                Name = largeFontFamily.Name,
+                LargeGlyphs = BuildGlyphs(options.Characters, options.Large, largeFontFamily, isLarge: true),
+                SmallGlyphs = BuildGlyphs(options.Characters, options.Small, smallFontFamily, isLarge: false),
             };
             var fontJson = JsonConvert.SerializeObject(fontFile, Formatting.Indented);
             File.WriteAllText(outputFileInfo.FullName, fontJson);
@@ -51,6 +59,7 @@ namespace ConvertFont
         }
 
         private static McduFontGlyph[] BuildGlyphs(
+            string characters,
             FontConversionOptions options,
             FontFamily fontFamily,
             bool isLarge
@@ -58,13 +67,17 @@ namespace ConvertFont
         {
             var result = new List<McduFontGlyph>();
 
+            characters = String.IsNullOrEmpty(characters)
+                ? McduFontFile.CharacterSet
+                : characters;
+
             Console.WriteLine(
                 $"Building {(isLarge ? "large" : "small")} " +
                 $"glyphs from {options.PointSize}pt {options.Style} font " +
                 $"drawn at {options.DrawX},{options.DrawY} using {options.BrightnessThreshold} brightness"
             );
             using(var font = FontConverter.CreateFont(fontFamily, options.Style, options.PointSize)) {
-                foreach(var ch in McduFontFile.CharacterSet) {
+                foreach(var ch in characters) {
                     var glyph = new McduFontGlyph() {
                         Character = ch,
                         BitArray = FontConverter.CreateBitmap(

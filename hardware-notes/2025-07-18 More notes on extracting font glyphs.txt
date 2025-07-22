@@ -135,3 +135,36 @@ bytes that we need to extract and/or replace:
 12. Once you see the end of the 32bb...0701 packet resume processing as per above.
 
 13. Once you see the second 0000 codepoint then you are done.
+
+
+The X and Y offsets are sent in the 32bb0000 1801 packet, after the font has been sent:
+    32bb0000 1801 00-1-2-3-4-5-6-7-8-9-a XX -c YY -e LL 10 CC -2
+             1801 0000799406000008000000 34 00 25 00 0e 00 18 00 
+where XX is 0x24 + the offset. Default is +0x10 = 0x34.
+where YY is 0x14 + the offset. Default is +0x11 = 0x25.
+where LL is the number of lines (< 0x0e works until you write past the last line, > 0x0e no effect)
+where CC is the number of columns (< 0x18 wraps when you write past last column then crashes, > 0x18 the text offsets are wrong but no crash)
+(I'm assuming all these are actually low-endian words, hence the trailing 00s)
+
+The glyph width and heights are always 23x29 but it centres the glyph within the new width
+as far as it can. The display width and height are sent early on in the 32bb...0601 block,
+note that this is sent twice (once for each font ID).
+
+32bb0000 0601 00-1-2-3-4-5-6-7-8-9-a-b-c-d-e WW 10 HH -2-3-4-5-6-7-8-9-a-b-c-d-e-f20-1-2-3-4-5-6-7-8-9-a-b-c-d-e-f30-1-2-3-4-5
+         0601 0000a96e0000001900000005000000 17 00 1d 005b00000074000000000000005529000000000000000000000000000000000000000000
+where WW is the glyph width and HH is the glyph height (again probably LE words).
+
+Very easy to crash the device by setting low values for these.
+
+Pixel width according to simapppro is 16 + (23 * 24) + 16 = 584
+Pixel height       "          "    is 17 + (14 * 29) + 17 = 440
+Aspect ratio = 73:55
+That's actually pretty close to 4:3, 587 width is 4:3
+
+There might be an LCD square pixel vs. CRT not-square pixel thing going on... but I think basically the problem is that the
+glyphs have a lot of space on either side. The FlyByWire and Airbus' b612 font have like 6 pixels of space on either side
+of the glyph when vertically it occupies most of the 29 available, which means you have almost half a character space between
+each glyph.
+
+There seems to be a limit beyond which you cannot shrink the width? I'm not seeing any difference between b612 at 0x14 and 0x15.
+Perhaps if you have pixel data at a column then that sets a minimum?

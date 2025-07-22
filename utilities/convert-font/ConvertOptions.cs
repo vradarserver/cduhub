@@ -16,6 +16,9 @@ namespace ConvertFont
     [DataContract]
     class FontConversionOptions
     {
+        [DataMember(Name = "font")]
+        public string FontFamily { get; set; }
+
         [DataMember(Name = "point")]
         public float PointSize { get; set; }
 
@@ -35,8 +38,8 @@ namespace ConvertFont
     [DataContract]
     class ConvertOptions
     {
-        [DataMember(Name = "font")]
-        public string FontFamily { get; set; } = "";
+        [DataMember(Name = "characters")]
+        public string Characters { get; set; }
 
         [DataMember(Name = "large")]
         public FontConversionOptions Large { get; set; } = new FontConversionOptions() {

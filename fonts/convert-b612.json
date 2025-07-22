@@ -1,17 +1,18 @@
 {
-  "font": "B612 Mono",
   "large": {
-    "point": 19.0,
+    "font": "B612 Mono",
+    "point": 20.0,
     "style": "Regular",
     "drawX": -1,
-    "drawY": -2,
+    "drawY": -4,
     "brightness": 0.75
   },
   "small": {
-    "point": 15,
+    "font": "B612 Mono",
+    "point": 17,
     "style": "Regular",
     "drawX": 2,
-    "drawY": 3,
-    "brightness": 0.9
+    "drawY": 1,
+    "brightness": 0.75
   }
 }
