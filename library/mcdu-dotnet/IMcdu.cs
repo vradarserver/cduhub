@@ -74,7 +74,8 @@ namespace McduDotNet
         /// Sends a font to the device.
         /// </summary>
         /// <param name="fontFileContent"></param>
-        void UseFont(McduFontFile fontFileContent);
+        /// <param name="useCorrectAspectRatio"></param>
+        void UseFont(McduFontFile fontFileContent, bool useCorrectAspectRatio);
 
         /// <summary>
         /// Resets the display and turns everything off.

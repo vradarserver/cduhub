@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 
 namespace McduDotNet
 {
@@ -30,8 +31,28 @@ namespace McduDotNet
         [DataMember]
         public int GlyphHeight { get; set; }
 
+        /// <summary>
+        /// The packets in hexstring format with mandatory substitution bytes replaced
+        /// with underscores etc.
+        /// </summary>
+        /// <remarks>
+        /// Underscore = glyph bitmap byte, XX = XOffset, YY = YOffset, HH = glyph height,
+        /// WW = glyph width.
+        /// </remarks>
         [DataMember]
         public string[] Packets { get; set; } = Array.Empty<string>();
+
+        [DataMember]
+        public int XOffsetOffset { get; set; } = -1;
+
+        [DataMember]
+        public int YOffsetOffset { get; set; } = -1;
+
+        [DataMember]
+        public int[] GlyphWidthOffsets { get; set; } = Array.Empty<int>();
+
+        [DataMember]
+        public int[] GlyphHeightOffsets { get; set; } = Array.Empty<int>();
 
         [DataMember]
         public McduFontGlyphOffsets[] LargeGlyphOffsets { get; set; } = Array.Empty<McduFontGlyphOffsets>();
@@ -39,12 +60,28 @@ namespace McduDotNet
         [DataMember]
         public McduFontGlyphOffsets[] SmallGlyphOffsets { get; set; } = Array.Empty<McduFontGlyphOffsets>();
 
-        public void FillPacketsWithGlyphs(McduFontGlyph[] largeGlyphs, McduFontGlyph[] smallGlyphs)
+        public void OverwritePacketsWithFontFileContent(
+            int baseXOffset,
+            int baseYOffset,
+            McduFontDimensions glyphDimensions,
+            int targetScreenWidth,
+            int targetScreenHeight,
+            McduFontGlyph[] largeGlyphs,
+            McduFontGlyph[] smallGlyphs
+        )
         {
             var packetBlob = BuildPacketBlob();
 
             FillPacketsWithGlyphs(packetBlob, largeGlyphs, LargeGlyphOffsets, isLarge: true);
             FillPacketsWithGlyphs(packetBlob, smallGlyphs, SmallGlyphOffsets, isLarge: false);
+            FillGlyphDimensions(
+                packetBlob,
+                glyphDimensions,
+                baseXOffset,
+                baseYOffset,
+                targetScreenWidth,
+                targetScreenHeight
+            );
 
             Packets = RebuildPacketsFromBlob(packetBlob);
         }
@@ -57,8 +94,20 @@ namespace McduDotNet
             var result = new byte[blobSize];
             var offset = 0;
             foreach(var packet in Packets) {
-                var packetBytes = packet
-                    .Replace('_', '0')
+                var buffer = new StringBuilder(packet);
+                for(var idx = 0;idx < buffer.Length;++idx) {
+                    switch(buffer[idx]) {
+                        case '_':
+                        case 'H':
+                        case 'W':
+                        case 'X':
+                        case 'Y':
+                            buffer[idx] = '0';
+                            break;
+                    }
+                }
+                var packetBytes = buffer
+                    .ToString()
                     .ToByteArray();
                 Array.Copy(
                     packetBytes, 0,
@@ -122,6 +171,62 @@ namespace McduDotNet
                         }
                     }
                 }
+            }
+        }
+
+        private void FillGlyphDimensions(
+            byte[] packetBlob,
+            McduFontDimensions glyphDimensions,
+            int baseXOffset,
+            int baseYOffset,
+            int targetScreenWidth,
+            int targetScreenHeight
+        )
+        {
+            SetXYOffset(
+                packetBlob,
+                XOffsetOffset,
+                baseXOffset,
+                targetScreenWidth,
+                glyphDimensions.GlyphWidth,
+                Metrics.Columns
+            );
+            SetXYOffset(
+                packetBlob,
+                YOffsetOffset,
+                baseYOffset,
+                targetScreenHeight,
+                glyphDimensions.GlyphHeight,
+                Metrics.Lines
+            );
+
+            void setWidthHeight(int[] offsets, int value)
+            {
+                foreach(var offset in offsets) {
+                    packetBlob[offset] = (byte)value;
+                }
+            }
+            setWidthHeight(GlyphWidthOffsets, glyphDimensions.GlyphWidth);
+            setWidthHeight(GlyphHeightOffsets, glyphDimensions.GlyphHeight);
+        }
+
+        private void SetXYOffset(
+            byte[] packetBlob,
+            int blobOffset,
+            int baseOffsetPixels,
+            int targetDimensionPixels,
+            int glyphDimension,
+            int glyphCount
+        )
+        {
+            if(blobOffset > -1) {
+                var pixelsUsed = glyphDimension * glyphCount;
+                var excess = targetDimensionPixels - pixelsUsed;
+                var offset = excess / 2;
+                offset += baseOffsetPixels;
+                var offsetByte = (byte)Math.Max(0, Math.Min(255, offset));
+
+                packetBlob[blobOffset] = offsetByte;
             }
         }
     }

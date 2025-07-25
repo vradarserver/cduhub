@@ -69,6 +69,7 @@ namespace ExtractFont
             LookingForFontStart,
             LookingFor32BB0701Head,
             LookingFor32BB0701Tail,
+            LookingFor32BB1801,
             ReadingCodepoint,
             ReadingBitmap,
             Finished
@@ -101,6 +102,8 @@ namespace ExtractFont
         private int[] _GlyphMap;
         private int _GlyphMapIndex;
         private List<McduFontGlyphOffsets> _GlyphMaps;
+        private List<int> _GlyphWidthMapOffsets = [];
+        private List<int> _GlyphHeightMapOffsets = [];
 
         /// <summary>
         /// Gets the font packet map as built during the last call to <see cref="ExtractFont"/>.
@@ -116,24 +119,29 @@ namespace ExtractFont
         public McduFontFile ExtractFont(IEnumerable<byte[]> usbReports)
         {
             _FontFile = new() {
-                GlyphWidth = 23,
-                GlyphHeight = 29,
+                NormalDimensions = new() {
+                    GlyphWidth = 23,
+                    GlyphHeight = 29,
+                },
             };
             _Glyphs = [];
-            var rowBytes = (_FontFile.GlyphWidth / 8) + (_FontFile.GlyphWidth % 8 != 0 ? 1 : 0);
+            var rowBytes = (_FontFile.NormalDimensions.GlyphWidth / 8)
+                         + (_FontFile.NormalDimensions.GlyphWidth % 8 != 0 ? 1 : 0);
 
             _Status = Status.LookingForOpeningReport;
             _CountGlyphSetsRead = 0;
             _GlyphChunkIndex = 0;
 
             FontPacketMap = new McduFontPacketMap() {
-                GlyphWidth = _FontFile.GlyphWidth,
-                GlyphHeight = _FontFile.GlyphHeight,
+                GlyphWidth = _FontFile.NormalDimensions.GlyphWidth,
+                GlyphHeight = _FontFile.NormalDimensions.GlyphHeight,
             };
             _GlyphMaps = [];
             _MapPackets = [];
             _CodepointMap = new int[_CodepointBytes.Length];
             _GlyphMap = new int[rowBytes * FontPacketMap.GlyphHeight];
+            _GlyphHeightMapOffsets.Clear();
+            _GlyphWidthMapOffsets.Clear();
             _PacketOffset = 0;
 
             foreach(var report in usbReports) {
@@ -161,6 +169,9 @@ namespace ExtractFont
                             case Status.LookingFor32BB0701Tail:
                                 LookFor32BB0701Tail();
                                 break;
+                            case Status.LookingFor32BB1801:
+                                LookFor32BB1801();
+                                break;
                             case Status.ReadingCodepoint:
                                 ReadCodepoint();
                                 break;
@@ -175,6 +186,8 @@ namespace ExtractFont
             }
 
             FontPacketMap.Packets = [.._MapPackets];
+            FontPacketMap.GlyphWidthOffsets = [.._GlyphWidthMapOffsets];
+            FontPacketMap.GlyphHeightOffsets = [.._GlyphHeightMapOffsets];
 
             return _FontFile;
         }
@@ -192,13 +205,22 @@ namespace ExtractFont
             if(IsFullSize(_Report)) {
                 var idx = _Report.IndexOf(0x32, 0xbb, 0x00, 0x00, 0x06, 0x01);
                 if(idx != -1 && idx + 36 <= _Report.Length) {
-                    var fontId = _Report[idx + 17];
+                    const int fontIdOffset = 17;
+                    const int widthOffset = 21;
+                    const int heightOffset = 23;
+
+                    var fontId = _Report[idx + fontIdOffset];
                     _BuildingLarge = fontId == 5;
                     _Status = Status.LookingFor32BB0701Head;
                     _StatusAfter0701 = Status.ReadingCodepoint;
                     _CodepointOffset = 0;
                     _GlyphChunkIndex = 0;
                     _ReportProcessed = false;
+
+                    _GlyphWidthMapOffsets.Add(_PacketOffset + idx + widthOffset);
+                    _GlyphHeightMapOffsets.Add(_PacketOffset + idx + heightOffset);
+                    ReplacePacketMapBytes(idx + widthOffset, 'W');
+                    ReplacePacketMapBytes(idx + heightOffset, 'H');
                 }
             }
         }
@@ -271,7 +293,7 @@ namespace ExtractFont
                 };
                 _RowIndex = 0;
                 _RowBuffer.Clear();
-                _GlyphBitArray = new string[_FontFile.GlyphHeight];
+                _GlyphBitArray = new string[_FontFile.NormalDimensions.GlyphHeight];
                 _GlyphMapIndex = 0;
                 _Status = Status.ReadingBitmap;
                 _ReportProcessed = false;
@@ -296,7 +318,7 @@ namespace ExtractFont
                         var isolated = (b & bit) != 0 ? 'X' : '.';
                         _RowBuffer.Append(isolated);
                     }
-                    if(_RowBuffer.Length >= _FontFile.GlyphWidth) {
+                    if(_RowBuffer.Length >= _FontFile.NormalDimensions.GlyphWidth) {
                         if(!RowHasBeenRead()) {
                             break;
                         }
@@ -323,7 +345,7 @@ namespace ExtractFont
             _GlyphBitArray[_RowIndex++] = _RowBuffer.ToString();
             _RowBuffer.Clear();
 
-            if(_RowIndex == _FontFile.GlyphHeight) {
+            if(_RowIndex == _FontFile.NormalDimensions.GlyphHeight) {
                 _Glyph.BitArray = _GlyphBitArray;
                 _Glyphs.Add(_Glyph);
 
@@ -355,7 +377,25 @@ namespace ExtractFont
 
             _Status = ++_CountGlyphSetsRead == 1
                 ? Status.LookingForFontStart
-                : Status.Finished;
+                : Status.LookingFor32BB1801;
+        }
+
+        private void LookFor32BB1801()
+        {
+            const int xOffset = 17;
+            const int yOffset = 19;
+
+            if(IsFullSize(_Report)) {
+                var idx = _Report.IndexOf(0x32, 0xbb, 0x00, 0x00, 0x18, 0x01);
+                if(idx != -1 && idx + 24 <= _Report.Length) {
+                    var x = idx + xOffset;
+                    var y = idx + yOffset;
+                    ReplacePacketMapBytes(x, 'X');
+                    ReplacePacketMapBytes(y, 'Y');
+                    FontPacketMap.XOffsetOffset = _PacketOffset + x;
+                    FontPacketMap.YOffsetOffset = _PacketOffset + y;
+                }
+            }
         }
 
         private void SetReadingCodepointStatus(int offset)

@@ -45,8 +45,10 @@ namespace ConvertFont
             outputFileInfo ??= new FileInfo(Options.SanitiseFileName($"{largeFontFamily.Name}.json"));
 
             var fontFile = new McduFontFile() {
-                GlyphWidth = 23,
-                GlyphHeight = 29,
+                NormalDimensions = new McduFontDimensions() {
+                    GlyphWidth = 23,
+                    GlyphHeight = 29,
+                },
                 Name = largeFontFamily.Name,
                 LargeGlyphs = BuildGlyphs(options.Characters, options.Large, largeFontFamily, isLarge: true),
                 SmallGlyphs = BuildGlyphs(options.Characters, options.Small, smallFontFamily, isLarge: false),

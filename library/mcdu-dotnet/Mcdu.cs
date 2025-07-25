@@ -206,17 +206,20 @@ namespace McduDotNet
             }
         }
 
-        /// <summary>
-        /// Uploads a font to the device.
-        /// </summary>
-        /// <param name="fontFileContent"></param>
-        public void UseFont(McduFontFile fontFileContent)
+        /// <inheritdoc/>
+        public void UseFont(McduFontFile fontFileContent, bool useCorrectAspectRatio)
         {
             var packetMapJson = Encoding.UTF8.GetString(
                 CduResources.WinwingMcduFontPacketMapJson
             );
             var packetMap = JsonConvert.DeserializeObject<McduFontPacketMap>(packetMapJson);
-            packetMap.FillPacketsWithGlyphs(
+            packetMap.OverwritePacketsWithFontFileContent(
+                0x24, 0x14,
+                !useCorrectAspectRatio
+                    ? fontFileContent.NormalDimensions
+                    : fontFileContent.CorrectAspectRatioDimensions,
+                Metrics.DisplayWidthPixels,
+                Metrics.DisplayHeightPixels,
                 fontFileContent?.LargeGlyphs,
                 fontFileContent?.SmallGlyphs
             );

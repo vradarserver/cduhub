@@ -1,7 +1,13 @@
 {
   "Name": "B612 Mono",
-  "GlyphWidth": 23,
-  "GlyphHeight": 29,
+  "NormalDimensions": {
+    "GlyphWidth": 23,
+    "GlyphHeight": 29
+  },
+  "CorrectAspectRatioDimensions": {
+    "GlyphWidth": 21,
+    "GlyphHeight": 29
+  },
   "LargeGlyphs": [
     {
       "Character": " ",
