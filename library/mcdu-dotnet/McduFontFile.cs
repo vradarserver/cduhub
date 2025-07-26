@@ -38,10 +38,7 @@ namespace McduDotNet
         public int GlyphHeight { get; set; }
 
         [DataMember]
-        public int DesignXOffset { get; set; }
-
-        [DataMember]
-        public int DesignYOffset { get; set; }
+        public int GlyphFullWidth { get; set; }
 
         /// <summary>
         /// A collection of glyphs that together describe the CDU's large font.

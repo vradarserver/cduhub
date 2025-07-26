@@ -47,8 +47,7 @@ namespace ConvertFont
             var fontFile = new McduFontFile() {
                 GlyphWidth = options.GlyphWidth,
                 GlyphHeight = options.GlyphHeight,
-                DesignXOffset = options.DesignXOffset,
-                DesignYOffset = options.DesignYOffset,
+                GlyphFullWidth = options.GlyphFullWidth,
                 Name = largeFontFamily.Name,
                 LargeGlyphs = BuildGlyphs(
                     options.Characters,

@@ -1,9 +1,8 @@
 {
   "characters": null,
-  "glyphWidth": 23,
+  "glyphWidth": 21,
   "glyphHeight": 31,
-  "xOffset": 16,
-  "yOffset": 0,
+  "glyphFullWidth": 23,
   "large": {
     "font": "B612 Mono",
     "point": 21.0,

@@ -213,7 +213,7 @@ namespace McduDotNet
         }
 
         /// <inheritdoc/>
-        public void UseFont(McduFontFile fontFileContent)
+        public void UseFont(McduFontFile fontFileContent, bool useFullWidth)
         {
             byte[] mapBytes;
             switch(fontFileContent.GlyphHeight) {
@@ -223,16 +223,35 @@ namespace McduDotNet
             }
             var mapJson = Encoding.UTF8.GetString(mapBytes);
             var packetMap = JsonConvert.DeserializeObject<McduFontPacketMap>(mapJson);
+            var glyphWidth = useFullWidth
+                ? fontFileContent.GlyphFullWidth
+                : fontFileContent.GlyphWidth;
             packetMap.OverwritePacketsWithFontFileContent(
-                fontFileContent.GlyphWidth,
+                glyphWidth,
                 fontFileContent.GlyphHeight,
-                0x24 + XOffset + fontFileContent.DesignXOffset,
-                0x14 + YOffset + fontFileContent.DesignYOffset,
+                0x24 + XOffset + XOffsetForGlyphWidth(glyphWidth),
+                0x14 + YOffset + YOffsetForGlyphHeight(fontFileContent.GlyphHeight),
                 fontFileContent?.LargeGlyphs,
                 fontFileContent?.SmallGlyphs
             );
             foreach(var packet in packetMap.Packets) {
                 SendStringPacket(packet);
+            }
+        }
+
+        private static int XOffsetForGlyphWidth(int glyphWidth)
+        {
+            var excess = Metrics.DisplayWidthPixels - (glyphWidth * Metrics.Columns);
+            return excess / 2;
+        }
+
+        private static int YOffsetForGlyphHeight(int glyphHeight)
+        {
+            switch(glyphHeight) {
+                case 29:    return 17;
+                case 30:    return 4;
+                case 31:    return 0;
+                default:    throw new NotImplementedException($"Need base YOffset for {glyphHeight} glyphHeight");
             }
         }
 

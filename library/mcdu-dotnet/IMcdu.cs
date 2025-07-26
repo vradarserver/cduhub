@@ -84,7 +84,11 @@ namespace McduDotNet
         /// Sends a font to the device.
         /// </summary>
         /// <param name="fontFileContent"></param>
-        void UseFont(McduFontFile fontFileContent);
+        /// <param name="useFullWidth">
+        /// True to use the full width of the CDU, false for tighter kerning that looks more
+        /// accurate but leaves a gap between either side of the display.
+        /// </param>
+        void UseFont(McduFontFile fontFileContent, bool useFullWidth);
 
         /// <summary>
         /// Resets the display and turns everything off.

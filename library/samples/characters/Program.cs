@@ -26,7 +26,8 @@ namespace Characters
                 RootCommand rootCommand = new("Display characters on the CDU device") {
                     Options.FontOption,
                     Options.XOffsetOption,
-                    Options.YOffsetOption
+                    Options.YOffsetOption,
+                    Options.UseFullWidthOption,
                 };
                 rootCommand.EnforceInHouseStandards();
                 rootCommand.SetAction(
@@ -34,7 +35,8 @@ namespace Characters
                         ShowAsciiCharacterSet(
                             parseResult.GetValue(Options.FontOption),
                             parseResult.GetValue(Options.XOffsetOption),
-                            parseResult.GetValue(Options.YOffsetOption)
+                            parseResult.GetValue(Options.YOffsetOption),
+                            parseResult.GetValue(Options.UseFullWidthOption)
                         );
                     }
                 );
@@ -54,7 +56,8 @@ namespace Characters
         private static void ShowAsciiCharacterSet(
             McduFontFile fontFile,
             int xOffset,
-            int yOffset
+            int yOffset,
+            bool useFullWidth
         )
         {
             using(var mcdu = McduFactory.ConnectLocal()) {
@@ -67,7 +70,7 @@ namespace Characters
                 {
                     if(fontFile != null) {
                         Console.WriteLine("Uploading font");
-                        mcdu.UseFont(fontFile);
+                        mcdu.UseFont(fontFile, useFullWidth);
                     }
                 }
 

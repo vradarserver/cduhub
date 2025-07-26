@@ -37,6 +37,10 @@ namespace Characters
             },
         };
 
+        public static Option<bool> UseFullWidthOption = new("--fullWidth", "-fw") {
+            Description = "Use full display width",
+        };
+
         public static Option<int> XOffsetOption = new("--xOffset", "-x") {
             Description = "Set X offset",
         };

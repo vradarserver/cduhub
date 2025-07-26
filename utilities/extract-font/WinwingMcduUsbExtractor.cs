@@ -399,8 +399,6 @@ namespace ExtractFont
                 if(idx != -1 && idx + 24 <= _Report.Length) {
                     var x = idx + xOffset;
                     var y = idx + yOffset;
-                    _FontFile.DesignXOffset = _Report[x] - 0x24;
-                    _FontFile.DesignYOffset = _Report[y] - 0x14;
                     ReplacePacketMapBytes(x, 'X');
                     ReplacePacketMapBytes(y, 'Y');
                     FontPacketMap.XOffsetOffset = _PacketOffset + x;
