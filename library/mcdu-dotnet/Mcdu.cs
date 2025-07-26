@@ -55,6 +55,12 @@ namespace McduDotNet
         /// <inheritdoc/>
         public event EventHandler<KeyEventArgs> KeyDown;
 
+        /// <inheritdoc/>
+        public int XOffset { get; set; }
+
+        /// <inheritdoc/>
+        public int YOffset { get; set; }
+
         /// <summary>
         /// Raises <see cref="KeyDown"/>. Doesn't bother creating args unless something is listening.
         /// </summary>
@@ -214,7 +220,8 @@ namespace McduDotNet
             );
             var packetMap = JsonConvert.DeserializeObject<McduFontPacketMap>(packetMapJson);
             packetMap.OverwritePacketsWithFontFileContent(
-                0x24, 0x14,
+                XOffset + 0x24,
+                YOffset + 0x14,
                 !useCorrectAspectRatio
                     ? fontFileContent.NormalDimensions
                     : fontFileContent.CorrectAspectRatioDimensions,

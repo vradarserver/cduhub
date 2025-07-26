@@ -33,6 +33,16 @@ namespace McduDotNet
         Leds Leds { get; }
 
         /// <summary>
+        /// Gets and sets the offset of the display from the left edge.
+        /// </summary>
+        int XOffset { get; set; }
+
+        /// <summary>
+        /// Gets and sets the offset of the display from the top edge.
+        /// </summary>
+        int YOffset { get; set; }
+
+        /// <summary>
         /// A fluent interface for drawing into the <see cref="Screen"/>.
         /// </summary>
         Compositor Output { get; }
