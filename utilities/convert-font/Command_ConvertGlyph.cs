@@ -21,11 +21,21 @@ namespace ConvertFont
             float pointSize,
             int baseX,
             int baseY,
-            float brightnessThreshold
+            float brightnessThreshold,
+            int glyphWidth,
+            int glyphHeight
         )
         {
             using(var font = FontConverter.CreateFont(fontFamily, fontStyle, pointSize)) {
-                var bitmap = FontConverter.CreateBitmap(font, character, baseX, baseY, brightnessThreshold);
+                var bitmap = FontConverter.CreateBitmap(
+                    font,
+                    character,
+                    baseX,
+                    baseY,
+                    brightnessThreshold,
+                    glyphWidth,
+                    glyphHeight
+                );
 
                 Console.WriteLine(" 012345678.012345678.012");
                 var lineNum = 0;

@@ -36,10 +36,10 @@ namespace ConvertFont
         /// <param name="baseX"></param>
         /// <param name="baseY"></param>
         /// <param name="brightnessThreshold"></param>
-        /// <param name="oneChar"></param>
-        /// <param name="zeroChar"></param>
         /// <param name="width"></param>
         /// <param name="height"></param>
+        /// <param name="oneChar"></param>
+        /// <param name="zeroChar"></param>
         /// <returns></returns>
         public static string[] CreateBitmap(
             Font font,
@@ -47,10 +47,10 @@ namespace ConvertFont
             int baseX,
             int baseY,
             float brightnessThreshold,
+            int width,
+            int height,
             char oneChar = 'X',
-            char zeroChar = '.',
-            int width = 23,
-            int height = 29
+            char zeroChar = '.'
         )
         {
             var result = new List<string>();

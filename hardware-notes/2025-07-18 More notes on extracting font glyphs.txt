@@ -146,9 +146,18 @@ where LL is the number of lines (< 0x0e works until you write past the last line
 where CC is the number of columns (< 0x18 wraps when you write past last column then crashes, > 0x18 the text offsets are wrong but no crash)
 (I'm assuming all these are actually low-endian words, hence the trailing 00s)
 
-The glyph width and heights are always 23x29 but it centres the glyph within the new width
+~~~The glyph width and heights are always 23x29 but it centres the glyph within the new width
 as far as it can. The display width and height are sent early on in the 32bb...0601 block,
-note that this is sent twice (once for each font ID).
+note that this is sent twice (once for each font ID).~~~
+
+(EDITED)
+That's wrong, the width and heights are NOT 23x29 regardless of the dimensions set in SimAppPro.
+I didn't think it through when I tried 21x29... it was actually sending 21x29 but because 21 bits
+still takes 3 bytes I didn't see a change in the size of the bitmap and thought it was telling
+the ST32 firmware to trim. But no - if you tell SAP to generate a 23x31 bitmap (which aligns well
+with the line select buttons) then it sends 3 x 31 bytes for each glyph. You can't just substitute
+in the glyph sizes, they are a part of the font.
+(END EDIT)
 
 32bb0000 0601 00-1-2-3-4-5-6-7-8-9-a-b-c-d-e WW 10 HH -2-3-4-5-6-7-8-9-a-b-c-d-e-f20-1-2-3-4-5-6-7-8-9-a-b-c-d-e-f30-1-2-3-4-5
          0601 0000a96e0000001900000005000000 17 00 1d 005b00000074000000000000005529000000000000000000000000000000000000000000
@@ -165,6 +174,3 @@ There might be an LCD square pixel vs. CRT not-square pixel thing going on... bu
 glyphs have a lot of space on either side. The FlyByWire and Airbus' b612 font have like 6 pixels of space on either side
 of the glyph when vertically it occupies most of the 29 available, which means you have almost half a character space between
 each glyph.
-
-There seems to be a limit beyond which you cannot shrink the width? I'm not seeing any difference between b612 at 0x14 and 0x15.
-Perhaps if you have pixel data at a column then that sets a minimum?

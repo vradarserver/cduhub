@@ -17,17 +17,7 @@ namespace ConvertFont
 {
     class Options
     {
-        public static readonly Option<int> DrawXOption = new("--drawx", "-x") {
-            Description = "X coordinate to use when rendering font glyphs into bitmaps to extract pixels",
-            DefaultValueFactory = _ => 0,
-        };
-
-        public static readonly Option<int> DrawYOption = new("--drawy", "-y") {
-            Description = "Y coordinate to use when rendering font glyphs into bitmaps to extract pixels",
-            DefaultValueFactory = _ => 0,
-        };
-
-        public static readonly Option<float> BrightnessThresholdOption = new("--bright") {
+        public static readonly Option<float> BrightnessThresholdOption = new("--brightness", "-b") {
             Description = "Brightness threshold (from 0 to 1) below which a pixel is considered set",
             DefaultValueFactory = _ => 0.8F,
             Validators = {
@@ -46,6 +36,16 @@ namespace ConvertFont
             CustomParser = arg => ParseChar(arg),
         };
 
+        public static readonly Option<int> DrawXOption = new("--drawx", "-x") {
+            Description = "X coordinate to use when rendering font glyphs into bitmaps to extract pixels",
+            DefaultValueFactory = _ => 0,
+        };
+
+        public static readonly Option<int> DrawYOption = new("--drawy", "-y") {
+            Description = "Y coordinate to use when rendering font glyphs into bitmaps to extract pixels",
+            DefaultValueFactory = _ => 0,
+        };
+
         public static readonly Option<FileInfo> FileOption = new("--file", "-f") {
             Description = "The name of the font file to write (uses font family name if not specified)",
             Required = false,
@@ -60,6 +60,16 @@ namespace ConvertFont
         public static readonly Option<FontStyle> FontStyleOption = new("--style") {
             Description = "The font style to use during conversion",
             DefaultValueFactory = _ => FontStyle.Regular,
+        };
+
+        public static readonly Option<int> GlyphHeightOption = new("--glyphHeight", "-h") {
+            Description = "The glyph height in pixels",
+            DefaultValueFactory = _ => 29,
+        };
+
+        public static readonly Option<int> GlyphWidthOption = new("--glyphWidth", "-w") {
+            Description = "The glyph width in pixels",
+            DefaultValueFactory = _ => 23,
         };
 
         public static readonly Option<FileInfo> MandatoryFileOption = new("--file", "-f") {
@@ -101,6 +111,11 @@ namespace ConvertFont
                 result = FontFamily.Families.FirstOrDefault(
                     family => String.Equals(family.Name, arg.Tokens[0].Value, StringComparison.InvariantCultureIgnoreCase)
                 );
+                if(result == null) {
+                    result = FontFamily.Families.FirstOrDefault(
+                        family => String.Equals(family.Name.Replace(" ", ""), arg.Tokens[0].Value, StringComparison.InvariantCultureIgnoreCase)
+                    );
+                }
                 if(result == null) {
                     arg.AddError($"Font family {arg.Tokens[0].Value} does not exist");
                 }

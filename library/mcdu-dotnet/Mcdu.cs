@@ -213,20 +213,21 @@ namespace McduDotNet
         }
 
         /// <inheritdoc/>
-        public void UseFont(McduFontFile fontFileContent, bool useCorrectAspectRatio)
+        public void UseFont(McduFontFile fontFileContent)
         {
-            var packetMapJson = Encoding.UTF8.GetString(
-                CduResources.WinwingMcduFontPacketMapJson
-            );
-            var packetMap = JsonConvert.DeserializeObject<McduFontPacketMap>(packetMapJson);
+            byte[] mapBytes;
+            switch(fontFileContent.GlyphHeight) {
+                case 29:    mapBytes = CduResources.WinwingMcduFontPacketMap_3x29_json; break;
+                case 31:    mapBytes = CduResources.WinwingMcduFontPacketMap_3x31_json; break;
+                default:    throw new NotImplementedException($"Need packet map for {fontFileContent.GlyphHeight} pixel high fonts");
+            }
+            var mapJson = Encoding.UTF8.GetString(mapBytes);
+            var packetMap = JsonConvert.DeserializeObject<McduFontPacketMap>(mapJson);
             packetMap.OverwritePacketsWithFontFileContent(
-                XOffset + 0x24,
-                YOffset + 0x14,
-                !useCorrectAspectRatio
-                    ? fontFileContent.NormalDimensions
-                    : fontFileContent.CorrectAspectRatioDimensions,
-                Metrics.DisplayWidthPixels,
-                Metrics.DisplayHeightPixels,
+                fontFileContent.GlyphWidth,
+                fontFileContent.GlyphHeight,
+                0x24 + XOffset + fontFileContent.DesignXOffset,
+                0x14 + YOffset + fontFileContent.DesignYOffset,
                 fontFileContent?.LargeGlyphs,
                 fontFileContent?.SmallGlyphs
             );

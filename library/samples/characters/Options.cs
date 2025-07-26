@@ -37,10 +37,6 @@ namespace Characters
             },
         };
 
-        public static Option<bool> CorrectAspectRatioOption = new("--corrected", "-c") {
-            Description = "Use font's aspect ratio correction values",
-        };
-
         public static Option<int> XOffsetOption = new("--xOffset", "-x") {
             Description = "Set X offset",
         };

@@ -41,6 +41,18 @@ namespace ConvertFont
         [DataMember(Name = "characters")]
         public string Characters { get; set; }
 
+        [DataMember(Name = "glyphWidth")]
+        public int GlyphWidth { get; set; } = 23;
+
+        [DataMember(Name = "glyphHeight")]
+        public int GlyphHeight { get; set; } = 29;
+
+        [DataMember(Name = "xOffset")]
+        public int DesignXOffset { get; set; } = 16;
+
+        [DataMember(Name = "yOffset")]
+        public int DesignYOffset { get; set; } = 17;
+
         [DataMember(Name = "large")]
         public FontConversionOptions Large { get; set; } = new FontConversionOptions() {
             PointSize = 30,

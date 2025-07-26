@@ -1,18 +1,23 @@
 {
+  "characters": null,
+  "glyphWidth": 23,
+  "glyphHeight": 31,
+  "xOffset": 16,
+  "yOffset": 0,
   "large": {
     "font": "B612 Mono",
-    "point": 20.0,
+    "point": 21.0,
     "style": "Regular",
-    "drawX": -1,
+    "drawX": -3,
     "drawY": -4,
     "brightness": 0.75
   },
   "small": {
     "font": "B612 Mono",
-    "point": 17,
+    "point": 18.0,
     "style": "Regular",
-    "drawX": 2,
-    "drawY": 1,
+    "drawX": -2,
+    "drawY": 0,
     "brightness": 0.75
   }
 }

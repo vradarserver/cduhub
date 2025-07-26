@@ -18,6 +18,8 @@ namespace ConvertFont
             Options.FontFamilyOption,
             Options.FontStyleOption,
             Options.CharacterOption,
+            Options.GlyphWidthOption,
+            Options.GlyphHeightOption,
             Options.PointSizeOption,
             Options.DrawXOption,
             Options.DrawYOption,
@@ -47,7 +49,9 @@ namespace ConvertFont
                     parse.GetValue(Options.PointSizeOption),
                     parse.GetValue(Options.DrawXOption),
                     parse.GetValue(Options.DrawYOption),
-                    parse.GetValue(Options.BrightnessThresholdOption)
+                    parse.GetValue(Options.BrightnessThresholdOption),
+                    parse.GetValue(Options.GlyphWidthOption),
+                    parse.GetValue(Options.GlyphHeightOption)
                 );
             });
 

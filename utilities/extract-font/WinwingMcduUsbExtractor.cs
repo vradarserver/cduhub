@@ -118,28 +118,18 @@ namespace ExtractFont
         /// <returns></returns>
         public McduFontFile ExtractFont(IEnumerable<byte[]> usbReports)
         {
-            _FontFile = new() {
-                NormalDimensions = new() {
-                    GlyphWidth = 23,
-                    GlyphHeight = 29,
-                },
-            };
+            _FontFile = new();
             _Glyphs = [];
-            var rowBytes = (_FontFile.NormalDimensions.GlyphWidth / 8)
-                         + (_FontFile.NormalDimensions.GlyphWidth % 8 != 0 ? 1 : 0);
 
             _Status = Status.LookingForOpeningReport;
             _CountGlyphSetsRead = 0;
             _GlyphChunkIndex = 0;
 
-            FontPacketMap = new McduFontPacketMap() {
-                GlyphWidth = _FontFile.NormalDimensions.GlyphWidth,
-                GlyphHeight = _FontFile.NormalDimensions.GlyphHeight,
-            };
+            FontPacketMap = new();
             _GlyphMaps = [];
             _MapPackets = [];
+            _GlyphMap = null;
             _CodepointMap = new int[_CodepointBytes.Length];
-            _GlyphMap = new int[rowBytes * FontPacketMap.GlyphHeight];
             _GlyphHeightMapOffsets.Clear();
             _GlyphWidthMapOffsets.Clear();
             _PacketOffset = 0;
@@ -192,6 +182,19 @@ namespace ExtractFont
             return _FontFile;
         }
 
+        private void EstablishFontSize(int width, int height)
+        {
+            _FontFile.GlyphWidth = width;
+            _FontFile.GlyphHeight = height;
+
+            FontPacketMap.GlyphWidth = width;
+            FontPacketMap.GlyphHeight = height;
+
+            var rowBytes = (_FontFile.GlyphWidth / 8)
+                         + (_FontFile.GlyphWidth % 8 != 0 ? 1 : 0);
+            _GlyphMap = new int[rowBytes * FontPacketMap.GlyphHeight];
+        }
+
         private void LookForOpeningReport()
         {
             if(IsFullSize(_Report) && IsReportType(0xf0, 0x00, -1, 0x2a)) {
@@ -217,10 +220,16 @@ namespace ExtractFont
                     _GlyphChunkIndex = 0;
                     _ReportProcessed = false;
 
-                    _GlyphWidthMapOffsets.Add(_PacketOffset + idx + widthOffset);
-                    _GlyphHeightMapOffsets.Add(_PacketOffset + idx + heightOffset);
-                    ReplacePacketMapBytes(idx + widthOffset, 'W');
-                    ReplacePacketMapBytes(idx + heightOffset, 'H');
+                    var wOffset = idx + widthOffset;
+                    var hOffset = idx + heightOffset;
+                    var width = _Report[wOffset];
+                    var height = _Report[hOffset];
+                    EstablishFontSize(width, height);
+
+                    _GlyphWidthMapOffsets.Add(_PacketOffset + wOffset);
+                    _GlyphHeightMapOffsets.Add(_PacketOffset + hOffset);
+                    ReplacePacketMapBytes(wOffset, 'W');
+                    ReplacePacketMapBytes(hOffset, 'H');
                 }
             }
         }
@@ -293,7 +302,7 @@ namespace ExtractFont
                 };
                 _RowIndex = 0;
                 _RowBuffer.Clear();
-                _GlyphBitArray = new string[_FontFile.NormalDimensions.GlyphHeight];
+                _GlyphBitArray = new string[_FontFile.GlyphHeight];
                 _GlyphMapIndex = 0;
                 _Status = Status.ReadingBitmap;
                 _ReportProcessed = false;
@@ -318,7 +327,7 @@ namespace ExtractFont
                         var isolated = (b & bit) != 0 ? 'X' : '.';
                         _RowBuffer.Append(isolated);
                     }
-                    if(_RowBuffer.Length >= _FontFile.NormalDimensions.GlyphWidth) {
+                    if(_RowBuffer.Length >= _FontFile.GlyphWidth) {
                         if(!RowHasBeenRead()) {
                             break;
                         }
@@ -345,7 +354,7 @@ namespace ExtractFont
             _GlyphBitArray[_RowIndex++] = _RowBuffer.ToString();
             _RowBuffer.Clear();
 
-            if(_RowIndex == _FontFile.NormalDimensions.GlyphHeight) {
+            if(_RowIndex == _FontFile.GlyphHeight) {
                 _Glyph.BitArray = _GlyphBitArray;
                 _Glyphs.Add(_Glyph);
 
@@ -390,6 +399,8 @@ namespace ExtractFont
                 if(idx != -1 && idx + 24 <= _Report.Length) {
                     var x = idx + xOffset;
                     var y = idx + yOffset;
+                    _FontFile.DesignXOffset = _Report[x] - 0x24;
+                    _FontFile.DesignYOffset = _Report[y] - 0x14;
                     ReplacePacketMapBytes(x, 'X');
                     ReplacePacketMapBytes(y, 'Y');
                     FontPacketMap.XOffsetOffset = _PacketOffset + x;

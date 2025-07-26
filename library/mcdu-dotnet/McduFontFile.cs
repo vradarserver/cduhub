@@ -31,17 +31,17 @@ namespace McduDotNet
         [DataMember]
         public string Name { get; set; }
 
-        /// <summary>
-        /// The design dimensions of the font.
-        /// </summary>
         [DataMember]
-        public McduFontDimensions NormalDimensions { get; set; } = new McduFontDimensions();
+        public int GlyphWidth { get; set; }
 
-        /// <summary>
-        /// The dimensions to use when reproducing the correct aspect ratio of an MCDU.
-        /// </summary>
         [DataMember]
-        public McduFontDimensions CorrectAspectRatioDimensions { get; set; } = new McduFontDimensions();
+        public int GlyphHeight { get; set; }
+
+        [DataMember]
+        public int DesignXOffset { get; set; }
+
+        [DataMember]
+        public int DesignYOffset { get; set; }
 
         /// <summary>
         /// A collection of glyphs that together describe the CDU's large font.

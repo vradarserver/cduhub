@@ -26,8 +26,7 @@ namespace Characters
                 RootCommand rootCommand = new("Display characters on the CDU device") {
                     Options.FontOption,
                     Options.XOffsetOption,
-                    Options.YOffsetOption,
-                    Options.CorrectAspectRatioOption
+                    Options.YOffsetOption
                 };
                 rootCommand.EnforceInHouseStandards();
                 rootCommand.SetAction(
@@ -35,8 +34,7 @@ namespace Characters
                         ShowAsciiCharacterSet(
                             parseResult.GetValue(Options.FontOption),
                             parseResult.GetValue(Options.XOffsetOption),
-                            parseResult.GetValue(Options.YOffsetOption),
-                            parseResult.GetValue(Options.CorrectAspectRatioOption)
+                            parseResult.GetValue(Options.YOffsetOption)
                         );
                     }
                 );
@@ -56,8 +54,7 @@ namespace Characters
         private static void ShowAsciiCharacterSet(
             McduFontFile fontFile,
             int xOffset,
-            int yOffset,
-            bool useCorrectAspectRatio
+            int yOffset
         )
         {
             using(var mcdu = McduFactory.ConnectLocal()) {
@@ -69,8 +66,8 @@ namespace Characters
                 void uploadFont()
                 {
                     if(fontFile != null) {
-                        Console.WriteLine($"Uploading font{(useCorrectAspectRatio ? " with corrected aspect ratio" : "")}");
-                        mcdu.UseFont(fontFile, useCorrectAspectRatio);
+                        Console.WriteLine("Uploading font");
+                        mcdu.UseFont(fontFile);
                     }
                 }
 

@@ -108,7 +108,7 @@ namespace Cduhub
                 try {
                     _Mcdu = McduFactory.ConnectLocal();
                     if(_Mcdu != null) {
-                        _Mcdu.UseFont(Fonts.DefaultFont, useCorrectAspectRatio: true);
+                        _Mcdu.UseFont(Fonts.DefaultFont);
                         _Mcdu.KeyDown += Mcdu_KeyDown;
                         _Mcdu.KeyUp += Mcdu_KeyUp;
                         _Mcdu.Disconnected += Mcdu_Disconnected;

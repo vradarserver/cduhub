@@ -118,7 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="WinwingMcduFontPacketMapJson" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\WinwingMcduFontPacketMap.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="WinwingMcduFontPacketMap_3x29_json" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\WinwingMcduFontPacketMap-3x29.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="WinwingMcduFontPacketMap_3x31_json" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\WinwingMcduFontPacketMap-3x31.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

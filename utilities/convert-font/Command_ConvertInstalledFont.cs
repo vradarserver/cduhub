@@ -45,13 +45,27 @@ namespace ConvertFont
             outputFileInfo ??= new FileInfo(Options.SanitiseFileName($"{largeFontFamily.Name}.json"));
 
             var fontFile = new McduFontFile() {
-                NormalDimensions = new McduFontDimensions() {
-                    GlyphWidth = 23,
-                    GlyphHeight = 29,
-                },
+                GlyphWidth = options.GlyphWidth,
+                GlyphHeight = options.GlyphHeight,
+                DesignXOffset = options.DesignXOffset,
+                DesignYOffset = options.DesignYOffset,
                 Name = largeFontFamily.Name,
-                LargeGlyphs = BuildGlyphs(options.Characters, options.Large, largeFontFamily, isLarge: true),
-                SmallGlyphs = BuildGlyphs(options.Characters, options.Small, smallFontFamily, isLarge: false),
+                LargeGlyphs = BuildGlyphs(
+                    options.Characters,
+                    options.GlyphWidth,
+                    options.GlyphHeight,
+                    options.Large,
+                    largeFontFamily,
+                    isLarge: true
+                ),
+                SmallGlyphs = BuildGlyphs(
+                    options.Characters,
+                    options.GlyphWidth,
+                    options.GlyphHeight,
+                    options.Small,
+                    smallFontFamily,
+                    isLarge: false
+                ),
             };
             var fontJson = JsonConvert.SerializeObject(fontFile, Formatting.Indented);
             File.WriteAllText(outputFileInfo.FullName, fontJson);
@@ -62,6 +76,8 @@ namespace ConvertFont
 
         private static McduFontGlyph[] BuildGlyphs(
             string characters,
+            int glyphWidth,
+            int glyphHeight,
             FontConversionOptions options,
             FontFamily fontFamily,
             bool isLarge
@@ -87,7 +103,9 @@ namespace ConvertFont
                             ch,
                             options.DrawX,
                             options.DrawY,
-                            options.BrightnessThreshold
+                            options.BrightnessThreshold,
+                            glyphWidth,
+                            glyphHeight
                         )
                     };
                     result.Add(glyph);
