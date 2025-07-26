@@ -13,6 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\library\cduhub-commandline\cduhub-commandline.csproj" />
         <ProjectReference Include="..\..\library\mcdu-dotnet\mcdu-dotnet.csproj" />
     </ItemGroup>
 

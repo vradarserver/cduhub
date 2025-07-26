@@ -69,7 +69,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "utilities", "utilities", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "extract-font", "utilities\extract-font\extract-font.csproj", "{D11E29C9-8291-4989-B411-021DC0D8A6AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "convert-font", "utilities\convert-font\convert-font.csproj", "{2AF9557A-CF73-442D-8CC1-8999AB07C09A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "convert-font", "utilities\convert-font\convert-font.csproj", "{2AF9557A-CF73-442D-8CC1-8999AB07C09A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cduhub-commandline", "library\cduhub-commandline\cduhub-commandline.csproj", "{F17CBADA-C093-4F2E-BBDD-A39BA8958192}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -133,6 +135,10 @@ Global
 		{2AF9557A-CF73-442D-8CC1-8999AB07C09A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2AF9557A-CF73-442D-8CC1-8999AB07C09A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2AF9557A-CF73-442D-8CC1-8999AB07C09A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F17CBADA-C093-4F2E-BBDD-A39BA8958192}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F17CBADA-C093-4F2E-BBDD-A39BA8958192}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F17CBADA-C093-4F2E-BBDD-A39BA8958192}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F17CBADA-C093-4F2E-BBDD-A39BA8958192}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -155,6 +161,7 @@ Global
 		{6DA6F729-8FF1-45CE-BB59-091E456E08D6} = {61A9C6CD-82AE-494E-86C9-21644DAADBD6}
 		{D11E29C9-8291-4989-B411-021DC0D8A6AC} = {455CEB36-52CC-4544-93F2-90F3FE8C667E}
 		{2AF9557A-CF73-442D-8CC1-8999AB07C09A} = {455CEB36-52CC-4544-93F2-90F3FE8C667E}
+		{F17CBADA-C093-4F2E-BBDD-A39BA8958192} = {7612F6B1-A4A7-431C-8688-167145D1D5F8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C977F7C9-07B7-4BB4-A182-FDE6F96F171A}

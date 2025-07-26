@@ -8,41 +8,50 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Collections.Generic;
 using System.CommandLine;
-using Cduhub.CommandLine;
+using System.CommandLine.Help;
+using System.Linq;
 
-namespace ConvertFont
+namespace Cduhub.CommandLine
 {
-    class Program
+    public static class RootCommandExtensions
     {
-        public static bool Worked { get; set; }
-
-        static int Main(string[] args)
+        public static RootCommand EnforceInHouseStandards(this RootCommand rootCommand)
         {
-            var exitCode = 0;
+            rootCommand.TreatUnmatchedTokensAsErrors = true;
+            RemoveDefaultVersionOption(rootCommand);
+            AddCustomHelp(rootCommand);
 
-            try {
-                Worked = true;
+            return rootCommand;
+        }
 
-                RootCommand rootCommand = new("Converts font resources into MCDU-DOTNET font files.") {
-                    Commands.ConvertInstalledFont,
-                    Commands.CreateConvertOptions,
-                    Commands.ConvertGlyph,
-                    Commands.DumpFontFamilies,
-                };
-                rootCommand.EnforceInHouseStandards();
-                exitCode = rootCommand.Parse(args).Invoke();
+        public static IReadOnlyList<T> FindOptionsOfType<T>(this RootCommand rootCommand)
+            where T: Option
+        {
+            return rootCommand
+                .Options
+                .OfType<T>()
+                .ToArray();
+        }
 
-                if(!Worked) {
-                    exitCode = 1;
-                }
-            } catch(Exception ex) {
-                Console.WriteLine("Caught exception during processing:");
-                Console.WriteLine(ex);
-                exitCode = 2;
+        public static RootCommand RemoveDefaultVersionOption(this RootCommand rootCommand)
+        {
+            var defaultVersionOptions = rootCommand.FindOptionsOfType<VersionOption>();
+            foreach(var garbage in defaultVersionOptions) {
+                rootCommand.Options.Remove(garbage);
             }
 
-            return exitCode;
+            return rootCommand;
+        }
+
+        public static RootCommand AddCustomHelp(this RootCommand rootCommand)
+        {
+            var defaultHelpOptions = rootCommand.FindOptionsOfType<HelpOption>();
+            foreach(var help in defaultHelpOptions) {
+                help.Action = new BuildInfoHelpAction((HelpAction)help.Action);
+            }
+            return rootCommand;
         }
     }
 }
