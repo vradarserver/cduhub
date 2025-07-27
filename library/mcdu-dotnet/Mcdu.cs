@@ -25,6 +25,7 @@ namespace McduDotNet
     /// </summary>
     class Mcdu : IMcdu
     {
+        private readonly Screen _EmptyScreen = new Screen();
         private readonly int _ProcessingPauseMilliseconds = 40;
         private readonly object _OutputLock = new Object();
         private HidDevice _HidDevice;
@@ -215,27 +216,33 @@ namespace McduDotNet
         /// <inheritdoc/>
         public void UseFont(McduFontFile fontFileContent, bool useFullWidth)
         {
-            byte[] mapBytes;
-            switch(fontFileContent.GlyphHeight) {
-                case 29:    mapBytes = CduResources.WinwingMcduFontPacketMap_3x29_json; break;
-                case 31:    mapBytes = CduResources.WinwingMcduFontPacketMap_3x31_json; break;
-                default:    throw new NotImplementedException($"Need packet map for {fontFileContent.GlyphHeight} pixel high fonts");
-            }
-            var mapJson = Encoding.UTF8.GetString(mapBytes);
-            var packetMap = JsonConvert.DeserializeObject<McduFontPacketMap>(mapJson);
-            var glyphWidth = useFullWidth
-                ? fontFileContent.GlyphFullWidth
-                : fontFileContent.GlyphWidth;
-            packetMap.OverwritePacketsWithFontFileContent(
-                glyphWidth,
-                fontFileContent.GlyphHeight,
-                0x24 + XOffset + XOffsetForGlyphWidth(glyphWidth),
-                0x14 + YOffset + YOffsetForGlyphHeight(fontFileContent.GlyphHeight),
-                fontFileContent?.LargeGlyphs,
-                fontFileContent?.SmallGlyphs
-            );
-            foreach(var packet in packetMap.Packets) {
-                SendStringPacket(packet);
+            lock(_OutputLock) {
+                SendScreenToDisplay(_EmptyScreen, skipDuplicateCheck: false);
+
+                byte[] mapBytes;
+                switch(fontFileContent.GlyphHeight) {
+                    case 29:    mapBytes = CduResources.WinwingMcduFontPacketMap_3x29_json; break;
+                    case 31:    mapBytes = CduResources.WinwingMcduFontPacketMap_3x31_json; break;
+                    default:    throw new NotImplementedException($"Need packet map for {fontFileContent.GlyphHeight} pixel high fonts");
+                }
+                var mapJson = Encoding.UTF8.GetString(mapBytes);
+                var packetMap = JsonConvert.DeserializeObject<McduFontPacketMap>(mapJson);
+                var glyphWidth = useFullWidth
+                    ? fontFileContent.GlyphFullWidth
+                    : fontFileContent.GlyphWidth;
+                packetMap.OverwritePacketsWithFontFileContent(
+                    glyphWidth,
+                    fontFileContent.GlyphHeight,
+                    0x24 + XOffset + XOffsetForGlyphWidth(glyphWidth),
+                    0x14 + YOffset + YOffsetForGlyphHeight(fontFileContent.GlyphHeight),
+                    fontFileContent?.LargeGlyphs,
+                    fontFileContent?.SmallGlyphs
+                );
+                foreach(var packet in packetMap.Packets) {
+                    SendStringPacket(packet);
+                }
+
+                RefreshDisplay();
             }
         }
 
@@ -258,18 +265,23 @@ namespace McduDotNet
         /// <inheritdoc/>
         public void RefreshDisplay(bool skipDuplicateCheck = false)
         {
+            SendScreenToDisplay(Screen, skipDuplicateCheck);
+        }
+
+        private void SendScreenToDisplay(Screen screen, bool skipDuplicateCheck)
+        {
             lock(_OutputLock) {
-                var duplicateCheckString = Screen.BuildDuplicateCheckString();
+                var duplicateCheckString = screen.BuildDuplicateCheckString();
                 if(skipDuplicateCheck || _DisplayDuplicateCheckString != duplicateCheckString) {
                     InitialiseDisplayPacket();
-                    for(var rowIdx = 0;rowIdx < Screen.Rows.Length;++rowIdx) {
-                        var row = Screen.Rows[rowIdx];
+                    for(var rowIdx = 0;rowIdx < screen.Rows.Length;++rowIdx) {
+                        var row = screen.Rows[rowIdx];
                         for(var cellIdx = 0;cellIdx < row.Cells.Length;++cellIdx) {
                             var cell = row.Cells[cellIdx];
                             AddCellToDisplayPacket(
                                 cell,
                                 isFirstCell: rowIdx == 0 && cellIdx == 0,
-                                isLastCell:  rowIdx + 1 == Screen.Rows.Length && cellIdx + 1 == row.Cells.Length
+                                isLastCell:  rowIdx + 1 == screen.Rows.Length && cellIdx + 1 == row.Cells.Length
                             );
                         }
                     }

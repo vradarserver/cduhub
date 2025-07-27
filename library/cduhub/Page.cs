@@ -25,6 +25,11 @@ namespace Cduhub
 
         public Leds Leds { get; }
 
+        public virtual PageFont PageFont { get; } = new PageFont() {
+            BuiltInFont = BuiltInFont.B612Regular,
+            UseFullWidth = true,
+        };
+
         public virtual Key MenuKey { get; } = Key.McduMenu;
 
         public virtual bool DisableMenuKey { get; }

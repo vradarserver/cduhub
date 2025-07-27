@@ -1,0 +1,22 @@
+{
+  "characters": " \"()*+-:./0123456789<=>ABCDEFGHIJKLMNOPQRSTUVWXYZ[]↑↓←→☐°Δ⬡█□■",
+  "glyphWidth": 21,
+  "glyphHeight": 31,
+  "glyphFullWidth": 23,
+  "large": {
+    "font": "HoneywellMCDU",
+    "point": 21.0,
+    "style": "Regular",
+    "drawX": -2,
+    "drawY": 2,
+    "brightness": 0.5
+  },
+  "small": {
+    "font": "HoneywellMCDUSmall",
+    "point": 21.0,
+    "style": "Regular",
+    "drawX": -3,
+    "drawY": 2,
+    "brightness": 0.5
+  }
+}

@@ -112,6 +112,7 @@ namespace Characters
                             keepWaiting = false;
                             break;
                         case ConsoleKey.R:
+                            useFullWidth = !useFullWidth;
                             uploadFont();
                             showCharacters();
                             break;

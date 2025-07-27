@@ -30,6 +30,7 @@ namespace Cduhub
         private bool _WaitingForConnect = true;
         private Stack<Page> _PageHistory = new Stack<Page>();
         private Dictionary<Type, Page> _PageTypeMap = new Dictionary<Type, Page>();
+        private PageFont _CurrentFont;
 
         /// <summary>
         /// Gets or sets a value indicating whether the hub should perpetually try to reconnect to the MCDU if
@@ -108,7 +109,6 @@ namespace Cduhub
                 try {
                     _Mcdu = McduFactory.ConnectLocal();
                     if(_Mcdu != null) {
-                        _Mcdu.UseFont(Fonts.DefaultFont, useFullWidth: true);
                         _Mcdu.KeyDown += Mcdu_KeyDown;
                         _Mcdu.KeyUp += Mcdu_KeyUp;
                         _Mcdu.Disconnected += Mcdu_Disconnected;
@@ -158,12 +158,22 @@ namespace Cduhub
                 _SelectedPage = page;
 
                 if(page != null) {
-                    page?.PreparePage();
+                    UploadFont(page.PageFont);
+                    page.PreparePage();
                     _PageHistory.Push(page);
                     RefreshDisplay(page);
                     RefreshLeds(page);
                     _SelectedPage.OnSelected(true);
                 }
+            }
+        }
+
+        private void UploadFont(PageFont pageFont)
+        {
+            if(!pageFont.Equals(_CurrentFont)) {
+                _CurrentFont = pageFont;
+                var mcduFont = Fonts.LoadPageFont(pageFont);
+                _Mcdu.UseFont(mcduFont, pageFont.UseFullWidth);
             }
         }
 
