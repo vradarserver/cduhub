@@ -46,6 +46,8 @@ namespace Cduhub.WindowsGui
             this._Col_FlightSim_LastMessageUtc = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this._Col_FlightSim_CountMessages = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this._RefreshDisplayTimer = new System.Windows.Forms.Timer(this.components);
+            this.label2 = new System.Windows.Forms.Label();
+            this._LinkLabel_ConfigFolder = new System.Windows.Forms.LinkLabel();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -78,7 +80,7 @@ namespace Cduhub.WindowsGui
             this.groupBox1.Controls.Add(this._ListView_ConnectedFlightSimulators);
             this.groupBox1.Location = new System.Drawing.Point(12, 33);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(560, 196);
+            this.groupBox1.Size = new System.Drawing.Size(560, 165);
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Flight Simulators";
@@ -101,7 +103,7 @@ namespace Cduhub.WindowsGui
             this._ListView_ConnectedFlightSimulators.Location = new System.Drawing.Point(6, 22);
             this._ListView_ConnectedFlightSimulators.MultiSelect = false;
             this._ListView_ConnectedFlightSimulators.Name = "_ListView_ConnectedFlightSimulators";
-            this._ListView_ConnectedFlightSimulators.Size = new System.Drawing.Size(548, 168);
+            this._ListView_ConnectedFlightSimulators.Size = new System.Drawing.Size(548, 137);
             this._ListView_ConnectedFlightSimulators.TabIndex = 0;
             this._ListView_ConnectedFlightSimulators.UseCompatibleStateImageBehavior = false;
             this._ListView_ConnectedFlightSimulators.View = System.Windows.Forms.View.Details;
@@ -134,11 +136,35 @@ namespace Cduhub.WindowsGui
             this._RefreshDisplayTimer.Interval = 250;
             this._RefreshDisplayTimer.Tick += new System.EventHandler(this.RefreshDisplayTimer_Tick);
             // 
+            // label2
+            // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(12, 209);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(51, 15);
+            this.label2.TabIndex = 3;
+            this.label2.Text = "Configs:";
+            // 
+            // _LinkLabel_ConfigFolder
+            // 
+            this._LinkLabel_ConfigFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this._LinkLabel_ConfigFolder.Location = new System.Drawing.Point(69, 209);
+            this._LinkLabel_ConfigFolder.Name = "_LinkLabel_ConfigFolder";
+            this._LinkLabel_ConfigFolder.Size = new System.Drawing.Size(503, 15);
+            this._LinkLabel_ConfigFolder.TabIndex = 4;
+            this._LinkLabel_ConfigFolder.TabStop = true;
+            this._LinkLabel_ConfigFolder.Text = "-";
+            this._LinkLabel_ConfigFolder.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabel_ConfigFolder_LinkClicked);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(584, 241);
+            this.Controls.Add(this._LinkLabel_ConfigFolder);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this._Label_UsbDeviceState);
             this.Controls.Add(this.label1);
@@ -167,5 +193,7 @@ namespace Cduhub.WindowsGui
         private ColumnHeader _Col_FlightSim_Aircraft;
         private ColumnHeader _Col_FlightSim_ConnectionState;
         private Timer _RefreshDisplayTimer;
+        private Label label2;
+        private LinkLabel _LinkLabel_ConfigFolder;
     }
 }

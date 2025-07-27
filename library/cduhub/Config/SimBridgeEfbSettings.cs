@@ -10,9 +10,11 @@
 
 namespace Cduhub.Config
 {
-    public class SimBridgeEfbSettings
+    public class SimBridgeEfbSettings : Settings
     {
-        public const string Name = "SimBridge EFB Settings";
+        public override string GetName() => "simbridge-efb-settings";
+
+        public override int GetCurrentVersion() => 1;
 
         public string Host { get; set; } = "localhost";
 

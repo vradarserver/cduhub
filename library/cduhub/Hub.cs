@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
+using Cduhub.Config;
 using McduDotNet;
 
 namespace Cduhub
@@ -31,6 +32,7 @@ namespace Cduhub
         private Stack<Page> _PageHistory = new Stack<Page>();
         private Dictionary<Type, Page> _PageTypeMap = new Dictionary<Type, Page>();
         private PageFont _CurrentFont;
+        private CduhubSettings _Settings;
 
         /// <summary>
         /// Gets or sets a value indicating whether the hub should perpetually try to reconnect to the MCDU if
@@ -85,6 +87,8 @@ namespace Cduhub
             };
             _ReconnectTimer.Elapsed += ReconnectTimer_Elapsed;
             _ReconnectTimer.Start();
+
+            ReloadSettings();
         }
 
         /// <inheritdoc/>
@@ -103,12 +107,21 @@ namespace Cduhub
             GC.SuppressFinalize(this);
         }
 
+        public void ReloadSettings()
+        {
+            var settings = ConfigStorage.Load<Config.CduhubSettings>();
+            _Settings = settings;
+            ApplySettingsToMcdu();
+        }
+
         public void Connect()
         {
             if(_Mcdu == null && Interlocked.Exchange(ref _ConnectingCount, 1) == 0) {
                 try {
                     _Mcdu = McduFactory.ConnectLocal();
                     if(_Mcdu != null) {
+                        ApplySettingsToMcdu();
+
                         _Mcdu.KeyDown += Mcdu_KeyDown;
                         _Mcdu.KeyUp += Mcdu_KeyUp;
                         _Mcdu.Disconnected += Mcdu_Disconnected;
@@ -120,6 +133,16 @@ namespace Cduhub
                     Interlocked.Exchange(ref _ConnectingCount, 0);
                     _WaitingForConnect = false;
                 }
+            }
+        }
+
+        private void ApplySettingsToMcdu()
+        {
+            var settings = _Settings;
+            var mcdu = _Mcdu;
+            if(settings != null && mcdu != null) {
+                mcdu.XOffset = settings.DisplayOffsetX;
+                mcdu.YOffset = settings.DisplayOffsetY;
             }
         }
 

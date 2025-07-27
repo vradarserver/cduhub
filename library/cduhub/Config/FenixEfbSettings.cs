@@ -10,9 +10,11 @@
 
 namespace Cduhub.Config
 {
-    public class FenixEfbSettings
+    public class FenixEfbSettings : Settings
     {
-        public const string Name = "Fenix EFB Settings";
+        public override string GetName() => "fenix-efb-settings";
+
+        public override int GetCurrentVersion() => 1;
 
         public string Host { get; set; } = "localhost";
 

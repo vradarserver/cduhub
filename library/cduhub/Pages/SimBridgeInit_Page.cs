@@ -33,7 +33,7 @@ namespace Cduhub.Pages
 
         private void LoadSettings()
         {
-            _Settings = Storage.Load<SimBridgeEfbSettings>(SimBridgeEfbSettings.Name);
+            _Settings = ConfigStorage.Load<SimBridgeEfbSettings>();
             DrawPage();
         }
 
@@ -54,7 +54,7 @@ namespace Cduhub.Pages
 
         private void SaveSettings()
         {
-            Storage.Save(SimBridgeEfbSettings.Name, _Settings);
+            ConfigStorage.Save(_Settings);
         }
 
         public override void OnKeyDown(Key key)

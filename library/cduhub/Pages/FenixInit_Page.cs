@@ -34,7 +34,7 @@ namespace Cduhub.Pages
 
         private void LoadSettings()
         {
-            _Settings = Storage.Load<FenixEfbSettings>(FenixEfbSettings.Name);
+            _Settings = ConfigStorage.Load<FenixEfbSettings>();
             DrawPage();
         }
 
@@ -55,7 +55,7 @@ namespace Cduhub.Pages
 
         private void SaveSettings()
         {
-            Storage.Save(FenixEfbSettings.Name, _Settings);
+            ConfigStorage.Save(_Settings);
         }
 
         public override void OnKeyDown(Key key)

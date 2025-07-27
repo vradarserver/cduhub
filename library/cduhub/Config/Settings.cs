@@ -10,14 +10,36 @@
 
 namespace Cduhub.Config
 {
-    public class XPlane12RestSettings : Settings
+    /// <summary>
+    /// Base class for settings objects.
+    /// </summary>
+    public abstract class Settings
     {
-        public override string GetName() => "xplane12-rest-settings";
+        public int SettingsVersion { get; set; }
 
-        public override int GetCurrentVersion() => 1;
+        /// <summary>
+        /// Returns the name portion of the settings' filename. Do not include the
+        /// extension or path, do not use invalid filename characters.
+        /// </summary>
+        /// <returns></returns>
+        public abstract string GetName();
 
-        public string Host { get; set; } = "localhost";
+        /// <summary>
+        /// Returns the non-zero version number of the settings. If the version on
+        /// disk does not match this value then UpgradeSettings() is called.
+        /// </summary>
+        /// <returns></returns>
+        public abstract int GetCurrentVersion();
 
-        public int Port { get; set; } = 8086;
+        /// <summary>
+        /// Called with the JSON for an earlier version of the settings file. Any
+        /// values that could be parsed from the old JSON have already been parsed.
+        /// The <see cref="SettingsVersion"/> property reflects the content of the
+        /// JSON. On return <see cref="SettingsVersion"/> will be set to current.
+        /// </summary>
+        /// <param name="json"></param>
+        public virtual void UpgradeSettings(string json)
+        {
+        }
     }
 }

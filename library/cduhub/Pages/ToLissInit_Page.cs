@@ -33,7 +33,7 @@ namespace Cduhub.Pages
 
         private void LoadSettings()
         {
-            _Settings = Storage.Load<ToLissUdpSettings>(ToLissUdpSettings.Name);
+            _Settings = ConfigStorage.Load<ToLissUdpSettings>();
             DrawPage();
         }
 
@@ -54,7 +54,7 @@ namespace Cduhub.Pages
 
         private void SaveSettings()
         {
-            Storage.Save(ToLissUdpSettings.Name, _Settings);
+            ConfigStorage.Save(_Settings);
         }
 
         public override void OnKeyDown(Key key)

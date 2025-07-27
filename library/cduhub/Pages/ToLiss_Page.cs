@@ -42,7 +42,7 @@ namespace Cduhub.Pages
         {
             Disconnect();
 
-            var settings = Storage.Load<ToLissUdpSettings>(ToLissUdpSettings.Name);
+            var settings = ConfigStorage.Load<ToLissUdpSettings>();
             var mcdu = new ToLissUdpMcdu(Screen, Leds) {
                 Host = settings.Host,
                 Port = settings.Port,

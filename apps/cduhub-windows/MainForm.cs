@@ -9,6 +9,8 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Windows.Forms;
 using Cduhub.FlightSim;
@@ -69,6 +71,22 @@ namespace Cduhub.WindowsGui
             );
         }
 
+        private void OpenConfigStorageFolder()
+        {
+            if(!Directory.Exists(ConfigStorage.Folder)) {
+                MessageBox.Show(
+                    $"Could not create {ConfigStorage.Folder}",
+                    "No Working Folder"
+                );
+            } else {
+                Process.Start(new ProcessStartInfo() {
+                    FileName = "explorer.exe",
+                    Arguments = ConfigStorage.Folder,
+                    UseShellExecute = true,
+                });
+            }
+        }
+
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             base.OnFormClosing(e);
@@ -83,6 +101,7 @@ namespace Cduhub.WindowsGui
         {
             base.OnLoad(e);
             if(!DesignMode) {
+                _LinkLabel_ConfigFolder.Text = ConfigStorage.Folder;
                 Hub.ConnectedDeviceChanged += Hub_ConnectedDeviceChanged;
                 Hub.CloseApplication += Hub_CloseApplication;
                 UpdateStateDisplay();
@@ -124,6 +143,11 @@ namespace Cduhub.WindowsGui
             } else {
                 UpdateStateDisplay();
             }
+        }
+
+        private void LinkLabel_ConfigFolder_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            OpenConfigStorageFolder();
         }
 
         private void RefreshDisplayTimer_Tick(object sender, EventArgs e)

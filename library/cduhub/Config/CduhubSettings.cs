@@ -10,14 +10,17 @@
 
 namespace Cduhub.Config
 {
-    public class XPlane12RestSettings : Settings
+    /// <summary>
+    /// Holds the common settings for all CDUHub applications.
+    /// </summary>
+    public class CduhubSettings : Settings
     {
-        public override string GetName() => "xplane12-rest-settings";
+        public override string GetName() => "cduhub-settings";
 
         public override int GetCurrentVersion() => 1;
 
-        public string Host { get; set; } = "localhost";
+        public int DisplayOffsetX { get; set; }
 
-        public int Port { get; set; } = 8086;
+        public int DisplayOffsetY { get; set; }
     }
 }

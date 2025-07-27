@@ -10,9 +10,11 @@
 
 namespace Cduhub.Config
 {
-    class ToLissUdpSettings
+    class ToLissUdpSettings : Settings
     {
-        public const string Name = "ToLiss UDP Settings";
+        public override string GetName() => "toliss-udp-settings";
+
+        public override int GetCurrentVersion() => 1;
 
         public string Host { get; set; } = "127.0.0.1";
 

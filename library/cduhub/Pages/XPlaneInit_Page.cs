@@ -33,7 +33,7 @@ namespace Cduhub.Pages
 
         private void LoadSettings()
         {
-            _Settings = Storage.Load<XPlane12RestSettings>(XPlane12RestSettings.Name);
+            _Settings = ConfigStorage.Load<XPlane12RestSettings>();
             DrawPage();
         }
 
@@ -54,7 +54,7 @@ namespace Cduhub.Pages
 
         private void SaveSettings()
         {
-            Storage.Save(XPlane12RestSettings.Name, _Settings);
+            ConfigStorage.Save(_Settings);
         }
 
         public override void OnKeyDown(Key key)

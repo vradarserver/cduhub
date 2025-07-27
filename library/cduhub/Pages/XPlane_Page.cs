@@ -42,7 +42,7 @@ namespace Cduhub.Pages
         {
             Disconnect();
 
-            var settings = Storage.Load<XPlane12RestSettings>(XPlane12RestSettings.Name);
+            var settings = ConfigStorage.Load<XPlane12RestSettings>();
             var mcdu = new XPlaneGenericMcdu(_Hub.HttpClient, Screen, Leds) {
                 Host = settings.Host,
                 Port = settings.Port,

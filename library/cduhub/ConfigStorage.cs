@@ -12,7 +12,9 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Cduhub.Config;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Cduhub
 {
@@ -23,7 +25,7 @@ namespace Cduhub
     /// Each configuration object is given a name. This is turned into a filename within the local
     /// configuration folder. Each page should endeavour to choose a name that is unique to the page.
     /// </remarks>
-    public static class Storage
+    public static class ConfigStorage
     {
         private static string _Folder;
         /// <summary>
@@ -34,50 +36,74 @@ namespace Cduhub
         /// <summary>
         /// Static ctor.
         /// </summary>
-        static Storage()
+        static ConfigStorage()
         {
             _Folder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "CduHub",
                 "Config"
             );
+            if(!Directory.Exists(_Folder)) {
+                Directory.CreateDirectory(_Folder);
+            }
         }
 
         /// <summary>
         /// Loads the settings stored against the name passed across and attempts to deserialise them into an object
         /// of type <typeparamref name="T"/>.
         /// </summary>
+        /// <param name="upgradeOldVersions"></param>
         /// <typeparam name="T"></typeparam>
-        /// <param name="name"></param>
         /// <returns></returns>
-        public static T Load<T>(string name)
-            where T: class, new()
+        public static T Load<T>(bool upgradeOldVersions = true)
+            where T: Settings, new()
         {
-            T result = null;
+            var result = new T();
 
-            var fileName = BuildFileName(name);
+            string json = null;
+            var fileName = BuildFileName(result.GetName());
             if(File.Exists(fileName)) {
-                var json = File.ReadAllText(fileName);
-                result = JsonConvert.DeserializeObject<T>(json);
+                json = File.ReadAllText(fileName);
+                JsonConvert.PopulateObject(json, result);
+            }
+            if(upgradeOldVersions) {
+                Upgrade(result, json);
             }
 
-            return result ?? new T();
+            return result;
+        }
+
+        private static void Upgrade<T>(T settings, string sourceJson)
+            where T: Settings, new()
+        {
+            var needsUpgrade = settings.SettingsVersion < settings.GetCurrentVersion();
+            if(needsUpgrade) {
+                if(settings.SettingsVersion != 0) {
+                    settings.UpgradeSettings(sourceJson);
+                }
+                settings.SettingsVersion = settings.GetCurrentVersion();
+                Save(settings);
+            }
         }
 
         /// <summary>
         /// Saves the object against the name passed across.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="name"></param>
         /// <param name="obj"></param>
-        public static void Save<T>(string name, T obj)
+        public static void Save<T>(T obj)
+            where T: Settings, new()
         {
-            var fileName = BuildFileName(name);
-
             if(obj != null) {
-                var json = JsonConvert.SerializeObject(obj, Formatting.Indented);
+                var fileName = BuildFileName(obj.GetName());
+                var json = JsonConvert.SerializeObject(
+                    obj,
+                    Formatting.Indented,
+                    new StringEnumConverter()
+                );
                 File.WriteAllText(fileName, json);
             } else {
+                var fileName = new T().GetName();
                 if(File.Exists(fileName)) {
                     File.Delete(fileName);
                 }
@@ -86,10 +112,6 @@ namespace Cduhub
 
         private static string BuildFileName(string name)
         {
-            if(!Directory.Exists(_Folder)) {
-                Directory.CreateDirectory(_Folder);
-            }
-
             return Path.Combine(
                 _Folder,
                 $"{SanitiseName(name)}.json"
