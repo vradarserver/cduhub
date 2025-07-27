@@ -114,6 +114,7 @@ namespace Characters
                             keepWaiting = false;
                             break;
                         case ConsoleKey.R:
+                            fontFile = LoadFont(fontFileInfo);
                             uploadFont();
                             break;
                         case ConsoleKey.W:
