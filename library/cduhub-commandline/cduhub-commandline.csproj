@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>Cduhub.CommandLine</AssemblyName>
         <RootNamespace>Cduhub.CommandLine</RootNamespace>
         <Authors>Andrew Whewell</Authors>
         <Description>System.CommandLine helper for CDU Hub.</Description>

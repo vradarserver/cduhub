@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>Cduhub</AssemblyName>
         <RootNamespace>Cduhub</RootNamespace>
         <Authors>Andrew Whewell</Authors>
         <Description>The common CDU Hub application code shared between all front ends.</Description>

@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>McduDotNet</AssemblyName>
         <RootNamespace>McduDotNet</RootNamespace>
         <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
         <PackageId>mcdu-dotnet</PackageId>

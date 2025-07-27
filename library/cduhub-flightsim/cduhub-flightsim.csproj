@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>Cduhub.FlightSim</AssemblyName>
         <RootNamespace>Cduhub.FlightSim</RootNamespace>
         <Authors>Andrew Whewell</Authors>
         <Description>Flight simulator interactions for CDU Hub.</Description>
