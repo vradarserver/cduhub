@@ -24,16 +24,15 @@ namespace Cduhub.Pages
                 .Centred("<green>PASSTHROUGH")
                 .Newline(2)
                 .Centred("BLANK2 <small>FOR HUB <large>MENU")
-                .LeftLabel(6, "<red><small>>BACK")
-                .Cyan()
-                .RightLabel(6, "PASSTHRU<");
+                .RightLabel(3, "<cyan>PASSTHRU<")
+                .LeftLabel(6, "<red><small>>BACK");
         }
 
         public override void OnKeyDown(Key key)
         {
             switch(key) {
                 case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
-                case Key.LineSelectRight6:  _Hub.CreateAndSelectPage<Passthru_Page>(); break;
+                case Key.LineSelectRight3:  _Hub.CreateAndSelectPage<Passthru_Page>(); break;
             }
         }
     }

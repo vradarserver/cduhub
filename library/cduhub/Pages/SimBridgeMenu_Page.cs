@@ -26,10 +26,9 @@ namespace Cduhub.Pages
                 .Centred("<green><small>(FLY-BY-WIRE)")
                 .Newline(2)
                 .Centred("BLANK2 <small>FOR HUB <large>MENU")
+                .RightLabel(3, "<cyan>MCDU<")
                 .LeftLabel(5, "<amber><small>>INIT")
-                .LeftLabel(6, "<red><small>>BACK")
-                .Cyan()
-                .RightLabel(6, "MCDU<");
+                .LeftLabel(6, "<red><small>>BACK");
         }
 
         public override void OnKeyDown(Key key)
@@ -37,7 +36,7 @@ namespace Cduhub.Pages
             switch(key) {
                 case Key.LineSelectLeft5:   _Hub.CreateAndSelectPage<SimBridgeInit_Page>(); break;
                 case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
-                case Key.LineSelectRight6:  _Hub.CreateAndSelectPage<SimBridge_Page>(); break;
+                case Key.LineSelectRight3:  _Hub.CreateAndSelectPage<SimBridge_Page>(); break;
             }
         }
     }

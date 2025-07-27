@@ -196,6 +196,7 @@ namespace Cduhub
             if(pageFont == null || !pageFont.Equals(_CurrentFont)) {
                 _CurrentFont = pageFont;
                 if(pageFont != null) {
+                    _Mcdu.Screen.Clear();
                     var mcduFont = Fonts.LoadPageFont(pageFont);
                     _Mcdu.UseFont(mcduFont, pageFont.UseFullWidth);
                 }
