@@ -11,7 +11,7 @@
 namespace Cduhub
 {
     /// <summary>
-    /// These are stored in configuration files, do not change their name.
+    /// An enumeration of the fonts that have been compiled into the program's binaries.
     /// </summary>
     public enum BuiltInFont
     {

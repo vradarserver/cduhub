@@ -170,10 +170,12 @@ namespace Cduhub
 
         private void UploadFont(PageFont pageFont)
         {
-            if(!pageFont.Equals(_CurrentFont)) {
+            if(pageFont == null || !pageFont.Equals(_CurrentFont)) {
                 _CurrentFont = pageFont;
-                var mcduFont = Fonts.LoadPageFont(pageFont);
-                _Mcdu.UseFont(mcduFont, pageFont.UseFullWidth);
+                if(pageFont != null) {
+                    var mcduFont = Fonts.LoadPageFont(pageFont);
+                    _Mcdu.UseFont(mcduFont, pageFont.UseFullWidth);
+                }
             }
         }
 

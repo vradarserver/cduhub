@@ -15,6 +15,9 @@ using Newtonsoft.Json;
 
 namespace Cduhub
 {
+    /// <summary>
+    /// Manages the fonts available to a page.
+    /// </summary>
     public static class Fonts
     {
         private static readonly McduFontFile _B612Regular;

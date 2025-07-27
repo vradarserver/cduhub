@@ -14,6 +14,8 @@ namespace Cduhub.Pages
     {
         public override bool DisableMenuKey => true;
 
+        public override PageFont PageFont => null;
+
         public Passthru_Page(Hub hub) : base(hub)
         {
         }
