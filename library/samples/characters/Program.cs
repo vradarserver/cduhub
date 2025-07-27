@@ -11,6 +11,7 @@
 using System.CommandLine;
 using Cduhub.CommandLine;
 using McduDotNet;
+using Newtonsoft.Json;
 
 namespace Characters
 {
@@ -24,7 +25,7 @@ namespace Characters
                 var worked = true;
 
                 RootCommand rootCommand = new("Display characters on the CDU device") {
-                    Options.FontOption,
+                    Options.FontFileInfoOption,
                     Options.XOffsetOption,
                     Options.YOffsetOption,
                     Options.UseFullWidthOption,
@@ -33,7 +34,7 @@ namespace Characters
                 rootCommand.SetAction(
                     parseResult => {
                         ShowAsciiCharacterSet(
-                            parseResult.GetValue(Options.FontOption),
+                            parseResult.GetValue(Options.FontFileInfoOption),
                             parseResult.GetValue(Options.XOffsetOption),
                             parseResult.GetValue(Options.YOffsetOption),
                             parseResult.GetValue(Options.UseFullWidthOption)
@@ -54,7 +55,7 @@ namespace Characters
         }
 
         private static void ShowAsciiCharacterSet(
-            McduFontFile fontFile,
+            FileInfo fontFileInfo,
             int xOffset,
             int yOffset,
             bool useFullWidth
@@ -66,6 +67,7 @@ namespace Characters
                 mcdu.XOffset = xOffset;
                 mcdu.YOffset = yOffset;
 
+                var fontFile = LoadFont(fontFileInfo);
                 void uploadFont()
                 {
                     if(fontFile != null) {
@@ -100,7 +102,7 @@ namespace Characters
 
                 uploadFont();
                 showCharacters();
-                Console.WriteLine($"Press Q to quit{(fontFile == null ? "" : " and R to reload font")}");
+                Console.WriteLine($"Press Q to quit{(fontFile == null ? "" : " and R to reload font, W to toggle width")}");
 
                 var keepWaiting = true;
                 while(keepWaiting) {
@@ -112,15 +114,36 @@ namespace Characters
                             keepWaiting = false;
                             break;
                         case ConsoleKey.R:
-                            useFullWidth = !useFullWidth;
                             uploadFont();
-                            showCharacters();
                             break;
+                        case ConsoleKey.W:
+                            useFullWidth = !useFullWidth;
+                            goto case ConsoleKey.R;
                     }
                 }
 
                 mcdu.Cleanup();
             }
+        }
+
+        private static McduFontFile LoadFont(FileInfo fileInfo)
+        {
+            McduFontFile result = null;
+
+            if(fileInfo != null) {
+                if(!fileInfo.Exists) {
+                    throw new ArgumentException($"{fileInfo} does not exist");
+                } else {
+                    try {
+                        var json = File.ReadAllText(fileInfo.FullName);
+                        result = JsonConvert.DeserializeObject<McduFontFile>(json);
+                    } catch(Exception ex) {
+                        throw new ArgumentException($"Could not parse font from {fileInfo}", ex);
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }

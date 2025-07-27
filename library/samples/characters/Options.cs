@@ -16,25 +16,8 @@ namespace Characters
 {
     static class Options
     {
-        public static Option<McduFontFile> FontOption = new("--font", "-f") {
+        public static Option<FileInfo> FontFileInfoOption = new("--font", "-f") {
             Description = "Load font file",
-            CustomParser = (arg) => {
-                McduFontFile result = null;
-                var fileName = arg.Tokens.Count == 1 ? arg.Tokens[0].Value : null;
-                if(fileName == null) {
-                    throw new ArgumentException("Missing font filename");
-                } else if(!File.Exists(fileName)) {
-                    throw new ArgumentException($"{fileName} does not exist");
-                } else {
-                    try {
-                        var json = File.ReadAllText(fileName);
-                        result = JsonConvert.DeserializeObject<McduFontFile>(json);
-                    } catch(Exception ex) {
-                        throw new ArgumentException($"Could not parse font from {fileName}", ex);
-                    }
-                }
-                return result;
-            },
         };
 
         public static Option<bool> UseFullWidthOption = new("--fullWidth", "-fw") {
