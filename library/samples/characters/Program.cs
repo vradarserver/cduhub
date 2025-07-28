@@ -76,6 +76,28 @@ namespace Characters
                     }
                 }
 
+                void reloadFont()
+                {
+                    fontFile = LoadFont(fontFileInfo);
+                    uploadFont();
+                }
+                void toggleWidth()
+                {
+                    useFullWidth = !useFullWidth;
+                    reloadFont();
+                }
+
+                mcdu.KeyDown += (_, args) => {
+                    switch(args.Key) {
+                        case Key.Init:
+                            reloadFont();
+                            break;
+                        case Key.Data:
+                            toggleWidth();
+                            break;
+                    }
+                };
+
                 void showCharacters()
                 {
                     mcdu.Output
@@ -102,7 +124,10 @@ namespace Characters
 
                 uploadFont();
                 showCharacters();
-                Console.WriteLine($"Press Q to quit{(fontFile == null ? "" : " and R to reload font, W to toggle width")}");
+                if(fontFile != null) {
+                    Console.WriteLine($"R / [INIT] to reload font :: W / [DATA] to toggle width");
+                }
+                Console.WriteLine($"Press Q to quit");
 
                 var keepWaiting = true;
                 while(keepWaiting) {
@@ -114,12 +139,11 @@ namespace Characters
                             keepWaiting = false;
                             break;
                         case ConsoleKey.R:
-                            fontFile = LoadFont(fontFileInfo);
-                            uploadFont();
+                            reloadFont();
                             break;
                         case ConsoleKey.W:
-                            useFullWidth = !useFullWidth;
-                            goto case ConsoleKey.R;
+                            toggleWidth();
+                            break;
                     }
                 }
 
