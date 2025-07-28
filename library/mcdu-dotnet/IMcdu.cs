@@ -33,6 +33,21 @@ namespace McduDotNet
         Leds Leds { get; }
 
         /// <summary>
+        /// Gets and sets the display brightness as a percentage between 0 and 100.
+        /// </summary>
+        int DisplayBrightnessPercent { get; set; }
+
+        /// <summary>
+        /// Gets and sets the backlight brightness as a percentage between 0 and 100.
+        /// </summary>
+        int BacklightBrightnessPercent { get; set; }
+
+        /// <summary>
+        /// Gets and sets the LED brightness as a percentage between 0 and 100.
+        /// </summary>
+        int LedBrightnessPercent { get; set; }
+
+        /// <summary>
         /// Gets and sets the offset of the display from the left edge.
         /// </summary>
         int XOffset { get; set; }
@@ -81,6 +96,12 @@ namespace McduDotNet
         void RefreshLeds(bool skipDuplicateCheck = false);
 
         /// <summary>
+        /// Sets the backlight, display and LED brightnesses even if the code believes that
+        /// they have not changed.
+        /// </summary>
+        void RefreshBrightnesses();
+
+        /// <summary>
         /// Sends a font to the device.
         /// </summary>
         /// <param name="fontFileContent"></param>
@@ -93,6 +114,13 @@ namespace McduDotNet
         /// <summary>
         /// Resets the display and turns everything off.
         /// </summary>
-        void Cleanup();
+        /// <param name="backlightBrightnessPercent">Defaults to 0.</param>
+        /// <param name="displayBrightnessPercent">Defaults to 0.</param>
+        /// <param name="ledBrightnessPercent">Defaults to 0.</param>
+        void Cleanup(
+            int backlightBrightnessPercent = 0,
+            int displayBrightnessPercent = 0,
+            int ledBrightnessPercent = 0
+        );
     }
 }

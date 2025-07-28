@@ -36,8 +36,8 @@ namespace McduDotNet
         /// with underscores etc.
         /// </summary>
         /// <remarks>
-        /// Underscore = glyph bitmap byte, XX = XOffset, YY = YOffset, HH = glyph height,
-        /// WW = glyph width.
+        /// Underscore = glyph bitmap byte, LL = Brightness, XX = XOffset, YY = YOffset,
+        /// HH = glyph height, WW = glyph width.
         /// </remarks>
         [DataMember]
         public string[] Packets { get; set; } = Array.Empty<string>();
@@ -54,6 +54,12 @@ namespace McduDotNet
         [DataMember]
         public int[] GlyphHeightOffsets { get; set; } = Array.Empty<int>();
 
+        /// <summary>
+        /// If you don't set a brightness then the X/Y offset is ignored.
+        /// </summary>
+        [DataMember]
+        public int DisplayBrightnessOffset { get; set; } = -1;
+
         [DataMember]
         public McduFontGlyphOffsets[] LargeGlyphOffsets { get; set; } = Array.Empty<McduFontGlyphOffsets>();
 
@@ -61,6 +67,7 @@ namespace McduDotNet
         public McduFontGlyphOffsets[] SmallGlyphOffsets { get; set; } = Array.Empty<McduFontGlyphOffsets>();
 
         public void OverwritePacketsWithFontFileContent(
+            byte brightnessByte,
             int glyphWidth,
             int glyphHeight,
             int xOffset,
@@ -87,6 +94,9 @@ namespace McduDotNet
                 xOffset,
                 yOffset
             );
+            if(DisplayBrightnessOffset > -1) {
+                packetBlob[DisplayBrightnessOffset] = brightnessByte;
+            }
 
             Packets = RebuildPacketsFromBlob(packetBlob);
         }
@@ -104,6 +114,7 @@ namespace McduDotNet
                     switch(buffer[idx]) {
                         case '_':
                         case 'H':
+                        case 'L':
                         case 'W':
                         case 'X':
                         case 'Y':

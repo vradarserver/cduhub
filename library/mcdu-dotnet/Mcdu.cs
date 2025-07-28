@@ -62,6 +62,47 @@ namespace McduDotNet
         /// <inheritdoc/>
         public int YOffset { get; set; }
 
+        private int _DisplayBrightnessPercent = 100;
+        /// <inheritdoc/>
+        public int DisplayBrightnessPercent
+        {
+            get => _DisplayBrightnessPercent;
+            set {
+                var normalised = Math.Max(0, Math.Min(100, value));
+                if(normalised != DisplayBrightnessPercent) {
+                    _DisplayBrightnessPercent = normalised;
+                    SendDisplayBrightnessPercent(_DisplayBrightnessPercent);
+                }
+            }
+        }
+
+        private int _BacklightBrightnessPercent = 0;
+        public int BacklightBrightnessPercent
+        {
+            get => _BacklightBrightnessPercent;
+            set {
+                var normalised = Math.Max(0, Math.Min(100, value));
+                if(normalised != BacklightBrightnessPercent) {
+                    _BacklightBrightnessPercent = normalised;
+                    SendBacklightPercent(_BacklightBrightnessPercent);
+                }
+            }
+        }
+
+        private int _LedBrightnessPercent = 100;
+        /// <inheritdoc/>
+        public int LedBrightnessPercent
+        {
+            get => _LedBrightnessPercent;
+            set {
+                var normalised = Math.Max(0, Math.Min(100, value));
+                if(normalised != LedBrightnessPercent) {
+                    _LedBrightnessPercent = normalised;
+                    SendLedBrightnessPercent(_LedBrightnessPercent);
+                }
+            }
+        }
+
         /// <summary>
         /// Raises <see cref="KeyDown"/>. Doesn't bother creating args unless something is listening.
         /// </summary>
@@ -161,23 +202,31 @@ namespace McduDotNet
         }
 
         /// <inheritdoc/>
-        public void Cleanup()
+        public void Cleanup(
+            int ledBrightnessPercent = 0,
+            int displayBrightnessPercent = 0,
+            int backlightBrightnessPercent = 0
+        )
         {
             Screen.Clear();
             Leds.TurnAllOn(false);
-            Leds.Brightness = .5;
+            SendLedBrightnessPercent(ledBrightnessPercent);
+            SendDisplayBrightnessPercent(displayBrightnessPercent);
+            SendBacklightPercent(backlightBrightnessPercent);
             RefreshDisplay();
             RefreshLeds();
         }
 
         private void UseMobiFlightInitialisationSequence()
         {
-            SendMobiFlightf0Initialisation();
-            SendBacklightInitialisation();
+            SendDefaultFontInitialisation();
+            RefreshBrightnesses();
         }
 
-        private void SendMobiFlightf0Initialisation()
+        private void SendDefaultFontInitialisation()
         {
+            // Nicked from Mobiflight
+
             var packets = new string[] {
                 "f000013832bb00001e0100005f633100000000000032bb0000180100005f6331000008000000340018000e00180032bb0000190100005f633100000e00000000",
                 "f0000238000000010005000000020000000000000032bb0000190100005f633100000e000000010006000000030000000000000032bb00001901000000000000",
@@ -202,15 +251,34 @@ namespace McduDotNet
             }
         }
 
-        private void SendBacklightInitialisation()
+        public void RefreshBrightnesses()
         {
-            var packets = new string[] {
-                "0232bb0000034900cc0000000000", // <-- set button backlight to 0xcc out of 0xff
-                "0232bb0000034901ff0000000000", // <-- set display backlight to full
-            };
-            foreach(var packet in packets) {
-                SendStringPacket(packet);
-            }
+            SendBacklightPercent(BacklightBrightnessPercent);
+            SendDisplayBrightnessPercent(DisplayBrightnessPercent);
+            SendLedBrightnessPercent(LedBrightnessPercent);
+        }
+
+        private void SendBacklightPercent(int percent)
+        {
+            var byteValue = PercentToByte(percent);
+            SendLedOrBrightnessPacket(0, byteValue);
+        }
+
+        private void SendDisplayBrightnessPercent(int percent)
+        {
+            var byteValue = PercentToByte(percent);
+            SendLedOrBrightnessPacket(1, byteValue);
+        }
+
+        private void SendLedBrightnessPercent(int percent)
+        {
+            var byteValue = PercentToByte(percent);
+            SendLedOrBrightnessPacket(2, byteValue);
+        }
+
+        private static byte PercentToByte(int percent)
+        {
+            return (byte)(255.0 * (Math.Max(0, Math.Min(100, percent)) / 100.0));
         }
 
         /// <inheritdoc/>
@@ -231,6 +299,7 @@ namespace McduDotNet
                     ? fontFileContent.GlyphFullWidth
                     : fontFileContent.GlyphWidth;
                 packetMap.OverwritePacketsWithFontFileContent(
+                    PercentToByte(DisplayBrightnessPercent),
                     glyphWidth,
                     fontFileContent.GlyphHeight,
                     0x24 + XOffset + XOffsetForGlyphWidth(glyphWidth),
@@ -298,15 +367,10 @@ namespace McduDotNet
             }
         }
 
+        /// <inheritdoc/>
         public void RefreshLeds(bool skipDuplicateCheck = false)
         {
             if(skipDuplicateCheck || !(_PreviousLeds?.Equals(Leds) ?? false)) {
-                void sendBright(double? previous, double current, byte indicatorCode)
-                {
-                    if(previous != current) {
-                        SendLedOrBrightnessPacket(indicatorCode, (byte)(0xff * current));
-                    }
-                }
                 void sendLight(bool? previous, bool current, byte indicatorCode)
                 {
                     if(previous != current) {
@@ -314,16 +378,15 @@ namespace McduDotNet
                     }
                 }
 
-                sendBright(_PreviousLeds?.Brightness,   Leds.Brightness,    0x02);
-                sendLight(_PreviousLeds?.Fail,          Leds.Fail,          0x08);
-                sendLight(_PreviousLeds?.Fm,            Leds.Fm,            0x09);
-                sendLight(_PreviousLeds?.Mcdu,          Leds.Mcdu,          0x0a);
-                sendLight(_PreviousLeds?.Menu,          Leds.Menu,          0x0b);
-                sendLight(_PreviousLeds?.Fm1,           Leds.Fm1,           0x0c);
-                sendLight(_PreviousLeds?.Ind,           Leds.Ind,           0x0d);
-                sendLight(_PreviousLeds?.Rdy,           Leds.Rdy,           0x0e);
-                sendLight(_PreviousLeds?.Line,          Leds.Line,          0x0f);
-                sendLight(_PreviousLeds?.Fm2,           Leds.Fm2,           0x10);
+                sendLight(_PreviousLeds?.Fail,  Leds.Fail,  0x08);
+                sendLight(_PreviousLeds?.Fm,    Leds.Fm,    0x09);
+                sendLight(_PreviousLeds?.Mcdu,  Leds.Mcdu,  0x0a);
+                sendLight(_PreviousLeds?.Menu,  Leds.Menu,  0x0b);
+                sendLight(_PreviousLeds?.Fm1,   Leds.Fm1,   0x0c);
+                sendLight(_PreviousLeds?.Ind,   Leds.Ind,   0x0d);
+                sendLight(_PreviousLeds?.Rdy,   Leds.Rdy,   0x0e);
+                sendLight(_PreviousLeds?.Line,  Leds.Line,  0x0f);
+                sendLight(_PreviousLeds?.Fm2,   Leds.Fm2,   0x10);
 
                 if(_PreviousLeds == null) {
                     _PreviousLeds = new Leds();

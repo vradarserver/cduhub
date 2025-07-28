@@ -40,7 +40,6 @@ namespace McduDotNet.FlightSim
         private static void UpdateLeds(McduContent mcdu, Leds leds)
         {
             if(mcdu?.Annunciators != null && leds != null) {
-                leds.Brightness = mcdu.IntegralBrightness;
                 leds.Line = mcdu.Annunciators.Blank;
                 leds.Fail = mcdu.Annunciators.Fail;
                 leds.Fm1 = mcdu.Annunciators.Fm1;
@@ -49,6 +48,14 @@ namespace McduDotNet.FlightSim
                 leds.Ind = mcdu.Annunciators.Ind;
                 leds.Mcdu = leds.Menu = mcdu.Annunciators.McduMenu;
                 leds.Rdy = mcdu.Annunciators.Rdy;
+
+                // This line dates back to when the Leds object had the LED brightness
+                // on it. This has now moved to the IMcdu interface, and it is intended
+                // that the user sets it manually to correspond with their own environment
+                // and that it isn't copying whatever is set in the simulator.
+                //
+                // That might change in the future though.
+                //leds.Brightness = mcdu.IntegralBrightness;
             }
         }
 

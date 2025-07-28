@@ -19,56 +19,13 @@ namespace ExtractFont
     /// </summary>
     class WinwingMcduUsbExtractor
     {
-        /*
-            Excerpt from notes elsewhere:
-
-            1. Look for f0 00 xx 2a as the start of font marker.
-
-            2. Within that packet look for a 32bb...0601 block and read the font ID from offset 11
-               00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11
-               -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-               32 bb 00 00 06 01 00 00 be 90 06 00 00 19 00 00 00 05 +24 bytes
-               05 = large font follows
-               06 = small font follows
-
-            3. Look for a 32bb...0701 block in an fc 00 xx 3c packet and skip past it:
-               00 01 02 03 04 05
-               -- -- -- -- -- --
-               32 bb 00 00 07 01 + 23 bytes
-
-            4. Read 512 bytes (1024 characters) of glyph data from f0 00 xx 3c and f0 00 xx 12 packets.
-
-            5. Each glyph starts with a 4 byte unicode codepoint (which is ignored by the device?) and then
-               29 triplets of three bytes. The three bytes describe the 1 bpp 23 pixel row with the lsb
-               discarded by the device.
-
-            6. Each glyph follows on from the next with no padding.
-
-            7. The 512 byte chunk can run out anywhere within a glyph. It does not fall on glyph boundaries.
-
-            8. After the 512 bytes are read you will get some f0 01 xx 00 packets full of zeros. They can be
-               ignored. Instead you need to look for the next 32bb...0701 block in an fc 00 xx 3c packet.
-               After that you can start reading the next block of 512 bytes.
-   
-            9. Continue until you see a codepoint of 0000. The font is complete.
-
-            10. Start looking for another 32bb...0601, but this time in a fc 00 xx 3c packet.
-
-            11. The following 32bb...0701 might be within the same fc 00 xx 3c packet as the 32bb..0601. There
-                will not be enough room for it, in which case it will continue into the next 3c packet.
-
-            12. Once you see the end of the 32bb...0701 packet resume processing as per above.
-
-            13. Once you see the second 0000 codepoint then you are done.
-
-        */
-
         enum Status
         {
             LookingForOpeningReport,
             LookingForFontStart,
             LookingFor32BB0701Head,
             LookingFor32BB0701Tail,
+            LookingForBrightness,
             LookingFor32BB1801,
             ReadingCodepoint,
             ReadingBitmap,
@@ -158,6 +115,9 @@ namespace ExtractFont
                                 break;
                             case Status.LookingFor32BB0701Tail:
                                 LookFor32BB0701Tail();
+                                break;
+                            case Status.LookingForBrightness:
+                                LookForBrightness();
                                 break;
                             case Status.LookingFor32BB1801:
                                 LookFor32BB1801();
@@ -386,7 +346,19 @@ namespace ExtractFont
 
             _Status = ++_CountGlyphSetsRead == 1
                 ? Status.LookingForFontStart
-                : Status.LookingFor32BB1801;
+                : Status.LookingForBrightness;
+        }
+
+        private void LookForBrightness()
+        {
+            var idx = _Report.IndexOf(0x02, 0x32, 0xbb, 0x00, 0x00, 0x03, 0x49, 0x01);
+            if(idx != -1 && idx + 8 < _Report.Length) {
+                var brightnessOffset = idx + 8;
+                ReplacePacketMapBytes(brightnessOffset, 'L');
+                FontPacketMap.DisplayBrightnessOffset = _PacketOffset + brightnessOffset;
+
+                _Status = Status.LookingFor32BB1801;
+            }
         }
 
         private void LookFor32BB1801()

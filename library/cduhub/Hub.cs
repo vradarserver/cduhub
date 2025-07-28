@@ -33,12 +33,37 @@ namespace Cduhub
         private Dictionary<Type, Page> _PageTypeMap = new Dictionary<Type, Page>();
         private PageFont _CurrentFont;
         private CduhubSettings _Settings;
+        private int _NormalisedBrightnessButtonSteps;
 
         /// <summary>
         /// Gets or sets a value indicating whether the hub should perpetually try to reconnect to the MCDU if
         /// connection is either never acquired or lost after acquisition. Defaults to true.
         /// </summary>
         public bool AutoReconnect { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the brightness step.
+        /// </summary>
+        public int BrightnessStep { get; set; }
+
+        /// <summary>
+        /// Gets <see cref="BrightnessStep"/> expressed as a brightness percentage.
+        /// </summary>
+        public int BrightnessPercent
+        {
+            get {
+                return BrightnessStep == 0
+                    ? 10  // turning it off altogether makes it look broken
+                    : BrightnessStep == _NormalisedBrightnessButtonSteps
+                        ? 100
+                        : (int)((100.0 / _NormalisedBrightnessButtonSteps) * BrightnessStep);
+            }
+        }
+
+        /// <summary>
+        /// True if the backlight is switched on.
+        /// </summary>
+        public bool IsBacklightOn { get; set; }
 
         /// <summary>
         /// The connected device or null if no device is connected.
@@ -100,9 +125,16 @@ namespace Cduhub
             _ReconnectTimer = null;
             timer.Dispose();
 
-            _Mcdu?.Cleanup();
+            var settings = _Settings;
+            _Mcdu?.Cleanup(
+                backlightBrightnessPercent: settings?.Cleanup.BacklightBrightnessPercentOnExit ?? 0,
+                displayBrightnessPercent:   settings?.Cleanup.DisplayBrightnessPercentOnExit ?? 0,
+                ledBrightnessPercent:       settings?.Cleanup.DisplayBrightnessPercentOnExit ?? 0
+            );
             _Mcdu?.Dispose();
             _Mcdu = null;
+
+            PersistSettings();
 
             GC.SuppressFinalize(this);
         }
@@ -111,7 +143,26 @@ namespace Cduhub
         {
             var settings = ConfigStorage.Load<Config.CduhubSettings>();
             _Settings = settings;
+
+            _NormalisedBrightnessButtonSteps = Math.Max(1, Math.Min(100, settings.Brightness.ButtonSteps));
+            BrightnessStep = Math.Max(1, Math.Min(100, settings.Brightness.StartAtStep));
             ApplySettingsToMcdu();
+        }
+
+        private void PersistSettings()
+        {
+            var settings = _Settings;
+            if(settings != null) {
+                var save = false;
+                if(settings.Brightness.PersistBetweenSessions && settings.Brightness.StartAtStep != BrightnessStep) {
+                    settings.Brightness.StartAtStep = BrightnessStep;
+                    save = true;
+                }
+
+                if(save) {
+                    ConfigStorage.Save(settings);
+                }
+            }
         }
 
         public void Connect()
@@ -141,8 +192,9 @@ namespace Cduhub
             var settings = _Settings;
             var mcdu = _Mcdu;
             if(settings != null && mcdu != null) {
-                mcdu.XOffset = settings.DisplayOffsetX;
-                mcdu.YOffset = settings.DisplayOffsetY;
+                mcdu.XOffset = settings.DisplayOffset.XPixels;
+                mcdu.YOffset = settings.DisplayOffset.YPixels;
+                SetMcduBrightness();
             }
         }
 
@@ -186,6 +238,7 @@ namespace Cduhub
                     _PageHistory.Push(page);
                     RefreshDisplay(page);
                     RefreshLeds(page);
+                    _Mcdu?.RefreshBrightnesses();
                     _SelectedPage.OnSelected(true);
                 }
             }
@@ -307,9 +360,37 @@ namespace Cduhub
                     ReturnToRoot();
                 } else if(e.Key == parentKey && !(_SelectedPage?.DisableParentKey ?? false)) {
                     ReturnToParent();
+                } else if(e.Key == Key.Brt && !(_SelectedPage?.DisableBrightnessKeys ?? false)) {
+                    ChangeBrightness(true);
+                } else if(e.Key == Key.Dim && !(_SelectedPage?.DisableBrightnessKeys ?? false)) {
+                    ChangeBrightness(false);
                 } else {
                     _SelectedPage?.OnKeyDown(e.Key);
                 }
+            }
+        }
+
+        private void ChangeBrightness(bool increment)
+        {
+            var delta = increment ? 1 : -1;
+            BrightnessStep = Math.Max(1, Math.Min(BrightnessStep + delta, _NormalisedBrightnessButtonSteps));
+            SetMcduBrightness();
+        }
+
+        private void SetMcduBrightness()
+        {
+            var mcdu = _Mcdu;
+            var settings = _Settings;
+
+            if(mcdu != null) {
+                mcdu.DisplayBrightnessPercent = BrightnessPercent;
+                mcdu.LedBrightnessPercent = BrightnessPercent;
+
+                var backlightPercent = settings.Backlight.BacklightPercent;
+                if(BrightnessPercent > settings.Backlight.TurnOffWhenBrightnessExceedsPercent) {
+                    backlightPercent = 0;
+                }
+                mcdu.BacklightBrightnessPercent = backlightPercent;
             }
         }
 

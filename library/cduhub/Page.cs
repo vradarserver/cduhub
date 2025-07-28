@@ -34,6 +34,8 @@ namespace Cduhub
 
         public virtual bool DisableMenuKey { get; }
 
+        public virtual bool DisableBrightnessKeys { get; }
+
         public virtual Key ParentKey { get; } = Key.Blank2;
 
         public virtual bool DisableParentKey { get; }

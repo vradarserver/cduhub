@@ -19,8 +19,42 @@ namespace Cduhub.Config
 
         public override int GetCurrentVersion() => 1;
 
-        public int DisplayOffsetX { get; set; }
+        public class BrightnessSettings
+        {
+            public int ButtonSteps { get; set; } = 10;
 
-        public int DisplayOffsetY { get; set; }
+            public int StartAtStep { get; set; } = 10;
+
+            public bool PersistBetweenSessions { get; set; } = true;
+        }
+
+        public BrightnessSettings Brightness { get; set; } = new BrightnessSettings();
+
+        public class BacklightSettings
+        {
+            public int BacklightPercent { get; set; } = 80;
+
+            public int TurnOffWhenBrightnessExceedsPercent { get; set; } = 100;
+        }
+
+        public BacklightSettings Backlight { get; set; } = new BacklightSettings();
+
+        public class OffsetSettings
+        {
+            public int XPixels { get; set; }
+
+            public int YPixels { get; set; }
+        }
+
+        public OffsetSettings DisplayOffset { get; set; } = new OffsetSettings();
+
+        public class CleanupSettings
+        {
+            public int DisplayBrightnessPercentOnExit { get; set; } = 0;
+
+            public int BacklightBrightnessPercentOnExit { get; set; } = 0;
+        }
+
+        public CleanupSettings Cleanup { get; set; } = new CleanupSettings();
     }
 }

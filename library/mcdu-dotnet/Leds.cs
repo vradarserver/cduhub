@@ -18,11 +18,6 @@ namespace McduDotNet
     public class Leds
     {
         /// <summary>
-        /// Gets or sets the brightness of the LEDs as a value from 0 to 1.
-        /// </summary>
-        public double Brightness { get; set; } = 0.75;
-
-        /// <summary>
         /// Gets or sets the lit state of the FAIL LED.
         /// </summary>
         public bool Fail { get; set; }
@@ -89,8 +84,7 @@ namespace McduDotNet
         {
             var result = Object.ReferenceEquals(this, obj);
             if(!result && obj is Leds other) {
-                result = Brightness == other.Brightness
-                      && Fail == other.Fail
+                result = Fail == other.Fail
                       && Fm == other.Fm
                       && Fm1 == other.Fm1
                       && Fm2 == other.Fm2
@@ -106,7 +100,8 @@ namespace McduDotNet
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            return Brightness.GetHashCode();
+            // Just needs to be technically correct to shut the compiler up.
+            return Fail.GetHashCode();
         }
 
         public void CopyFrom(Leds other)
@@ -114,7 +109,6 @@ namespace McduDotNet
             if(other == null) {
                 throw new ArgumentNullException(nameof(other));
             }
-            Brightness = other.Brightness;
             Fail = other.Fail;
             Fm = other.Fm;
             Fm1 = other.Fm1;

@@ -37,8 +37,8 @@ namespace Leds
                         case Key.LineSelectRight1:  mcdu.Leds.Mcdu = !mcdu.Leds.Mcdu; break;
                         case Key.LineSelectRight2:  mcdu.Leds.Menu = !mcdu.Leds.Menu; break;
                         case Key.LineSelectRight3:  mcdu.Leds.Rdy = !mcdu.Leds.Rdy; break;
-                        case Key.LineSelectRight5:  mcdu.Leds.Brightness = Math.Max(0, mcdu.Leds.Brightness - 0.05); break;
-                        case Key.LineSelectRight6:  mcdu.Leds.Brightness = Math.Min(100, mcdu.Leds.Brightness + 0.05); break;
+                        case Key.LineSelectRight5:  mcdu.LedBrightnessPercent = Math.Max(0, mcdu.LedBrightnessPercent - 5); break;
+                        case Key.LineSelectRight6:  mcdu.LedBrightnessPercent = Math.Min(100, mcdu.LedBrightnessPercent + 5); break;
                         default:                    refreshLeds = false; break;
                     }
 
