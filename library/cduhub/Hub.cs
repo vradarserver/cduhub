@@ -188,6 +188,10 @@ namespace Cduhub
                         _Mcdu.KeyUp += Mcdu_KeyUp;
                         _Mcdu.Disconnected += Mcdu_Disconnected;
                         _RootPage = new Pages.Root_Page(this);
+                        SetMcduBrightness();
+                        _CurrentFont = null;
+                        _IsCurrentFontFullWidth = null;
+
                         SelectPage(_RootPage);
                         OnConnectedDeviceChanged();
                     }
