@@ -25,21 +25,21 @@ namespace Cduhub
     public static class Fonts
     {
         private static CustomFontSettings _Settings;
-        private static readonly McduFontFile _B612Regular;
-        private static readonly McduFontFile _FenixRegular;
-        private static readonly McduFontFile _FlyByWireRegular;
+        private static readonly McduFontFile _B612Font;
+        private static readonly McduFontFile _A320Font;
+        private static readonly McduFontFile _A320NeoFont;
         private static readonly object _SyncLock = new object();
         private static Dictionary<string, McduFontFile> _CustomFontMap = new Dictionary<string, McduFontFile>(StringComparer.InvariantCultureIgnoreCase);
 
         public static Exception LoadSettingsException { get; }
 
-        public static McduFontFile DefaultFont => _B612Regular;
+        public static McduFontFile DefaultFont => _B612Font;
 
-        public static McduFontFile B612Regular => _B612Regular;
+        public static McduFontFile B612Font => _B612Font;
 
-        public static McduFontFile FenixRegular => _FenixRegular;
+        public static McduFontFile A320Font => _A320Font;
 
-        public static McduFontFile FlyByWireRegular => _FlyByWireRegular;
+        public static McduFontFile A320NeoFont => _A320NeoFont;
 
         static Fonts()
         {
@@ -51,9 +51,9 @@ namespace Cduhub
                 _Settings = new CustomFontSettings();
             }
 
-            _B612Regular = LoadFont(CduHubResources.b612_font_21x31_json);
-            _FenixRegular = LoadFont(CduHubResources.fenix_font21x31_json);
-            _FlyByWireRegular = LoadFont(CduHubResources.flybywire_font_21x31_json);
+            _B612Font = LoadFont(CduHubResources.b612_font_21x31_json);
+            _A320Font = LoadFont(CduHubResources.a320_font_21x31_json);
+            _A320NeoFont = LoadFont(CduHubResources.a320neo_font_21x31_json);
         }
 
         public static McduFontFile LoadFont(byte[] jsonBytes, Encoding encoding = null)
@@ -66,9 +66,9 @@ namespace Cduhub
         public static McduFontFile LoadBuiltInFont(BuiltInFont builtInFont)
         {
             switch(builtInFont) {
-                case BuiltInFont.B612Regular:       return _B612Regular;
-                case BuiltInFont.FenixRegular:      return _FenixRegular;
-                case BuiltInFont.FlyByWireRegular:  return _FlyByWireRegular;
+                case BuiltInFont.B612Regular:       return _B612Font;
+                case BuiltInFont.FenixRegular:      return _A320Font;
+                case BuiltInFont.FlyByWireRegular:  return _A320NeoFont;
                 default:                            throw new NotImplementedException();
             }
         }
@@ -88,7 +88,7 @@ namespace Cduhub
                 }
             }
 
-            return result ?? _B612Regular;
+            return result ?? _B612Font;
         }
 
         public static IReadOnlyList<string> GetAllConfigNames(bool includeDefault)

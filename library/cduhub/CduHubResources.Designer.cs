@@ -63,29 +63,29 @@ namespace Cduhub {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        public static byte[] a320_font_21x31_json {
+            get {
+                object obj = ResourceManager.GetObject("a320_font_21x31_json", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] a320neo_font_21x31_json {
+            get {
+                object obj = ResourceManager.GetObject("a320neo_font_21x31_json", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         public static byte[] b612_font_21x31_json {
             get {
                 object obj = ResourceManager.GetObject("b612_font_21x31_json", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] fenix_font21x31_json {
-            get {
-                object obj = ResourceManager.GetObject("fenix_font21x31_json", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] flybywire_font_21x31_json {
-            get {
-                object obj = ResourceManager.GetObject("flybywire_font_21x31_json", resourceCulture);
                 return ((byte[])(obj));
             }
         }

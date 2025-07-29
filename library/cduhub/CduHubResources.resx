@@ -118,13 +118,13 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="a320neo_font_21x31_json" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\a320neo-font-21x31.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="a320_font_21x31_json" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\a320-font-21x31.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="b612_font_21x31_json" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\b612-font-21x31.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="fenix_font21x31_json" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\fenix-font21x31.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="flybywire_font_21x31_json" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\flybywire-font-21x31.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>
