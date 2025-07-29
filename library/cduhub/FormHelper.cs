@@ -12,30 +12,42 @@ using System;
 
 namespace Cduhub
 {
-    /// <summary>
-    /// Describes a font used by a page.
-    /// </summary>
-    public class PageFont
+    public class FormHelper
     {
-        public BuiltInFont BuiltInFont { get; set; }
+        private Action _DrawPageAction;
 
-        public bool UseFullWidth { get; set; }
-
-        public override bool Equals(object obj)
+        public FormHelper(Action drawPageAction)
         {
-            var result = Object.ReferenceEquals(this, obj);
-            if(!result && obj is PageFont other) {
-                result = BuiltInFont == other.BuiltInFont
-                      && UseFullWidth == other.UseFullWidth;
-            }
-
-            return result;
+            _DrawPageAction = drawPageAction;
         }
 
-        public override int GetHashCode()
+        public string YesNo(bool value) => value ? "YES" : "NO";
+
+        public void ToggleBool(bool value, Action<bool> setValue)
         {
-            // We do not care about this, it just needs to be technically correct.
-            return BuiltInFont.GetHashCode();
+            setValue(!value);
+            _DrawPageAction();
+        }
+
+        public void CycleFontNames(string fontName, Action<string> setFontName, bool includeDefaultFontName)
+        {
+            var fontNames = Fonts.GetAllConfigNames(includeDefaultFontName);
+            if(fontNames.Count > 0) {
+                var idx = -1;
+                for(var i = 0;i < fontNames.Count;++i) {
+                    if(String.Equals(fontNames[i], fontName, StringComparison.InvariantCultureIgnoreCase)) {
+                        idx = i;
+                        break;
+                    }
+                }
+
+                if(idx == -1 || ++idx == fontNames.Count) {
+                    idx = 0;
+                }
+
+                setFontName(fontNames[idx]);
+                _DrawPageAction();
+            }
         }
     }
 }

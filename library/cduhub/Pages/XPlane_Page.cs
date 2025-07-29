@@ -20,10 +20,7 @@ namespace Cduhub.Pages
 
         public override bool DisableMenuKey => true;
 
-        public override PageFont PageFont => new PageFont() {
-            BuiltInFont = BuiltInFont.B612Regular,
-            UseFullWidth = false,
-        };
+        public override FontReference PageFont => LoadFromSettings<XPlane12RestSettings>(r => r.Font);
 
         public XPlane_Page(Hub hub) : base(hub)
         {

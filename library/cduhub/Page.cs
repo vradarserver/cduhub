@@ -10,6 +10,7 @@
 
 using System;
 using System.Text;
+using Cduhub.Config;
 using McduDotNet;
 
 namespace Cduhub
@@ -25,10 +26,7 @@ namespace Cduhub
 
         public Leds Leds { get; }
 
-        public virtual PageFont PageFont { get; } = new PageFont() {
-            BuiltInFont = BuiltInFont.B612Regular,
-            UseFullWidth = true,
-        };
+        public virtual FontReference PageFont => _Hub.DefaultFontReference;
 
         public virtual Key MenuKey { get; } = Key.McduMenu;
 
@@ -161,6 +159,13 @@ namespace Cduhub
         {
             CopyScratchpadIntoDisplay();
             RefreshDisplay();
+        }
+
+        protected virtual FontReference LoadFromSettings<T>(Func<T, FontReference> extractFromSettings)
+            where T: Settings, new()
+        {
+            var settings = ConfigStorage.Load<T>();
+            return extractFromSettings(settings);
         }
     }
 }

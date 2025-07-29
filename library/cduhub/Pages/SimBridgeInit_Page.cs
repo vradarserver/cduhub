@@ -16,10 +16,12 @@ namespace Cduhub.Pages
     class SimBridgeInit_Page : Page
     {
         private SimBridgeEfbSettings _Settings;
+        private readonly FormHelper _Form;
 
         public SimBridgeInit_Page(Hub hub) : base(hub)
         {
             Scratchpad = new Scratchpad();
+            _Form = new FormHelper(() => DrawPage());
         }
 
         public override void OnSelected(bool selected)
@@ -42,10 +44,14 @@ namespace Cduhub.Pages
             Output
                 .Clear()
                 .Centred("<green>SIMBRIDGE EFB CONFIG")
-                .LeftLabelTitle(1, "<small>HOST")
+                .LeftLabelTitle(1, "<small> HOST")
                 .LeftLabel(1, $"<cyan>{SanitiseInput(_Settings.Host)}")
-                .LeftLabelTitle(2, "<small>PORT")
+                .LeftLabelTitle(2, "<small> PORT")
                 .LeftLabel(2, $"<cyan>{_Settings.Port}")
+                .LeftLabelTitle(3, "<small> FONT")
+                .LeftLabel(3, $"<cyan>{_Settings.Font.FontName}")
+                .LeftLabelTitle(4, "<small> FULL WIDTH")
+                .LeftLabel(4, $"<cyan>{_Form.YesNo(_Settings.Font.UseFullWidth)}")
                 .LeftLabel(6, "<red><small>>BACK")
                 .RightLabel(6, "<magenta>RESET<");
             CopyScratchpadIntoDisplay();
@@ -60,11 +66,27 @@ namespace Cduhub.Pages
         public override void OnKeyDown(Key key)
         {
             switch(key) {
-                case Key.LineSelectLeft1:   CopyScratchpadToHost(); break;
-                case Key.LineSelectLeft2:   CopyScratchpadToPort(); break;
-                case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
-                case Key.LineSelectRight6:  ResetToDefaults(); break;
-                default:                    base.OnKeyDown(key); break;
+                case Key.LineSelectLeft1:
+                    CopyScratchpadToHost();
+                    break;
+                case Key.LineSelectLeft2:
+                    CopyScratchpadToPort();
+                    break;
+                case Key.LineSelectLeft3:
+                    _Form.CycleFontNames(_Settings.Font.FontName, v => _Settings.Font.FontName = v, includeDefaultFontName: false);
+                    break;
+                case Key.LineSelectLeft4:
+                    _Form.ToggleBool(_Settings.Font.UseFullWidth, v => _Settings.Font.UseFullWidth = v);
+                    break;
+                case Key.LineSelectLeft6:
+                    _Hub.ReturnToParent();
+                    break;
+                case Key.LineSelectRight6:
+                    ResetToDefaults();
+                    break;
+                default:
+                    base.OnKeyDown(key);
+                    break;
             }
         }
 
@@ -73,6 +95,7 @@ namespace Cduhub.Pages
             var defaults = new SimBridgeEfbSettings();
             _Settings.Host = defaults.Host;
             _Settings.Port = defaults.Port;
+            _Settings.Font = defaults.Font;
             DrawPage();
         }
 

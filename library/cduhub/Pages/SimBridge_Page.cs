@@ -20,10 +20,7 @@ namespace Cduhub.Pages
 
         public override bool DisableMenuKey => true;
 
-        public override PageFont PageFont => new PageFont() {
-            BuiltInFont = BuiltInFont.FlyByWireRegular,
-            UseFullWidth = true,
-        };
+        public override FontReference PageFont => LoadFromSettings<SimBridgeEfbSettings>(r => r.Font);
 
         public SimBridge_Page(Hub hub) : base(hub)
         {

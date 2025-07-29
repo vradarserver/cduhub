@@ -31,7 +31,8 @@ namespace Cduhub
         private bool _WaitingForConnect = true;
         private Stack<Page> _PageHistory = new Stack<Page>();
         private Dictionary<Type, Page> _PageTypeMap = new Dictionary<Type, Page>();
-        private PageFont _CurrentFont;
+        private McduFontFile _CurrentFont;
+        private bool? _IsCurrentFontFullWidth;
         private CduhubSettings _Settings;
         private int _NormalisedBrightnessButtonSteps;
 
@@ -74,6 +75,16 @@ namespace Cduhub
         /// The HttpClient for pages to use.
         /// </summary>
         public HttpClient HttpClient { get; } = new HttpClient();
+
+        /// <summary>
+        /// The default font reference. This is user configurable.
+        /// </summary>
+        public FontReference DefaultFontReference
+        {
+            get {
+                return _Settings.Font ?? new FontReference();
+            }
+        }
 
         /// <summary>
         /// Raised when the hub wants the parent application to close.
@@ -244,14 +255,18 @@ namespace Cduhub
             }
         }
 
-        private void UploadFont(PageFont pageFont)
+        private void UploadFont(FontReference pageFont)
         {
-            if(pageFont == null || !pageFont.Equals(_CurrentFont)) {
-                _CurrentFont = pageFont;
-                if(pageFont != null) {
+            if(pageFont == null) {
+                _CurrentFont = null;
+                _IsCurrentFontFullWidth = null;
+            } else {
+                var mcduFont = Fonts.LoadFontByConfigName(pageFont.FontName);
+                if(mcduFont != _CurrentFont || _IsCurrentFontFullWidth != pageFont.UseFullWidth) {
+                    _CurrentFont = mcduFont;
+                    _IsCurrentFontFullWidth = pageFont.UseFullWidth;
                     _Mcdu.Screen.Clear();
-                    var mcduFont = Fonts.LoadPageFont(pageFont);
-                    _Mcdu.UseFont(mcduFont, pageFont.UseFullWidth);
+                    _Mcdu.UseFont(_CurrentFont, _IsCurrentFontFullWidth.Value);
                 }
             }
         }

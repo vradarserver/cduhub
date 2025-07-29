@@ -8,20 +8,40 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using Cduhub.Config;
+using System.Collections.Generic;
 
-namespace Cduhub.Pages
+namespace Cduhub.Config
 {
-    class Passthru_Page : Page
+    public class CustomFontSettings : Settings
     {
-        public override bool DisableMenuKey => true;
+        public override int GetCurrentVersion() => 1;
 
-        public override bool DisableBrightnessKeys => true;
+        public override string GetName() => "custom-fonts";
 
-        public override FontReference PageFont => null;
-
-        public Passthru_Page(Hub hub) : base(hub)
+        public class CustomFont
         {
+            public bool Enable { get; set; }
+
+            public string SettingsName { get; set; }
+
+            public string FontFileName { get; set; }
+
+            public string NormalisedSettingsName()
+            {
+                var result = (SettingsName ?? "").Trim();
+                if(result.Length > 24) {
+                    result = result.Substring(0, 24);
+                }
+                return result;
+            }
         }
+
+        public List<CustomFont> CustomFonts { get; set; } = new List<CustomFont>() {
+            new CustomFont() {
+                Enable = false,
+                SettingsName = "Unique, max 24 chars",
+                FontFileName = "Full path to the MCDU-DOTNET font file",
+            },
+        };
     }
 }

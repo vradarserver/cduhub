@@ -295,9 +295,10 @@ namespace McduDotNet
                 }
                 var mapJson = Encoding.UTF8.GetString(mapBytes);
                 var packetMap = JsonConvert.DeserializeObject<McduFontPacketMap>(mapJson);
-                var glyphWidth = useFullWidth
-                    ? fontFileContent.GlyphFullWidth
-                    : fontFileContent.GlyphWidth;
+                var glyphWidth = fontFileContent.GlyphWidth;
+                if(useFullWidth && fontFileContent.GlyphFullWidth > 0) {
+                    glyphWidth = fontFileContent.GlyphFullWidth;
+                }
                 packetMap.OverwritePacketsWithFontFileContent(
                     PercentToByte(DisplayBrightnessPercent),
                     glyphWidth,

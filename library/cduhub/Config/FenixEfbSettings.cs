@@ -19,5 +19,10 @@ namespace Cduhub.Config
         public string Host { get; set; } = "localhost";
 
         public int Port { get; set; } = 8083;
+
+        public FontReference Font { get; set; } = new FontReference() {
+            FontName = BuiltInFontExtensions.A320,
+            UseFullWidth = false,
+        };
     }
 }

@@ -8,57 +8,47 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.Collections.Generic;
+using System;
 
-namespace Cduhub.Config
+namespace Cduhub
 {
-    /// <summary>
-    /// Holds the common settings for all CDUHub applications.
-    /// </summary>
-    public class CduhubSettings : Settings
+    public static class BuiltInFontExtensions
     {
-        public override string GetName() => "cduhub-settings";
+        // These are stored in configuration files, never change them.
+        public const string DefaultFontReference =  "DEFAULT";
+        public const string DefaultFontConfigName = B612;
+        public const string B612 =                  "B612";
+        public const string A320 =                  "A320";
+        public const string A320NEO =               "A320NEO";
 
-        public override int GetCurrentVersion() => 1;
-
-        public class BrightnessSettings
+        public static string ConfigName(this BuiltInFont builtInFont)
         {
-            public int ButtonSteps { get; set; } = 10;
-
-            public int StartAtStep { get; set; } = 10;
-
-            public bool PersistBetweenSessions { get; set; } = true;
+            switch(builtInFont) {
+                case BuiltInFont.B612Regular:       return B612;
+                case BuiltInFont.FenixRegular:      return A320;
+                case BuiltInFont.FlyByWireRegular:  return A320NEO;
+                default:                            throw new NotImplementedException();
+            }
         }
 
-        public BrightnessSettings Brightness { get; set; } = new BrightnessSettings();
-
-        public class BacklightSettings
+        public static BuiltInFont? ToBuiltInFont(string configName)
         {
-            public int BacklightPercent { get; set; } = 80;
+            BuiltInFont? result = null;
 
-            public int TurnOffWhenBrightnessExceedsPercent { get; set; } = 100;
+            configName = (configName ?? "").Trim();
+            if(configName == "" || String.Equals(configName, DefaultFontReference, StringComparison.InvariantCultureIgnoreCase)) {
+                configName = DefaultFontConfigName;
+            }
+
+            foreach(BuiltInFont value in Enum.GetValues(typeof(BuiltInFont))) {
+                var valueName = ConfigName(value);
+                if(String.Equals(configName, valueName, StringComparison.InvariantCultureIgnoreCase)) {
+                    result = value;
+                    break;
+                }
+            }
+
+            return result;
         }
-
-        public BacklightSettings Backlight { get; set; } = new BacklightSettings();
-
-        public class OffsetSettings
-        {
-            public int XPixels { get; set; }
-
-            public int YPixels { get; set; }
-        }
-
-        public OffsetSettings DisplayOffset { get; set; } = new OffsetSettings();
-
-        public FontReference Font { get; set; } = new FontReference();
-
-        public class CleanupSettings
-        {
-            public int DisplayBrightnessPercentOnExit { get; set; } = 0;
-
-            public int BacklightBrightnessPercentOnExit { get; set; } = 0;
-        }
-
-        public CleanupSettings Cleanup { get; set; } = new CleanupSettings();
     }
 }
