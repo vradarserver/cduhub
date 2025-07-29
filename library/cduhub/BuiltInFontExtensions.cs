@@ -24,9 +24,9 @@ namespace Cduhub
         public static string ConfigName(this BuiltInFont builtInFont)
         {
             switch(builtInFont) {
-                case BuiltInFont.B612Regular:       return B612;
-                case BuiltInFont.FenixRegular:      return A320;
-                case BuiltInFont.FlyByWireRegular:  return A320NEO;
+                case BuiltInFont.B612:       return B612;
+                case BuiltInFont.A320:      return A320;
+                case BuiltInFont.A320Neo:  return A320NEO;
                 default:                            throw new NotImplementedException();
             }
         }

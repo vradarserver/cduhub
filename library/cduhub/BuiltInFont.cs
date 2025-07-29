@@ -15,10 +15,10 @@ namespace Cduhub
     /// </summary>
     public enum BuiltInFont
     {
-        B612Regular,
+        B612,
 
-        FenixRegular,
+        A320,
 
-        FlyByWireRegular,
+        A320Neo,
     }
 }

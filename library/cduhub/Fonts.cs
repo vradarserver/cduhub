@@ -66,9 +66,9 @@ namespace Cduhub
         public static McduFontFile LoadBuiltInFont(BuiltInFont builtInFont)
         {
             switch(builtInFont) {
-                case BuiltInFont.B612Regular:       return _B612Font;
-                case BuiltInFont.FenixRegular:      return _A320Font;
-                case BuiltInFont.FlyByWireRegular:  return _A320NeoFont;
+                case BuiltInFont.B612:      return _B612Font;
+                case BuiltInFont.A320:      return _A320Font;
+                case BuiltInFont.A320Neo:   return _A320NeoFont;
                 default:                            throw new NotImplementedException();
             }
         }

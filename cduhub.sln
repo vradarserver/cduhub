@@ -43,13 +43,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cduhub", "library\cduhub\cd
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cduhub-cli", "apps\cduhub-cli\cduhub-cli.csproj", "{2C3B2081-B961-4B68-8D5D-7F2F8F9698A5}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "images", "images", "{7B861341-4A2E-4EE5-A81E-9FCB45E15FA4}"
-	ProjectSection(SolutionItems) = preProject
-		images\fly-by-wire-efb-mcdu.ico = images\fly-by-wire-efb-mcdu.ico
-		images\icon-1024x1024.ico = images\icon-1024x1024.ico
-		images\icon-1024x1024.png = images\icon-1024x1024.png
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "installers", "installers", "{F23391C6-F0DD-4436-A60C-0B65690AE6C6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "innosetup", "innosetup", "{F32C6B7D-F01C-40BD-87DC-09ED8E5DEA77}"
@@ -71,7 +64,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "extract-font", "utilities\e
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "convert-font", "utilities\convert-font\convert-font.csproj", "{2AF9557A-CF73-442D-8CC1-8999AB07C09A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cduhub-commandline", "library\cduhub-commandline\cduhub-commandline.csproj", "{F17CBADA-C093-4F2E-BBDD-A39BA8958192}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cduhub-commandline", "library\cduhub-commandline\cduhub-commandline.csproj", "{F17CBADA-C093-4F2E-BBDD-A39BA8958192}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
