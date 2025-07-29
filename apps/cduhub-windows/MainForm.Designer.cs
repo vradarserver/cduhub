@@ -48,6 +48,7 @@ namespace Cduhub.WindowsGui
             this._RefreshDisplayTimer = new System.Windows.Forms.Timer(this.components);
             this.label2 = new System.Windows.Forms.Label();
             this._LinkLabel_ConfigFolder = new System.Windows.Forms.LinkLabel();
+            this._LinkLabel_About = new System.Windows.Forms.LinkLabel();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -80,7 +81,7 @@ namespace Cduhub.WindowsGui
             this.groupBox1.Controls.Add(this._ListView_ConnectedFlightSimulators);
             this.groupBox1.Location = new System.Drawing.Point(12, 33);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(560, 165);
+            this.groupBox1.Size = new System.Drawing.Size(560, 109);
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Flight Simulators";
@@ -103,7 +104,7 @@ namespace Cduhub.WindowsGui
             this._ListView_ConnectedFlightSimulators.Location = new System.Drawing.Point(6, 22);
             this._ListView_ConnectedFlightSimulators.MultiSelect = false;
             this._ListView_ConnectedFlightSimulators.Name = "_ListView_ConnectedFlightSimulators";
-            this._ListView_ConnectedFlightSimulators.Size = new System.Drawing.Size(548, 137);
+            this._ListView_ConnectedFlightSimulators.Size = new System.Drawing.Size(548, 81);
             this._ListView_ConnectedFlightSimulators.TabIndex = 0;
             this._ListView_ConnectedFlightSimulators.UseCompatibleStateImageBehavior = false;
             this._ListView_ConnectedFlightSimulators.View = System.Windows.Forms.View.Details;
@@ -140,7 +141,8 @@ namespace Cduhub.WindowsGui
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 209);
+            this.label2.Location = new System.Drawing.Point(12, 148);
+            this.label2.Margin = new System.Windows.Forms.Padding(3);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(51, 15);
             this.label2.TabIndex = 3;
@@ -150,7 +152,8 @@ namespace Cduhub.WindowsGui
             // 
             this._LinkLabel_ConfigFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this._LinkLabel_ConfigFolder.Location = new System.Drawing.Point(69, 209);
+            this._LinkLabel_ConfigFolder.Location = new System.Drawing.Point(69, 148);
+            this._LinkLabel_ConfigFolder.Margin = new System.Windows.Forms.Padding(3);
             this._LinkLabel_ConfigFolder.Name = "_LinkLabel_ConfigFolder";
             this._LinkLabel_ConfigFolder.Size = new System.Drawing.Size(503, 15);
             this._LinkLabel_ConfigFolder.TabIndex = 4;
@@ -158,11 +161,26 @@ namespace Cduhub.WindowsGui
             this._LinkLabel_ConfigFolder.Text = "-";
             this._LinkLabel_ConfigFolder.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabel_ConfigFolder_LinkClicked);
             // 
+            // _LinkLabel_About
+            // 
+            this._LinkLabel_About.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this._LinkLabel_About.Location = new System.Drawing.Point(9, 172);
+            this._LinkLabel_About.Margin = new System.Windows.Forms.Padding(3, 6, 3, 9);
+            this._LinkLabel_About.Name = "_LinkLabel_About";
+            this._LinkLabel_About.Size = new System.Drawing.Size(563, 15);
+            this._LinkLabel_About.TabIndex = 5;
+            this._LinkLabel_About.TabStop = true;
+            this._LinkLabel_About.Text = "About";
+            this._LinkLabel_About.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this._LinkLabel_About.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LinkLabel_About_LinkClicked);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(584, 241);
+            this.ClientSize = new System.Drawing.Size(584, 205);
+            this.Controls.Add(this._LinkLabel_About);
             this.Controls.Add(this._LinkLabel_ConfigFolder);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.groupBox1);
@@ -195,5 +213,6 @@ namespace Cduhub.WindowsGui
         private Timer _RefreshDisplayTimer;
         private Label label2;
         private LinkLabel _LinkLabel_ConfigFolder;
+        private LinkLabel _LinkLabel_About;
     }
 }

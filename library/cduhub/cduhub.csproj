@@ -27,6 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\cduhub-commandline\cduhub-commandline.csproj" />
         <ProjectReference Include="..\cduhub-flightsim\cduhub-flightsim.csproj" />
         <ProjectReference Include="..\mcdu-dotnet\mcdu-dotnet.csproj" />
     </ItemGroup>

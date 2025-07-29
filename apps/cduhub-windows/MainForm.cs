@@ -87,6 +87,13 @@ namespace Cduhub.WindowsGui
             }
         }
 
+        private void ShowAboutForm()
+        {
+            using(var form = new AboutForm()) {
+                form.ShowDialog(this);
+            }
+        }
+
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             base.OnFormClosing(e);
@@ -101,6 +108,8 @@ namespace Cduhub.WindowsGui
         {
             base.OnLoad(e);
             if(!DesignMode) {
+                Text = $"{Text} {Program.Version}";
+
                 _LinkLabel_ConfigFolder.Text = ConfigStorage.Folder;
                 Hub.ConnectedDeviceChanged += Hub_ConnectedDeviceChanged;
                 Hub.CloseApplication += Hub_CloseApplication;
@@ -143,6 +152,11 @@ namespace Cduhub.WindowsGui
             } else {
                 UpdateStateDisplay();
             }
+        }
+
+        private void LinkLabel_About_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            ShowAboutForm();
         }
 
         private void LinkLabel_ConfigFolder_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
