@@ -1,11 +1,6 @@
 ﻿# MCDU-DOTNET
 
-> [!IMPORTANT]
-> The library is still in the early stages of development. It is very likely
-that interface, class and namespace names are all going to chop and change with
-each release until things settle down.
-
-The pre-release NuGet package for the library can be found here:
+The NuGet package for the library can be found here:
 
 https://www.nuget.org/packages/mcdu-dotnet/
 
@@ -74,6 +69,45 @@ default, nothing is sent.
 
 
 
-## Product Notes
+### Display, LED and Backlight Brightness
 
-[WinWing MCDU USB Packet Sniffing Notes](WINWING-MCDU-USB.md)
+There are properties for each of these on the `IMcdu` interface that let you specify the
+brightness levels as a percentage from 0 to 100. Note that if you set the display or LED
+brightness to 0% then you can't see anything.
+
+The brightness properties will not send commands to the device if it detects no change
+from what was last sent. If you want to force the library to send brightness levels then
+you can call `RefreshBrightnesses`.
+
+
+
+### Cleanup
+
+The MCDU device will retain its state after your program stops driving it - I.E. it will
+continue to show whatever you last wrote to the screen.
+
+There is a function called `Cleanup` that will clear the screen, turn off all of the LEDs
+and set the brightness levels to 0 (overridable).
+
+
+### Fonts
+
+The MCDU device supports 1BPP bitmap fonts at varying widths and heights. However
+`mcdu-dotnet` only supports fonts of either 29 or 31 pixels high and between 17 and 23
+pixels wide.
+
+Fonts are described by an `McduFontFile` object:
+
+https://github.com/vradarserver/cduhub/blob/main/library/mcdu-dotnet/McduFontFile.cs
+
+Examples of font files can be found in the `cduhub` library's resources folder:
+
+https://github.com/vradarserver/cduhub/tree/main/library/cduhub/Resources
+
+
+
+### Events
+
+Besides the `KeyDown` and `KeyUp` events referenced elsewhere there is also the
+`Disconnected` event, which is raised when the library detects that the device has been
+disconnected.
