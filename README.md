@@ -29,7 +29,7 @@ This includes Windows, most major Linux distros and macOS.
 
 Download and run the latest Windows installer from the release page here:
 
-https://github.com/vradarserver/cduhub/releases
+https://github.com/vradarserver/cduhub/releases/latest
 
 
 ### Unix-like Operating Systems
