@@ -2,7 +2,7 @@
   "profiles": {
     "extract-font": {
       "commandName": "Project",
-      "commandLineArgs": "--packets ..\\..\\hardware-notes\\2025-07-14-font-upload-packets.txt --font ..\\..\\hardware-notes\\extracted-font.json --name Test",
+      "commandLineArgs": "from-file -o c:\\tmp\\convert-ega-9x14.json -f c:\\tmp\\ega-font-21x31.json",
       "workingDirectory": "$(ProjectDir)"
     }
   }

@@ -11,18 +11,19 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Text;
+using Cduhub.CommandLine.Validators;
 
 namespace ExtractFont
 {
     static class Options
     {
-        public static readonly Option<FileInfo> PacketsFileOption = new("--packets") {
+        public static readonly Option<FileInfo> PacketsFileOption = new("--packets", "-p") {
             Description = "The file that contains the USB packet dump to extract fonts from",
             Required = true,
             CustomParser = result => GetFileInfo(result, mustExist: true),
         };
 
-        public static readonly Option<FileInfo> FontFileOption = new("--font") {
+        public static readonly Option<FileInfo> FontFileOption = new("--font", "-f") {
             Description = "The name of the font file to write (uses font name if not specified)",
             Required = false,
             CustomParser = result => GetFileInfo(result, mustExist: false),
@@ -38,6 +39,32 @@ namespace ExtractFont
             Description = "The name of the font",
             Required = false,
             DefaultValueFactory = result => "Font",
+        };
+
+        public static readonly Option<FileInfo> CreateOptionsFileOption = new("--options", "-o") {
+            Description = "The options file to create",
+            Required = true,
+        };
+
+        public static readonly Option<bool> OverwriteOptionsFileOption = new("--overwrite") {
+            Description = "Overwrite the options file instead of modifying it",
+            DefaultValueFactory = _ => false,
+        };
+
+        public static readonly Option<FontFileType> FontFileTypeOption = new("--type", "-t") {
+            Description = "The type of font file",
+            DefaultValueFactory = _ => FontFileType.BiosFont,
+        };
+
+        public static readonly Option<FileInfo> OptionsFileOption = new("--options", "-o") {
+            Description = "The options file to load configuration from",
+            Required = true,
+            Validators = { FileExistsValidator.Validate }
+        };
+
+        public static readonly Option<FileInfo> MandatoryOutputFileNameOption = new("--file", "-f") {
+            Description = "The file to write to",
+            Required = true,
         };
 
         public static string SanitiseFileName(string fileName, char replaceInvalidWith = '-')
