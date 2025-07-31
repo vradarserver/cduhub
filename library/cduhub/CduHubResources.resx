@@ -127,4 +127,7 @@
   <data name="b612_font_21x31_json" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\b612-font-21x31.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="ega_font_21x31_json" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\ega-font-21x31.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
 </root>

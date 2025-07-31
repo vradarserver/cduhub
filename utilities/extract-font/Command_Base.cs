@@ -33,7 +33,7 @@ namespace ExtractFont
         protected static McduFontGlyph[] ConvertBitmapToGlyphs(
             string characters,
             Func<char, string[]> getBitmapForCharacter,
-            double scale,
+            ScaleOptions scale,
             int fontGlyphWidth,
             int fontGlyphHeight
         )
@@ -62,41 +62,32 @@ namespace ExtractFont
 
         protected static McduFontGlyph ConvertBitmapToGlyph(
             char character,
-            string[] bitmap,
-            double scale,
+            string[] originalBitmap,
+            ScaleOptions scale,
             int fontGlyphWidth,
             int fontGlyphHeight
         )
         {
             McduFontGlyph result = null;
 
-            if((bitmap?.Length ?? 0) > 0) {
-                if(Math.Floor(scale) != scale) {
-                    throw new NotImplementedException("No code for fractional scaling yet");
-                }
+            if((originalBitmap?.Length ?? 0) > 0) {
+                var scaledBitmap = Scaler.ScaleToOptions(originalBitmap, scale);
 
                 var fontRows = new string[fontGlyphHeight];
                 var fontRow = new StringBuilder();
                 var fontRowIdx = fontRows.Length - 1;
-                for(var bitmapRowIdx = bitmap.Length - 1;bitmapRowIdx >= 0;--bitmapRowIdx) {
-                    var bitmapRow = bitmap[bitmapRowIdx];
+                for(var bitmapRowIdx = scaledBitmap.Length - 1;bitmapRowIdx >= 0;--bitmapRowIdx) {
+                    var bitmapRow = scaledBitmap[bitmapRowIdx];
                     fontRow.Clear();
-                    for(var bitmapCol = 0;bitmapCol < bitmapRow.Length;++bitmapCol) {
-                        var ch = bitmapRow[bitmapCol];
-                        for(var i = 0;i < scale;++i) {
-                            if(fontRow.Length < fontGlyphWidth) {
-                                fontRow.Append(ch);
-                            }
-                        }
-                    }
+                    fontRow.Append(bitmapRow.Length > fontGlyphWidth
+                        ? bitmapRow[..fontGlyphWidth]
+                        : bitmapRow
+                    );
                     while(fontRow.Length < fontGlyphWidth) {
                         fontRow.Append('.');
                     }
-                    var rowText = fontRow.ToString();
-                    for(var i = 0;i < scale;++i) {
-                        if(fontRowIdx >= 0) {
-                            fontRows[fontRowIdx--] = rowText;
-                        }
+                    if(fontRowIdx >= 0) {
+                        fontRows[fontRowIdx--] = fontRow.ToString();
                     }
                 }
 

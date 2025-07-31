@@ -89,5 +89,15 @@ namespace Cduhub {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] ega_font_21x31_json {
+            get {
+                object obj = ResourceManager.GetObject("ega_font_21x31_json", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

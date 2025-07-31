@@ -81,7 +81,10 @@ namespace ExtractFont
 
             if(!(characterMap?.TryGetValue(biosCodepoint, out result) ?? false)) {
                 if(isIbmPCFont) {
-                    const string controlCharacters = " ☺☻♥♦♣♠•◘○◙♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼";
+                    // Note that ▶◀ are not technically the correct codes. They're the
+                    // codepoints that WinWing have in their font uploads, but the actual
+                    // PC code page 420 etc. fonts are ►◄ (ALT+16 and ALT+17).
+                    const string controlCharacters = " ☺☻♥♦♣♠•◘○◙♂♀♪♫☼▶◀↕‼¶§▬↨↑↓→←∟↔▲▼";
                     if(biosCodepoint < 32) {
                         result = controlCharacters[biosCodepoint];
                     } else {

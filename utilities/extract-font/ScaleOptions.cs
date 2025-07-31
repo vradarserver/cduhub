@@ -13,42 +13,22 @@ using System.Runtime.Serialization;
 namespace ExtractFont
 {
     [DataContract]
-    class BiosFontExtractionOptions
+    public class ScaleOptions
     {
         [DataMember]
-        public string McduFontName { get; set; }
+        public int Multiplier { get; set; }
 
         [DataMember]
-        public string BiosFontFileName { get; set; }
+        public int Divider { get; set; }
 
-        [DataMember]
-        public int BiosGlyphWidth { get; set; } = 8;
+        public ScaleOptions()
+        {
+        }
 
-        [DataMember]
-        public int BiosGlyphHeight { get; set; } = 14;
-
-        [DataMember]
-        public int McduGlyphWidth { get; set; } = 21;
-
-        [DataMember]
-        public int McduGlyphHeight { get; set; } = 31;
-
-        [DataMember]
-        public int McduGlyphFullWidth { get; set; } = 23;
-
-        [DataMember]
-        public ScaleOptions LargeFontScale { get; set; } = new ScaleOptions(2, 1);
-
-        [DataMember]
-        public ScaleOptions SmallFontScale { get; set; } = new ScaleOptions(3, 2);
-
-        [DataMember]
-        public string Characters { get; set; }
-
-        [DataMember]
-        public bool IsIbmPCFont { get; set; } = true;
-
-        [DataMember]
-        public Dictionary<int, char> CharacterMap { get; set; } = [];
+        public ScaleOptions(int multiplier, int divider)
+        {
+            Multiplier = multiplier;
+            Divider = divider;
+        }
     }
 }

@@ -25,21 +25,24 @@ namespace Cduhub
     public static class Fonts
     {
         private static CustomFontSettings _Settings;
-        private static readonly McduFontFile _B612Font;
         private static readonly McduFontFile _A320Font;
         private static readonly McduFontFile _A320NeoFont;
+        private static readonly McduFontFile _B612Font;
+        private static readonly McduFontFile _EgaFont;
         private static readonly object _SyncLock = new object();
         private static Dictionary<string, McduFontFile> _CustomFontMap = new Dictionary<string, McduFontFile>(StringComparer.InvariantCultureIgnoreCase);
 
         public static Exception LoadSettingsException { get; }
 
-        public static McduFontFile DefaultFont => _B612Font;
-
-        public static McduFontFile B612Font => _B612Font;
+        public static McduFontFile DefaultFont => B612Font;
 
         public static McduFontFile A320Font => _A320Font;
 
         public static McduFontFile A320NeoFont => _A320NeoFont;
+
+        public static McduFontFile B612Font => _B612Font;
+
+        public static McduFontFile EgaFont => _EgaFont;
 
         static Fonts()
         {
@@ -51,9 +54,10 @@ namespace Cduhub
                 _Settings = new CustomFontSettings();
             }
 
-            _B612Font = LoadFont(CduHubResources.b612_font_21x31_json);
             _A320Font = LoadFont(CduHubResources.a320_font_21x31_json);
             _A320NeoFont = LoadFont(CduHubResources.a320neo_font_21x31_json);
+            _B612Font = LoadFont(CduHubResources.b612_font_21x31_json);
+            _EgaFont = LoadFont(CduHubResources.ega_font_21x31_json);
         }
 
         public static McduFontFile LoadFont(byte[] jsonBytes, Encoding encoding = null)
@@ -66,9 +70,10 @@ namespace Cduhub
         public static McduFontFile LoadBuiltInFont(BuiltInFont builtInFont)
         {
             switch(builtInFont) {
-                case BuiltInFont.B612:      return _B612Font;
                 case BuiltInFont.A320:      return _A320Font;
                 case BuiltInFont.A320Neo:   return _A320NeoFont;
+                case BuiltInFont.B612:      return _B612Font;
+                case BuiltInFont.EGA:       return _EgaFont;
                 default:                            throw new NotImplementedException();
             }
         }
@@ -88,7 +93,7 @@ namespace Cduhub
                 }
             }
 
-            return result ?? _B612Font;
+            return result ?? DefaultFont;
         }
 
         public static IReadOnlyList<string> GetAllConfigNames(bool includeDefault)

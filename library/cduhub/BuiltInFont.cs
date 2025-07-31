@@ -20,5 +20,7 @@ namespace Cduhub
         A320,
 
         A320Neo,
+
+        EGA,
     }
 }

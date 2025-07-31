@@ -44,7 +44,7 @@ namespace ExtractFont
             string[] findBiosGlyphForCharacter(char ch) => biosGlyphs
                 .FirstOrDefault(bg => bg.BiosCodepoint != 0 && bg.Character == ch)
                 ?.Bitmap;
-            McduFontGlyph[] convertBitmapToGlyphs(double scale) => ConvertBitmapToGlyphs(
+            McduFontGlyph[] convertBitmapToGlyphs(ScaleOptions scale) => ConvertBitmapToGlyphs(
                 options.Characters,
                 findBiosGlyphForCharacter,
                 scale,

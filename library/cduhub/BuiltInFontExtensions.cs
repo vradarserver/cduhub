@@ -17,17 +17,19 @@ namespace Cduhub
         // These are stored in configuration files, never change them.
         public const string DefaultFontReference =  "DEFAULT";
         public const string DefaultFontConfigName = B612;
-        public const string B612 =                  "B612";
         public const string A320 =                  "A320";
         public const string A320NEO =               "A320NEO";
+        public const string B612 =                  "B612";
+        public const string EGA =                   "EGA";
 
         public static string ConfigName(this BuiltInFont builtInFont)
         {
             switch(builtInFont) {
-                case BuiltInFont.B612:       return B612;
                 case BuiltInFont.A320:      return A320;
-                case BuiltInFont.A320Neo:  return A320NEO;
-                default:                            throw new NotImplementedException();
+                case BuiltInFont.A320Neo:   return A320NEO;
+                case BuiltInFont.B612:      return B612;
+                case BuiltInFont.EGA:       return EGA;
+                default:                    throw new NotImplementedException();
             }
         }
 
