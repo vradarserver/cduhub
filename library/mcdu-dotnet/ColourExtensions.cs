@@ -16,25 +16,36 @@ namespace McduDotNet
     {
         public static (byte,byte) ToUsbColourAndFontCode(this Colour colour, bool isSmallFont)
         {
-            int foreground;
-            switch(colour) {
-                case Colour.Amber:      foreground = 0x0021; break;
-                case Colour.Brown:      foreground = 0x0108; break;
-                case Colour.Cyan:       foreground = 0x0063; break;
-                case Colour.Green:      foreground = 0x0084; break;
-                case Colour.Grey:       foreground = 0x0129; break;
-                case Colour.Khaki:      foreground = 0x014A; break;
-                case Colour.Magenta:    foreground = 0x00A5; break;
-                case Colour.Red:        foreground = 0x00C6; break;
-                case Colour.White:      foreground = 0x0042; break;
-                case Colour.Yellow:     foreground = 0x00E7; break;
-                default:                throw new NotImplementedException();
-            }
+            var code = ToWinWingColourOrdinal(colour) * 0x21;
             if(isSmallFont) {
-                foreground += 0x16B;
+                code += 0x16B;
             }
 
-            return ((byte)(foreground & 0xff), (byte)((foreground >> 8) & 0xff));
+            return ((byte)(code & 0xff), (byte)((code >> 8) & 0xff));
+        }
+
+        /// <summary>
+        /// Returns the order in which the colour appears in WinWing's 32bb...1901...0002
+        /// and 32bb...1901...0003 packets. This feeds into the value to send for the colour
+        /// when setting foreground (and background?).
+        /// </summary>
+        /// <param name="colour"></param>
+        /// <returns></returns>
+        public static int ToWinWingColourOrdinal(this Colour colour)
+        {
+            switch(colour) {
+                case Colour.Amber:      return 1;
+                case Colour.White:      return 2;
+                case Colour.Cyan:       return 3;
+                case Colour.Green:      return 4;
+                case Colour.Magenta:    return 5;
+                case Colour.Red:        return 6;
+                case Colour.Yellow:     return 7;
+                case Colour.Brown:      return 8;
+                case Colour.Grey:       return 9;
+                case Colour.Khaki:      return 10;
+                default:                throw new NotImplementedException();
+            }
         }
 
         public static char ToDuplicateCheckCode(this Colour colour, bool isSmallFont)
