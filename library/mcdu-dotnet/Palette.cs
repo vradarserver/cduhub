@@ -72,8 +72,10 @@ namespace McduDotNet
         {
             var buffer = new StringBuilder();
 
-            foreach(var colour in colourArray) {
-                buffer.Append(colour.ToWinwingColourString());
+            if(colourArray != null) {
+                foreach(var colour in colourArray) {
+                    buffer.Append(colour.ToWinwingColourString());
+                }
             }
 
             return buffer.ToString();

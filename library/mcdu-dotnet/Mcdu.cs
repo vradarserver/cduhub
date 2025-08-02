@@ -40,7 +40,7 @@ namespace McduDotNet
         private readonly InputReport01 _InputReport01_Current = new InputReport01();
         private (UInt64, UInt64, UInt64) _PreviousInputReport01Digest = (0,0,0);
         private Leds _PreviousLeds;
-        private string _PaletteDuplicateCheckString;
+        private PaletteColour[] _CurrentPaletteColourArray;
 
         /// <inheritdoc/>
         public ProductId ProductId { get; }
@@ -317,7 +317,25 @@ namespace McduDotNet
                     SendStringPacket(packet);
                 }
 
-                RefreshDisplay();
+                // As of time of writing the packet map includes a pile of 32bb...1901 commands to
+                // set the colours to WinWing's defaults. If I remove this then the font goes weird.
+                // So for now I'm just resending the colour palette to override the colours that the
+                // font set up. This will need refining at some point once I understand the meaning
+                // of the 32bbs being sent at the end of the font setup.
+                // TODO: Try to remove colour setup from font upload.
+                //
+                // One advantage of resending the palette is that we also refresh the display, which
+                // we need to do anyway. If SendPalette() is removed in the future then you will have
+                // to replace it with RefreshDisplay.
+                if(_CurrentPaletteColourArray == null) {
+                    RefreshDisplay();
+                } else {
+                    SendPalette(
+                        _CurrentPaletteColourArray,
+                        skipDuplicateCheck: true,
+                        forceDisplayRefresh: true
+                    );
+                }
             }
         }
 
@@ -407,11 +425,24 @@ namespace McduDotNet
             bool forceDisplayRefresh = true
         )
         {
+            SendPalette(
+                Palette?.ToWinWingOrdinalColours(),
+                skipDuplicateCheck,
+                forceDisplayRefresh
+            );
+        }
+
+        private void SendPalette(
+            PaletteColour[] colourArray,
+            bool skipDuplicateCheck = false,
+            bool forceDisplayRefresh = true
+        )
+        {
             lock(_OutputLock) {
-                var palette = Palette;
-                var colourArray = palette.ToWinWingOrdinalColours();
                 var duplicateCheckString = Palette.BuildDuplicateCheckString(colourArray);
-                if(skipDuplicateCheck || _PaletteDuplicateCheckString != duplicateCheckString) {
+                var currentDuplicateCheckString = Palette.BuildDuplicateCheckString(_CurrentPaletteColourArray);
+                if(skipDuplicateCheck || currentDuplicateCheckString != duplicateCheckString) {
+                    _CurrentPaletteColourArray = colourArray;
                     byte seq = 1;
 
                     var packetBuffer = new StringBuilder();
@@ -466,8 +497,6 @@ namespace McduDotNet
                     if(forceDisplayRefresh) {
                         SendScreenToDisplay(Screen, skipDuplicateCheck: true);
                     }
-
-                    _PaletteDuplicateCheckString = duplicateCheckString;
                 }
             }
         }

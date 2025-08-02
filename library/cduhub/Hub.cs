@@ -258,8 +258,8 @@ namespace Cduhub
                 _SelectedPage = page;
 
                 if(page != null) {
-                    UploadFont(page.PageFont);
                     RefreshPalette(page);
+                    UploadFont(page.PageFont);
                     page.PreparePage();
                     _PageHistory.Push(page);
                     RefreshDisplay(page);
