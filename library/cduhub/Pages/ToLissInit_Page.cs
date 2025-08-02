@@ -52,6 +52,8 @@ namespace Cduhub.Pages
                 .LeftLabel(3, $"<cyan>{_Settings.Font.FontName}")
                 .LeftLabelTitle(4, "<small> FULL WIDTH")
                 .LeftLabel(4, $"<cyan>{_Form.YesNo(_Settings.Font.UseFullWidth)}")
+                .LeftLabelTitle(5, "<small> PALETTE")
+                .LeftLabel(5, $"<cyan>{_Settings.PaletteName}")
                 .LeftLabel(6, "<red><small>>BACK")
                 .RightLabel(6, "<magenta>RESET<");
             CopyScratchpadIntoDisplay();
@@ -78,6 +80,9 @@ namespace Cduhub.Pages
                 case Key.LineSelectLeft4:
                     _Form.ToggleBool(_Settings.Font.UseFullWidth, v => _Settings.Font.UseFullWidth = v);
                     break;
+                case Key.LineSelectLeft5:
+                    _Form.CyclePaletteNames(_Settings.PaletteName, v => _Settings.PaletteName = v, includeDefaultPaletteName: false);
+                    break;
                 case Key.LineSelectLeft6:
                     _Hub.ReturnToParent();
                     break;
@@ -96,6 +101,7 @@ namespace Cduhub.Pages
             _Settings.Host = defaults.Host;
             _Settings.Port = defaults.Port;
             _Settings.Font = defaults.Font;
+            _Settings.PaletteName = defaults.PaletteName;
             DrawPage();
         }
 

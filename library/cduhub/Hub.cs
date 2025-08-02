@@ -87,6 +87,16 @@ namespace Cduhub
         }
 
         /// <summary>
+        /// The default palette. This is user configurable.
+        /// </summary>
+        public Palette DefaultPalette
+        {
+            get {
+                return Palettes.LoadByConfigName(_Settings.PaletteName);
+            }
+        }
+
+        /// <summary>
         /// Raised when the hub wants the parent application to close.
         /// </summary>
         public event EventHandler CloseApplication;
@@ -249,6 +259,7 @@ namespace Cduhub
 
                 if(page != null) {
                     UploadFont(page.PageFont);
+                    RefreshPalette(page);
                     page.PreparePage();
                     _PageHistory.Push(page);
                     RefreshDisplay(page);
@@ -311,6 +322,14 @@ namespace Cduhub
             if(page == _SelectedPage) {
                 _Mcdu.Leds.CopyFrom(page.Leds);
                 _Mcdu.RefreshLeds();
+            }
+        }
+
+        public void RefreshPalette(Page page)
+        {
+            if(page == _SelectedPage) {
+                _Mcdu.Palette.CopyFrom(page.Palette);
+                _Mcdu.RefreshPalette();
             }
         }
 

@@ -130,4 +130,16 @@
   <data name="ega_font_21x31_json" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\ega-font-21x31.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="fbw_a32nx_palette_json" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\fbw-a32nx-palette.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="fenix_a320_palette_json" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\fenix-a320-palette.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="toliss_a32nx_palette_json" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\toliss-a32nx-palette.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="xplane_12_a330_palette_json" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\xplane-12-a330-palette.json;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
 </root>

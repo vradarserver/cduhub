@@ -9,6 +9,8 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Cduhub
 {
@@ -32,20 +34,36 @@ namespace Cduhub
         public void CycleFontNames(string fontName, Action<string> setFontName, bool includeDefaultFontName)
         {
             var fontNames = Fonts.GetAllConfigNames(includeDefaultFontName);
-            if(fontNames.Count > 0) {
+            CycleStrings(fontNames, fontName, setFontName);
+        }
+
+        public void CyclePaletteNames(string paletteName, Action<string> setPaletteName, bool includeDefaultPaletteName)
+        {
+            var paletteNames = Palettes.GetAllConfigNames(includeDefaultPaletteName);
+            CycleStrings(paletteNames, paletteName, setPaletteName);
+        }
+
+        public void CycleStrings(IEnumerable<string> allValues, string currentValue, Action<string> setNewValue, bool caseInsensitive = true)
+        {
+            var materialised = allValues?.ToArray() ?? Array.Empty<string>();
+            var comparison = caseInsensitive
+                ? StringComparison.InvariantCultureIgnoreCase
+                : StringComparison.InvariantCulture;
+
+            if(materialised.Length > 0) {
                 var idx = -1;
-                for(var i = 0;i < fontNames.Count;++i) {
-                    if(String.Equals(fontNames[i], fontName, StringComparison.InvariantCultureIgnoreCase)) {
+                for(var i = 0;i < materialised.Length;++i) {
+                    if(String.Equals(materialised[i], currentValue, comparison)) {
                         idx = i;
                         break;
                     }
                 }
 
-                if(idx == -1 || ++idx == fontNames.Count) {
+                if(idx == -1 || ++idx == materialised.Length) {
                     idx = 0;
                 }
 
-                setFontName(fontNames[idx]);
+                setNewValue(materialised[idx]);
                 _DrawPageAction();
             }
         }

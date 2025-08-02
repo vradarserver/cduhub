@@ -19,7 +19,7 @@ namespace Cduhub.Config
     {
         public override string GetName() => "cduhub-settings";
 
-        public override int GetCurrentVersion() => 1;
+        public override int GetCurrentVersion() => 2;
 
         public class BrightnessSettings
         {
@@ -51,6 +51,8 @@ namespace Cduhub.Config
         public OffsetSettings DisplayOffset { get; set; } = new OffsetSettings();
 
         public FontReference Font { get; set; } = new FontReference();
+
+        public string PaletteName { get; set; } = BuiltInPaletteExtensions.DefaultPaletteReference;
 
         public class CleanupSettings
         {

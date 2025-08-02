@@ -10,21 +10,17 @@
 
 namespace Cduhub.Config
 {
-    class ToLissUdpSettings : Settings
+    public class CustomPaletteSettings : Settings
     {
-        public override string GetName() => "toliss-udp-settings";
+        public override int GetCurrentVersion() => 1;
 
-        public override int GetCurrentVersion() => 2;
+        public override string GetName() => "custom-palettes";
 
-        public string Host { get; set; } = "127.0.0.1";
-
-        public int Port { get; set; } = 49000;
-
-        public FontReference Font { get; set; } = new FontReference() {
-            FontName = BuiltInFontExtensions.A320,
-            UseFullWidth = false,
+        public CustomPalette[] Palettes { get; set; } = new CustomPalette[] {
+            new CustomPalette() {
+                SettingsName = "Example",
+                Enable =       false,
+            },
         };
-
-        public string PaletteName { get; set; } = BuiltInPaletteExtensions.TOLISS_A32NX;
     }
 }

@@ -14,7 +14,7 @@ namespace Cduhub.Config
     {
         public override string GetName() => "xplane12-rest-settings";
 
-        public override int GetCurrentVersion() => 1;
+        public override int GetCurrentVersion() => 2;
 
         public string Host { get; set; } = "localhost";
 
@@ -24,5 +24,7 @@ namespace Cduhub.Config
             FontName = BuiltInFontExtensions.B612,
             UseFullWidth = false,
         };
+
+        public string PaletteName { get; set; } = BuiltInPaletteExtensions.XPLANE12_A330;
     }
 }

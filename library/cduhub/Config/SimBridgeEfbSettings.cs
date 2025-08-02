@@ -14,7 +14,7 @@ namespace Cduhub.Config
     {
         public override string GetName() => "simbridge-efb-settings";
 
-        public override int GetCurrentVersion() => 1;
+        public override int GetCurrentVersion() => 2;
 
         public string Host { get; set; } = "localhost";
 
@@ -24,5 +24,7 @@ namespace Cduhub.Config
             FontName = BuiltInFontExtensions.A320NEO,
             UseFullWidth = true,
         };
+
+        public string PaletteName { get; set; } = BuiltInPaletteExtensions.FBW_A32NX;
     }
 }

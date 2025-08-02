@@ -99,5 +99,45 @@ namespace Cduhub {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] fbw_a32nx_palette_json {
+            get {
+                object obj = ResourceManager.GetObject("fbw_a32nx_palette_json", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] fenix_a320_palette_json {
+            get {
+                object obj = ResourceManager.GetObject("fenix_a320_palette_json", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] toliss_a32nx_palette_json {
+            get {
+                object obj = ResourceManager.GetObject("toliss_a32nx_palette_json", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] xplane_12_a330_palette_json {
+            get {
+                object obj = ResourceManager.GetObject("xplane_12_a330_palette_json", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

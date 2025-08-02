@@ -26,6 +26,8 @@ namespace Cduhub
 
         public Leds Leds { get; }
 
+        public virtual Palette Palette => _Hub.DefaultPalette;
+
         public virtual FontReference PageFont => _Hub.DefaultFontReference;
 
         public virtual Key MenuKey { get; } = Key.McduMenu;
@@ -161,11 +163,24 @@ namespace Cduhub
             RefreshDisplay();
         }
 
-        protected virtual FontReference LoadFromSettings<T>(Func<T, FontReference> extractFromSettings)
-            where T: Settings, new()
+        protected virtual TValue LoadFromSettings<TSettings, TValue>(Func<TSettings, TValue> extractFromSettings)
+            where TSettings: Settings, new()
         {
-            var settings = ConfigStorage.Load<T>();
+            var settings = ConfigStorage.Load<TSettings>();
             return extractFromSettings(settings);
+        }
+
+        protected virtual FontReference SettingsFont<TSettings>(Func<TSettings, FontReference> extractFromSettings)
+            where TSettings: Settings, new()
+        {
+            return LoadFromSettings<TSettings, FontReference>(extractFromSettings);
+        }
+
+        protected virtual Palette SettingsPalette<TSettings>(Func<TSettings, string> extractPaletteName)
+            where TSettings: Settings, new()
+        {
+            var paletteName = LoadFromSettings<TSettings, string>(extractPaletteName);
+            return Palettes.LoadByConfigName(paletteName);
         }
     }
 }

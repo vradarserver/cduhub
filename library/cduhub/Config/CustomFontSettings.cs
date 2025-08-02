@@ -28,11 +28,7 @@ namespace Cduhub.Config
 
             public string NormalisedSettingsName()
             {
-                var result = (SettingsName ?? "").Trim();
-                if(result.Length > 24) {
-                    result = result.Substring(0, 24);
-                }
-                return result;
+                return Settings.NormaliseMcduUsableName(SettingsName);
             }
         }
 

@@ -20,7 +20,9 @@ namespace Cduhub.Pages
 
         public override bool DisableMenuKey => true;
 
-        public override FontReference PageFont => LoadFromSettings<XPlane12RestSettings>(r => r.Font);
+        public override FontReference PageFont => SettingsFont<XPlane12RestSettings>(r => r.Font);
+
+        public override Palette Palette => SettingsPalette<XPlane12RestSettings>(r => r.PaletteName);
 
         public XPlane_Page(Hub hub) : base(hub)
         {

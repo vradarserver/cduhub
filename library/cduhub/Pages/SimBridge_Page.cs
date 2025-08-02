@@ -20,7 +20,9 @@ namespace Cduhub.Pages
 
         public override bool DisableMenuKey => true;
 
-        public override FontReference PageFont => LoadFromSettings<SimBridgeEfbSettings>(r => r.Font);
+        public override FontReference PageFont => SettingsFont<SimBridgeEfbSettings>(r => r.Font);
+
+        public override Palette Palette => SettingsPalette<SimBridgeEfbSettings>(r => r.PaletteName);
 
         public SimBridge_Page(Hub hub) : base(hub)
         {

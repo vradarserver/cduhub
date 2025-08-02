@@ -20,7 +20,9 @@ namespace Cduhub.Pages
 
         public override bool DisableMenuKey => true;
 
-        public override FontReference PageFont => LoadFromSettings<FenixEfbSettings>(r => r.Font);
+        public override FontReference PageFont => SettingsFont<FenixEfbSettings>(r => r.Font);
+
+        public override Palette Palette => SettingsPalette<FenixEfbSettings>(r => r.PaletteName);
 
         public Fenix_Page(Hub hub) : base(hub)
         {

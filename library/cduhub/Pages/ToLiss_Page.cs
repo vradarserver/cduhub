@@ -20,7 +20,9 @@ namespace Cduhub.Pages
 
         public override bool DisableMenuKey => true;
 
-        public override FontReference PageFont => LoadFromSettings<ToLissUdpSettings>(r => r.Font);
+        public override FontReference PageFont => SettingsFont<ToLissUdpSettings>(r => r.Font);
+
+        public override Palette Palette => SettingsPalette<ToLissUdpSettings>(r => r.PaletteName);
 
         public ToLiss_Page(Hub hub) : base(hub)
         {
