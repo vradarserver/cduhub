@@ -21,7 +21,7 @@ namespace McduDotNet
                 code += 0x16B;
             }
 
-            return ((byte)(code & 0xff), (byte)((code >> 8) & 0xff));
+            return ((byte)(code & 0xff), (byte)((code & 0xff00) >> 8));
         }
 
         /// <summary>
@@ -34,6 +34,7 @@ namespace McduDotNet
         public static int ToWinWingColourOrdinal(this Colour colour)
         {
             switch(colour) {
+                case Colour.Black:      return 0;
                 case Colour.Amber:      return 1;
                 case Colour.White:      return 2;
                 case Colour.Cyan:       return 3;
@@ -51,6 +52,7 @@ namespace McduDotNet
         public static char ToDuplicateCheckCode(this Colour colour, bool isSmallFont)
         {
             switch(colour) {
+                case Colour.Black:      return isSmallFont ? 'l' : 'L';
                 case Colour.Amber:      return isSmallFont ? 'a' : 'A';
                 case Colour.Brown:      return isSmallFont ? 'b' : 'B';
                 case Colour.Cyan:       return isSmallFont ? 'c' : 'C';

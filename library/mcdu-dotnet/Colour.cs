@@ -15,6 +15,8 @@ namespace McduDotNet
     /// </summary>
     public enum Colour
     {
+        Black,
+
         Amber,
 
         Brown,
