@@ -10,7 +10,7 @@
 
 using System.CommandLine;
 
-namespace Characters
+namespace Colours
 {
     static class Options
     {
@@ -20,14 +20,6 @@ namespace Characters
 
         public static Option<bool> UseFullWidthOption = new("--fullWidth", "-fw") {
             Description = "Use full display width",
-        };
-
-        public static Option<int> XOffsetOption = new("--xOffset", "-x") {
-            Description = "Set X offset",
-        };
-
-        public static Option<int> YOffsetOption = new("--yOffset", "-y") {
-            Description = "Set Y offset",
         };
     }
 }

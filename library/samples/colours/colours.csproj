@@ -7,6 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+      <PackageReference Include="System.CommandLine" Version="2.0.0-beta6.25358.103" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\cduhub-commandline\cduhub-commandline.csproj" />
         <ProjectReference Include="..\..\mcdu-dotnet\mcdu-dotnet.csproj" />
     </ItemGroup>
 

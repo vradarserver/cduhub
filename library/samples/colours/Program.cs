@@ -9,7 +9,10 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.CommandLine;
+using Cduhub.CommandLine;
 using McduDotNet;
+using Newtonsoft.Json;
 
 namespace Colours
 {
@@ -30,11 +33,52 @@ namespace Colours
         static int _StartColourOffset;
         static bool _FirstSetIsSmall;
 
-        static void Main(string[] _)
+        static int Main(string[] args)
+        {
+            var exitCode = 0;
+
+            try {
+                var worked = true;
+
+                RootCommand rootCommand = new("Display colours on the CDU device") {
+                    Options.FontFileInfoOption,
+                    Options.UseFullWidthOption,
+                };
+                rootCommand.EnforceInHouseStandards();
+                rootCommand.SetAction(
+                    parseResult => {
+                        ShowColours(
+                            parseResult.GetValue(Options.FontFileInfoOption),
+                            parseResult.GetValue(Options.UseFullWidthOption)
+                        );
+                    }
+                );
+                exitCode = rootCommand.Parse(args).Invoke();
+                if(!worked) {
+                    exitCode = 1;
+                }
+            } catch(Exception ex) {
+                Console.WriteLine("Caught exception during processing:");
+                Console.WriteLine(ex);
+                exitCode = 2;
+            }
+
+            return exitCode;
+        }
+
+        static void ShowColours(
+            FileInfo fontFileInfo,
+            bool useFullWidth
+        )
         {
             using(var mcdu = McduFactory.ConnectLocal()) {
                 Console.WriteLine($"Using {mcdu.ProductId} MCDU");
                 mcdu.KeyDown += Mcdu_KeyDown;
+
+                var font = LoadFont(fontFileInfo);
+                if(font != null) {
+                    mcdu.UseFont(font, useFullWidth);
+                }
 
                 DrawScreen(mcdu);
 
@@ -53,11 +97,7 @@ namespace Colours
 
             mcdu.Output
                 .Line(6)
-                .White()
-                .CentreFor("←↑→↓ and DIR")
-                .Large().Write("←↑→↓")
-                .Small().Write(" and ")
-                .Large().Write("DIR")
+                .Centered("<white>←↑→↓ <small>AND<large> DIR")
                 .Line(-5);
 
             ShowColourPairs(mcdu.Output, _Colours, _StartColourOffset, smallFont: !_FirstSetIsSmall);
@@ -89,8 +129,8 @@ namespace Colours
         {
             output
                 .Small(smallFont)
-                .LeftToRight().Colour(left).Write(left)
-                .RightToLeft().Color(right).Write(right)
+                .LeftToRight().Colour(left).Write(left.ToString().ToUpper())
+                .RightToLeft().Color(right).Write(right.ToString().ToUpper())
                 .LeftToRight().Newline();
         }
 
@@ -126,6 +166,26 @@ namespace Colours
             if(redrawScreen) {
                 DrawScreen(mcdu);
             }
+        }
+
+        private static McduFontFile LoadFont(FileInfo fileInfo)
+        {
+            McduFontFile result = null;
+
+            if(fileInfo != null) {
+                if(!fileInfo.Exists) {
+                    throw new ArgumentException($"{fileInfo} does not exist");
+                } else {
+                    try {
+                        var json = File.ReadAllText(fileInfo.FullName);
+                        result = JsonConvert.DeserializeObject<McduFontFile>(json);
+                    } catch(Exception ex) {
+                        throw new ArgumentException($"Could not parse font from {fileInfo}", ex);
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }
