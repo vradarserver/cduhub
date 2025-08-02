@@ -160,7 +160,25 @@ namespace Colours
                 case Key.RightArrow:    scrollBackwards(1); break;
                 case Key.LeftArrow:     scrollForwards(1); break;
                 case Key.Dir:           _FirstSetIsSmall = !_FirstSetIsSmall; break;
-                default:                redrawScreen = false; break;
+                case Key.Init:
+                    mcdu.Palette.White.Set(0xff, 0xff, 0xff);
+                    mcdu.RefreshPalette();
+                    break;
+                case Key.SecFPln:
+                    mcdu.Palette.White.Set(0xff, 0x00, 0x00);
+                    mcdu.RefreshPalette();
+                    break;
+                case Key.AtcComm:
+                    mcdu.Palette.White.Set(0x00, 0xff, 0x00);
+                    mcdu.RefreshPalette();
+                    break;
+                case Key.McduMenu:
+                    mcdu.Palette.White.Set(0x00, 0x00, 0xff);
+                    mcdu.RefreshPalette();
+                    break;
+                default:
+                    redrawScreen = false;
+                    break;
             }
 
             if(redrawScreen) {

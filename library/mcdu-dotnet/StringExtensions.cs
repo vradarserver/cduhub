@@ -25,7 +25,7 @@ namespace McduDotNet
             for(int chIdx = 0, bufferIdx = 0;chIdx < hexString.Length;++chIdx) {
                 var nibble = ConvertNibble(hexString[chIdx]);
                 b |= low
-                    ? (byte)nibble
+                    ? nibble
                     : (byte)(nibble << 4);
                 if(low) {
                     buffer[bufferIdx++] = b;
@@ -40,14 +40,30 @@ namespace McduDotNet
             return buffer;
         }
 
-        private static int ConvertNibble(char ch)
+        public static byte ConvertNibble(char ch)
         {
+            if(!TryConvertNibble(ch, out var result)) {
+                throw new InvalidDataException($"{ch} is not a hex digit");
+            }
+            return result;
+        }
+
+        public static bool TryConvertNibble(char ch, out byte nibble)
+        {
+            var result = true;
             ch = char.ToLower(ch);
-            return ch >= '0' && ch <= '9'
-                ? ch - '0'
-                : ch >= 'a' && ch <= 'f'
-                    ? (ch - 'a') + 10
-                    : throw new InvalidDataException($"{ch} is not a hex digit");
+            if(ch >= '0' && ch <= '9') {
+                nibble = (byte)(ch - '0');
+            } else if(ch >= 'a' && ch <= 'f') {
+                nibble = (byte)((ch - 'a') + 10);
+            } else if(ch >= 'A' && ch <= 'F') {
+                nibble = (byte)((ch - 'A') + 10);
+            } else {
+                nibble = 0;
+                result = false;
+            }
+
+            return result;
         }
     }
 }

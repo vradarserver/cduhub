@@ -40,6 +40,7 @@ namespace McduDotNet
         private readonly InputReport01 _InputReport01_Current = new InputReport01();
         private (UInt64, UInt64, UInt64) _PreviousInputReport01Digest = (0,0,0);
         private Leds _PreviousLeds;
+        private string _PaletteDuplicateCheckString;
 
         /// <inheritdoc/>
         public ProductId ProductId { get; }
@@ -52,6 +53,9 @@ namespace McduDotNet
 
         /// <inheritdoc/>
         public Leds Leds { get; }
+
+        /// <inheritdoc/>
+        public Palette Palette { get; }
 
         /// <inheritdoc/>
         public event EventHandler<KeyEventArgs> KeyDown;
@@ -150,6 +154,7 @@ namespace McduDotNet
             Leds = new Leds();
             Screen = new Screen();
             Output = new Compositor(Screen);
+            Palette = new Palette();
             HidSharp.DeviceList.Local.Changed += HidSharpDeviceList_Changed;
         }
 
@@ -396,6 +401,77 @@ namespace McduDotNet
             }
         }
 
+        /// <inheritdoc/>
+        public void RefreshPalette(
+            bool skipDuplicateCheck = false,
+            bool forceDisplayRefresh = true
+        )
+        {
+            lock(_OutputLock) {
+                var palette = Palette;
+                var colourArray = palette.ToWinWingOrdinalColours();
+                var duplicateCheckString = Palette.BuildDuplicateCheckString(colourArray);
+                if(skipDuplicateCheck || _PaletteDuplicateCheckString != duplicateCheckString) {
+                    byte seq = 1;
+
+                    var packetBuffer = new StringBuilder();
+                    void sendPacketBuffer()
+                    {
+                        if(packetBuffer.Length > 0) {
+                            while(packetBuffer.Length < 128) {
+                                packetBuffer.Append("00");
+                            }
+                            SendStringPacket(packetBuffer.ToString());
+                            packetBuffer.Clear();
+                        }
+                    }
+                    void addToPacketBuffer(int f0Code, string chunk)
+                    {
+                        for(var idx = 0;idx < chunk.Length;++idx) {
+                            if(packetBuffer.Length == 128) {
+                                sendPacketBuffer();
+                            }
+                            if(packetBuffer.Length == 0) {
+                                packetBuffer.Append("f000");
+                                packetBuffer.Append(seq++.ToString("x2"));
+                                packetBuffer.Append(f0Code.ToString("x2"));
+                            }
+                            packetBuffer.Append(chunk[idx]);
+                        }
+                    }
+
+                    addToPacketBuffer(0x1f, "32bb00001901000004170100000e00000001000500000002");
+                    sendPacketBuffer();
+                    addToPacketBuffer(0x3c, "32bb00001901000004170100000e0000000100060000000300000000000000");
+
+                    var colourSeq = 4;
+                    foreach(var colour in colourArray) {
+                        var setForeground = $"32bb00001901000004170100000e0000000200{colour.ToWinwingColourString()}{colourSeq++:x2}00000000000000";
+                        addToPacketBuffer(0x3c, setForeground);
+                    }
+                    foreach(var colour in colourArray) {
+                        var setBackground = $"32bb00001901000004170100000e0000000300{colour.ToWinwingColourString()}{colourSeq++:x2}00000000000000";
+                        addToPacketBuffer(0x3c, setBackground);
+                    }
+                    addToPacketBuffer(0x3c, $"32bb00001901000004170100000e000000040000000000{colourSeq++:x2}00000000000000");
+                    addToPacketBuffer(0x3c, $"32bb00001901000004170100000e000000040001000000{colourSeq++:x2}00000000000000");
+                    addToPacketBuffer(0x2b, $"32bb00001901000004170100000e000000040002000000{colourSeq++:x2}00000000000000");
+                    addToPacketBuffer(0x2b, $"32bb0000050100000417010001");
+                    sendPacketBuffer();
+                    addToPacketBuffer(0x34, "32bb00001a01000025170100000100000002");
+                    addToPacketBuffer(0x34, "32bb00001c010000251701000000000000");
+                    addToPacketBuffer(0x34, "32bb0000050100002517010001");
+                    sendPacketBuffer();
+
+                    if(forceDisplayRefresh) {
+                        SendScreenToDisplay(Screen, skipDuplicateCheck: true);
+                    }
+
+                    _PaletteDuplicateCheckString = duplicateCheckString;
+                }
+            }
+        }
+
         private void InitialiseDisplayPacket()
         {
             _DisplayPacket[0] = 0xF2;
@@ -441,6 +517,23 @@ namespace McduDotNet
                 }
                 SendPacket(_DisplayPacket);
                 InitialiseDisplayPacket();
+            }
+        }
+
+        private void SendStringPacket(int packetSize, string packet)
+        {
+            if(packet.Length % 2 != 0) {
+                throw new InvalidOperationException($"{packet} is not an even length");
+            }
+            if(packet.Length == packetSize * 2) {
+                SendStringPacket(packet);
+            } else {
+                var buffer = new StringBuilder(packet);
+                buffer.Append(packet);
+                while(buffer.Length < packet.Length) {
+                    buffer.Append("00");
+                }
+                SendStringPacket(buffer.ToString());
             }
         }
 

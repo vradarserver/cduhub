@@ -33,6 +33,11 @@ namespace McduDotNet
         Leds Leds { get; }
 
         /// <summary>
+        /// The MCDU's colour palette.
+        /// </summary>
+        Palette Palette { get; }
+
+        /// <summary>
         /// Gets and sets the display brightness as a percentage between 0 and 100.
         /// </summary>
         int DisplayBrightnessPercent { get; set; }
@@ -94,6 +99,21 @@ namespace McduDotNet
         /// refresh. Setting this parameter to true skips that test.
         /// </param>
         void RefreshLeds(bool skipDuplicateCheck = false);
+
+        /// <summary>
+        /// Copies the content of <see cref="Palette"/> to the device.
+        /// </summary>
+        /// <param name="skipDuplicateCheck">
+        /// The palette is not normally refreshed if the library thinks that nothing has
+        /// changed since the last refresh. Setting this parameter to true skips that
+        /// test.
+        /// </param>
+        /// <param name="forceDisplayRefresh">
+        /// Refreshing the palette has no effect on text already on screen. Setting this
+        /// flag to true calls <see cref="RefreshDisplay"/> with the duplicate check
+        /// skipped.
+        /// </param>
+        void RefreshPalette(bool skipDuplicateCheck = false, bool forceDisplayRefresh = true);
 
         /// <summary>
         /// Sets the backlight, display and LED brightnesses even if the code believes that
