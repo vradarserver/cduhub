@@ -81,6 +81,15 @@ you can call `RefreshBrightnesses`.
 
 
 
+### Colours
+
+The display supports a palette of ten colours. The names and default values of the
+colours follow WinWing's defaults, but you are free to reassign the colours to anything
+you like via the `Palette` property. After changing the palette you need to call
+`RefreshPalette` to send your changes to the device.
+
+
+
 ### Cleanup
 
 The MCDU device will retain its state after your program stops driving it - I.E. it will
