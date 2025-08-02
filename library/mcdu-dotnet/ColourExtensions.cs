@@ -16,35 +16,25 @@ namespace McduDotNet
     {
         public static (byte,byte) ToUsbColourAndFontCode(this Colour colour, bool isSmallFont)
         {
-            if(isSmallFont) {
-                switch(colour) {
-                    case Colour.Amber:      return (0x8C, 0x01);
-                    case Colour.Brown:      return (0x73, 0x02);
-                    case Colour.Cyan:       return (0xCE, 0x01);
-                    case Colour.Green:      return (0xEF, 0x01);
-                    case Colour.Grey:       return (0x94, 0x02);
-                    case Colour.Khaki:      return (0xB5, 0x02);
-                    case Colour.Magenta:    return (0x10, 0x02);
-                    case Colour.Red:        return (0x31, 0x02);
-                    case Colour.White:      return (0xAD, 0x01);
-                    case Colour.Yellow:     return (0x52, 0x02);
-                    default:                throw new NotImplementedException();
-                }
-            } else {
-                switch(colour) {
-                    case Colour.Amber:      return (0x21, 0x00);
-                    case Colour.Brown:      return (0x08, 0x01);
-                    case Colour.Cyan:       return (0x63, 0x00);
-                    case Colour.Green:      return (0x84, 0x00);
-                    case Colour.Grey:       return (0x29, 0x01);
-                    case Colour.Khaki:      return (0x4A, 0x01);
-                    case Colour.Magenta:    return (0xA5, 0x00);
-                    case Colour.Red:        return (0xC6, 0x00);
-                    case Colour.White:      return (0x42, 0x00);
-                    case Colour.Yellow:     return (0xE7, 0x00);
-                    default:                throw new NotImplementedException();
-                }
+            int foreground;
+            switch(colour) {
+                case Colour.Amber:      foreground = 0x0021; break;
+                case Colour.Brown:      foreground = 0x0108; break;
+                case Colour.Cyan:       foreground = 0x0063; break;
+                case Colour.Green:      foreground = 0x0084; break;
+                case Colour.Grey:       foreground = 0x0129; break;
+                case Colour.Khaki:      foreground = 0x014A; break;
+                case Colour.Magenta:    foreground = 0x00A5; break;
+                case Colour.Red:        foreground = 0x00C6; break;
+                case Colour.White:      foreground = 0x0042; break;
+                case Colour.Yellow:     foreground = 0x00E7; break;
+                default:                throw new NotImplementedException();
             }
+            if(isSmallFont) {
+                foreground += 0x16B;
+            }
+
+            return ((byte)(foreground & 0xff), (byte)((foreground >> 8) & 0xff));
         }
 
         public static char ToDuplicateCheckCode(this Colour colour, bool isSmallFont)
