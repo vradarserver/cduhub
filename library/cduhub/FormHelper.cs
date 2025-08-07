@@ -31,6 +31,22 @@ namespace Cduhub
             _DrawPageAction();
         }
 
+        public bool IntegerValue(
+            string text,
+            Action<int> setValue,
+            int minValue = int.MinValue,
+            int maxValue = int.MaxValue
+        )
+        {
+            var result = int.TryParse(text, out var value);
+            result = result && value >= minValue && value <= maxValue;
+            if(result) {
+                setValue(value);
+                _DrawPageAction();
+            }
+            return result;
+        }
+
         public void CycleFontNames(string fontName, Action<string> setFontName, bool includeDefaultFontName)
         {
             var fontNames = Fonts.GetAllConfigNames(includeDefaultFontName);

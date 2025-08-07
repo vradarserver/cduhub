@@ -9,6 +9,7 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.Text;
 
 namespace McduDotNet
 {
@@ -28,9 +29,12 @@ namespace McduDotNet
             return this;
         }
 
-        public Compositor ClearRow()
+        public Compositor ClearRow(int countRows = 1)
         {
-            _Screen.CurrentRow.Clear();
+            for(var count = 0;count < countRows;++count) {
+                var row = Math.Min(_Screen.Rows.Length - 1, _Screen.Line + count);
+                _Screen.Rows[row].Clear();
+            }
             return this;
         }
 
@@ -67,6 +71,10 @@ namespace McduDotNet
         public Compositor BottomLine(bool resetColumn = true) => Line(_Screen.Rows.Length - 1, resetColumn);
 
         public Compositor MiddleLine(bool resetColumn = true) => Line(_Screen.Rows.Length / 2, resetColumn);
+
+        public Compositor LabelLine(int line, bool resetColumn = true) => Line(line * 2, resetColumn);
+
+        public Compositor LabelTitleLine(int line, bool resetColumn = true) => Line((line * 2) - 1, resetColumn);
 
         public Compositor Column(int column)
         {
@@ -186,7 +194,7 @@ namespace McduDotNet
 
         public Compositor LeftLabelTitle(int line, string labelTitle)
         {
-            _Screen.Line = (line * 2) - 1;
+            LabelTitleLine(line, resetColumn: false);
             _Screen.ForLeftToRight();
             ApplyCompositorString(labelTitle);
             return this;
@@ -194,7 +202,7 @@ namespace McduDotNet
 
         public Compositor LeftLabel(int line, string label)
         {
-            _Screen.Line = line * 2;
+            LabelLine(line, resetColumn: false);
             _Screen.ForLeftToRight();
             ApplyCompositorString(label);
             return this;
@@ -202,7 +210,7 @@ namespace McduDotNet
 
         public Compositor RightLabelTitle(int line, string labelTitle)
         {
-            _Screen.Line = (line * 2) - 1;
+            LabelTitleLine(line, resetColumn: false);
             _Screen.ForRightToLeft();
             ApplyCompositorString(labelTitle);
             _Screen.ForLeftToRight();
@@ -211,7 +219,7 @@ namespace McduDotNet
 
         public Compositor RightLabel(int line, string label)
         {
-            _Screen.Line = line * 2;
+            LabelLine(line, resetColumn: false);
             _Screen.ForRightToLeft();
             ApplyCompositorString(label);
             _Screen.ForLeftToRight();
@@ -340,6 +348,26 @@ namespace McduDotNet
         public Compositor Write(DateTimeOffset value, string format, IFormatProvider formatProvider) => WriteRaw(value.ToString(format, formatProvider));
 
         public Compositor Write(object obj) => WriteRaw(obj?.ToString() ?? "");
+
+        public Compositor WrapText(
+            string text,
+            int maxLines = 2,
+            bool clearLines = false
+        )
+        {
+            var lines = text?.WrapAtWhitespace(Metrics.Columns);
+            for(var count = 0;count < maxLines;++count) {
+                if(clearLines) {
+                    ClearRow();
+                }
+                var line = count < lines.Count ? lines[count] : null;
+                if(line != null) {
+                    WriteRaw(line);
+                }
+                Newline();
+            }
+            return this;
+        }
 
         private void ApplyCompositorString(string textWithEmbedding)
         {

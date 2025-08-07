@@ -8,36 +8,16 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using McduDotNet;
-
-namespace Cduhub.Pages
+namespace Cduhub.Config
 {
-    class Root_Page : Page
+    public class MetarSettings : Settings
     {
-        public Root_Page(Hub hub) : base(hub)
-        {
-        }
+        public override int GetCurrentVersion() => 1;
 
-        public override void OnPreparePage()
-        {
-            Output
-                .Centred("<green>CDU <small>HUB")
-                .LeftLabel(1, ">CLOCK")
-                .LeftLabel(2, ">WEATHER")
-                .RightLabel(1, "FLIGHT SIMS<")
-                .RightLabel(6, "<red>QUIT<");
+        public override string GetName() => "metar-settings";
 
-            Leds.Mcdu = Leds.Menu = true;
-        }
+        public string StationCode { get; set; } = "EGLL";
 
-        public override void OnKeyDown(Key key)
-        {
-            switch(key) {
-                case Key.LineSelectLeft1:   _Hub.CreateAndSelectPage<Clock_Page>(); break;
-                case Key.LineSelectLeft2:   _Hub.CreateAndSelectPage<WeatherMenu_Page>(); break;
-                case Key.LineSelectRight1:  _Hub.CreateAndSelectPage<FlightSimMenu_Page>(); break;
-                case Key.LineSelectRight6:  _Hub.Shutdown(); break;
-            }
-        }
+        public int RefreshMinutes { get; set; } = 15;
     }
 }

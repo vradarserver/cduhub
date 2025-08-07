@@ -8,7 +8,9 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace McduDotNet
 {
@@ -62,6 +64,42 @@ namespace McduDotNet
                 nibble = 0;
                 result = false;
             }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Splits a long string into lines at whitespace characters. All whitespace is
+        /// turned into a single space. Newlines are preserved in the output. Lines can
+        /// exceed <paramref name="lineLength"/> if they do not contain whitespace.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="lineLength"></param>
+        /// <returns></returns>
+        public static IReadOnlyList<string> WrapAtWhitespace(this string text, int lineLength)
+        {
+            var result = new List<string>();
+            var chunks = (text ?? "").Split(' ', '\t');
+            var lineBuffer = new StringBuilder();
+
+            void addLineToResult()
+            {
+                if(lineBuffer.Length > 0) {
+                    result.Add(lineBuffer.ToString());
+                    lineBuffer.Clear();
+                }
+            }
+
+            foreach(var chunk in chunks) {
+                if(chunk.Length + lineBuffer.Length + (lineBuffer.Length > 0 ? 1 : 0) > lineLength) {
+                    addLineToResult();
+                }
+                if(lineBuffer.Length > 0) {
+                    lineBuffer.Append(' ');
+                }
+                lineBuffer.Append(chunk);
+            }
+            addLineToResult();
 
             return result;
         }

@@ -8,67 +8,31 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Linq;
-using System.Net;
+using McduDotNet;
 
-namespace Cduhub
+namespace Cduhub.Pages
 {
-    public static class Validate
+    class WeatherMenu_Page : Page
     {
-        public static bool IsValidForAirportIcao(string icao)
+        public WeatherMenu_Page(Hub hub) : base(hub)
         {
-            return icao?.Length == 4
-                && !icao.Any(ch => ch < 'A' || ch > 'Z');
         }
 
-        public static bool IsValidForWebSocketUri(
-            string host = "localhost",
-            int port = 1234
-        )
+        public override void OnPreparePage()
         {
-            bool result;
-            try {
-                result = Uri.TryCreate($"ws://{host}:{port}/endpoint", UriKind.Absolute, out _);
-            } catch {
-                result = false;
-            }
-
-            return result;
+            Output
+                .Centred("<green>WEATHER")
+                .Newline(2)
+                .LeftLabel(1, ">METAR")
+                .LeftLabel(6, "<red><small>>BACK");
         }
 
-        public static bool IsValidForHttpEndPoint(
-            string host = "127.0.0.1",
-            int port = 1234
-        )
+        public override void OnKeyDown(Key key)
         {
-            bool result;
-            try {
-                result = Uri.TryCreate($"http://{host}:{port}/endpoint", UriKind.Absolute, out _);
-            } catch {
-                result = false;
+            switch(key) {
+                case Key.LineSelectLeft1:   _Hub.CreateAndSelectPage<Metar_Page>(); break;
+                case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
             }
-
-            return result;
-        }
-
-        public static bool IsValidForUdpEndPoint(
-            string host = "127.0.0.1",
-            int port = 1234
-        )
-        {
-            bool result;
-            try {
-                result = IPAddress.TryParse(host, out var address);
-                result = result && port >= IPEndPoint.MinPort && port <= IPEndPoint.MaxPort;
-                if(result) {
-                    _ = new IPEndPoint(address, port);
-                }
-            } catch {
-                result = false;
-            }
-
-            return result;
         }
     }
 }
