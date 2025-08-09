@@ -47,9 +47,9 @@ namespace Cduhub.FlightSim
         bool IsObserverMcduPresent { get; }
 
         /// <summary>
-        /// The ID of the selected simulated MCDU.
+        /// The user of the selected simulated MCDU.
         /// </summary>
-        ProductId SelectedBufferProductId { get; set; }
+        DeviceUser SelectedBufferDeviceUser { get; set; }
 
         /// <summary>
         /// The content of the selected simulated MCDU.

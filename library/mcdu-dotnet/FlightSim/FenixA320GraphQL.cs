@@ -40,11 +40,14 @@ namespace McduDotNet.FlightSim
         public const string GraphQLSystemSwitchesPrefix =   "system.switches";
 
         /// <summary>
-        /// Converts from an MCDU product ID to a Fenix display / CDU number.
+        /// Converts from a <see cref="DeviceUser"/> to a Fenix display / CDU number.
         /// </summary>
-        /// <param name="productId"></param>
+        /// <param name="deviceUser"></param>
         /// <returns></returns>
-        public static int ProductIdToFenixMcduNumber(ProductId productId) => productId == ProductId.Captain ? 1 : 2;
+        public static int DeviceUserToFenixMcduNumber(DeviceUser deviceUser)
+        {
+            return deviceUser == DeviceUser.Captain ? 1 : 2;
+        }
 
         /// <summary>
         /// Parses the value sent by Fenix's GraphQL aircraft.mcdu???.display subscription into an MCDU screen
@@ -148,12 +151,12 @@ namespace McduDotNet.FlightSim
         /// ID.
         /// </summary>
         /// <param name="key"></param>
-        /// <param name="mcduProduct"></param>
+        /// <param name="deviceUser"></param>
         /// <returns></returns>
-        public static string GraphQLKeyName(Key key, ProductId mcduProduct)
+        public static string GraphQLKeyName(Key key, DeviceUser deviceUser)
         {
             var cduKey = key.ToFenixEfbMcduKeyName();
-            var cduNum = ProductIdToFenixMcduNumber(mcduProduct);
+            var cduNum = DeviceUserToFenixMcduNumber(deviceUser);
 
             return cduKey == ""
                 ? ""

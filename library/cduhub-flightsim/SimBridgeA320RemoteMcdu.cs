@@ -54,9 +54,10 @@ namespace Cduhub.FlightSim
         /// <summary>
         /// Creates a new object.
         /// </summary>
+        /// <param name="deviceuser"></param>
         /// <param name="masterScreen"></param>
         /// <param name="masterLeds"></param>
-        public SimBridgeA320RemoteMcdu(Screen masterScreen, Leds masterLeds) : base(masterScreen, masterLeds)
+        public SimBridgeA320RemoteMcdu(DeviceUser deviceUser, Screen masterScreen, Leds masterLeds) : base(deviceUser, masterScreen, masterLeds)
         {
         }
 
@@ -74,7 +75,7 @@ namespace Cduhub.FlightSim
         {
             var keyCode = key.ToSimBridgeRemoteMcduKeyName();
             if(pressed && keyCode != "" && IsConnected) {
-                var leftRight = SelectedBufferProductId == ProductId.Captain
+                var leftRight = SelectedBufferDeviceUser == DeviceUser.Captain
                     ? "left"
                     : "right";
                 var eventCode = $"event:{leftRight}:{keyCode}";

@@ -23,7 +23,7 @@ namespace Cduhub
     public class Hub : IDisposable
     {
         private bool _ShuttingDown;
-        private IMcdu _Mcdu;
+        private ICdu _Cdu;
         private Page _SelectedPage;
         private Page _RootPage;
         private int _ConnectingCount;
@@ -69,7 +69,7 @@ namespace Cduhub
         /// <summary>
         /// The connected device or null if no device is connected.
         /// </summary>
-        public ProductId? ConnectedDevice => _Mcdu?.ProductId;
+        public DeviceIdentifier ConnectedDevice => _Cdu?.DeviceId;
 
         /// <summary>
         /// The HttpClient for pages to use.
@@ -147,13 +147,13 @@ namespace Cduhub
             timer.Dispose();
 
             var settings = _Settings;
-            _Mcdu?.Cleanup(
+            _Cdu?.Cleanup(
                 backlightBrightnessPercent: settings?.Cleanup.BacklightBrightnessPercentOnExit ?? 0,
                 displayBrightnessPercent:   settings?.Cleanup.DisplayBrightnessPercentOnExit ?? 0,
                 ledBrightnessPercent:       settings?.Cleanup.DisplayBrightnessPercentOnExit ?? 0
             );
-            _Mcdu?.Dispose();
-            _Mcdu = null;
+            _Cdu?.Dispose();
+            _Cdu = null;
 
             PersistSettings();
 
@@ -167,7 +167,7 @@ namespace Cduhub
 
             _NormalisedBrightnessButtonSteps = Math.Max(1, Math.Min(100, settings.Brightness.ButtonSteps));
             BrightnessStep = Math.Max(1, Math.Min(100, settings.Brightness.StartAtStep));
-            ApplySettingsToMcdu();
+            ApplySettingsToDevice();
         }
 
         private void PersistSettings()
@@ -188,17 +188,17 @@ namespace Cduhub
 
         public void Connect()
         {
-            if(_Mcdu == null && Interlocked.Exchange(ref _ConnectingCount, 1) == 0) {
+            if(_Cdu == null && Interlocked.Exchange(ref _ConnectingCount, 1) == 0) {
                 try {
-                    _Mcdu = McduFactory.ConnectLocal();
-                    if(_Mcdu != null) {
-                        ApplySettingsToMcdu();
+                    _Cdu = CduFactory.ConnectLocal();
+                    if(_Cdu != null) {
+                        ApplySettingsToDevice();
 
-                        _Mcdu.KeyDown += Mcdu_KeyDown;
-                        _Mcdu.KeyUp += Mcdu_KeyUp;
-                        _Mcdu.Disconnected += Mcdu_Disconnected;
+                        _Cdu.KeyDown += Cdu_KeyDown;
+                        _Cdu.KeyUp += Cdu_KeyUp;
+                        _Cdu.Disconnected += Cdu_Disconnected;
                         _RootPage = new Pages.Root_Page(this);
-                        SetMcduBrightness();
+                        SetCduBrightness();
                         _CurrentFont = null;
                         _IsCurrentFontFullWidth = null;
 
@@ -212,28 +212,28 @@ namespace Cduhub
             }
         }
 
-        private void ApplySettingsToMcdu()
+        private void ApplySettingsToDevice()
         {
             var settings = _Settings;
-            var mcdu = _Mcdu;
-            if(settings != null && mcdu != null) {
-                mcdu.XOffset = settings.DisplayOffset.XPixels;
-                mcdu.YOffset = settings.DisplayOffset.YPixels;
-                SetMcduBrightness();
+            var cdu = _Cdu;
+            if(settings != null && cdu != null) {
+                cdu.XOffset = settings.DisplayOffset.XPixels;
+                cdu.YOffset = settings.DisplayOffset.YPixels;
+                SetCduBrightness();
             }
         }
 
         public void Disconnect()
         {
-            if(_Mcdu != null) {
+            if(_Cdu != null) {
                 CleanupPageHistory();
                 SelectPage(null);
 
-                _Mcdu.KeyDown -= Mcdu_KeyDown;
-                _Mcdu.KeyUp -= Mcdu_KeyUp;
-                _Mcdu.Cleanup();
-                _Mcdu.Dispose();
-                _Mcdu = null;
+                _Cdu.KeyDown -= Cdu_KeyDown;
+                _Cdu.KeyUp -= Cdu_KeyUp;
+                _Cdu.Cleanup();
+                _Cdu.Dispose();
+                _Cdu = null;
                 OnConnectedDeviceChanged();
             }
         }
@@ -264,7 +264,7 @@ namespace Cduhub
                     _PageHistory.Push(page);
                     RefreshDisplay(page);
                     RefreshLeds(page);
-                    _Mcdu?.RefreshBrightnesses();
+                    _Cdu?.RefreshBrightnesses();
                     _SelectedPage.OnSelected(true);
                 }
             }
@@ -276,12 +276,12 @@ namespace Cduhub
                 _CurrentFont = null;
                 _IsCurrentFontFullWidth = null;
             } else {
-                var mcduFont = Fonts.LoadFontByConfigName(pageFont.FontName);
-                if(mcduFont != _CurrentFont || _IsCurrentFontFullWidth != pageFont.UseFullWidth) {
-                    _CurrentFont = mcduFont;
+                var font = Fonts.LoadFontByConfigName(pageFont.FontName);
+                if(font != _CurrentFont || _IsCurrentFontFullWidth != pageFont.UseFullWidth) {
+                    _CurrentFont = font;
                     _IsCurrentFontFullWidth = pageFont.UseFullWidth;
-                    _Mcdu.Screen.Clear();
-                    _Mcdu.UseFont(_CurrentFont, _IsCurrentFontFullWidth.Value);
+                    _Cdu.Screen.Clear();
+                    _Cdu.UseFont(_CurrentFont, _IsCurrentFontFullWidth.Value);
                 }
             }
         }
@@ -312,24 +312,24 @@ namespace Cduhub
         public void RefreshDisplay(Page page)
         {
             if(page == _SelectedPage) {
-                _Mcdu.Screen.CopyFrom(page.Screen);
-                _Mcdu.RefreshDisplay();
+                _Cdu.Screen.CopyFrom(page.Screen);
+                _Cdu.RefreshDisplay();
             }
         }
 
         public void RefreshLeds(Page page)
         {
             if(page == _SelectedPage) {
-                _Mcdu.Leds.CopyFrom(page.Leds);
-                _Mcdu.RefreshLeds();
+                _Cdu.Leds.CopyFrom(page.Leds);
+                _Cdu.RefreshLeds();
             }
         }
 
         public void RefreshPalette(Page page)
         {
             if(page == _SelectedPage) {
-                _Mcdu.Palette.CopyFrom(page.Palette);
-                _Mcdu.RefreshPalette();
+                _Cdu.Palette.CopyFrom(page.Palette);
+                _Cdu.RefreshPalette();
             }
         }
 
@@ -383,12 +383,12 @@ namespace Cduhub
             }
         }
 
-        private void Mcdu_Disconnected(object sender, EventArgs e)
+        private void Cdu_Disconnected(object sender, EventArgs e)
         {
             Disconnect();
         }
 
-        private void Mcdu_KeyDown(object sender, McduDotNet.KeyEventArgs e)
+        private void Cdu_KeyDown(object sender, McduDotNet.KeyEventArgs e)
         {
             if(!_ShuttingDown) {
                 var menuKey = _SelectedPage?.MenuKey ?? Key.McduMenu;
@@ -412,27 +412,27 @@ namespace Cduhub
         {
             var delta = increment ? 1 : -1;
             BrightnessStep = Math.Max(1, Math.Min(BrightnessStep + delta, _NormalisedBrightnessButtonSteps));
-            SetMcduBrightness();
+            SetCduBrightness();
         }
 
-        private void SetMcduBrightness()
+        private void SetCduBrightness()
         {
-            var mcdu = _Mcdu;
+            var cdu = _Cdu;
             var settings = _Settings;
 
-            if(mcdu != null) {
-                mcdu.DisplayBrightnessPercent = BrightnessPercent;
-                mcdu.LedBrightnessPercent = BrightnessPercent;
+            if(cdu != null) {
+                cdu.DisplayBrightnessPercent = BrightnessPercent;
+                cdu.LedBrightnessPercent = BrightnessPercent;
 
                 var backlightPercent = settings.Backlight.BacklightPercent;
                 if(BrightnessPercent > settings.Backlight.TurnOffWhenBrightnessExceedsPercent) {
                     backlightPercent = 0;
                 }
-                mcdu.BacklightBrightnessPercent = backlightPercent;
+                cdu.BacklightBrightnessPercent = backlightPercent;
             }
         }
 
-        private void Mcdu_KeyUp(object sender, McduDotNet.KeyEventArgs e)
+        private void Cdu_KeyUp(object sender, McduDotNet.KeyEventArgs e)
         {
             if(!_ShuttingDown) {
                 _SelectedPage?.OnKeyUp(e.Key);

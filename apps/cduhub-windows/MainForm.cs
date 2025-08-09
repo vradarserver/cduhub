@@ -60,8 +60,8 @@ namespace Cduhub.WindowsGui
         {
             var device = Hub.ConnectedDevice;
             StateText = device == null
-                ? "Not connected to an MCDU"
-                : $"Connected to a {device} MCDU";
+                ? "Not connected"
+                : $"{device.Description} connected";
         }
 
         private void UpdateConnectedFlightSimulatorsDisplay()

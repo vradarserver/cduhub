@@ -19,7 +19,9 @@ namespace McduDotNet.WinWing.Mcdu
     /// <summary>
     /// The implementation of <see cref="IMcdu"/> for the WinWing MCDU.
     /// </summary>
-    class McduDevice : IMcdu
+#pragma warning disable CS0618 // Stop it moaning about IMcdu being flagged as obsolete
+    class McduDevice : ICdu, IMcdu
+#pragma warning restore CS0618
     {
         private readonly Screen _EmptyScreen = new Screen();
         private HidDevice _HidDevice;
@@ -34,7 +36,10 @@ namespace McduDotNet.WinWing.Mcdu
         private Task _InputLoopTask;
 
         /// <inheritdoc/>
-        public ProductId ProductId { get; }
+        public ProductId ProductId => DeviceId.GetLegacyProductId();
+
+        /// <inheritdoc/>
+        public DeviceIdentifier DeviceId { get; }
 
         /// <inheritdoc/>
         public Screen Screen { get; }
@@ -137,11 +142,11 @@ namespace McduDotNet.WinWing.Mcdu
         /// Creates a new object.
         /// </summary>
         /// <param name="hidDevice"></param>
-        /// <param name="productId"></param>
-        public McduDevice(HidDevice hidDevice, ProductId productId)
+        /// <param name="deviceId"></param>
+        public McduDevice(HidDevice hidDevice, DeviceIdentifier deviceId)
         {
             _HidDevice = hidDevice;
-            ProductId = productId;
+            DeviceId = deviceId;
             Leds = new Leds();
             Screen = new Screen();
             Output = new Compositor(Screen);

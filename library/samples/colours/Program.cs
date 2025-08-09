@@ -8,7 +8,6 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
 using System.CommandLine;
 using Cduhub.CommandLine;
 using McduDotNet;
@@ -71,38 +70,38 @@ namespace Colours
             bool useFullWidth
         )
         {
-            using(var mcdu = McduFactory.ConnectLocal()) {
-                Console.WriteLine($"Using {mcdu.ProductId} MCDU");
-                mcdu.KeyDown += Mcdu_KeyDown;
+            using(var cdu = CduFactory.ConnectLocal()) {
+                Console.WriteLine($"Using {cdu.DeviceId}");
+                cdu.KeyDown += Cdu_KeyDown;
 
                 var font = LoadFont(fontFileInfo);
                 if(font != null) {
-                    mcdu.UseFont(font, useFullWidth);
+                    cdu.UseFont(font, useFullWidth);
                 }
 
-                DrawScreen(mcdu);
+                DrawScreen(cdu);
 
                 Console.WriteLine($"Press Q to quit");
                 while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q);
 
-                mcdu.Cleanup();
+                cdu.Cleanup();
             }
         }
 
-        static void DrawScreen(IMcdu mcdu)
+        static void DrawScreen(ICdu cdu)
         {
-            mcdu.Screen.Clear();
+            cdu.Screen.Clear();
 
-            ShowColourPairs(mcdu.Output, _Colours, _StartColourOffset, smallFont: _FirstSetIsSmall);
+            ShowColourPairs(cdu.Output, _Colours, _StartColourOffset, smallFont: _FirstSetIsSmall);
 
-            mcdu.Output
+            cdu.Output
                 .Line(6)
                 .Centered("<white>←↑→↓ <small>AND<large> DIR")
                 .Line(-5);
 
-            ShowColourPairs(mcdu.Output, _Colours, _StartColourOffset, smallFont: !_FirstSetIsSmall);
+            ShowColourPairs(cdu.Output, _Colours, _StartColourOffset, smallFont: !_FirstSetIsSmall);
 
-            mcdu.RefreshDisplay();
+            cdu.RefreshDisplay();
         }
 
         static void ShowColourPairs(Compositor output, Colour[] colours, int startOffset, bool smallFont)
@@ -134,9 +133,9 @@ namespace Colours
                 .LeftToRight().Newline();
         }
 
-        static void Mcdu_KeyDown(object sender, KeyEventArgs args)
+        static void Cdu_KeyDown(object sender, KeyEventArgs args)
         {
-            var mcdu = (IMcdu)sender;
+            var cdu = (ICdu)sender;
 
             void scrollBackwards(int offset)
             {
@@ -161,20 +160,20 @@ namespace Colours
                 case Key.LeftArrow:     scrollForwards(1); break;
                 case Key.Dir:           _FirstSetIsSmall = !_FirstSetIsSmall; break;
                 case Key.Init:
-                    mcdu.Palette.White.Set(0xff, 0xff, 0xff);
-                    mcdu.RefreshPalette();
+                    cdu.Palette.White.Set(0xff, 0xff, 0xff);
+                    cdu.RefreshPalette();
                     break;
                 case Key.SecFPln:
-                    mcdu.Palette.White.Set(0xff, 0x00, 0x00);
-                    mcdu.RefreshPalette();
+                    cdu.Palette.White.Set(0xff, 0x00, 0x00);
+                    cdu.RefreshPalette();
                     break;
                 case Key.AtcComm:
-                    mcdu.Palette.White.Set(0x00, 0xff, 0x00);
-                    mcdu.RefreshPalette();
+                    cdu.Palette.White.Set(0x00, 0xff, 0x00);
+                    cdu.RefreshPalette();
                     break;
                 case Key.McduMenu:
-                    mcdu.Palette.White.Set(0x00, 0x00, 0xff);
-                    mcdu.RefreshPalette();
+                    cdu.Palette.White.Set(0x00, 0x00, 0xff);
+                    cdu.RefreshPalette();
                     break;
                 default:
                     redrawScreen = false;
@@ -182,7 +181,7 @@ namespace Colours
             }
 
             if(redrawScreen) {
-                DrawScreen(mcdu);
+                DrawScreen(cdu);
             }
         }
 

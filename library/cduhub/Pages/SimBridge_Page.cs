@@ -42,7 +42,7 @@ namespace Cduhub.Pages
             Disconnect();
 
             var settings = ConfigStorage.Load<SimBridgeEfbSettings>();
-            var mcdu = new SimBridgeA320RemoteMcdu(Screen, Leds) {
+            var mcdu = new SimBridgeA320RemoteMcdu(_Hub.ConnectedDevice.DeviceUser, Screen, Leds) {
                 Host = settings.Host,
                 Port = settings.Port,
             };

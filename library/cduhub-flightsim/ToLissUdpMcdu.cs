@@ -53,7 +53,7 @@ namespace Cduhub.FlightSim
 
         public override SimulatorMcduBuffer FirstOfficerBuffer { get; } = new SimulatorMcduBuffer();
 
-        public ToLissUdpMcdu(Screen masterScreen, Leds masterLeds) : base(masterScreen, masterLeds)
+        public ToLissUdpMcdu(DeviceUser deviceUser, Screen masterScreen, Leds masterLeds) : base(deviceUser, masterScreen, masterLeds)
         {
             _XPlaneUdp.ConnectionStateChanged += (sender,args) => RecordConnectionState(_XPlaneUdp?.ConnectionState ?? ConnectionState.Disconnected);
             _XPlaneUdp.PacketReceived += (sender,args) => RecordMessageReceivedFromSimulator();

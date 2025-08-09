@@ -36,9 +36,10 @@ namespace Cduhub.FlightSim
         /// <summary>
         /// Creates a new object.
         /// </summary>
+        /// <param name="deviceUser"></param>
         /// <param name="masterScreen"></param>
         /// <param name="masterLeds"></param>
-        protected SimulatedMcdusOverWebSocket(Screen masterScreen, Leds masterLeds) : base(masterScreen, masterLeds)
+        protected SimulatedMcdusOverWebSocket(DeviceUser deviceUser, Screen masterScreen, Leds masterLeds) : base(deviceUser, masterScreen, masterLeds)
         {
         }
 

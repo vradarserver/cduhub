@@ -27,7 +27,7 @@ namespace Cduhub.FlightSim
 
         public override string AircraftName => "Generic";
 
-        public XPlaneGenericMcdu(HttpClient httpClient, Screen masterScreen, Leds masterLeds) : base(httpClient, masterScreen, masterLeds)
+        public XPlaneGenericMcdu(HttpClient httpClient, DeviceUser deviceUser, Screen masterScreen, Leds masterLeds) : base(httpClient, deviceUser, masterScreen, masterLeds)
         {
         }
 
@@ -37,7 +37,7 @@ namespace Cduhub.FlightSim
             if(pressed) {
                 var keyCode = key.ToXPlaneCommand();
                 if(keyCode != "" && IsConnected) {
-                    var fms = SelectedBufferProductId == ProductId.Captain
+                    var fms = SelectedBufferDeviceUser == DeviceUser.Captain
                         ? "FMS"
                         : "FMS2";
                     var command = $"sim/{fms}/{keyCode}";

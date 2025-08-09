@@ -54,9 +54,10 @@ namespace Cduhub.FlightSim
         /// <summary>
         /// Creates a new object.
         /// </summary>
+        /// <param name="deviceUser"></param>
         /// <param name="masterScreen"></param>
         /// <param name="masterLeds"></param>
-        public FenixA320EfbMcdu(Screen masterScreen, Leds masterLeds) : base(masterScreen, masterLeds)
+        public FenixA320EfbMcdu(DeviceUser deviceUser, Screen masterScreen, Leds masterLeds) : base(deviceUser, masterScreen, masterLeds)
         {
         }
 
@@ -97,7 +98,7 @@ namespace Cduhub.FlightSim
         {
             var client = _GraphQLClient;
             if(client != null) {
-                var key = FenixA320GraphQL.GraphQLKeyName(mcduKey, SelectedBufferProductId);
+                var key = FenixA320GraphQL.GraphQLKeyName(mcduKey, SelectedBufferDeviceUser);
                 if(key != "") {
                     var request = new GraphQLRequest() {
                         Query = $@"

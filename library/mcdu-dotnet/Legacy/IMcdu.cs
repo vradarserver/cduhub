@@ -15,6 +15,7 @@ namespace McduDotNet
     /// <summary>
     /// Represents an instance of an MCDU.
     /// </summary>
+    [Obsolete("Replaced by the ICdu interface")]
     public interface IMcdu : IDisposable
     {
         /// <summary>

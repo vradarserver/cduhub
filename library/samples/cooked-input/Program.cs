@@ -16,35 +16,35 @@ namespace CookedInput
     {
         static void Main(string[] _)
         {
-            using(var mcdu = McduFactory.ConnectLocal()) {
-                Console.WriteLine($"Using {mcdu.ProductId} MCDU");
-                mcdu.Output.Centred("Press buttons");
-                mcdu.RefreshDisplay();
+            using(var cdu = CduFactory.ConnectLocal()) {
+                Console.WriteLine($"Using {cdu.DeviceId}");
+                cdu.Output.Centred("Press buttons");
+                cdu.RefreshDisplay();
 
-                mcdu.KeyDown += (_, args) => {
-                    ShowKeyEvent(mcdu, "Dn", args);
+                cdu.KeyDown += (_, args) => {
+                    ShowKeyEvent(cdu, "Dn", args);
                 };
-                mcdu.KeyUp += (_, args) => {
-                    ShowKeyEvent(mcdu, "Up", args);
+                cdu.KeyUp += (_, args) => {
+                    ShowKeyEvent(cdu, "Up", args);
                 };
 
                 Console.WriteLine($"Press Q to quit");
                 while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q);
 
-                mcdu.Cleanup();
+                cdu.Cleanup();
             }
         }
 
-        private static void ShowKeyEvent(IMcdu mcdu, string eventName, KeyEventArgs args)
+        private static void ShowKeyEvent(ICdu cdu, string eventName, KeyEventArgs args)
         {
-            mcdu.Output
+            cdu.Output
                 .ScrollUp(startRow: 1)
                 .Line(-1)
                 .OverwriteRow(colour: Colour.White, small: true)
                 .BottomLine()
                 .Green().Large()
                 .Write($"{eventName}: {args.Key} (\"{args.Character}\")");
-            mcdu.RefreshDisplay();
+            cdu.RefreshDisplay();
 
             Console.WriteLine($"{eventName}: {args.Key} (\"{args.Character}\")");
         }

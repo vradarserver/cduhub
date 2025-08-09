@@ -62,9 +62,10 @@ namespace Cduhub.FlightSim
         /// Creates a new object.
         /// </summary>
         /// <param name="httpClient"></param>
+        /// <param name="deviceUser"></param>
         /// <param name="masterScreen"></param>
         /// <param name="masterLeds"></param>
-        public XPlaneRestMcdus(HttpClient httpClient, Screen masterScreen, Leds masterLeds) : base(masterScreen, masterLeds)
+        public XPlaneRestMcdus(HttpClient httpClient, DeviceUser deviceUser, Screen masterScreen, Leds masterLeds) : base(deviceUser, masterScreen, masterLeds)
         {
             HttpClient = httpClient;
             _RefreshDisplayTimer.Elapsed += Timer_Elapsed;

@@ -18,18 +18,18 @@ namespace FenixMcdu
 {
     class Program
     {
-        private static IMcdu _Mcdu;
+        private static ICdu _Mcdu;
         private static GraphQLHttpClient _FenixEfbGraphQLClient;
-        private static ProductId _DisplayProductId;
+        private static DeviceUser _DeviceUser;
         private static Screen _CaptainScreen = new();
         private static Screen _FirstOfficerScreen = new();
 
         static void Main(string[] _)
         {
-            using(var mcdu = McduFactory.ConnectLocal()) {
-                Console.WriteLine($"Using {mcdu.ProductId} MCDU");
+            using(var mcdu = CduFactory.ConnectLocal()) {
+                Console.WriteLine($"Using {mcdu.DeviceId}");
                 _Mcdu = mcdu;
-                _DisplayProductId = mcdu.ProductId;
+                _DeviceUser = mcdu.DeviceId.DeviceUser;
 
                 var endpointHostAndPort = "localhost:8083";
                 var endpointUri = new Uri($"ws://{endpointHostAndPort}/graphql");
@@ -54,9 +54,9 @@ namespace FenixMcdu
             }
         }
 
-        private static void SetupFenixDisplayChangeEvents(IMcdu mcdu, GraphQLHttpClient graphQLClient)
+        private static void SetupFenixDisplayChangeEvents(ICdu mcdu, GraphQLHttpClient graphQLClient)
         {
-            var mcduDisplay = mcdu.ProductId == ProductId.Captain
+            var mcduDisplay = mcdu.DeviceId.DeviceUser == DeviceUser.Captain
                 ? 1
                 : 2;
             var mcduDisplayName = $"aircraft.mcdu{mcduDisplay}.display";
@@ -88,11 +88,11 @@ namespace FenixMcdu
                     switch(name) {
                         case FenixA320GraphQL.GraphQLMcdu1DisplayName:
                             screen = _CaptainScreen;
-                            isVisible = _DisplayProductId == ProductId.Captain;
+                            isVisible = _DeviceUser == DeviceUser.Captain;
                             break;
                         case FenixA320GraphQL.GraphQLMcdu2DisplayName:
                             screen = _FirstOfficerScreen;
-                            isVisible = _DisplayProductId == ProductId.FirstOfficer;
+                            isVisible = _DeviceUser == DeviceUser.FirstOfficer;
                             break;
                     }
                     if(screen != null) {
@@ -112,7 +112,7 @@ namespace FenixMcdu
         private static void RefreshVisibleDisplay()
         {
             if(_Mcdu != null) {
-                var copyFrom = _DisplayProductId == ProductId.Captain
+                var copyFrom = _DeviceUser == DeviceUser.Captain
                     ? _CaptainScreen
                     : _FirstOfficerScreen;
                 _Mcdu.Screen.CopyFrom(copyFrom);
@@ -122,9 +122,9 @@ namespace FenixMcdu
 
         private static void ToggleBetweenCaptainAndFirstOfficerMcdu()
         {
-            _DisplayProductId = _DisplayProductId != ProductId.Captain
-                ? ProductId.Captain
-                : ProductId.FirstOfficer;
+            _DeviceUser = _DeviceUser != DeviceUser.Captain
+                ? DeviceUser.Captain
+                : DeviceUser.FirstOfficer;
             RefreshVisibleDisplay();
         }
 
@@ -132,7 +132,7 @@ namespace FenixMcdu
         {
             var client = _FenixEfbGraphQLClient;
             if(client != null) {
-                var key = FenixA320GraphQL.GraphQLKeyName(mcduKey, _DisplayProductId);
+                var key = FenixA320GraphQL.GraphQLKeyName(mcduKey, _DeviceUser);
                 if(key != "") {
                     var request = new GraphQLRequest() {
                         Query = $@"

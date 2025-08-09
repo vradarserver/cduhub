@@ -42,7 +42,7 @@ namespace Cduhub.Pages
             Disconnect();
 
             var settings = ConfigStorage.Load<FenixEfbSettings>();
-            var mcdu = new FenixA320EfbMcdu(Screen, Leds) {
+            var mcdu = new FenixA320EfbMcdu(_Hub.ConnectedDevice.DeviceUser, Screen, Leds) {
                 Host = settings.Host,
                 Port = settings.Port,
             };

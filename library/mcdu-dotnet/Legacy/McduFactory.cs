@@ -8,16 +8,17 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using HidSharp;
-using McduDotNet.WinWing.Mcdu;
 
 namespace McduDotNet
 {
     /// <summary>
-    /// Creates instances of <see cref="IMcdu"/>.
+    /// Creates instances of <see cref="IMcdu"/>. Note that only the WinWing MCDU implements
+    /// this interface.
     /// </summary>
+    [Obsolete("Replaced by CduFactory")]
     public static class McduFactory
     {
         /// <summary>
@@ -26,16 +27,10 @@ namespace McduDotNet
         /// <returns></returns>
         public static IReadOnlyList<ProductId> FindLocalMcdus()
         {
-            var result = new List<ProductId>();
-
-            var local = DeviceList.Local;
-            foreach(var hidDevice in local.GetHidDevices()) {
-                if(UsbIdentifiers.IsMcdu(hidDevice.VendorID, hidDevice.ProductID)) {
-                    result.Add(UsbIdentifiers.ToLibraryProductId(hidDevice.ProductID));
-                }
-            }
-
-            return result;
+            return CduFactory
+                .FindLocalDevices()
+                .Select(deviceId => deviceId.GetLegacyProductId())
+                .ToArray();
         }
 
         /// <summary>
@@ -47,23 +42,20 @@ namespace McduDotNet
         /// <returns></returns>
         public static IMcdu ConnectLocal(ProductId? productId = null)
         {
-            McduDevice result = null;
+            IMcdu result = null;
 
+            DeviceIdentifier deviceId = null;
             if(productId == null) {
-                productId = FindLocalMcdus().FirstOrDefault();
-            }
-            if(productId != null) {
-                var hidDevice = DeviceList
-                    .Local
-                    .GetHidDevices(
-                        vendorID: UsbIdentifiers.VendorId,
-                        productID: UsbIdentifiers.FromLibraryProductId(productId.Value)
-                    )
+                deviceId = CduFactory.FindLocalDevices().FirstOrDefault();
+            } else {
+                deviceId = CduFactory
+                    .FindLocalDevices()
+                    .Where(candidate => candidate.GetLegacyProductId() == productId)
                     .FirstOrDefault();
-                if(hidDevice != null) {
-                    result = new McduDevice(hidDevice, productId.Value);
-                    result.Initialise();
-                }
+            }
+
+            if(deviceId != null) {
+                result = CduFactory.ConnectLocal(deviceId) as IMcdu;
             }
 
             return result;

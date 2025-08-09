@@ -61,18 +61,18 @@ namespace Characters
             bool useFullWidth
         )
         {
-            using(var mcdu = McduFactory.ConnectLocal()) {
-                Console.WriteLine($"Using {mcdu.ProductId} MCDU");
+            using(var cdu = CduFactory.ConnectLocal()) {
+                Console.WriteLine($"Using {cdu.DeviceId}");
                 Console.WriteLine($"Setting X and Y offsets to {xOffset} / {yOffset}");
-                mcdu.XOffset = xOffset;
-                mcdu.YOffset = yOffset;
+                cdu.XOffset = xOffset;
+                cdu.YOffset = yOffset;
 
                 var fontFile = LoadFont(fontFileInfo);
                 void uploadFont()
                 {
                     if(fontFile != null) {
                         Console.WriteLine("Uploading font");
-                        mcdu.UseFont(fontFile, useFullWidth);
+                        cdu.UseFont(fontFile, useFullWidth);
                     }
                 }
 
@@ -87,7 +87,7 @@ namespace Characters
                     reloadFont();
                 }
 
-                mcdu.KeyDown += (_, args) => {
+                cdu.KeyDown += (_, args) => {
                     switch(args.Key) {
                         case Key.Init:
                             reloadFont();
@@ -100,7 +100,7 @@ namespace Characters
 
                 void showCharacters()
                 {
-                    mcdu.Output
+                    cdu.Output
                         .Clear()
                         .UseLowercaseFont()
                         .WriteLine("  0123456789ABCDEF UDLR")
@@ -119,7 +119,7 @@ namespace Characters
                         .WriteLine("<large><yellow>><white><small>6<grey>`abcdefghijklmno      <large><yellow><")
                         .WriteLine(" 7<grey>pqrstuvwxyz{|}~")
                     ;
-                    mcdu.RefreshDisplay();
+                    cdu.RefreshDisplay();
                 }
 
                 uploadFont();
@@ -147,7 +147,7 @@ namespace Characters
                     }
                 }
 
-                mcdu.Cleanup();
+                cdu.Cleanup();
             }
         }
 

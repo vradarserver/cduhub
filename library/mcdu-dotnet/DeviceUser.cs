@@ -8,34 +8,32 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using McduDotNet;
-
-namespace Clock
+namespace McduDotNet
 {
-    class Program
+    /// <summary>
+    /// An enumeration of the different locations of a device in aircraft that contain
+    /// more than one instance.
+    /// </summary>
+    public enum DeviceUser
     {
-        static void Main(string[] _)
-        {
-            using(var cdu = CduFactory.ConnectLocal()) {
-                Console.WriteLine($"Using {cdu.DeviceId} MCDU");
+        /// <summary>
+        /// The manufacturer does not support setting per-location USB identifiers.
+        /// </summary>
+        NotApplicable,
 
-                Console.WriteLine($"Press Q to quit");
-                while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
-                    var now = DateTime.Now;
+        /// <summary>
+        /// The device has been flagged as in use by the left-hand seat.
+        /// </summary>
+        Captain,
 
-                    cdu.Output
-                        .Clear()
-                        .MiddleLine().CentreFor("00:00:00")
-                        .White().Write(now.Hour, "00").Yellow().Write(':')
-                        .White().Write(now.Minute, "00").Yellow().Write(':')
-                        .White().Write(now.Second, "00");
-                    cdu.RefreshDisplay();
+        /// <summary>
+        /// The device has been flagged as in use by the right-hand seat.
+        /// </summary>
+        FirstOfficer,
 
-                    Thread.Sleep(100);
-                }
-
-                cdu.Cleanup();
-            }
-        }
+        /// <summary>
+        /// The device has been flagged as in use by the observer / engineer / jump seat.
+        /// </summary>
+        Observer,
     }
 }
