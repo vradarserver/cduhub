@@ -9,7 +9,6 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,11 +29,9 @@ namespace McduDotNet.WinWing.Mcdu
         private IlluminationWriter _IlluminationWriter;
         private FontWriter _FontWriter;
         private PaletteWriter _PaletteWriter;
+        private KeyboardReader _KeyboardReader;
         private CancellationTokenSource _InputLoopCancellationTokenSource;
         private Task _InputLoopTask;
-        private readonly InputReport01 _InputReport01_Previous = new InputReport01();
-        private readonly InputReport01 _InputReport01_Current = new InputReport01();
-        private (UInt64, UInt64, UInt64) _PreviousInputReport01Digest = (0,0,0);
 
         /// <inheritdoc/>
         public ProductId ProductId { get; }
@@ -170,6 +167,7 @@ namespace McduDotNet.WinWing.Mcdu
                 _InputLoopCancellationTokenSource?.Cancel();
                 _InputLoopTask?.Wait(5000);
                 _InputLoopTask = null;
+                _KeyboardReader = null;
 
                 _UsbWriter = null;
                 _ScreenWriter = null;
@@ -199,13 +197,26 @@ namespace McduDotNet.WinWing.Mcdu
                 throw new McduException($"Could not open a stream to {_HidDevice}");
             }
             _UsbWriter = new UsbWriter(_HidStream);
+            _KeyboardReader = new KeyboardReader(
+                _HidStream,
+                (key, pressed) => {
+                    if(pressed) {
+                        OnKeyDown(() => new KeyEventArgs(key, pressed));
+                    } else {
+                        OnKeyUp(() => new KeyEventArgs(key, pressed));
+                    }
+                }
+            );
+
             _ScreenWriter = new ScreenWriter(_UsbWriter);
             _IlluminationWriter = new IlluminationWriter(_UsbWriter);
             _FontWriter = new FontWriter(_UsbWriter);
             _PaletteWriter = new PaletteWriter(_UsbWriter);
 
             _InputLoopCancellationTokenSource = new CancellationTokenSource();
-            _InputLoopTask = Task.Run(() => InputLoop(_InputLoopCancellationTokenSource.Token));
+            _InputLoopTask = Task.Run(() => _KeyboardReader.RunInputLoop(
+                _InputLoopCancellationTokenSource.Token
+            ));
 
             UseMobiFlightInitialisationSequence();
             RefreshLeds();
@@ -322,84 +333,6 @@ namespace McduDotNet.WinWing.Mcdu
                 skipDuplicateCheck,
                 forceDisplayRefresh
             );
-        }
-
-        private void InputLoop(CancellationToken cancellationToken)
-        {
-            var readBuffer = new byte[InputReport01.PacketLength];
-
-            while(!cancellationToken.IsCancellationRequested) {
-                try {
-                    var stream = _HidStream;
-                    if(stream?.CanRead ?? false) {
-                        ClearHidStreamBuffer(stream);
-                        stream.ReadTimeout = 1000;
-                        try {
-                            var bytesRead = stream.Read(readBuffer, 0, readBuffer.Length);
-                            if (bytesRead > 0) {
-                                if(readBuffer[0] == 1 && bytesRead >= InputReport01.PacketLength) {
-                                    ProcessInputReport1(readBuffer, bytesRead);
-                                }
-                            }
-                        } catch(TimeoutException) {
-                            // ugh
-                        }
-                    }
-                } catch(IOException) {
-                    // These will happen when the device is disconnected. Under Windows we can look for the Win32
-                    // exception and tell for sure, but that won't fly on other platforms. For now I'm going to
-                    // assume that any IO exception during the input loop is indicative of the device being
-                    // disconnected.
-                    //
-                    // There is a strong argument for raising the disconnected event here. However, we're also
-                    // listening to HidSharp's device change event and raising from there, so we risk a reentrant
-                    // raise if we do. Also if the event handler disposes of this MCDU on a disconnect then the
-                    // dispose will block waiting for us to finish, but we would be blocking waiting on the event
-                    // handler... the wait would timeout eventually but it wouldn't be very nice.
-                }
-                Thread.Sleep(1);
-            }
-        }
-
-        private readonly byte[] _ClearBuffer = new byte[InputReport01.PacketLength];
-        private void ClearHidStreamBuffer(HidStream stream)
-        {
-            stream.ReadTimeout = 1;
-            try {
-                while(stream.Read(_ClearBuffer, 0, _ClearBuffer.Length) > 0) {
-                    ;
-                }
-            } catch(TimeoutException) {
-                // ugh
-            }
-        }
-
-        private void ProcessInputReport1(byte[] readBuffer, int bytesRead)
-        {
-            _InputReport01_Current.CopyFrom(readBuffer, 0, bytesRead);
-            var digest = _InputReport01_Current.ToDigest();
-            if(   digest.Item1 != _PreviousInputReport01Digest.Item1
-               || digest.Item2 != _PreviousInputReport01Digest.Item2
-               || digest.Item3 != _PreviousInputReport01Digest.Item3
-            ) {
-                try {
-                    foreach(Key key in Enum.GetValues(typeof(Key))) {
-                        var pressed = _InputReport01_Current.IsKeyPressed(key);
-                        var wasPressed = _InputReport01_Previous.IsKeyPressed(key);
-                        if(pressed != wasPressed) {
-                            if(pressed) {
-                                OnKeyDown(() => new KeyEventArgs(key, pressed));
-                            } else {
-                                OnKeyUp(() => new KeyEventArgs(key, pressed));
-                            }
-                        }
-                    }
-                } catch {
-                    // Swallow the exception for now - ultimately we want the events raised on a different thread
-                }
-                _InputReport01_Previous.CopyFrom(_InputReport01_Current);
-                _PreviousInputReport01Digest = digest;
-            }
         }
 
         private void HidSharpDeviceList_Changed(object sender, DeviceListChangedEventArgs e)

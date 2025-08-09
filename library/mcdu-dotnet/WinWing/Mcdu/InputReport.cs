@@ -12,8 +12,12 @@ using System;
 
 namespace McduDotNet.WinWing.Mcdu
 {
-    class InputReport01
+    /// <summary>
+    /// Holds the content of an input report sent by the device.
+    /// </summary>
+    class InputReport
     {
+        public const int ReportCode = 1;
         public const int PacketLength = 25;
 
         private readonly byte[] _Packet = new byte[PacketLength];
@@ -21,7 +25,7 @@ namespace McduDotNet.WinWing.Mcdu
         public void CopyFrom(byte[] buffer, int offset, int length)
         {
             if(length > 0) {
-                if(buffer[offset] != 1) {
+                if(buffer[offset] != ReportCode) {
                     throw new McduException($"Unexpected report code {buffer[offset]} for a report code 1 buffer");
                 }
                 length = Math.Min(PacketLength, length);
@@ -32,7 +36,7 @@ namespace McduDotNet.WinWing.Mcdu
             }
         }
 
-        public void CopyFrom(InputReport01 other) => CopyFrom(other._Packet, 0, other._Packet.Length);
+        public void CopyFrom(InputReport other) => CopyFrom(other._Packet, 0, other._Packet.Length);
 
         public (UInt64, UInt64, UInt64) ToDigest()
         {

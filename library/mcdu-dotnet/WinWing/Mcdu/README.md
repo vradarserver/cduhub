@@ -7,6 +7,104 @@ is not comprehensive.
 If you can fill any of the gaps then please do!
 
 
+## Keyboard Input
+
+The device sends a stream of input reports of code 1 to the computer. You
+just need to poll for them to figure out which keys are currently held down.
+
+The input report has this form:
+
+| Offset | Length | Meaning |
+| ---    | ---    | --- |
+| 0      | 1      | 01 = report type |
+| 1      | 10     | Key bitflags |
+| 11     | 5      | ?? |
+| 16     | 2      | Little endian left ambient sensor value  |
+| 18     | 2      | Little endian right ambient sensor value |
+| 20     | 4      | Previous 4 bytes repeated? |
+
+### Key Bitflags
+
+Offsets are zero-based in decimal from the start of the packet.
+
+| Key              | Flag | Packet Byte Index |
+| ---              | ---  | --- |
+| LineSelectLeft1  | 0x01 | 1 |
+| LineSelectLeft2  | 0x02 | 1 |
+| LineSelectLeft3  | 0x04 | 1 |
+| LineSelectLeft4  | 0x08 | 1 |
+| LineSelectLeft5  | 0x10 | 1 |
+| LineSelectLeft6  | 0x20 | 1 |
+| LineSelectRight1 | 0x40 | 1 |
+| LineSelectRight2 | 0x80 | 1 |
+| LineSelectRight3 | 0x01 | 2 |
+| LineSelectRight4 | 0x02 | 2 |
+| LineSelectRight5 | 0x04 | 2 |
+| LineSelectRight6 | 0x08 | 2 |
+| Dir              | 0x10 | 2 |
+| Prog             | 0x20 | 2 |
+| Perf             | 0x40 | 2 |
+| Init             | 0x80 | 2 |
+| Data             | 0x01 | 3 |
+| Blank1           | 0x02 | 3 |
+| Brt              | 0x04 | 3 |
+| FPln             | 0x08 | 3 |
+| RadNav           | 0x10 | 3 |
+| FuelPred         | 0x20 | 3 |
+| SecFPln          | 0x40 | 3 |
+| AtcComm          | 0x80 | 3 |
+| McduMenu         | 0x01 | 4 |
+| Dim              | 0x02 | 4 |
+| Airport          | 0x04 | 4 |
+| Blank2           | 0x08 | 4 |
+| LeftArrow        | 0x10 | 4 |
+| UpArrow          | 0x20 | 4 |
+| RightArrow       | 0x40 | 4 |
+| DownArrow        | 0x80 | 4 |
+| Digit1           | 0x01 | 5 |
+| Digit2           | 0x02 | 5 |
+| Digit3           | 0x04 | 5 |
+| Digit4           | 0x08 | 5 |
+| Digit5           | 0x10 | 5 |
+| Digit6           | 0x20 | 5 |
+| Digit7           | 0x40 | 5 |
+| Digit8           | 0x80 | 5 |
+| Digit9           | 0x01 | 6 |
+| DecimalPoint     | 0x02 | 6 |
+| Digit0           | 0x04 | 6 |
+| Negative         | 0x08 | 6 |
+| A                | 0x10 | 6 |
+| B                | 0x20 | 6 |
+| C                | 0x40 | 6 |
+| D                | 0x80 | 6 |
+| E                | 0x01 | 7 |
+| F                | 0x02 | 7 |
+| G                | 0x04 | 7 |
+| H                | 0x08 | 7 |
+| I                | 0x10 | 7 |
+| J                | 0x20 | 7 |
+| K                | 0x40 | 7 |
+| L                | 0x80 | 7 |
+| M                | 0x01 | 8 |
+| N                | 0x02 | 8 |
+| O                | 0x04 | 8 |
+| P                | 0x08 | 8 |
+| Q                | 0x10 | 8 |
+| R                | 0x20 | 8 |
+| S                | 0x40 | 8 |
+| T                | 0x80 | 8 |
+| U                | 0x01 | 9 |
+| V                | 0x02 | 9 |
+| W                | 0x04 | 9 |
+| X                | 0x08 | 9 |
+| Y                | 0x10 | 9 |
+| Z                | 0x20 | 9 |
+| Slash            | 0x40 | 9 |
+| Space            | 0x80 | 9 |
+| Ovfy             | 0x01 | 10 |
+| Clr              | 0x02 | 10 |
+
+
 
 ## Display Output
 
@@ -34,8 +132,7 @@ The last F2 packet is padded with zeros to 64 bytes before sending.
 ### Cell Sequence
 
 The length of a cell sequence depends on the size of the codepoint for the
-character occupying the cell. Each part of the sequence follows immediately
-from the previous, there is no alignment padding or anything like that.
+character occupying the cell.
 
 | Length | Meaning |
 | ---    | --- |
@@ -45,7 +142,7 @@ from the previous, there is no alignment padding or anything like that.
 To calculate the colour and font value you start by looking up the foreground
 colour ordinal:
 
-| Ordinal | Colour |
+| Ordinal | WinWing Default Colour |
 | ---     | --- |
 | 0       | Black |
 | 1       | Amber |
@@ -154,16 +251,15 @@ up pretty well with the line-select buttons.
 ## Colour Palettes
 
 Same story as per fonts. The 32 BB commands that set the foreground and background
-colours are easy to identify but they do not work in isolation, a pile of other 32 BB
-commands need to be sent before and after them, and if they are not sent then things
-don't work.
+colours are easy to identify but they do not work in isolation, a pile of other
+32 BB commands need to be sent before and after them, and if they are not sent then
+things don't work.
 
-What was easily established is that the 32 BB ... 19 01 command is responsible for
-setting foreground and background colours. There are different flavours of ... 19 01
-command but the "02" and "03" are the ones that set foreground and background colours
-respectively. Like previous commands if they run past the end of a packet then the 
-sequence continues at the start of the next packet. Each colour must be sent in ordinal
-order.
+The 32 BB ... 19 01 command is responsible for setting foreground and background
+colours. There are different flavours of ... 19 01 command but the "02" and "03"
+are the ones of interest. Like previous commands if they run past the end of a
+packet then the sequence continues at the start of the next packet. Each colour
+must be sent in ordinal order.
 
 ```
 32 bb 00 00 19 01 00 00 04 17 01 00 00 0e 00 00 00 FB 00 BB GG RR AA SS 00 00 00 00 00 00 00
@@ -181,7 +277,7 @@ where:
 | SS        | Incrementing sequence number across all 19 01 commands |
 
 There are other 32 BB ... 19 01 commands sent before and after the sequence of 02 and 03
-commands but I don't know what they do. I know that omitting them breaks it :)
+commands but I don't know what they do.
 
 Changing the palette has no effect on the existing display, you need to redraw it before
 you will see the new colours.
