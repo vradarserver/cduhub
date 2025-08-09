@@ -136,8 +136,8 @@ character occupying the cell.
 
 | Length | Meaning |
 | ---    | --- |
-| 1-4    | UTF-8 codepoint for the character, big-endian |
 | 2      | Colour and font value, big-endian |
+| 1-4    | UTF-8 byte sequence for the character, big-endian |
 
 To calculate the colour and font value you start by looking up the foreground
 colour ordinal:
