@@ -10,43 +10,18 @@
 
 using System;
 
-namespace McduDotNet.WinWing.Mcdu
+namespace McduDotNet
 {
-    class InputReport01
+    public static class Percent
     {
-        public const int PacketLength = 25;
-
-        private readonly byte[] _Packet = new byte[PacketLength];
-
-        public void CopyFrom(byte[] buffer, int offset, int length)
+        /// <summary>
+        /// Converts a percentage from 0 to 100 into a byte value from 0 to FF.
+        /// </summary>
+        /// <param name="percent"></param>
+        /// <returns></returns>
+        public static byte ToByte(int percent)
         {
-            if(length > 0) {
-                if(buffer[offset] != 1) {
-                    throw new McduException($"Unexpected report code {buffer[offset]} for a report code 1 buffer");
-                }
-                length = Math.Min(PacketLength, length);
-                Array.ConstrainedCopy(buffer, offset, _Packet, 0, length);
-                for(var idx = length;idx < _Packet.Length;++idx) {
-                    _Packet[idx] = 0;
-                }
-            }
-        }
-
-        public void CopyFrom(InputReport01 other) => CopyFrom(other._Packet, 0, other._Packet.Length);
-
-        public (UInt64, UInt64, UInt64) ToDigest()
-        {
-            return (
-                BitConverter.ToUInt64(_Packet, 1),
-                BitConverter.ToUInt64(_Packet, 9),
-                BitConverter.ToUInt64(_Packet, 17)
-            );
-        }
-
-        public bool IsKeyPressed(Key key)
-        {
-            (var flag, var offset) = key.InputReport01FlagAndOffset();
-            return (_Packet[offset] & flag) != 0;
+            return (byte)(255.0 * (Math.Max(0, Math.Min(100, percent)) / 100.0));
         }
     }
 }

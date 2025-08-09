@@ -10,7 +10,7 @@
 
 using System;
 
-namespace McduDotNet.WinWingMcdu
+namespace McduDotNet.WinWing.Mcdu
 {
     static class UsbIdentifiers
     {

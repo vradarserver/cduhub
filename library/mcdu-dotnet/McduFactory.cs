@@ -11,7 +11,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using HidSharp;
-using McduDotNet.WinWingMcdu;
+using McduDotNet.WinWing.Mcdu;
 
 namespace McduDotNet
 {
@@ -47,7 +47,7 @@ namespace McduDotNet
         /// <returns></returns>
         public static IMcdu ConnectLocal(ProductId? productId = null)
         {
-            Mcdu result = null;
+            McduDevice result = null;
 
             if(productId == null) {
                 productId = FindLocalMcdus().FirstOrDefault();
@@ -61,7 +61,7 @@ namespace McduDotNet
                     )
                     .FirstOrDefault();
                 if(hidDevice != null) {
-                    result = new Mcdu(hidDevice, productId.Value);
+                    result = new McduDevice(hidDevice, productId.Value);
                     result.Initialise();
                 }
             }

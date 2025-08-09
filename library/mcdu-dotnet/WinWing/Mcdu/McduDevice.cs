@@ -11,36 +11,30 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using HidSharp;
-using McduDotNet.WinWingMcdu;
-using Newtonsoft.Json;
 
-namespace McduDotNet
+namespace McduDotNet.WinWing.Mcdu
 {
     /// <summary>
-    /// The internal representation of an MCDU.
+    /// The implementation of <see cref="IMcdu"/> for the WinWing MCDU.
     /// </summary>
-    class Mcdu : IMcdu
+    class McduDevice : IMcdu
     {
         private readonly Screen _EmptyScreen = new Screen();
-        private readonly int _ProcessingPauseMilliseconds = 40;
-        private readonly object _OutputLock = new Object();
         private HidDevice _HidDevice;
         private HidStream _HidStream;
-        private readonly byte[] _DisplayPacket = new byte[64];
-        private readonly char[] _DisplayCharacterBuffer = new char[1];
-        private int _DisplayPacketOffset = 0;
-        private string _DisplayDuplicateCheckString;
+        private UsbWriter _UsbWriter;
+        private ScreenWriter _ScreenWriter;
+        private IlluminationWriter _IlluminationWriter;
+        private FontWriter _FontWriter;
+        private PaletteWriter _PaletteWriter;
         private CancellationTokenSource _InputLoopCancellationTokenSource;
         private Task _InputLoopTask;
         private readonly InputReport01 _InputReport01_Previous = new InputReport01();
         private readonly InputReport01 _InputReport01_Current = new InputReport01();
         private (UInt64, UInt64, UInt64) _PreviousInputReport01Digest = (0,0,0);
-        private Leds _PreviousLeds;
-        private PaletteColour[] _CurrentPaletteColourArray;
 
         /// <inheritdoc/>
         public ProductId ProductId { get; }
@@ -75,7 +69,7 @@ namespace McduDotNet
                 var normalised = Math.Max(0, Math.Min(100, value));
                 if(normalised != DisplayBrightnessPercent) {
                     _DisplayBrightnessPercent = normalised;
-                    SendDisplayBrightnessPercent(_DisplayBrightnessPercent);
+                    _IlluminationWriter?.SendDisplayBrightnessPercent(_DisplayBrightnessPercent);
                 }
             }
         }
@@ -88,7 +82,7 @@ namespace McduDotNet
                 var normalised = Math.Max(0, Math.Min(100, value));
                 if(normalised != BacklightBrightnessPercent) {
                     _BacklightBrightnessPercent = normalised;
-                    SendBacklightPercent(_BacklightBrightnessPercent);
+                    _IlluminationWriter.SendBacklightPercent(_BacklightBrightnessPercent);
                 }
             }
         }
@@ -102,7 +96,7 @@ namespace McduDotNet
                 var normalised = Math.Max(0, Math.Min(100, value));
                 if(normalised != LedBrightnessPercent) {
                     _LedBrightnessPercent = normalised;
-                    SendLedBrightnessPercent(_LedBrightnessPercent);
+                    _IlluminationWriter.SendLedBrightnessPercent(_LedBrightnessPercent);
                 }
             }
         }
@@ -147,7 +141,7 @@ namespace McduDotNet
         /// </summary>
         /// <param name="hidDevice"></param>
         /// <param name="productId"></param>
-        public Mcdu(HidDevice hidDevice, ProductId productId)
+        public McduDevice(HidDevice hidDevice, ProductId productId)
         {
             _HidDevice = hidDevice;
             ProductId = productId;
@@ -159,10 +153,7 @@ namespace McduDotNet
         }
 
         /// <inheritdoc/>
-        ~Mcdu()
-        {
-            Dispose(false);
-        }
+        ~McduDevice() => Dispose(false);
 
         /// <inheritdoc/>
         public void Dispose()
@@ -180,9 +171,18 @@ namespace McduDotNet
                 _InputLoopTask?.Wait(5000);
                 _InputLoopTask = null;
 
-                if(_HidStream != null) {
-                    _HidStream.Dispose();
-                    _HidStream = null;
+                _UsbWriter = null;
+                _ScreenWriter = null;
+                _IlluminationWriter = null;
+                _FontWriter = null;
+                _PaletteWriter = null;
+
+                var hidStream = _HidStream;
+                _HidStream = null;
+                try {
+                    hidStream?.Dispose();
+                } catch {
+                    ;
                 }
             }
         }
@@ -198,6 +198,11 @@ namespace McduDotNet
             if(!_HidDevice.TryOpen(out _HidStream)) {
                 throw new McduException($"Could not open a stream to {_HidDevice}");
             }
+            _UsbWriter = new UsbWriter(_HidStream);
+            _ScreenWriter = new ScreenWriter(_UsbWriter);
+            _IlluminationWriter = new IlluminationWriter(_UsbWriter);
+            _FontWriter = new FontWriter(_UsbWriter);
+            _PaletteWriter = new PaletteWriter(_UsbWriter);
 
             _InputLoopCancellationTokenSource = new CancellationTokenSource();
             _InputLoopTask = Task.Run(() => InputLoop(_InputLoopCancellationTokenSource.Token));
@@ -215,9 +220,9 @@ namespace McduDotNet
         {
             Screen.Clear();
             Leds.TurnAllOn(false);
-            SendLedBrightnessPercent(ledBrightnessPercent);
-            SendDisplayBrightnessPercent(displayBrightnessPercent);
-            SendBacklightPercent(backlightBrightnessPercent);
+            _IlluminationWriter?.SendLedBrightnessPercent(ledBrightnessPercent);
+            _IlluminationWriter?.SendDisplayBrightnessPercent(displayBrightnessPercent);
+            _IlluminationWriter?.SendBacklightPercent(backlightBrightnessPercent);
             RefreshDisplay();
             RefreshLeds();
         }
@@ -232,90 +237,51 @@ namespace McduDotNet
         {
             // Nicked from Mobiflight
 
-            var packets = new string[] {
-                "f000013832bb00001e0100005f633100000000000032bb0000180100005f6331000008000000340018000e00180032bb0000190100005f633100000e00000000",
-                "f0000238000000010005000000020000000000000032bb0000190100005f633100000e000000010006000000030000000000000032bb00001901000000000000",
-                "f00003385f633100000e0000000200000000ff040000000000000032bb0000190100005f633100000e000000020000a5ffff050000000000000032bb00000000",
-                "f00004380000190100005f633100000e0000000200ffffffff060000000000000032bb0000190100005f633100000e0000000200ffff00ff0700000000000000",
-                "f00005380000000032bb0000190100005f633100000e00000002003dff00ff080000000000000032bb0000190100005f633100000e0000000200ff6300000000",
-                "f0000638ffff090000000000000032bb0000190100005f633100000e00000002000000ffff0a0000000000000032bb0000190100005f633100000e0000000000",
-                "f00007380000020000ffffff0b0000000000000032bb0000190100005f633100000e0000000200425c61ff0c0000000000000032bb0000190100005f00000000",
-                "f0000838633100000e0000000200777777ff0d0000000000000032bb0000190100005f633100000e00000002005e7379ff0e0000000000000032bb0000000000",
-                "f000093800190100005f633100000e0000000300000000ff0f0000000000000032bb0000190100005f633100000e000000030000a5ffff100000000000000000",
-                "f0000a3800000032bb0000190100005f633100000e0000000300ffffffff110000000000000032bb0000190100005f633100000e0000000300ffff0000000000",
-                "f0000b38ff120000000000000032bb0000190100005f633100000e00000003003dff00ff130000000000000032bb0000190100005f633100000e000000000000",
-                "f0000c38000300ff63ffff140000000000000032bb0000190100005f633100000e00000003000000ffff150000000000000032bb0000190100005f6300000000",
-                "f0000d383100000e000000030000ffffff160000000000000032bb0000190100005f633100000e0000000300425c61ff170000000000000032bb000000000000",
-                "f0000e38190100005f633100000e0000000300777777ff180000000000000032bb0000190100005f633100000e00000003005e7379ff19000000000000000000",
-                "f0000f38000032bb0000190100005f633100000e0000000400000000001a0000000000000032bb0000190100005f633100000e00000004000100000000000000",
-                "f00010381b0000000000000032bb0000190100005f633100000e0000000400020000001c0000000000000032bb00001a0100005f633100000100000000000000",
-                "f00011120232bb00001c0100005f6331000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-            };
-            foreach(var packet in packets) {
-                SendStringPacket(packet);
-            }
+            _UsbWriter?.LockForOutput(() => {
+                var packets = new string[] {
+                    "f000013832bb00001e0100005f633100000000000032bb0000180100005f6331000008000000340018000e00180032bb0000190100005f633100000e00000000",
+                    "f0000238000000010005000000020000000000000032bb0000190100005f633100000e000000010006000000030000000000000032bb00001901000000000000",
+                    "f00003385f633100000e0000000200000000ff040000000000000032bb0000190100005f633100000e000000020000a5ffff050000000000000032bb00000000",
+                    "f00004380000190100005f633100000e0000000200ffffffff060000000000000032bb0000190100005f633100000e0000000200ffff00ff0700000000000000",
+                    "f00005380000000032bb0000190100005f633100000e00000002003dff00ff080000000000000032bb0000190100005f633100000e0000000200ff6300000000",
+                    "f0000638ffff090000000000000032bb0000190100005f633100000e00000002000000ffff0a0000000000000032bb0000190100005f633100000e0000000000",
+                    "f00007380000020000ffffff0b0000000000000032bb0000190100005f633100000e0000000200425c61ff0c0000000000000032bb0000190100005f00000000",
+                    "f0000838633100000e0000000200777777ff0d0000000000000032bb0000190100005f633100000e00000002005e7379ff0e0000000000000032bb0000000000",
+                    "f000093800190100005f633100000e0000000300000000ff0f0000000000000032bb0000190100005f633100000e000000030000a5ffff100000000000000000",
+                    "f0000a3800000032bb0000190100005f633100000e0000000300ffffffff110000000000000032bb0000190100005f633100000e0000000300ffff0000000000",
+                    "f0000b38ff120000000000000032bb0000190100005f633100000e00000003003dff00ff130000000000000032bb0000190100005f633100000e000000000000",
+                    "f0000c38000300ff63ffff140000000000000032bb0000190100005f633100000e00000003000000ffff150000000000000032bb0000190100005f6300000000",
+                    "f0000d383100000e000000030000ffffff160000000000000032bb0000190100005f633100000e0000000300425c61ff170000000000000032bb000000000000",
+                    "f0000e38190100005f633100000e0000000300777777ff180000000000000032bb0000190100005f633100000e00000003005e7379ff19000000000000000000",
+                    "f0000f38000032bb0000190100005f633100000e0000000400000000001a0000000000000032bb0000190100005f633100000e00000004000100000000000000",
+                    "f00010381b0000000000000032bb0000190100005f633100000e0000000400020000001c0000000000000032bb00001a0100005f633100000100000000000000",
+                    "f00011120232bb00001c0100005f6331000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                };
+                foreach(var packet in packets) {
+                    _UsbWriter.SendStringPacket(packet);
+                }
+            });
         }
 
         public void RefreshBrightnesses()
         {
-            SendBacklightPercent(BacklightBrightnessPercent);
-            SendDisplayBrightnessPercent(DisplayBrightnessPercent);
-            SendLedBrightnessPercent(LedBrightnessPercent);
-        }
-
-        private void SendBacklightPercent(int percent)
-        {
-            var byteValue = PercentToByte(percent);
-            SendLedOrBrightnessPacket(0, byteValue);
-        }
-
-        private void SendDisplayBrightnessPercent(int percent)
-        {
-            var byteValue = PercentToByte(percent);
-            SendLedOrBrightnessPacket(1, byteValue);
-        }
-
-        private void SendLedBrightnessPercent(int percent)
-        {
-            var byteValue = PercentToByte(percent);
-            SendLedOrBrightnessPacket(2, byteValue);
-        }
-
-        private static byte PercentToByte(int percent)
-        {
-            return (byte)(255.0 * (Math.Max(0, Math.Min(100, percent)) / 100.0));
+            _IlluminationWriter?.SendBacklightPercent(BacklightBrightnessPercent);
+            _IlluminationWriter?.SendDisplayBrightnessPercent(DisplayBrightnessPercent);
+            _IlluminationWriter?.SendLedBrightnessPercent(LedBrightnessPercent);
         }
 
         /// <inheritdoc/>
         public void UseFont(McduFontFile fontFileContent, bool useFullWidth)
         {
-            lock(_OutputLock) {
-                SendScreenToDisplay(_EmptyScreen, skipDuplicateCheck: false);
-
-                byte[] mapBytes;
-                switch(fontFileContent.GlyphHeight) {
-                    case 29:    mapBytes = CduResources.WinwingMcduFontPacketMap_3x29_json; break;
-                    case 31:    mapBytes = CduResources.WinwingMcduFontPacketMap_3x31_json; break;
-                    default:    throw new NotImplementedException($"Need packet map for {fontFileContent.GlyphHeight} pixel high fonts");
-                }
-                var mapJson = Encoding.UTF8.GetString(mapBytes);
-                var packetMap = JsonConvert.DeserializeObject<McduFontPacketMap>(mapJson);
-                var glyphWidth = fontFileContent.GlyphWidth;
-                if(useFullWidth && fontFileContent.GlyphFullWidth > 0) {
-                    glyphWidth = fontFileContent.GlyphFullWidth;
-                }
-                packetMap.OverwritePacketsWithFontFileContent(
-                    PercentToByte(DisplayBrightnessPercent),
-                    glyphWidth,
-                    fontFileContent.GlyphHeight,
-                    0x24 + XOffset + XOffsetForGlyphWidth(glyphWidth),
-                    0x14 + YOffset + YOffsetForGlyphHeight(fontFileContent.GlyphHeight),
-                    fontFileContent?.LargeGlyphs,
-                    fontFileContent?.SmallGlyphs
+            _UsbWriter?.LockForOutput(() => {
+                _ScreenWriter.SendScreenToDisplay(_EmptyScreen, skipDuplicateCheck: false);
+                _FontWriter.SendFont(
+                    fontFileContent,
+                    useFullWidth,
+                    DisplayBrightnessPercent,
+                    XOffset,
+                    YOffset
                 );
-                foreach(var packet in packetMap.Packets) {
-                    SendStringPacket(packet);
-                }
 
                 // As of time of writing the packet map includes a pile of 32bb...1901 commands to
                 // set the colours to WinWing's defaults. If I remove this then the font goes weird.
@@ -327,96 +293,20 @@ namespace McduDotNet
                 // One advantage of resending the palette is that we also refresh the display, which
                 // we need to do anyway. If SendPalette() is removed in the future then you will have
                 // to replace it with RefreshDisplay.
-                if(_CurrentPaletteColourArray == null) {
-                    RefreshDisplay();
-                } else {
-                    SendPalette(
-                        _CurrentPaletteColourArray,
-                        skipDuplicateCheck: true,
-                        forceDisplayRefresh: true
-                    );
-                }
-            }
-        }
-
-        private static int XOffsetForGlyphWidth(int glyphWidth)
-        {
-            var excess = Metrics.DisplayWidthPixels - (glyphWidth * Metrics.Columns);
-            return excess / 2;
-        }
-
-        private static int YOffsetForGlyphHeight(int glyphHeight)
-        {
-            switch(glyphHeight) {
-                case 29:    return 17;
-                case 30:    return 4;
-                case 31:    return 0;
-                default:    throw new NotImplementedException($"Need base YOffset for {glyphHeight} glyphHeight");
-            }
+                _PaletteWriter.ReestablishPaletteAndRefreshDisplay(_ScreenWriter, Screen);
+            });
         }
 
         /// <inheritdoc/>
         public void RefreshDisplay(bool skipDuplicateCheck = false)
         {
-            SendScreenToDisplay(Screen, skipDuplicateCheck);
-        }
-
-        private void SendScreenToDisplay(Screen screen, bool skipDuplicateCheck)
-        {
-            lock(_OutputLock) {
-                var duplicateCheckString = screen.BuildDuplicateCheckString();
-                if(skipDuplicateCheck || _DisplayDuplicateCheckString != duplicateCheckString) {
-                    InitialiseDisplayPacket();
-                    for(var rowIdx = 0;rowIdx < screen.Rows.Length;++rowIdx) {
-                        var row = screen.Rows[rowIdx];
-                        for(var cellIdx = 0;cellIdx < row.Cells.Length;++cellIdx) {
-                            var cell = row.Cells[cellIdx];
-                            AddCellToDisplayPacket(
-                                cell,
-                                isFirstCell: rowIdx == 0 && cellIdx == 0,
-                                isLastCell:  rowIdx + 1 == screen.Rows.Length && cellIdx + 1 == row.Cells.Length
-                            );
-                        }
-                    }
-                    PadAndSendDisplayPacket();
-                    _DisplayDuplicateCheckString = duplicateCheckString;
-
-                    if(_ProcessingPauseMilliseconds > 0) {
-                        // If we send packets too quickly then the device can freak out. I don't see any errors coming
-                        // back in WireShark, it just doesn't update the screen properly. This forces a pause so that
-                        // a set of very fast updates won't corrupt the display.
-                        Thread.Sleep(_ProcessingPauseMilliseconds);
-                    }
-                }
-            }
+            _ScreenWriter?.SendScreenToDisplay(Screen, skipDuplicateCheck);
         }
 
         /// <inheritdoc/>
         public void RefreshLeds(bool skipDuplicateCheck = false)
         {
-            if(skipDuplicateCheck || !(_PreviousLeds?.Equals(Leds) ?? false)) {
-                void sendLight(bool? previous, bool current, byte indicatorCode)
-                {
-                    if(previous != current) {
-                        SendLedOrBrightnessPacket(indicatorCode, current ? (byte)1 : (byte)0);
-                    }
-                }
-
-                sendLight(_PreviousLeds?.Fail,  Leds.Fail,  0x08);
-                sendLight(_PreviousLeds?.Fm,    Leds.Fm,    0x09);
-                sendLight(_PreviousLeds?.Mcdu,  Leds.Mcdu,  0x0a);
-                sendLight(_PreviousLeds?.Menu,  Leds.Menu,  0x0b);
-                sendLight(_PreviousLeds?.Fm1,   Leds.Fm1,   0x0c);
-                sendLight(_PreviousLeds?.Ind,   Leds.Ind,   0x0d);
-                sendLight(_PreviousLeds?.Rdy,   Leds.Rdy,   0x0e);
-                sendLight(_PreviousLeds?.Line,  Leds.Line,  0x0f);
-                sendLight(_PreviousLeds?.Fm2,   Leds.Fm2,   0x10);
-
-                if(_PreviousLeds == null) {
-                    _PreviousLeds = new Leds();
-                }
-                _PreviousLeds.CopyFrom(Leds);
-            }
+            _IlluminationWriter?.ApplyLeds(Leds, skipDuplicateCheck);
         }
 
         /// <inheritdoc/>
@@ -425,180 +315,13 @@ namespace McduDotNet
             bool forceDisplayRefresh = true
         )
         {
-            SendPalette(
+            _PaletteWriter?.SendPalette(
                 Palette?.ToWinWingOrdinalColours(),
+                _ScreenWriter,
+                Screen,
                 skipDuplicateCheck,
                 forceDisplayRefresh
             );
-        }
-
-        private void SendPalette(
-            PaletteColour[] colourArray,
-            bool skipDuplicateCheck = false,
-            bool forceDisplayRefresh = true
-        )
-        {
-            lock(_OutputLock) {
-                var duplicateCheckString = Palette.BuildDuplicateCheckString(colourArray);
-                var currentDuplicateCheckString = Palette.BuildDuplicateCheckString(_CurrentPaletteColourArray);
-                if(skipDuplicateCheck || currentDuplicateCheckString != duplicateCheckString) {
-                    _CurrentPaletteColourArray = colourArray;
-                    byte seq = 1;
-
-                    var packetBuffer = new StringBuilder();
-                    void sendPacketBuffer()
-                    {
-                        if(packetBuffer.Length > 0) {
-                            while(packetBuffer.Length < 128) {
-                                packetBuffer.Append("00");
-                            }
-                            SendStringPacket(packetBuffer.ToString());
-                            packetBuffer.Clear();
-                        }
-                    }
-                    void addToPacketBuffer(int f0Code, string chunk)
-                    {
-                        for(var idx = 0;idx < chunk.Length;++idx) {
-                            if(packetBuffer.Length == 128) {
-                                sendPacketBuffer();
-                            }
-                            if(packetBuffer.Length == 0) {
-                                packetBuffer.Append("f000");
-                                packetBuffer.Append(seq++.ToString("x2"));
-                                packetBuffer.Append(f0Code.ToString("x2"));
-                            }
-                            packetBuffer.Append(chunk[idx]);
-                        }
-                    }
-
-                    addToPacketBuffer(0x1f, "32bb00001901000004170100000e00000001000500000002");
-                    sendPacketBuffer();
-                    addToPacketBuffer(0x3c, "32bb00001901000004170100000e0000000100060000000300000000000000");
-
-                    var colourSeq = 4;
-                    foreach(var colour in colourArray) {
-                        var setForeground = $"32bb00001901000004170100000e0000000200{colour.ToWinwingColourString()}{colourSeq++:x2}00000000000000";
-                        addToPacketBuffer(0x3c, setForeground);
-                    }
-                    foreach(var colour in colourArray) {
-                        var setBackground = $"32bb00001901000004170100000e0000000300{colour.ToWinwingColourString()}{colourSeq++:x2}00000000000000";
-                        addToPacketBuffer(0x3c, setBackground);
-                    }
-                    addToPacketBuffer(0x3c, $"32bb00001901000004170100000e000000040000000000{colourSeq++:x2}00000000000000");
-                    addToPacketBuffer(0x3c, $"32bb00001901000004170100000e000000040001000000{colourSeq++:x2}00000000000000");
-                    addToPacketBuffer(0x2b, $"32bb00001901000004170100000e000000040002000000{colourSeq++:x2}00000000000000");
-                    addToPacketBuffer(0x2b, $"32bb0000050100000417010001");
-                    sendPacketBuffer();
-                    addToPacketBuffer(0x34, "32bb00001a01000025170100000100000002");
-                    addToPacketBuffer(0x34, "32bb00001c010000251701000000000000");
-                    addToPacketBuffer(0x34, "32bb0000050100002517010001");
-                    sendPacketBuffer();
-
-                    if(forceDisplayRefresh) {
-                        SendScreenToDisplay(Screen, skipDuplicateCheck: true);
-                    }
-                }
-            }
-        }
-
-        private void InitialiseDisplayPacket()
-        {
-            _DisplayPacket[0] = 0xF2;
-            _DisplayPacketOffset = 1;
-        }
-
-        private void AddCellToDisplayPacket(Cell cell, bool isFirstCell, bool isLastCell)
-        {
-            _DisplayCharacterBuffer[0] = cell.Character;
-            var utf8Bytes = Encoding.UTF8.GetBytes(_DisplayCharacterBuffer);
-            AddColourAndBytesToDisplayPacket(cell.Colour, cell.Small, isFirstCell, isLastCell);
-            for(var chIdx = 0;chIdx < utf8Bytes.Length;++chIdx) {
-                AddToDisplayPacketSendWhenFull(utf8Bytes[chIdx]);
-            }
-        }
-
-        private void AddColourAndBytesToDisplayPacket(Colour colour, bool isSmallFont, bool isFirstCell, bool isLastCell)
-        {
-            (var b1, var b2) = colour.ToUsbColourAndFontCode(isSmallFont);
-            if(isFirstCell) {
-                b1 += 1;
-            } else if(isLastCell) {
-                b1 += 2;
-            }
-            AddToDisplayPacketSendWhenFull(b1);
-            AddToDisplayPacketSendWhenFull(b2);
-        }
-
-        private void AddToDisplayPacketSendWhenFull(byte value)
-        {
-            _DisplayPacket[_DisplayPacketOffset++] = value;
-            if(_DisplayPacketOffset == _DisplayPacket.Length) {
-                SendPacket(_DisplayPacket);
-                InitialiseDisplayPacket();
-            }
-        }
-
-        private void PadAndSendDisplayPacket()
-        {
-            if(_DisplayPacketOffset > 1) {
-                for(var idx = _DisplayPacketOffset;idx < _DisplayPacket.Length;++idx) {
-                    _DisplayPacket[idx] = 0;
-                }
-                SendPacket(_DisplayPacket);
-                InitialiseDisplayPacket();
-            }
-        }
-
-        private void SendStringPacket(int packetSize, string packet)
-        {
-            if(packet.Length % 2 != 0) {
-                throw new InvalidOperationException($"{packet} is not an even length");
-            }
-            if(packet.Length == packetSize * 2) {
-                SendStringPacket(packet);
-            } else {
-                var buffer = new StringBuilder(packet);
-                buffer.Append(packet);
-                while(buffer.Length < packet.Length) {
-                    buffer.Append("00");
-                }
-                SendStringPacket(buffer.ToString());
-            }
-        }
-
-        private void SendStringPacket(string packet)
-        {
-            var bytes = packet.ToByteArray();
-            SendPacket(bytes);
-        }
-
-        private byte[] _LedOrBrightnessPacket = new byte[] {
-            0x02, 0x32, 0xbb, 0x00, 0x00, 0x03, 0x49,
-            0x00, 0x00,     // <-- these two change with each call
-            0x00, 0x00, 0x00, 0x00, 0x00
-        };
-
-        internal void SendLedOrBrightnessPacket(byte indicatorCode, byte value)
-        {
-            lock(_OutputLock) {
-                const int indicatorOffset = 7;
-                _LedOrBrightnessPacket[indicatorOffset] = indicatorCode;
-                _LedOrBrightnessPacket[indicatorOffset + 1] = value;
-                SendPacket(_LedOrBrightnessPacket);
-            }
-        }
-
-        private void SendPacket(byte[] bytes)
-        {
-            lock(_OutputLock) {
-                var stream = _HidStream;
-                try {
-                    stream?.Write(bytes);
-                } catch(IOException) {
-                    // This can happen when the device is disconnected mid-write
-                    ;
-                }
-            }
         }
 
         private void InputLoop(CancellationToken cancellationToken)
