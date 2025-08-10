@@ -8,39 +8,16 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.Collections.Generic;
-
-namespace Cduhub.Config
+namespace McduDotNet
 {
-    /// <summary>
-    /// Holds the common settings for all CDUHub applications.
-    /// </summary>
-    public class CduhubSettings : Settings
+    public class CommonAutoBrightnessSettings
     {
-        public override string GetName() => "cduhub-settings";
+        public int LowestIntensityPercent { get; set; } = 45;
 
-        public override int GetCurrentVersion() => 3;
+        public int HighestIntensityPercent { get; set; } = 100;
 
-        public class OffsetSettings
-        {
-            public int XPixels { get; set; }
+        public double ScaleGamma { get; set; } = 3.0;
 
-            public int YPixels { get; set; }
-        }
-
-        public OffsetSettings DisplayOffset { get; set; } = new OffsetSettings();
-
-        public FontReference Font { get; set; } = new FontReference();
-
-        public string PaletteName { get; set; } = BuiltInPaletteExtensions.DefaultPaletteReference;
-
-        public class CleanupSettings
-        {
-            public int DisplayBrightnessPercentOnExit { get; set; } = 0;
-
-            public int BacklightBrightnessPercentOnExit { get; set; } = 0;
-        }
-
-        public CleanupSettings Cleanup { get; set; } = new CleanupSettings();
+        public int PlusBrightnessPercent { get; set; } = 0;
     }
 }

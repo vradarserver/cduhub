@@ -34,37 +34,13 @@ namespace Cduhub
         private McduFontFile _CurrentFont;
         private bool? _IsCurrentFontFullWidth;
         private CduhubSettings _Settings;
-        private int _NormalisedBrightnessButtonSteps;
+        private BrightnessSettings _BrightnessSettings;
 
         /// <summary>
         /// Gets or sets a value indicating whether the hub should perpetually try to reconnect to the MCDU if
         /// connection is either never acquired or lost after acquisition. Defaults to true.
         /// </summary>
         public bool AutoReconnect { get; set; } = true;
-
-        /// <summary>
-        /// Gets or sets the brightness step.
-        /// </summary>
-        public int BrightnessStep { get; set; }
-
-        /// <summary>
-        /// Gets <see cref="BrightnessStep"/> expressed as a brightness percentage.
-        /// </summary>
-        public int BrightnessPercent
-        {
-            get {
-                return BrightnessStep == 0
-                    ? 10  // turning it off altogether makes it look broken
-                    : BrightnessStep == _NormalisedBrightnessButtonSteps
-                        ? 100
-                        : (int)((100.0 / _NormalisedBrightnessButtonSteps) * BrightnessStep);
-            }
-        }
-
-        /// <summary>
-        /// True if the backlight is switched on.
-        /// </summary>
-        public bool IsBacklightOn { get; set; }
 
         /// <summary>
         /// The connected device or null if no device is connected.
@@ -165,8 +141,9 @@ namespace Cduhub
             var settings = ConfigStorage.Load<Config.CduhubSettings>();
             _Settings = settings;
 
-            _NormalisedBrightnessButtonSteps = Math.Max(1, Math.Min(100, settings.Brightness.ButtonSteps));
-            BrightnessStep = Math.Max(1, Math.Min(100, settings.Brightness.StartAtStep));
+            var brightnessSettings = ConfigStorage.Load<Config.BrightnessSettings>();
+            _BrightnessSettings = brightnessSettings;
+
             ApplySettingsToDevice();
         }
 
@@ -175,10 +152,15 @@ namespace Cduhub
             var settings = _Settings;
             if(settings != null) {
                 var save = false;
-                if(settings.Brightness.PersistBetweenSessions && settings.Brightness.StartAtStep != BrightnessStep) {
-                    settings.Brightness.StartAtStep = BrightnessStep;
-                    save = true;
-                }
+
+                // This used to have stuff to save brightness values between sessions. That's
+                // gone away, and if you can see this comment then there's nothing that needs
+                // persisting any more. However I've kept the function for when, inevitably,
+                // something new needs persisting in the future.
+                // if(condition) {
+                //   set up settings
+                //   save = true;
+                // }
 
                 if(save) {
                     ConfigStorage.Save(settings);
@@ -198,7 +180,6 @@ namespace Cduhub
                         _Cdu.KeyUp += Cdu_KeyUp;
                         _Cdu.Disconnected += Cdu_Disconnected;
                         _RootPage = new Pages.Root_Page(this);
-                        SetCduBrightness();
                         _CurrentFont = null;
                         _IsCurrentFontFullWidth = null;
 
@@ -219,7 +200,12 @@ namespace Cduhub
             if(settings != null && cdu != null) {
                 cdu.XOffset = settings.DisplayOffset.XPixels;
                 cdu.YOffset = settings.DisplayOffset.YPixels;
-                SetCduBrightness();
+            }
+
+            var brightnessSettings = _BrightnessSettings;
+            if(brightnessSettings != null && cdu != null) {
+                brightnessSettings.CopyToCdu(cdu);
+                cdu.ApplyAutoBrightness();
             }
         }
 
@@ -398,37 +384,9 @@ namespace Cduhub
                     ReturnToRoot();
                 } else if(e.Key == parentKey && !(_SelectedPage?.DisableParentKey ?? false)) {
                     ReturnToParent();
-                } else if(e.Key == Key.Brt && !(_SelectedPage?.DisableBrightnessKeys ?? false)) {
-                    ChangeBrightness(true);
-                } else if(e.Key == Key.Dim && !(_SelectedPage?.DisableBrightnessKeys ?? false)) {
-                    ChangeBrightness(false);
                 } else {
                     _SelectedPage?.OnKeyDown(e.Key);
                 }
-            }
-        }
-
-        private void ChangeBrightness(bool increment)
-        {
-            var delta = increment ? 1 : -1;
-            BrightnessStep = Math.Max(1, Math.Min(BrightnessStep + delta, _NormalisedBrightnessButtonSteps));
-            SetCduBrightness();
-        }
-
-        private void SetCduBrightness()
-        {
-            var cdu = _Cdu;
-            var settings = _Settings;
-
-            if(cdu != null) {
-                cdu.DisplayBrightnessPercent = BrightnessPercent;
-                cdu.LedBrightnessPercent = BrightnessPercent;
-
-                var backlightPercent = settings.Backlight.BacklightPercent;
-                if(BrightnessPercent > settings.Backlight.TurnOffWhenBrightnessExceedsPercent) {
-                    backlightPercent = 0;
-                }
-                cdu.BacklightBrightnessPercent = backlightPercent;
             }
         }
 

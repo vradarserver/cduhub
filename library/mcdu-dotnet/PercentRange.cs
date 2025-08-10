@@ -50,6 +50,13 @@ namespace McduDotNet
         public override int GetHashCode() => (High << 8) | Low;
 
         /// <summary>
+        /// Clamps the percentage to the <see cref="Low"/> and <see cref="High"/> values.
+        /// </summary>
+        /// <param name="percent"></param>
+        /// <returns></returns>
+        public int Clamp(int percent) => Math.Max(Low, Math.Min(High, percent));
+
+        /// <summary>
         /// Returns -1 if <paramref name="percent"/> is below <see cref="Low"/>,
         /// 1 if <paramref name="percent"/> is above <see cref="High"/> and 0 if
         /// it is between <see cref="Low"/> and <see cref="High"/> inclusive.

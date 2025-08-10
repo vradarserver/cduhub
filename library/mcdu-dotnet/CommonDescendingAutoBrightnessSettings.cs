@@ -8,39 +8,39 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.Collections.Generic;
-
-namespace Cduhub.Config
+namespace McduDotNet
 {
-    /// <summary>
-    /// Holds the common settings for all CDUHub applications.
-    /// </summary>
-    public class CduhubSettings : Settings
+    public class CommonDescendingAutoBrightnessSettings : CommonAutoBrightnessSettings
     {
-        public override string GetName() => "cduhub-settings";
+        public int LowIntensityAboveAmbientPercent { get; set; }
 
-        public override int GetCurrentVersion() => 3;
+        public int HighIntensityBelowAmbientPercent { get; set; }
 
-        public class OffsetSettings
+        public int BrightnessForAmbientPercent(int ambientPercent)
         {
-            public int XPixels { get; set; }
-
-            public int YPixels { get; set; }
+            var onRange = new PercentRange(
+                HighIntensityBelowAmbientPercent,
+                LowIntensityAboveAmbientPercent
+            );
+            var intensity = new PercentRange(
+                LowestIntensityPercent,
+                HighestIntensityPercent
+            );
+            switch(onRange.Compare(ambientPercent)) {
+                case -1: // Ambient is lower than the point where we're full-on
+                    return intensity.High;
+                case 1:  // Ambient is higher than the point where we're full-off
+                    return intensity.Low;
+                default: // Ambient is between full-on and full-off
+                    if(intensity.Range == 0) {
+                        return intensity.High;
+                    }
+                    var scaled = intensity.PowerTransformScaling(
+                        onRange.PercentageOfRange(ambientPercent, inverted: true),
+                        ScaleGamma
+                    );
+                    return intensity.Clamp(scaled + PlusBrightnessPercent);
+            }
         }
-
-        public OffsetSettings DisplayOffset { get; set; } = new OffsetSettings();
-
-        public FontReference Font { get; set; } = new FontReference();
-
-        public string PaletteName { get; set; } = BuiltInPaletteExtensions.DefaultPaletteReference;
-
-        public class CleanupSettings
-        {
-            public int DisplayBrightnessPercentOnExit { get; set; } = 0;
-
-            public int BacklightBrightnessPercentOnExit { get; set; } = 0;
-        }
-
-        public CleanupSettings Cleanup { get; set; } = new CleanupSettings();
     }
 }

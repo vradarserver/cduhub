@@ -10,41 +10,15 @@
 
 namespace McduDotNet
 {
-    public class KeyboardAutoBrightnessSettings
+    public class KeyboardAutoBrightnessSettings : CommonDescendingAutoBrightnessSettings
     {
-        public int LowestIntensityPercent { get; set; } = 0;
-
-        public int HighestIntensityPercent { get; set; } = 80;
-
-        public int LowIntensityAtAmbientPercent { get; set; } = 16;
-
-        public int HighIntensityBelowAmbientPercent { get; set; } = 6;
-
-        public double ScaleGamma { get; set; } = 1.0;
-
-        public int BrightnessForAmbientPercent(int ambientPercent)
+        public KeyboardAutoBrightnessSettings()
         {
-            var onRange = new PercentRange(
-                HighIntensityBelowAmbientPercent,
-                LowIntensityAtAmbientPercent
-            );
-            var intensity = new PercentRange(
-                LowestIntensityPercent,
-                HighestIntensityPercent
-            );
-            switch(onRange.Compare(ambientPercent)) {
-                case -1: // Ambient is lower than the point where we're full-on
-                    return intensity.High;
-                case 1:  // Ambient is higher than the point where we're full-off
-                    return intensity.Low;
-                default: // Ambient is between full-on and full-off
-                    return intensity.Range == 0
-                        ? intensity.High
-                        : intensity.PowerTransformScaling(
-                            onRange.PercentageOfRange(ambientPercent, inverted: true),
-                            ScaleGamma
-                          );
-            }
+            LowestIntensityPercent = 0;
+            HighestIntensityPercent = 80;
+            LowIntensityAboveAmbientPercent = 16;
+            HighIntensityBelowAmbientPercent = 6;
+            ScaleGamma = 1.0;
         }
     }
 }
