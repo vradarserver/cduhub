@@ -12,19 +12,21 @@ using Cduhub.Config;
 using Cduhub.FlightSim;
 using McduDotNet;
 
-namespace Cduhub.Pages
+namespace Cduhub.Pages.FlightSimulator
 {
-    class ToLiss_Page : Page
+    class Fenix_Page : Page
     {
-        private ToLissUdpMcdu _ToLissMcdu;
+        private FenixA320EfbMcdu _FenixA320;
 
         public override bool DisableMenuKey => true;
 
-        public override FontReference PageFont => SettingsFont<ToLissUdpSettings>(r => r.Font);
+        public override bool DisableInitKey => true;
 
-        public override Palette Palette => SettingsPalette<ToLissUdpSettings>(r => r.PaletteName);
+        public override FontReference PageFont => SettingsFont<FenixEfbSettings>(r => r.Font);
 
-        public ToLiss_Page(Hub hub) : base(hub)
+        public override Palette Palette => SettingsPalette<FenixEfbSettings>(r => r.PaletteName);
+
+        public Fenix_Page(Hub hub) : base(hub)
         {
         }
 
@@ -41,16 +43,16 @@ namespace Cduhub.Pages
         {
             Disconnect();
 
-            var settings = ConfigStorage.Load<ToLissUdpSettings>();
-            var mcdu = new ToLissUdpMcdu(_Hub.ConnectedDevice.DeviceUser, Screen, Leds) {
+            var settings = ConfigStorage.Load<FenixEfbSettings>();
+            var mcdu = new FenixA320EfbMcdu(_Hub.ConnectedDevice.DeviceUser, Screen, Leds) {
                 Host = settings.Host,
                 Port = settings.Port,
             };
-            _ToLissMcdu = mcdu;
-            ShowConnectionState(_ToLissMcdu?.ConnectionState);
-            mcdu.DisplayRefreshRequired += ToLissMcdu_DisplayRefreshRequired;
-            mcdu.LedsRefreshRequired += ToLissMcdu_LedsRefreshRequired;
-            mcdu.ConnectionStateChanged += ToLissMcdu_ConnectionStateChanged;
+            _FenixA320 = mcdu;
+            ShowConnectionState(_FenixA320?.ConnectionState);
+            mcdu.DisplayRefreshRequired += FenixA320_DisplayRefreshRequired;
+            mcdu.LedsRefreshRequired += FenixA320_LedsRefreshRequired;
+            mcdu.ConnectionStateChanged += FenixA320_ConnectionStateChanged;
 
             ConnectedFlightSimulators.AddFlightSimulatorMcdu(mcdu);
             mcdu.ReconnectToSimulator();
@@ -58,15 +60,15 @@ namespace Cduhub.Pages
 
         private void Disconnect()
         {
-            if(_ToLissMcdu != null) {
-                var reference = _ToLissMcdu;
-                _ToLissMcdu = null;
+            if(_FenixA320 != null) {
+                var reference = _FenixA320;
+                _FenixA320 = null;
 
                 try {
-                    reference.DisplayRefreshRequired -= ToLissMcdu_DisplayRefreshRequired;
-                    reference.LedsRefreshRequired -= ToLissMcdu_LedsRefreshRequired;
+                    reference.DisplayRefreshRequired -= FenixA320_DisplayRefreshRequired;
+                    reference.LedsRefreshRequired -= FenixA320_LedsRefreshRequired;
                     reference.Dispose();
-                    reference.ConnectionStateChanged -= ToLissMcdu_ConnectionStateChanged;
+                    reference.ConnectionStateChanged -= FenixA320_ConnectionStateChanged;
                     ConnectedFlightSimulators.RemoveFlightSimulatorMcdu(reference);
                 } catch {
                     ;
@@ -77,26 +79,26 @@ namespace Cduhub.Pages
         public override void OnKeyDown(Key key)
         {
             if(key != Key.Blank1) {
-                _ToLissMcdu?.SendKeyToSimulator(key, pressed: true);
+                _FenixA320?.SendKeyToSimulator(key, pressed: true);
             } else {
-                _ToLissMcdu?.AdvanceSelectedBufferProductId();
+                _FenixA320?.AdvanceSelectedBufferProductId();
             }
         }
 
         public override void OnKeyUp(Key key)
         {
             if(key != Key.Blank1) {
-                _ToLissMcdu?.SendKeyToSimulator(key, pressed: false);
+                _FenixA320?.SendKeyToSimulator(key, pressed: false);
             }
         }
 
-        private void ToLissMcdu_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
+        private void FenixA320_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
 
-        private void ToLissMcdu_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLeds();
+        private void FenixA320_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLeds();
 
-        private void ToLissMcdu_ConnectionStateChanged(object sender, System.EventArgs e)
+        private void FenixA320_ConnectionStateChanged(object sender, System.EventArgs e)
         {
-            ShowConnectionState(_ToLissMcdu?.ConnectionState);
+            ShowConnectionState(_FenixA320?.ConnectionState);
         }
     }
 }

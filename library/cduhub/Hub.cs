@@ -110,7 +110,8 @@ namespace Cduhub
             _ReconnectTimer.Elapsed += ReconnectTimer_Elapsed;
             _ReconnectTimer.Start();
 
-            ReloadSettings();
+            LoadSettings();
+            ApplySettingsToDevice();
         }
 
         /// <inheritdoc/>
@@ -136,15 +137,27 @@ namespace Cduhub
             GC.SuppressFinalize(this);
         }
 
-        public void ReloadSettings()
+        private void LoadSettings()
         {
             var settings = ConfigStorage.Load<Config.CduhubSettings>();
             _Settings = settings;
 
             var brightnessSettings = ConfigStorage.Load<Config.BrightnessSettings>();
             _BrightnessSettings = brightnessSettings;
+        }
 
+        public void ReloadSettings()
+        {
+            LoadSettings();
             ApplySettingsToDevice();
+
+            _CurrentFont = null;
+            if(_SelectedPage != null) {
+                UploadFont(_SelectedPage.PageFont);
+                RefreshPalette(_SelectedPage, forceRefresh: true);
+                RefreshLeds(_SelectedPage);
+                _Cdu?.RefreshBrightnesses();
+            }
         }
 
         private void PersistSettings()
@@ -311,11 +324,11 @@ namespace Cduhub
             }
         }
 
-        public void RefreshPalette(Page page)
+        public void RefreshPalette(Page page, bool forceRefresh = false)
         {
             if(page == _SelectedPage) {
                 _Cdu.Palette.CopyFrom(page.Palette);
-                _Cdu.RefreshPalette();
+                _Cdu.RefreshPalette(skipDuplicateCheck: forceRefresh);
             }
         }
 
@@ -384,6 +397,8 @@ namespace Cduhub
                     ReturnToRoot();
                 } else if(e.Key == parentKey && !(_SelectedPage?.DisableParentKey ?? false)) {
                     ReturnToParent();
+                } else if(e.Key == Key.Init && !(_SelectedPage?.DisableInitKey ?? false)) {
+                    CreateAndSelectPage<Pages.Init.InitMenu_Page>();
                 } else {
                     _SelectedPage?.OnKeyDown(e.Key);
                 }

@@ -11,14 +11,14 @@
 using Cduhub.Config;
 using McduDotNet;
 
-namespace Cduhub.Pages
+namespace Cduhub.Pages.FlightSimulator
 {
-    class SimBridgeInit_Page : Page
+    class FenixInit_Page : Page
     {
-        private SimBridgeEfbSettings _Settings;
+        private FenixEfbSettings _Settings;
         private readonly FormHelper _Form;
 
-        public SimBridgeInit_Page(Hub hub) : base(hub)
+        public FenixInit_Page(Hub hub) : base(hub)
         {
             Scratchpad = new Scratchpad();
             _Form = new FormHelper(() => DrawPage());
@@ -35,7 +35,7 @@ namespace Cduhub.Pages
 
         private void LoadSettings()
         {
-            _Settings = ConfigStorage.Load<SimBridgeEfbSettings>();
+            _Settings = ConfigStorage.Load<FenixEfbSettings>();
             DrawPage();
         }
 
@@ -43,7 +43,7 @@ namespace Cduhub.Pages
         {
             Output
                 .Clear()
-                .Centred("<green>SIMBRIDGE EFB CONFIG")
+                .Centred("<green>FENIX EFB CONFIG")
                 .LeftLabelTitle(1, "<small> HOST")
                 .LeftLabel(1, $"<cyan>{SanitiseInput(_Settings.Host)}")
                 .LeftLabelTitle(2, "<small> PORT")
@@ -97,7 +97,7 @@ namespace Cduhub.Pages
 
         private void ResetToDefaults()
         {
-            var defaults = new SimBridgeEfbSettings();
+            var defaults = new FenixEfbSettings();
             _Settings.Host = defaults.Host;
             _Settings.Port = defaults.Port;
             _Settings.Font = defaults.Font;

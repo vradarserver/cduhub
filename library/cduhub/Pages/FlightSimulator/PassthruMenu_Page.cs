@@ -10,33 +10,29 @@
 
 using McduDotNet;
 
-namespace Cduhub.Pages
+namespace Cduhub.Pages.FlightSimulator
 {
-    class FenixMenu_Page : Page
+    class PassthruMenu_Page : Page
     {
-        public FenixMenu_Page(Hub hub) : base(hub)
+        public PassthruMenu_Page(Hub hub) : base(hub)
         {
         }
 
         public override void OnPreparePage()
         {
             Output
-                .Centred("<green>FENIX A32X")
+                .Centred("<green>PASSTHROUGH")
                 .Newline(2)
-                .Centred("BLANK1 <small>TO SWAP <large>MCDUs")
-                .Newline()
                 .Centred("BLANK2 <small>FOR HUB <large>MENU")
-                .RightLabel(3, "<cyan>MCDU<")
-                .LeftLabel(5, "<amber><small>>INIT")
+                .RightLabel(3, "<cyan>PASSTHRU<")
                 .LeftLabel(6, "<red><small>>BACK");
         }
 
         public override void OnKeyDown(Key key)
         {
             switch(key) {
-                case Key.LineSelectLeft5:   _Hub.CreateAndSelectPage<FenixInit_Page>(); break;
                 case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
-                case Key.LineSelectRight3:  _Hub.CreateAndSelectPage<Fenix_Page>(); break;
+                case Key.LineSelectRight3:  _Hub.CreateAndSelectPage<Passthru_Page>(); break;
             }
         }
     }

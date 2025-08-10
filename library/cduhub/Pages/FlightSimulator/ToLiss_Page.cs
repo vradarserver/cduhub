@@ -12,19 +12,21 @@ using Cduhub.Config;
 using Cduhub.FlightSim;
 using McduDotNet;
 
-namespace Cduhub.Pages
+namespace Cduhub.Pages.FlightSimulator
 {
-    class SimBridge_Page : Page
+    class ToLiss_Page : Page
     {
-        private SimBridgeA320RemoteMcdu _SimBridgeA320;
+        private ToLissUdpMcdu _ToLissMcdu;
 
         public override bool DisableMenuKey => true;
 
-        public override FontReference PageFont => SettingsFont<SimBridgeEfbSettings>(r => r.Font);
+        public override bool DisableInitKey => true;
 
-        public override Palette Palette => SettingsPalette<SimBridgeEfbSettings>(r => r.PaletteName);
+        public override FontReference PageFont => SettingsFont<ToLissUdpSettings>(r => r.Font);
 
-        public SimBridge_Page(Hub hub) : base(hub)
+        public override Palette Palette => SettingsPalette<ToLissUdpSettings>(r => r.PaletteName);
+
+        public ToLiss_Page(Hub hub) : base(hub)
         {
         }
 
@@ -41,16 +43,16 @@ namespace Cduhub.Pages
         {
             Disconnect();
 
-            var settings = ConfigStorage.Load<SimBridgeEfbSettings>();
-            var mcdu = new SimBridgeA320RemoteMcdu(_Hub.ConnectedDevice.DeviceUser, Screen, Leds) {
+            var settings = ConfigStorage.Load<ToLissUdpSettings>();
+            var mcdu = new ToLissUdpMcdu(_Hub.ConnectedDevice.DeviceUser, Screen, Leds) {
                 Host = settings.Host,
                 Port = settings.Port,
             };
-            _SimBridgeA320 = mcdu;
-            ShowConnectionState(_SimBridgeA320?.ConnectionState);
-            mcdu.DisplayRefreshRequired += SimBridgeA320_DisplayRefreshRequired;
-            mcdu.LedsRefreshRequired += SimBridgeA320_LedsRefreshRequired;
-            mcdu.ConnectionStateChanged += SimBridgeA320_ConnectionStateChanged;
+            _ToLissMcdu = mcdu;
+            ShowConnectionState(_ToLissMcdu?.ConnectionState);
+            mcdu.DisplayRefreshRequired += ToLissMcdu_DisplayRefreshRequired;
+            mcdu.LedsRefreshRequired += ToLissMcdu_LedsRefreshRequired;
+            mcdu.ConnectionStateChanged += ToLissMcdu_ConnectionStateChanged;
 
             ConnectedFlightSimulators.AddFlightSimulatorMcdu(mcdu);
             mcdu.ReconnectToSimulator();
@@ -58,15 +60,15 @@ namespace Cduhub.Pages
 
         private void Disconnect()
         {
-            if(_SimBridgeA320 != null) {
-                var reference = _SimBridgeA320;
-                _SimBridgeA320 = null;
+            if(_ToLissMcdu != null) {
+                var reference = _ToLissMcdu;
+                _ToLissMcdu = null;
 
                 try {
-                    reference.DisplayRefreshRequired -= SimBridgeA320_DisplayRefreshRequired;
-                    reference.LedsRefreshRequired -= SimBridgeA320_LedsRefreshRequired;
+                    reference.DisplayRefreshRequired -= ToLissMcdu_DisplayRefreshRequired;
+                    reference.LedsRefreshRequired -= ToLissMcdu_LedsRefreshRequired;
                     reference.Dispose();
-                    reference.ConnectionStateChanged -= SimBridgeA320_ConnectionStateChanged;
+                    reference.ConnectionStateChanged -= ToLissMcdu_ConnectionStateChanged;
                     ConnectedFlightSimulators.RemoveFlightSimulatorMcdu(reference);
                 } catch {
                     ;
@@ -77,21 +79,26 @@ namespace Cduhub.Pages
         public override void OnKeyDown(Key key)
         {
             if(key != Key.Blank1) {
-                _SimBridgeA320?.SendKeyToSimulator(key, pressed: true);
+                _ToLissMcdu?.SendKeyToSimulator(key, pressed: true);
             } else {
-                _SimBridgeA320?.AdvanceSelectedBufferProductId();
+                _ToLissMcdu?.AdvanceSelectedBufferProductId();
             }
         }
 
-        private void ShowConnecting() => FullPageStatusMessage("<grey>CONNECTING", "<grey><small>(BLANK2 TO QUIT)");
-
-        private void SimBridgeA320_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
-
-        private void SimBridgeA320_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLeds();
-
-        private void SimBridgeA320_ConnectionStateChanged(object sender, System.EventArgs e)
+        public override void OnKeyUp(Key key)
         {
-            ShowConnectionState(_SimBridgeA320?.ConnectionState);
+            if(key != Key.Blank1) {
+                _ToLissMcdu?.SendKeyToSimulator(key, pressed: false);
+            }
+        }
+
+        private void ToLissMcdu_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
+
+        private void ToLissMcdu_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLeds();
+
+        private void ToLissMcdu_ConnectionStateChanged(object sender, System.EventArgs e)
+        {
+            ShowConnectionState(_ToLissMcdu?.ConnectionState);
         }
     }
 }

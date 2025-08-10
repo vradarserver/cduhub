@@ -128,7 +128,7 @@ namespace Cduhub.Pages
 
         private void CopyScratchpadToRefreshMinutes()
         {
-            if(!_Form.IntegerValue(Scratchpad.Text, v => _Settings.RefreshMinutes = v, minValue: 0, maxValue: 60 * 24)) {
+            if(!_Form.IntegerValue(Scratchpad.Text, v => _Settings.RefreshMinutes = v, min: 0, max: 60 * 24)) {
                 Scratchpad.ShowFormatError();
             } else {
                 Scratchpad.Clear();

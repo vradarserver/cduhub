@@ -10,33 +10,34 @@
 
 using McduDotNet;
 
-namespace Cduhub.Pages
+namespace Cduhub.Pages.FlightSimulator
 {
-    class Root_Page : Page
+    class XPlaneMenu_Page : Page
     {
-        public Root_Page(Hub hub) : base(hub)
+        public XPlaneMenu_Page(Hub hub) : base(hub)
         {
         }
 
         public override void OnPreparePage()
         {
             Output
-                .Centred("<green>CDU <small>HUB")
-                .LeftLabel(1, ">CLOCK")
-                .LeftLabel(2, ">WEATHER")
-                .RightLabel(1, "FLIGHT SIMS<")
-                .RightLabel(6, "<red>QUIT<");
-
-            Leds.Mcdu = Leds.Menu = true;
+                .Centred("<green>X-PLANE 12")
+                .White()
+                .Newline(2)
+                .Centred("BLANK1 <small>TO SWAP <large>MCDUs")
+                .Newline()
+                .Centred("BLANK2 <small>FOR HUB <large>MENU")
+                .RightLabel(3, "<cyan>MCDU<")
+                .LeftLabel(5, "<amber><small>>INIT")
+                .LeftLabel(6, "<red><small>>BACK");
         }
 
         public override void OnKeyDown(Key key)
         {
             switch(key) {
-                case Key.LineSelectLeft1:   _Hub.CreateAndSelectPage<Clock_Page>(); break;
-                case Key.LineSelectLeft2:   _Hub.CreateAndSelectPage<WeatherMenu_Page>(); break;
-                case Key.LineSelectRight1:  _Hub.CreateAndSelectPage<FlightSimulator.FlightSimMenu_Page>(); break;
-                case Key.LineSelectRight6:  _Hub.Shutdown(); break;
+                case Key.LineSelectLeft5:   _Hub.CreateAndSelectPage<XPlaneInit_Page>(); break;
+                case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
+                case Key.LineSelectRight3:  _Hub.CreateAndSelectPage<XPlane_Page>(); break;
             }
         }
     }

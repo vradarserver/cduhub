@@ -10,13 +10,13 @@
 
 using Cduhub.Config;
 
-namespace Cduhub.Pages
+namespace Cduhub.Pages.FlightSimulator
 {
     class Passthru_Page : Page
     {
         public override bool DisableMenuKey => true;
 
-        public override bool DisableBrightnessKeys => true;
+        public override bool DisableInitKey => true;
 
         public override FontReference PageFont => null;
 

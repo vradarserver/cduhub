@@ -10,21 +10,21 @@
 
 using McduDotNet;
 
-namespace Cduhub.Pages
+namespace Cduhub.Pages.FlightSimulator
 {
-    class SimBridgeMenu_Page : Page
+    class FenixMenu_Page : Page
     {
-        public SimBridgeMenu_Page(Hub hub) : base(hub)
+        public FenixMenu_Page(Hub hub) : base(hub)
         {
         }
 
         public override void OnPreparePage()
         {
             Output
-                .Centred("<green>SIMBRIDGE")
-                .Newline()
-                .Centred("<green><small>(FLY-BY-WIRE)")
+                .Centred("<green>FENIX A32X")
                 .Newline(2)
+                .Centred("BLANK1 <small>TO SWAP <large>MCDUs")
+                .Newline()
                 .Centred("BLANK2 <small>FOR HUB <large>MENU")
                 .RightLabel(3, "<cyan>MCDU<")
                 .LeftLabel(5, "<amber><small>>INIT")
@@ -34,9 +34,9 @@ namespace Cduhub.Pages
         public override void OnKeyDown(Key key)
         {
             switch(key) {
-                case Key.LineSelectLeft5:   _Hub.CreateAndSelectPage<SimBridgeInit_Page>(); break;
+                case Key.LineSelectLeft5:   _Hub.CreateAndSelectPage<FenixInit_Page>(); break;
                 case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
-                case Key.LineSelectRight3:  _Hub.CreateAndSelectPage<SimBridge_Page>(); break;
+                case Key.LineSelectRight3:  _Hub.CreateAndSelectPage<Fenix_Page>(); break;
             }
         }
     }

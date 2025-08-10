@@ -12,13 +12,15 @@ using Cduhub.Config;
 using Cduhub.FlightSim;
 using McduDotNet;
 
-namespace Cduhub.Pages
+namespace Cduhub.Pages.FlightSimulator
 {
     class XPlane_Page : Page
     {
         private XPlaneGenericMcdu _XPlaneMcdu;
 
         public override bool DisableMenuKey => true;
+
+        public override bool DisableInitKey => true;
 
         public override FontReference PageFont => SettingsFont<XPlane12RestSettings>(r => r.Font);
 

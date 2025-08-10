@@ -34,7 +34,7 @@ namespace Cduhub
 
         public virtual bool DisableMenuKey { get; }
 
-        public virtual bool DisableBrightnessKeys { get; }
+        public virtual bool DisableInitKey { get; }
 
         public virtual Key ParentKey { get; } = Key.Blank2;
 
@@ -102,6 +102,32 @@ namespace Cduhub
             }
 
             return buffer.ToString();
+        }
+
+        protected virtual int LeftLineSelectIndex(Key key)
+        {
+            switch(key) {
+                case Key.LineSelectLeft1:   return 1;
+                case Key.LineSelectLeft2:   return 2;
+                case Key.LineSelectLeft3:   return 3;
+                case Key.LineSelectLeft4:   return 4;
+                case Key.LineSelectLeft5:   return 5;
+                case Key.LineSelectLeft6:   return 6;
+            }
+            return -1;
+        }
+
+        protected virtual int RightLineSelectIndex(Key key)
+        {
+            switch(key) {
+                case Key.LineSelectRight1:  return 1;
+                case Key.LineSelectRight2:  return 2;
+                case Key.LineSelectRight3:  return 3;
+                case Key.LineSelectRight4:  return 4;
+                case Key.LineSelectRight5:  return 5;
+                case Key.LineSelectRight6:  return 6;
+            }
+            return -1;
         }
 
         protected virtual void FullPageStatusMessage(

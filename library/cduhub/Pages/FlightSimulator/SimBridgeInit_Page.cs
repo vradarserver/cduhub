@@ -11,14 +11,14 @@
 using Cduhub.Config;
 using McduDotNet;
 
-namespace Cduhub.Pages
+namespace Cduhub.Pages.FlightSimulator
 {
-    class XPlaneInit_Page : Page
+    class SimBridgeInit_Page : Page
     {
-        private XPlane12RestSettings _Settings;
+        private SimBridgeEfbSettings _Settings;
         private readonly FormHelper _Form;
 
-        public XPlaneInit_Page(Hub hub) : base(hub)
+        public SimBridgeInit_Page(Hub hub) : base(hub)
         {
             Scratchpad = new Scratchpad();
             _Form = new FormHelper(() => DrawPage());
@@ -35,7 +35,7 @@ namespace Cduhub.Pages
 
         private void LoadSettings()
         {
-            _Settings = ConfigStorage.Load<XPlane12RestSettings>();
+            _Settings = ConfigStorage.Load<SimBridgeEfbSettings>();
             DrawPage();
         }
 
@@ -43,7 +43,7 @@ namespace Cduhub.Pages
         {
             Output
                 .Clear()
-                .Centred("<green>X-PLANE12 REST CONFIG")
+                .Centred("<green>SIMBRIDGE EFB CONFIG")
                 .LeftLabelTitle(1, "<small> HOST")
                 .LeftLabel(1, $"<cyan>{SanitiseInput(_Settings.Host)}")
                 .LeftLabelTitle(2, "<small> PORT")
@@ -97,7 +97,7 @@ namespace Cduhub.Pages
 
         private void ResetToDefaults()
         {
-            var defaults = new XPlane12RestSettings();
+            var defaults = new SimBridgeEfbSettings();
             _Settings.Host = defaults.Host;
             _Settings.Port = defaults.Port;
             _Settings.Font = defaults.Font;
@@ -108,7 +108,7 @@ namespace Cduhub.Pages
         private void CopyScratchpadToHost()
         {
             var text = Scratchpad.Text;
-            if(!Validate.IsValidForHttpEndPoint(host: text)) {
+            if(!Validate.IsValidForWebSocketUri(host: text)) {
                 Scratchpad.ShowFormatError();
             } else {
                 _Settings.Host = text;
@@ -121,7 +121,7 @@ namespace Cduhub.Pages
         {
             var text = Scratchpad.Text;
 
-            if(!int.TryParse(text, out var port) || !Validate.IsValidForHttpEndPoint(port: port)) {
+            if(!int.TryParse(text, out var port) || !Validate.IsValidForWebSocketUri(port: port)) {
                 Scratchpad.ShowFormatError();
             } else {
                 _Settings.Port = port;

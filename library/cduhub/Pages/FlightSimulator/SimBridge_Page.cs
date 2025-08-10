@@ -12,19 +12,21 @@ using Cduhub.Config;
 using Cduhub.FlightSim;
 using McduDotNet;
 
-namespace Cduhub.Pages
+namespace Cduhub.Pages.FlightSimulator
 {
-    class Fenix_Page : Page
+    class SimBridge_Page : Page
     {
-        private FenixA320EfbMcdu _FenixA320;
+        private SimBridgeA320RemoteMcdu _SimBridgeA320;
 
         public override bool DisableMenuKey => true;
 
-        public override FontReference PageFont => SettingsFont<FenixEfbSettings>(r => r.Font);
+        public override bool DisableInitKey => true;
 
-        public override Palette Palette => SettingsPalette<FenixEfbSettings>(r => r.PaletteName);
+        public override FontReference PageFont => SettingsFont<SimBridgeEfbSettings>(r => r.Font);
 
-        public Fenix_Page(Hub hub) : base(hub)
+        public override Palette Palette => SettingsPalette<SimBridgeEfbSettings>(r => r.PaletteName);
+
+        public SimBridge_Page(Hub hub) : base(hub)
         {
         }
 
@@ -41,16 +43,16 @@ namespace Cduhub.Pages
         {
             Disconnect();
 
-            var settings = ConfigStorage.Load<FenixEfbSettings>();
-            var mcdu = new FenixA320EfbMcdu(_Hub.ConnectedDevice.DeviceUser, Screen, Leds) {
+            var settings = ConfigStorage.Load<SimBridgeEfbSettings>();
+            var mcdu = new SimBridgeA320RemoteMcdu(_Hub.ConnectedDevice.DeviceUser, Screen, Leds) {
                 Host = settings.Host,
                 Port = settings.Port,
             };
-            _FenixA320 = mcdu;
-            ShowConnectionState(_FenixA320?.ConnectionState);
-            mcdu.DisplayRefreshRequired += FenixA320_DisplayRefreshRequired;
-            mcdu.LedsRefreshRequired += FenixA320_LedsRefreshRequired;
-            mcdu.ConnectionStateChanged += FenixA320_ConnectionStateChanged;
+            _SimBridgeA320 = mcdu;
+            ShowConnectionState(_SimBridgeA320?.ConnectionState);
+            mcdu.DisplayRefreshRequired += SimBridgeA320_DisplayRefreshRequired;
+            mcdu.LedsRefreshRequired += SimBridgeA320_LedsRefreshRequired;
+            mcdu.ConnectionStateChanged += SimBridgeA320_ConnectionStateChanged;
 
             ConnectedFlightSimulators.AddFlightSimulatorMcdu(mcdu);
             mcdu.ReconnectToSimulator();
@@ -58,15 +60,15 @@ namespace Cduhub.Pages
 
         private void Disconnect()
         {
-            if(_FenixA320 != null) {
-                var reference = _FenixA320;
-                _FenixA320 = null;
+            if(_SimBridgeA320 != null) {
+                var reference = _SimBridgeA320;
+                _SimBridgeA320 = null;
 
                 try {
-                    reference.DisplayRefreshRequired -= FenixA320_DisplayRefreshRequired;
-                    reference.LedsRefreshRequired -= FenixA320_LedsRefreshRequired;
+                    reference.DisplayRefreshRequired -= SimBridgeA320_DisplayRefreshRequired;
+                    reference.LedsRefreshRequired -= SimBridgeA320_LedsRefreshRequired;
                     reference.Dispose();
-                    reference.ConnectionStateChanged -= FenixA320_ConnectionStateChanged;
+                    reference.ConnectionStateChanged -= SimBridgeA320_ConnectionStateChanged;
                     ConnectedFlightSimulators.RemoveFlightSimulatorMcdu(reference);
                 } catch {
                     ;
@@ -77,26 +79,21 @@ namespace Cduhub.Pages
         public override void OnKeyDown(Key key)
         {
             if(key != Key.Blank1) {
-                _FenixA320?.SendKeyToSimulator(key, pressed: true);
+                _SimBridgeA320?.SendKeyToSimulator(key, pressed: true);
             } else {
-                _FenixA320?.AdvanceSelectedBufferProductId();
+                _SimBridgeA320?.AdvanceSelectedBufferProductId();
             }
         }
 
-        public override void OnKeyUp(Key key)
+        private void ShowConnecting() => FullPageStatusMessage("<grey>CONNECTING", "<grey><small>(BLANK2 TO QUIT)");
+
+        private void SimBridgeA320_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
+
+        private void SimBridgeA320_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLeds();
+
+        private void SimBridgeA320_ConnectionStateChanged(object sender, System.EventArgs e)
         {
-            if(key != Key.Blank1) {
-                _FenixA320?.SendKeyToSimulator(key, pressed: false);
-            }
-        }
-
-        private void FenixA320_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
-
-        private void FenixA320_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLeds();
-
-        private void FenixA320_ConnectionStateChanged(object sender, System.EventArgs e)
-        {
-            ShowConnectionState(_FenixA320?.ConnectionState);
+            ShowConnectionState(_SimBridgeA320?.ConnectionState);
         }
     }
 }

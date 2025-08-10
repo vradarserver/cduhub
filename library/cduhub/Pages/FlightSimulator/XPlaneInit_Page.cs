@@ -11,14 +11,14 @@
 using Cduhub.Config;
 using McduDotNet;
 
-namespace Cduhub.Pages
+namespace Cduhub.Pages.FlightSimulator
 {
-    class ToLissInit_Page : Page
+    class XPlaneInit_Page : Page
     {
-        private ToLissUdpSettings _Settings;
+        private XPlane12RestSettings _Settings;
         private readonly FormHelper _Form;
 
-        public ToLissInit_Page(Hub hub) : base(hub)
+        public XPlaneInit_Page(Hub hub) : base(hub)
         {
             Scratchpad = new Scratchpad();
             _Form = new FormHelper(() => DrawPage());
@@ -35,7 +35,7 @@ namespace Cduhub.Pages
 
         private void LoadSettings()
         {
-            _Settings = ConfigStorage.Load<ToLissUdpSettings>();
+            _Settings = ConfigStorage.Load<XPlane12RestSettings>();
             DrawPage();
         }
 
@@ -43,7 +43,7 @@ namespace Cduhub.Pages
         {
             Output
                 .Clear()
-                .Centred("<green>TOLISS UDP CONFIG")
+                .Centred("<green>X-PLANE12 REST CONFIG")
                 .LeftLabelTitle(1, "<small> HOST")
                 .LeftLabel(1, $"<cyan>{SanitiseInput(_Settings.Host)}")
                 .LeftLabelTitle(2, "<small> PORT")
@@ -97,7 +97,7 @@ namespace Cduhub.Pages
 
         private void ResetToDefaults()
         {
-            var defaults = new ToLissUdpSettings();
+            var defaults = new XPlane12RestSettings();
             _Settings.Host = defaults.Host;
             _Settings.Port = defaults.Port;
             _Settings.Font = defaults.Font;
@@ -108,7 +108,7 @@ namespace Cduhub.Pages
         private void CopyScratchpadToHost()
         {
             var text = Scratchpad.Text;
-            if(!Validate.IsValidForUdpEndPoint(host: text)) {
+            if(!Validate.IsValidForHttpEndPoint(host: text)) {
                 Scratchpad.ShowFormatError();
             } else {
                 _Settings.Host = text;
@@ -121,7 +121,7 @@ namespace Cduhub.Pages
         {
             var text = Scratchpad.Text;
 
-            if(!int.TryParse(text, out var port) || !Validate.IsValidForUdpEndPoint(port: port)) {
+            if(!int.TryParse(text, out var port) || !Validate.IsValidForHttpEndPoint(port: port)) {
                 Scratchpad.ShowFormatError();
             } else {
                 _Settings.Port = port;

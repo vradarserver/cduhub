@@ -34,15 +34,31 @@ namespace Cduhub
         public bool IntegerValue(
             string text,
             Action<int> setValue,
-            int minValue = int.MinValue,
-            int maxValue = int.MaxValue
+            int min = int.MinValue,
+            int max = int.MaxValue
         )
         {
             var result = int.TryParse(text, out var value);
-            result = result && value >= minValue && value <= maxValue;
+            result = result && value >= min && value <= max;
             if(result) {
                 setValue(value);
                 _DrawPageAction();
+            }
+            return result;
+        }
+
+        public bool IntegerFromScratchpad(
+            Scratchpad scratchpad,
+            Action<int> setValue,
+            int min = int.MinValue,
+            int max = int.MaxValue
+        )
+        {
+            var result = IntegerValue(scratchpad.Text, setValue, min, max);
+            if(!result) {
+                scratchpad.ShowFormatError();
+            } else {
+                scratchpad.Clear();
             }
             return result;
         }

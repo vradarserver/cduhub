@@ -8,31 +8,71 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System;
+using System.Collections.Generic;
 using McduDotNet;
 
-namespace Cduhub.Pages
+namespace Cduhub.Pages.Init
 {
-    class PassthruMenu_Page : Page
+    class InitMenu_Page : Page
     {
-        public PassthruMenu_Page(Hub hub) : base(hub)
+        class InitPage
+        {
+            public string Name { get; set; }
+
+            public Type PageType { get; set; }
+
+            public InitPage(string name, Type type)
+            {
+                Name = name;
+                PageType = type;
+            }
+
+            public static InitPage CreateFor<T>(string name) where T: Page
+            {
+                return new InitPage(name, typeof(T));
+            }
+        }
+
+        private InitPage[] _AllInitPages = new InitPage[] {
+            InitPage.CreateFor<CduHubInit_Page>("CDU HUB"),
+        };
+
+        private readonly List<InitPage> _LeftInitPages = new List<InitPage>();
+
+        public InitMenu_Page(Hub hub) : base(hub)
         {
         }
 
-        public override void OnPreparePage()
+        public override void OnSelected(bool selected)
         {
-            Output
-                .Centred("<green>PASSTHROUGH")
-                .Newline(2)
-                .Centred("BLANK2 <small>FOR HUB <large>MENU")
-                .RightLabel(3, "<cyan>PASSTHRU<")
-                .LeftLabel(6, "<red><small>>BACK");
+            if(selected) {
+                DisplayMenu();
+            }
+        }
+
+        private void DisplayMenu()
+        {
+            Output.Clear();
+
+            _LeftInitPages.Clear();
+            for(var idx = 0;idx < _AllInitPages.Length;++idx) {
+                var initPage = _AllInitPages[idx];
+                _LeftInitPages.Add(initPage);
+                Output.LeftLabel(idx + 1, $">{initPage.Name}");
+            }
+
+            RefreshDisplay();
         }
 
         public override void OnKeyDown(Key key)
         {
-            switch(key) {
-                case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
-                case Key.LineSelectRight3:  _Hub.CreateAndSelectPage<Passthru_Page>(); break;
+            var idx = LeftLineSelectIndex(key) - 1;
+            var initPage = idx > -1 && idx < _LeftInitPages.Count
+                ? _LeftInitPages[idx]
+                : null;
+            if(initPage != null) {
+                _Hub.CreateAndSelectPage(initPage.PageType);
             }
         }
     }
