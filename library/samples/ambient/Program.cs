@@ -18,6 +18,13 @@ namespace Ambient
         {
             using(var cdu = CduFactory.ConnectLocal()) {
                 Console.WriteLine($"Using {cdu.DeviceId} MCDU");
+                cdu.Leds.TurnAllOn(true);
+                cdu.RefreshLeds();
+
+                ShowASplashOfColour(cdu);
+
+                cdu.AutoBrightness.Enabled = true;
+                cdu.ApplyAutoBrightness();
 
                 cdu.LeftAmbientLightChanged += (_,_) => RefreshDisplay(cdu);
                 cdu.RightAmbientLightChanged += (_,_) => RefreshDisplay(cdu);
@@ -43,10 +50,40 @@ namespace Ambient
                 .RightToLeft()
                 .Write(cdu.RightAmbientLightNative.ToString("X4"))
                 .LeftToRight()
+                .LabelTitleLine(2)
+                .ClearRow()
+                .Write("K/BRD")
+                .Centered("DISP")
+                .RightToLeft()
+                .Write("LED")
+                .LeftToRight()
+                .LabelLine(2)
+                .ClearRow()
+                .Large()
+                .Cyan()
+                .Write($"{cdu.BacklightBrightnessPercent}%")
+                .Centered($"{cdu.DisplayBrightnessPercent}%")
+                .RightToLeft()
+                .Write($"{cdu.LedBrightnessPercent}%")
+                .LeftToRight()
+                .White()
                 .MiddleLine()
                 .ClearRow()
                 .Large()
                 .Centred($"{cdu.AmbientLightPercent}%");
+            cdu.RefreshDisplay();
+        }
+
+        private static void ShowASplashOfColour(ICdu cdu)
+        {
+            var line = 10;
+            cdu.Output
+                .Line(line++)
+                .Centred($"<magenta>MAGENTA <white>WHITE")
+                .Line(line++)
+                .Centred($"<red>RED <brown>BROWN <khaki>KHAKI <grey>GREY")
+                .Line(line++)
+                .Centred($"<green>GREEN <yellow>YELLOW <cyan>CYAN <amber>AMBER");
             cdu.RefreshDisplay();
         }
     }

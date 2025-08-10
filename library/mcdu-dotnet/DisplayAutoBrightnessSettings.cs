@@ -12,23 +12,47 @@ using System;
 
 namespace McduDotNet
 {
-    public static class Percent
+    public class DisplayAutoBrightnessSettings
     {
         /// <summary>
-        /// Converts a percentage from 0 to 100 into a byte value from 0 to FF.
+        /// The lowest that the display intensity can be set to. If a user were to set zero then
+        /// nothing would be visible on the display.
         /// </summary>
-        /// <param name="percent"></param>
-        /// <returns></returns>
-        public static byte ToByte(int percent)
-        {
-            return (byte)(255.0 * (Math.Max(0, Math.Min(100, percent)) / 100.0));
-        }
+        public const int MinimumIntensityPercent = 5;
 
-        /// <summary>
-        /// Normalises the value to lie within the range 0 to 100.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static int Clamp(int value) => Math.Max(0, Math.Min(100, value));
+        public int LowestIntensityPercent { get; set; } = 45;
+
+        public int HighestIntensityPercent { get; set; } = 100;
+
+        public int LowIntensityBelowAmbientPercent { get; set; } = 6;
+
+        public int HighIntensityAboveAmbientPercent { get; set; } = 79;
+
+        public double ScaleGamma { get; set; } = 3.0;
+
+        public int BrightnessForAmbientPercent(int ambientPercent)
+        {
+            var onRange = new PercentRange(
+                Math.Max(MinimumIntensityPercent, LowIntensityBelowAmbientPercent),
+                HighIntensityAboveAmbientPercent
+            );
+            var intensity = new PercentRange(
+                LowestIntensityPercent,
+                HighestIntensityPercent
+            );
+            switch(onRange.Compare(ambientPercent)) {
+                case -1: // Ambient is lower than the point where we're full-off
+                    return intensity.Low;
+                case 1:  // Ambient is higher than the point where we're full-on
+                    return intensity.High;
+                default: // Ambient is between full-off and full-on
+                    return intensity.Range == 0
+                        ? intensity.High
+                        : intensity.PowerTransformScaling(
+                            onRange.PercentageOfRange(ambientPercent),
+                            ScaleGamma
+                          );
+            }
+        }
     }
 }

@@ -8,27 +8,32 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-
 namespace McduDotNet
 {
-    public static class Percent
+    /// <summary>
+    /// The auto-brightness settings.
+    /// </summary>
+    public class AutoBrightnessSettings
     {
         /// <summary>
-        /// Converts a percentage from 0 to 100 into a byte value from 0 to FF.
+        /// True if the backlight intensities should track the ambient light, false
+        /// if they should not. Disabled by default.
         /// </summary>
-        /// <param name="percent"></param>
-        /// <returns></returns>
-        public static byte ToByte(int percent)
-        {
-            return (byte)(255.0 * (Math.Max(0, Math.Min(100, percent)) / 100.0));
-        }
+        public bool Enabled { get; set; }
 
         /// <summary>
-        /// Normalises the value to lie within the range 0 to 100.
+        /// The keyboard backlight auto-brightness settings.
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static int Clamp(int value) => Math.Max(0, Math.Min(100, value));
+        public KeyboardAutoBrightnessSettings KeyboardBacklight { get; } = new KeyboardAutoBrightnessSettings();
+
+        /// <summary>
+        /// The display backlight auto-brightness settings.
+        /// </summary>
+        public DisplayAutoBrightnessSettings DisplayBacklight { get; } = new DisplayAutoBrightnessSettings();
+
+        /// <summary>
+        /// The LED auto-intensity settings.
+        /// </summary>
+        public LedAutoIntensitySettings LedIntensity { get; } = new LedAutoIntensitySettings();
     }
 }

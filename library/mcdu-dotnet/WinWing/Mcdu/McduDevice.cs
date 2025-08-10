@@ -68,7 +68,7 @@ namespace McduDotNet.WinWing.Mcdu
         {
             get => _DisplayBrightnessPercent;
             set {
-                var normalised = Percent.Normalise(value);
+                var normalised = Percent.Clamp(value);
                 if(normalised != DisplayBrightnessPercent) {
                     _DisplayBrightnessPercent = normalised;
                     _IlluminationWriter?.SendDisplayBrightnessPercent(_DisplayBrightnessPercent);
@@ -81,7 +81,7 @@ namespace McduDotNet.WinWing.Mcdu
         {
             get => _BacklightBrightnessPercent;
             set {
-                var normalised = Percent.Normalise(value);
+                var normalised = Percent.Clamp(value);
                 if(normalised != BacklightBrightnessPercent) {
                     _BacklightBrightnessPercent = normalised;
                     _IlluminationWriter.SendBacklightPercent(_BacklightBrightnessPercent);
@@ -95,7 +95,7 @@ namespace McduDotNet.WinWing.Mcdu
         {
             get => _LedBrightnessPercent;
             set {
-                var normalised = Percent.Normalise(value);
+                var normalised = Percent.Clamp(value);
                 if(normalised != LedBrightnessPercent) {
                     _LedBrightnessPercent = normalised;
                     _IlluminationWriter.SendLedBrightnessPercent(_LedBrightnessPercent);
@@ -114,6 +114,9 @@ namespace McduDotNet.WinWing.Mcdu
 
         /// <inheritdoc/>
         public int AmbientLightPercent { get; private set; }
+
+        /// <inheritdoc/>
+        public AutoBrightnessSettings AutoBrightness { get; } = new AutoBrightnessSettings();
 
         /// <summary>
         /// Raises <see cref="KeyDown"/>. Doesn't bother creating args unless something is listening.
@@ -265,6 +268,8 @@ namespace McduDotNet.WinWing.Mcdu
             mul /= 0xfff;
             AmbientLightPercent = (int)(100.0 * mul);
 
+            ApplyAutoBrightness();
+
             if(left != LeftAmbientLightNative) {
                 OnLeftAmbientLightChanged();
             }
@@ -273,6 +278,22 @@ namespace McduDotNet.WinWing.Mcdu
             }
             if(avg != AmbientLightPercent) {
                 OnAmbientLightChanged();
+            }
+        }
+
+        /// <inheritdoc/>
+        public void ApplyAutoBrightness()
+        {
+            if(AutoBrightness.Enabled) {
+                BacklightBrightnessPercent = AutoBrightness
+                    .KeyboardBacklight
+                    .BrightnessForAmbientPercent(AmbientLightPercent);
+                DisplayBrightnessPercent = AutoBrightness
+                    .DisplayBacklight
+                    .BrightnessForAmbientPercent(AmbientLightPercent);
+                LedBrightnessPercent = AutoBrightness
+                    .LedIntensity
+                    .IntensityForAmbientPercent(AmbientLightPercent);
             }
         }
 

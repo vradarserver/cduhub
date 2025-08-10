@@ -88,6 +88,11 @@ namespace McduDotNet
         int AmbientLightPercent { get; }
 
         /// <summary>
+        /// Gets the auto-brightness settings.
+        /// </summary>
+        AutoBrightnessSettings AutoBrightness { get; }
+
+        /// <summary>
         /// A fluent interface for drawing into the <see cref="Screen"/>.
         /// </summary>
         Compositor Output { get; }
@@ -160,6 +165,13 @@ namespace McduDotNet
         /// they have not changed.
         /// </summary>
         void RefreshBrightnesses();
+
+        /// <summary>
+        /// Apply the auto-brightness settings. Changes to the settings are not automatically
+        /// applied as they are made, you need to call this once the settings are completely
+        /// configured.
+        /// </summary>
+        void ApplyAutoBrightness();
 
         /// <summary>
         /// Sends a font to the device.
