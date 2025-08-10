@@ -10,7 +10,8 @@ If you can fill any of the gaps then please do!
 ## Keyboard Input
 
 The device sends a stream of input reports of code 1 to the computer. You
-just need to poll for them to figure out which keys are currently held down.
+need to poll for them to figure out which keys are currently held down, and
+what the ambient light sensor values are.
 
 The input report has this form:
 
@@ -18,10 +19,10 @@ The input report has this form:
 | ---    | ---    | --- |
 | 0      | 1      | 01 = report type |
 | 1      | 10     | Key bitflags |
-| 11     | 5      | ?? |
-| 16     | 2      | Little endian left ambient sensor value  |
-| 18     | 2      | Little endian right ambient sensor value |
-| 20     | 4      | Previous 4 bytes repeated? |
+| 11     | 6      | ?? |
+| 17     | 2      | Little endian left ambient sensor value (000-FFF) |
+| 19     | 2      | Little endian right ambient sensor value (000-FFF) |
+| 21     | 4      | Previous 4 bytes repeated |
 
 ### Key Bitflags
 

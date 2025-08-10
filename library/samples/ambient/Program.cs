@@ -8,27 +8,46 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
+using McduDotNet;
 
-namespace McduDotNet
+namespace Ambient
 {
-    public static class Percent
+    class Program
     {
-        /// <summary>
-        /// Converts a percentage from 0 to 100 into a byte value from 0 to FF.
-        /// </summary>
-        /// <param name="percent"></param>
-        /// <returns></returns>
-        public static byte ToByte(int percent)
+        static void Main(string[] _)
         {
-            return (byte)(255.0 * (Math.Max(0, Math.Min(100, percent)) / 100.0));
+            using(var cdu = CduFactory.ConnectLocal()) {
+                Console.WriteLine($"Using {cdu.DeviceId} MCDU");
+
+                cdu.LeftAmbientLightChanged += (_,_) => RefreshDisplay(cdu);
+                cdu.RightAmbientLightChanged += (_,_) => RefreshDisplay(cdu);
+                cdu.AmbientLightChanged += (_,_) => RefreshDisplay(cdu);
+                RefreshDisplay(cdu);
+
+                Console.WriteLine($"Press Q to quit");
+                while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
+                    ;
+                }
+
+                cdu.Cleanup();
+            }
         }
 
-        /// <summary>
-        /// Normalises the value to lie within the range 0 to 100.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static int Normalise(int value) => Math.Max(0, Math.Min(100, value));
+        static void RefreshDisplay(ICdu cdu)
+        {
+            cdu.Output
+                .Line(1)
+                .ClearRow()
+                .Small()
+                .Write(cdu.LeftAmbientLightNative.ToString("X4"))
+                .RightToLeft()
+                .Write(cdu.RightAmbientLightNative.ToString("X4"))
+                .LeftToRight()
+                .MiddleLine()
+                .ClearRow()
+                .Large()
+                .Centred($"{cdu.AmbientLightPercent}%");
+            cdu.RefreshDisplay();
+        }
     }
 }

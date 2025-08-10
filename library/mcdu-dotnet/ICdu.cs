@@ -64,6 +64,30 @@ namespace McduDotNet
         int YOffset { get; set; }
 
         /// <summary>
+        /// True if the device has ambient light sensors.
+        /// </summary>
+        bool HasAmbientLightSensor { get; }
+
+        /// <summary>
+        /// Gets the native value from the device's left ambient light sensor. The meaning
+        /// of the value is device dependent.
+        /// </summary>
+        int LeftAmbientLightNative { get; }
+
+        /// <summary>
+        /// Gets the native value from the device's right ambient light sensor. The meaning
+        /// of the value is device dependent.
+        /// </summary>
+        int RightAmbientLightNative { get; }
+
+        /// <summary>
+        /// Gets a normalised ambient light value calculated from <see
+        /// cref="LeftAmbientLightNative"/> and <see cref="RightAmbientLightNative"/>,
+        /// where 0 is completely dark and 100 is completely illuminated.
+        /// </summary>
+        int AmbientLightPercent { get; }
+
+        /// <summary>
         /// A fluent interface for drawing into the <see cref="Screen"/>.
         /// </summary>
         Compositor Output { get; }
@@ -77,6 +101,21 @@ namespace McduDotNet
         /// Raised when a key is released.
         /// </summary>
         event EventHandler<KeyEventArgs> KeyUp;
+
+        /// <summary>
+        /// Raised when <see cref="LeftAmbientLightNative"/> changes.
+        /// </summary>
+        event EventHandler LeftAmbientLightChanged;
+
+        /// <summary>
+        /// Raised when <see cref="RightAmbientLightNative"/> changes.
+        /// </summary>
+        event EventHandler RightAmbientLightChanged;
+
+        /// <summary>
+        /// Raised when <see cref="AmbientLightPercent"/> changes.
+        /// </summary>
+        event EventHandler AmbientLightChanged;
 
         /// <summary>
         /// Raised when the MCDU has been disconnected.

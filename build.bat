@@ -20,6 +20,7 @@ set RUNARGS=
     if "%1"=="console"       set BADARG=OK & set TARGET=CONSOLE
     if "%1"=="restore"       set BADARG=OK & set TARGET=RESTORE
 
+    if "%1"=="ambient"       set BADARG=OK & set TARGET=SAMAMBI
     if "%1"=="characters"    set BADARG=OK & set TARGET=SAMCHAR
     if "%1"=="clock"         set BADARG=OK & set TARGET=SAMCLOCK
     if "%1"=="colours"       set BADARG=OK & set TARGET=SAMCOLS
@@ -50,6 +51,7 @@ set RUNARGS=
     if "%TARGET%"=="CONSOLE"    goto :CONSOLE
     if "%TARGET%"=="EXFONT"     goto :EXFONT
     if "%TARGET%"=="RESTORE"    goto :RESTORE
+    if "%TARGET%"=="SAMAMBI"    goto :SAMAMBI
     if "%TARGET%"=="SAMCHAR"    goto :SAMCHAR
     if "%TARGET%"=="SAMCLOCK"   goto :SAMCLOCK
     if "%TARGET%"=="SAMCOLS"    goto :SAMCOLS
@@ -69,6 +71,7 @@ echo.
 echo convert-font Convert font resources to MCDU-DOTNET font files
 echo extract-font Build the extract-font utility
 echo.
+echo ambient      Build the ambient mcdu-dotnet sample
 echo characters   Build the characters mcdu-dotnet sample
 echo clock        Build the clock mcdu-dotnet sample
 echo colours      Build the colours mcdu-dotnet sample
@@ -116,39 +119,44 @@ rem ##################################################
 rem ## Build targets
 
 :COFONT
-    set "PROJ=%BATDIR%utilities\convert-font\convert-font.csproj"
+    set  "PROJ=%BATDIR%utilities\convert-font\convert-font.csproj"
     call :DOTNET
     goto :EOF
 
 :CONSOLE
-    set "PROJ=%BATDIR%apps\cduhub-cli\cduhub-cli.csproj"
+    set  "PROJ=%BATDIR%apps\cduhub-cli\cduhub-cli.csproj"
     call :DOTNET
     goto :EOF
 
 :EXFONT
-    set "PROJ=%BATDIR%utilities\extract-font\extract-font.csproj"
+    set  "PROJ=%BATDIR%utilities\extract-font\extract-font.csproj"
     call :DOTNET
     goto :EOF
 
 :SLN
     if "%RUN%"=="YES" echo "The run option doesn't make sense for the solution, ignoring it"
-    set RUN=NO
-    set "PROJ=%BATDIR%cduhub.sln"
+    set  RUN=NO
+    set  "PROJ=%BATDIR%cduhub.sln"
+    call :DOTNET
+    goto :EOF
+
+:SAMAMBI
+    set  "PROJ=%BATDIR%library\samples\ambient\ambient.csproj"
     call :DOTNET
     goto :EOF
 
 :SAMCHAR
-    set "PROJ=%BATDIR%library\samples\characters\characters.csproj"
+    set  "PROJ=%BATDIR%library\samples\characters\characters.csproj"
     call :DOTNET
     goto :EOF
 
 :SAMCLOCK
-    set "PROJ=%BATDIR%library\samples\clock\clock.csproj"
+    set  "PROJ=%BATDIR%library\samples\clock\clock.csproj"
     call :DOTNET
     goto :EOF
 
 :SAMCOLS
-    set "PROJ=%BATDIR%library\samples\colours\colours.csproj"
+    set  "PROJ=%BATDIR%library\samples\colours\colours.csproj"
     call :DOTNET
     goto :EOF
 
@@ -158,7 +166,7 @@ rem ## Build targets
     goto :EOF
 
 :SAMFENIX
-    set "PROJ=%BATDIR%library\samples\fenix-mcdu\fenix-mcdu.csproj"
+    set  "PROJ=%BATDIR%library\samples\fenix-mcdu\fenix-mcdu.csproj"
     call :DOTNET
     goto :EOF
 
@@ -168,6 +176,6 @@ rem ## Build targets
     goto :EOF
 
 :SAMLEDS
-    set "PROJ=%BATDIR%library\samples\leds\leds.csproj"
+    set  "PROJ=%BATDIR%library\samples\leds\leds.csproj"
     call :DOTNET
     goto :EOF

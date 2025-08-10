@@ -68,7 +68,7 @@ namespace McduDotNet.WinWing.Mcdu
         {
             get => _DisplayBrightnessPercent;
             set {
-                var normalised = Math.Max(0, Math.Min(100, value));
+                var normalised = Percent.Normalise(value);
                 if(normalised != DisplayBrightnessPercent) {
                     _DisplayBrightnessPercent = normalised;
                     _IlluminationWriter?.SendDisplayBrightnessPercent(_DisplayBrightnessPercent);
@@ -81,7 +81,7 @@ namespace McduDotNet.WinWing.Mcdu
         {
             get => _BacklightBrightnessPercent;
             set {
-                var normalised = Math.Max(0, Math.Min(100, value));
+                var normalised = Percent.Normalise(value);
                 if(normalised != BacklightBrightnessPercent) {
                     _BacklightBrightnessPercent = normalised;
                     _IlluminationWriter.SendBacklightPercent(_BacklightBrightnessPercent);
@@ -95,13 +95,25 @@ namespace McduDotNet.WinWing.Mcdu
         {
             get => _LedBrightnessPercent;
             set {
-                var normalised = Math.Max(0, Math.Min(100, value));
+                var normalised = Percent.Normalise(value);
                 if(normalised != LedBrightnessPercent) {
                     _LedBrightnessPercent = normalised;
                     _IlluminationWriter.SendLedBrightnessPercent(_LedBrightnessPercent);
                 }
             }
         }
+
+        /// <inheritdoc/>
+        public bool HasAmbientLightSensor => true;
+
+        /// <inheritdoc/>
+        public int LeftAmbientLightNative { get; private set; }
+
+        /// <inheritdoc/>
+        public int RightAmbientLightNative { get; private set; }
+
+        /// <inheritdoc/>
+        public int AmbientLightPercent { get; private set; }
 
         /// <summary>
         /// Raises <see cref="KeyDown"/>. Doesn't bother creating args unless something is listening.
@@ -128,14 +140,24 @@ namespace McduDotNet.WinWing.Mcdu
             }
         }
 
-        /// <summary>
-        /// Raised when a disconnection of the MCDU is detected.
-        /// </summary>
+        /// <inheritdoc/>
+        public event EventHandler LeftAmbientLightChanged;
+
+        protected virtual void OnLeftAmbientLightChanged() => LeftAmbientLightChanged?.Invoke(this, EventArgs.Empty);
+
+        /// <inheritdoc/>
+        public event EventHandler RightAmbientLightChanged;
+
+        protected virtual void OnRightAmbientLightChanged() => RightAmbientLightChanged?.Invoke(this, EventArgs.Empty);
+
+        /// <inheritdoc/>
+        public event EventHandler AmbientLightChanged;
+
+        protected virtual void OnAmbientLightChanged() => AmbientLightChanged?.Invoke(this, EventArgs.Empty);
+
+        /// <inheritdoc/>
         public event EventHandler Disconnected;
 
-        /// <summary>
-        /// Raises <see cref="Disconnected"/>.
-        /// </summary>
         protected virtual void OnDisconnected() => Disconnected?.Invoke(this, EventArgs.Empty);
 
         /// <summary>
@@ -204,13 +226,8 @@ namespace McduDotNet.WinWing.Mcdu
             _UsbWriter = new UsbWriter(_HidStream);
             _KeyboardReader = new KeyboardReader(
                 _HidStream,
-                (key, pressed) => {
-                    if(pressed) {
-                        OnKeyDown(() => new KeyEventArgs(key, pressed));
-                    } else {
-                        OnKeyUp(() => new KeyEventArgs(key, pressed));
-                    }
-                }
+                ProcessKeyboardEvent,
+                ProcessAmbientLightChange
             );
 
             _ScreenWriter = new ScreenWriter(_UsbWriter);
@@ -225,6 +242,38 @@ namespace McduDotNet.WinWing.Mcdu
 
             UseMobiFlightInitialisationSequence();
             RefreshLeds();
+        }
+
+        private void ProcessKeyboardEvent(Key key, bool pressed)
+        {
+            if(pressed) {
+                OnKeyDown(() => new KeyEventArgs(key, pressed));
+            } else {
+                OnKeyUp(() => new KeyEventArgs(key, pressed));
+            }
+        }
+
+        private void ProcessAmbientLightChange(UInt16 leftSensor, UInt16 rightSensor)
+        {
+            var left = LeftAmbientLightNative;
+            var right = RightAmbientLightNative;
+            var avg = AmbientLightPercent;
+
+            LeftAmbientLightNative = leftSensor;
+            RightAmbientLightNative = rightSensor;
+            var mul = ((double)LeftAmbientLightNative + (double)RightAmbientLightNative) / 2.0;
+            mul /= 0xfff;
+            AmbientLightPercent = (int)(100.0 * mul);
+
+            if(left != LeftAmbientLightNative) {
+                OnLeftAmbientLightChanged();
+            }
+            if(right != RightAmbientLightNative) {
+                OnRightAmbientLightChanged();
+            }
+            if(avg != AmbientLightPercent) {
+                OnAmbientLightChanged();
+            }
         }
 
         /// <inheritdoc/>

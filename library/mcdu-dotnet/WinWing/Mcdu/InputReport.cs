@@ -19,6 +19,8 @@ namespace McduDotNet.WinWing.Mcdu
     {
         public const int ReportCode = 1;
         public const int PacketLength = 25;
+        private const int _LeftAmbientLightSensorOffset = 17;
+        private const int _RightAmbientLightSensorOffset = 19;
 
         private readonly byte[] _Packet = new byte[PacketLength];
 
@@ -51,6 +53,20 @@ namespace McduDotNet.WinWing.Mcdu
         {
             (var flag, var offset) = key.InputReport01FlagAndOffset();
             return (_Packet[offset] & flag) != 0;
+        }
+
+        public (UInt16 LeftSensor, UInt16 RightSensor) AmbientLightSensorValues()
+        {
+            var leftSensorValue = ReadSensorValue(_LeftAmbientLightSensorOffset);
+            var rightSensorValue = ReadSensorValue(_RightAmbientLightSensorOffset);
+            return (leftSensorValue, rightSensorValue);
+        }
+
+        private UInt16 ReadSensorValue(int offset)
+        {
+            UInt16 result = _Packet[offset];
+            result |= (UInt16)(_Packet[offset + 1] << 8);
+            return result;
         }
     }
 }
