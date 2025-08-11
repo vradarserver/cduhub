@@ -20,7 +20,7 @@ namespace McduDotNet
 
         public DisplayAutoBrightnessSettings()
         {
-            LowestIntensityPercent = 60;
+            LowestIntensityPercent = 70;
             HighestIntensityPercent = 100;
             LowIntensityBelowAmbientPercent =   6;
             HighIntensityAboveAmbientPercent =  69;
