@@ -63,6 +63,38 @@ namespace Cduhub
             return result;
         }
 
+        public bool DoubleValue(
+            string text,
+            Action<double> setValue,
+            double min = double.MinValue,
+            double max = double.MaxValue
+        )
+        {
+            var result = double.TryParse(text, out var value);
+            result = result && value >= min && value <= max;
+            if(result) {
+                setValue(value);
+                _DrawPageAction();
+            }
+            return result;
+        }
+
+        public bool DoubleFromScratchpad(
+            Scratchpad scratchpad,
+            Action<double> setValue,
+            double min = double.MinValue,
+            double max = double.MaxValue
+        )
+        {
+            var result = DoubleValue(scratchpad.Text, setValue, min, max);
+            if(!result) {
+                scratchpad.ShowFormatError();
+            } else {
+                scratchpad.Clear();
+            }
+            return result;
+        }
+
         public void CycleFontNames(string fontName, Action<string> setFontName, bool includeDefaultFontName)
         {
             var fontNames = Fonts.GetAllConfigNames(includeDefaultFontName);

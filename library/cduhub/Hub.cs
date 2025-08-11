@@ -73,6 +73,16 @@ namespace Cduhub
         }
 
         /// <summary>
+        /// The ambient light expressed as a percentage.
+        /// </summary>
+        public int AmbientLightPercent => _Cdu?.AmbientLightPercent ?? 0;
+
+        /// <summary>
+        /// The CDU's current display brightness percent value.
+        /// </summary>
+        public int DisplayBrightnessPercent => _Cdu?.DisplayBrightnessPercent ?? 0;
+
+        /// <summary>
         /// Raised when the hub wants the parent application to close.
         /// </summary>
         public event EventHandler CloseApplication;
@@ -160,6 +170,14 @@ namespace Cduhub
             }
         }
 
+        public void ReloadBrightness()
+        {
+            LoadSettings();
+            ApplySettingsToDevice();
+            _Cdu?.ApplyAutoBrightness();
+            _Cdu?.RefreshBrightnesses();
+        }
+
         private void PersistSettings()
         {
             var settings = _Settings;
@@ -192,6 +210,7 @@ namespace Cduhub
                         _Cdu.KeyDown += Cdu_KeyDown;
                         _Cdu.KeyUp += Cdu_KeyUp;
                         _Cdu.Disconnected += Cdu_Disconnected;
+                        _Cdu.AmbientLightChanged += Cdu_AmbientLightChanged;
                         _RootPage = new Pages.Root_Page(this);
                         _CurrentFont = null;
                         _IsCurrentFontFullWidth = null;
@@ -250,7 +269,7 @@ namespace Cduhub
             }
         }
 
-        public void SelectPage(Page page)
+        public void SelectPage(Page page, bool replaceCurrentInHistory = false)
         {
             if(page != _SelectedPage) {
                 DeselectPage(_SelectedPage);
@@ -260,6 +279,9 @@ namespace Cduhub
                     RefreshPalette(page);
                     UploadFont(page.PageFont);
                     page.PreparePage();
+                    if(replaceCurrentInHistory && _PageHistory.Count > 0) {
+                        _PageHistory.Pop();
+                    }
                     _PageHistory.Push(page);
                     RefreshDisplay(page);
                     RefreshLeds(page);
@@ -359,17 +381,17 @@ namespace Cduhub
             return (T)CreatePage(typeof(T));
         }
 
-        public Page CreateAndSelectPage(Type pageType)
+        public Page CreateAndSelectPage(Type pageType, bool replaceCurrentInHistory = false)
         {
             var result = CreatePage(pageType);
-            SelectPage(result);
+            SelectPage(result, replaceCurrentInHistory);
             return result;
         }
 
-        public T CreateAndSelectPage<T>() where T: Page
+        public T CreateAndSelectPage<T>(bool replaceCurrentInHistory = false) where T: Page
         {
             var result = CreatePage<T>();
-            SelectPage(result);
+            SelectPage(result, replaceCurrentInHistory);
             return result;
         }
 
@@ -385,6 +407,11 @@ namespace Cduhub
         private void Cdu_Disconnected(object sender, EventArgs e)
         {
             Disconnect();
+        }
+
+        private void Cdu_AmbientLightChanged(object sender, EventArgs e)
+        {
+            _SelectedPage?.OnAmbientLightChanged(_Cdu.AmbientLightPercent);
         }
 
         private void Cdu_KeyDown(object sender, McduDotNet.KeyEventArgs e)

@@ -36,6 +36,7 @@ namespace Cduhub.Pages.Init
 
         private InitPage[] _AllInitPages = new InitPage[] {
             InitPage.CreateFor<CduHubInit_Page>("CDU HUB"),
+            InitPage.CreateFor<BrightnessInit_Page>("BRIGHTNESS"),
         };
 
         private readonly List<InitPage> _LeftInitPages = new List<InitPage>();

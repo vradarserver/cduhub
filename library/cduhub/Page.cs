@@ -40,6 +40,10 @@ namespace Cduhub
 
         public virtual bool DisableParentKey { get; }
 
+        public virtual Func<Type> LeftArrowCallback { get; }
+
+        public virtual Func<Type> RightArrowCallback { get; }
+
         private Scratchpad _Scratchpad;
         public Scratchpad Scratchpad
         {
@@ -89,6 +93,10 @@ namespace Cduhub
         public virtual void OnKeyUp(Key key)
         {
             Scratchpad?.KeyUp(key);
+        }
+
+        public virtual void OnAmbientLightChanged(int ambientLightPercent)
+        {
         }
 
         protected virtual string SanitiseInput(string input)
@@ -161,6 +169,43 @@ namespace Cduhub
                         : "<grey><small>PLEASE WAIT"
                 );
             }
+        }
+
+        protected virtual void AddLeftRight(bool left = false, bool right = false)
+        {
+            var row = Screen.Rows[0];
+            void configureCell(int offset, char ch)
+            {
+                var cell = row.Cells[row.Cells.Length - (1 + offset)];
+                cell.Colour = Colour.White;
+                cell.Small = false;
+                cell.Character = ch;
+            }
+            configureCell(0, right ? '→' : ' ');
+            configureCell(1, left  ? '←' : ' ');
+        }
+
+        protected virtual void AddPageArrows()
+        {
+            AddLeftRight(
+                left: LeftArrowCallback?.Invoke() != null,
+                right: RightArrowCallback?.Invoke() != null
+            );
+        }
+
+        protected virtual bool CreateAndSelectPageForArrows(Key key, bool replaceCurrentInHistory = true)
+        {
+            Type type = null;
+            switch(key) {
+                case Key.LeftArrow:     type = LeftArrowCallback?.Invoke(); break;
+                case Key.RightArrow:    type = RightArrowCallback?.Invoke(); break;
+            }
+
+            if(type != null) {
+                _Hub.CreateAndSelectPage(type, replaceCurrentInHistory);
+            }
+
+            return type != null;
         }
 
         protected virtual void HookScratchpad(Scratchpad scratchpad)
