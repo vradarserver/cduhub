@@ -21,8 +21,8 @@ namespace McduDotNet
         WinWingMcdu,
 
         /// <summary>
-        /// A WinWing Boeing 777 PFD.
+        /// A WinWing Boeing 777 PFP-7.
         /// </summary>
-        WinWingPfd7,
+        WinWingPfp7,
     }
 }

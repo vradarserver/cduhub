@@ -45,12 +45,37 @@ namespace McduDotNet
         );
 
         /// <summary>
+        /// The identifier for a WinWing PFP-7 device set to the left-hand seat position.
+        /// </summary>
+        public static readonly DeviceIdentifier WinWingPfp7CaptainDevice = new DeviceIdentifier(
+            "Winwing PFP-7 (Captain)", 0x4098, 0xBB37, Device.WinWingPfp7, DeviceUser.Captain
+        );
+
+        /// <summary>
+        /// The identifier for a WinWing PFP-7 device set to the right-hand seat position.
+        /// </summary>
+        public static readonly DeviceIdentifier WinWingPfp7FirstOfficerDevice = new DeviceIdentifier(
+            "Winwing PFP-7 (F/O)", 0x4098, 0xBB3F, Device.WinWingPfp7, DeviceUser.FirstOfficer
+        );
+
+        /// <summary>
+        /// The identifier for a WinWing PFP-7 device set to the observer seat position.
+        /// </summary>
+        public static readonly DeviceIdentifier WinWingPfp7ObserverDevice = new DeviceIdentifier(
+            "Winwing PFP-7 (Observer)", 0x4098, 0xBB3B, Device.WinWingPfp7, DeviceUser.Observer
+        );
+
+        /// <summary>
         /// A collection of device identifiers for all supported devices.
         /// </summary>
         public static readonly IReadOnlyList<DeviceIdentifier> AllKnownDevices = new DeviceIdentifier[] {
             WinWingMcduCaptainDevice,
             WinWingMcduFirstOfficerDevice,
             WinWingMcduObserverDevice,
+
+            WinWingPfp7CaptainDevice,
+            WinWingPfp7FirstOfficerDevice,
+            WinWingPfp7ObserverDevice,
         };
 
         /// <summary>
