@@ -41,6 +41,11 @@ namespace McduDotNet
         IReadOnlyList<Led> SupportedLeds { get; }
 
         /// <summary>
+        /// Returns a read-only collection of keys that the device supports.
+        /// </summary>
+        IReadOnlyList<Key> SupportedKeys { get; }
+
+        /// <summary>
         /// The MCDU's colour palette.
         /// </summary>
         Palette Palette { get; }
@@ -201,5 +206,19 @@ namespace McduDotNet
             int displayBrightnessPercent = 0,
             int ledBrightnessPercent = 0
         );
+
+        /// <summary>
+        /// True if the device supports the key passed across.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        bool IsKeySupported(Key key);
+
+        /// <summary>
+        /// True if the device supports the LED passed across.
+        /// </summary>
+        /// <param name="led"></param>
+        /// <returns></returns>
+        bool IsLedSupported(Led led);
     }
 }

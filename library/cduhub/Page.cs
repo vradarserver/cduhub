@@ -197,8 +197,14 @@ namespace Cduhub
         {
             Type type = null;
             switch(key) {
-                case Key.LeftArrow:     type = LeftArrowCallback?.Invoke(); break;
-                case Key.RightArrow:    type = RightArrowCallback?.Invoke(); break;
+                case Key.LeftArrow:
+                case Key.PrevPage:
+                    type = LeftArrowCallback?.Invoke();
+                    break;
+                case Key.RightArrow:
+                case Key.NextPage:
+                    type = RightArrowCallback?.Invoke();
+                    break;
             }
 
             if(type != null) {

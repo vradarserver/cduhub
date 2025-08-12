@@ -58,6 +58,9 @@ namespace McduDotNet.WinWing
         public IReadOnlyList<Led> SupportedLeds { get; }
 
         /// <inheritdoc/>
+        public IReadOnlyList<Key> SupportedKeys { get; }
+
+        /// <inheritdoc/>
         public Palette Palette { get; }
 
         /// <inheritdoc/>
@@ -182,6 +185,11 @@ namespace McduDotNet.WinWing
             Output = new Compositor(Screen);
             Palette = new Palette();
             HidSharp.DeviceList.Local.Changed += HidSharpDeviceList_Changed;
+
+            SupportedKeys = Enum.GetValues(typeof(Key))
+                .OfType<Key>()
+                .Where(key => IsKeySupported(key))
+                .ToArray();
         }
 
         /// <inheritdoc/>
@@ -371,6 +379,16 @@ namespace McduDotNet.WinWing
             RefreshDisplay();
             RefreshLeds();
         }
+
+        /// <inheritdoc/>
+        public bool IsKeySupported(Key key) => KeyToFlagOffsetCallback(key).Flag != 0;
+
+        /// <summary>
+        /// True if the device supports the LED passed across.
+        /// </summary>
+        /// <param name="led"></param>
+        /// <returns></returns>
+        public bool IsLedSupported(Led led) => LedIndicatorCodeMap.ContainsKey(led);
 
         protected void HidSharpDeviceList_Changed(object sender, DeviceListChangedEventArgs e)
         {

@@ -427,14 +427,26 @@ namespace Cduhub
         private void Cdu_KeyDown(object sender, McduDotNet.KeyEventArgs e)
         {
             if(!_ShuttingDown) {
+                var cdu = (ICdu)sender;
+                var initKey = Key.Init;
                 var menuKey = _SelectedPage?.MenuKey ?? Key.McduMenu;
                 var parentKey = _SelectedPage?.ParentKey ?? Key.Blank2;
+
+                if(!cdu.IsKeySupported(initKey)) {
+                    initKey = Key.InitRef;
+                }
+                if(!cdu.IsKeySupported(menuKey)) {
+                    menuKey = Key.Menu;
+                }
+                if(!cdu.IsKeySupported(parentKey)) {
+                    parentKey = Key.Dim;
+                }
 
                 if(e.Key == menuKey && !(_SelectedPage?.DisableMenuKey ?? false)) {
                     ReturnToRoot();
                 } else if(e.Key == parentKey && !(_SelectedPage?.DisableParentKey ?? false)) {
                     ReturnToParent();
-                } else if(e.Key == Key.Init && !(_SelectedPage?.DisableInitKey ?? false)) {
+                } else if(e.Key == initKey && !(_SelectedPage?.DisableInitKey ?? false)) {
                     CreateAndSelectPage<Pages.Init.InitMenu_Page>();
                 } else {
                     _SelectedPage?.OnKeyDown(e.Key);
