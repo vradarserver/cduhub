@@ -17,25 +17,7 @@ The command prefix is 0x32 0xbb.
 
 
 
-
-## Keyboard Input
-
-The device sends a stream of input reports of code 1 to the computer. You
-need to poll for them to figure out which keys are currently held down, and
-what the ambient light sensor values are.
-
-The input report has this form:
-
-| Offset | Length | Meaning |
-| ---    | ---    | --- |
-| 0      | 1      | 01 = report type |
-| 1      | 10     | Key bitflags |
-| 11     | 6      | ?? |
-| 17     | 2      | Little endian left ambient sensor value (000-FFF) |
-| 19     | 2      | Little endian right ambient sensor value (000-FFF) |
-| 21     | 4      | Previous 4 bytes repeated |
-
-### Key Bitflags
+## Key Bitflags
 
 Offsets are zero-based in decimal from the start of the packet.
 
