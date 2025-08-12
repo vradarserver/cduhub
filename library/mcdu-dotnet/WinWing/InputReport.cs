@@ -10,10 +10,10 @@
 
 using System;
 
-namespace McduDotNet.WinWing.Mcdu
+namespace McduDotNet.WinWing
 {
     /// <summary>
-    /// Holds the content of an input report sent by the device.
+    /// Holds the content of an input report sent by a WinWing panel.
     /// </summary>
     class InputReport
     {
@@ -49,11 +49,7 @@ namespace McduDotNet.WinWing.Mcdu
             );
         }
 
-        public bool IsKeyPressed(Key key)
-        {
-            (var flag, var offset) = key.InputReport01FlagAndOffset();
-            return (_Packet[offset] & flag) != 0;
-        }
+        public bool IsKeyPressed(int flag, int offset) => (_Packet[offset] & flag) != 0;
 
         public (UInt16 LeftSensor, UInt16 RightSensor) AmbientLightSensorValues()
         {

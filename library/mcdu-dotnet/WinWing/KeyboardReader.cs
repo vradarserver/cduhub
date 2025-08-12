@@ -11,14 +11,15 @@
 using System;
 using HidSharp;
 
-namespace McduDotNet.WinWing.Mcdu
+namespace McduDotNet.WinWing
 {
     /// <summary>
-    /// Reads the WinWing MCDU's keyboard and raises events on the parent device when keys
+    /// Reads a WinWing panel's keyboard and raises events on the parent device when keys
     /// are pressed or released, or when the ambient light sensors change value.
     /// </summary>
     class KeyboardReader : UsbPollingReader
     {
+        private readonly Func<Key, (int Flag, int Offset)> _KeyToFlagOffsetCallback;
         private readonly Action<Key, bool> _KeyPressAction;
         private readonly Action<UInt16, UInt16> _AmbientLightChangedAction;
         private readonly InputReport _InputReport_Previous = new InputReport();
@@ -30,10 +31,12 @@ namespace McduDotNet.WinWing.Mcdu
 
         public KeyboardReader(
             HidStream hidStream,
+            Func<Key, (int Flag, int Offset)> keyToFlagOffsetCallback,
             Action<Key, bool> keyPressAction,
             Action<UInt16, UInt16> ambientLightChangedAction
         ) : base(hidStream)
         {
+            _KeyToFlagOffsetCallback = keyToFlagOffsetCallback;
             _KeyPressAction = keyPressAction;
             _AmbientLightChangedAction = ambientLightChangedAction;
         }
@@ -48,10 +51,13 @@ namespace McduDotNet.WinWing.Mcdu
             ) {
                 try {
                     foreach(Key key in Enum.GetValues(typeof(Key))) {
-                        var pressed = _InputReport_Current.IsKeyPressed(key);
-                        var wasPressed = _InputReport_Previous.IsKeyPressed(key);
-                        if(pressed != wasPressed) {
-                            _KeyPressAction(key, pressed);
+                        (var flag, var offset) = _KeyToFlagOffsetCallback(key);
+                        if(flag != 0) {
+                            var pressed = _InputReport_Current.IsKeyPressed(flag, offset);
+                            var wasPressed = _InputReport_Previous.IsKeyPressed(flag, offset);
+                            if(pressed != wasPressed) {
+                                _KeyPressAction(key, pressed);
+                            }
                         }
                     }
                 } catch {

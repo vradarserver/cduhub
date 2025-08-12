@@ -39,6 +39,8 @@ namespace McduDotNet.WinWing.Mcdu
         };
         protected override Dictionary<Led, byte> LedIndicatorCodeMap => _LedIndicatorCodeMap;
 
+        protected override Func<Key, (int Flag, int Offset)> KeyToFlagOffsetCallback => KeyboardMap.InputReport01FlagAndOffset;
+
         private FontWriter _FontWriter;
         private PaletteWriter _PaletteWriter;
 

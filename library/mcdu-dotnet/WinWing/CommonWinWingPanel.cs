@@ -33,13 +33,15 @@ namespace McduDotNet.WinWing
 
         protected abstract Dictionary<Led, byte> LedIndicatorCodeMap { get; }
 
+        protected abstract Func<Key, (int Flag, int Offset)> KeyToFlagOffsetCallback { get; }
+
         protected readonly Screen _EmptyScreen = new Screen();
         protected HidDevice _HidDevice;
         protected HidStream _HidStream;
         protected UsbWriter _UsbWriter;
         protected ScreenWriter _ScreenWriter;
         protected IlluminationWriter _IlluminationWriter;
-        private WinWing.Mcdu.KeyboardReader _KeyboardReader;
+        private KeyboardReader _KeyboardReader;
         private CancellationTokenSource _InputLoopCancellationTokenSource;
         private Task _InputLoopTask;
 
@@ -226,8 +228,9 @@ namespace McduDotNet.WinWing
             }
             _UsbWriter = new UsbWriter(_HidStream);
 
-            _KeyboardReader = new WinWing.Mcdu.KeyboardReader(
+            _KeyboardReader = new KeyboardReader(
                 _HidStream,
+                KeyToFlagOffsetCallback,
                 ProcessKeyboardEvent,
                 ProcessAmbientLightChange
             );

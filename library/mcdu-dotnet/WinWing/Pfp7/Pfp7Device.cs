@@ -30,6 +30,8 @@ namespace McduDotNet.WinWing.Pfp7
         };
         protected override Dictionary<Led, byte> LedIndicatorCodeMap => _LedIndicatorCodeMap;
 
+        protected override Func<Key, (int Flag, int Offset)> KeyToFlagOffsetCallback => KeyboardMap.InputReport01FlagAndOffset;
+
         public Pfp7Device(HidDevice hidDevice, DeviceIdentifier deviceId) : base(hidDevice, deviceId)
         {
         }
