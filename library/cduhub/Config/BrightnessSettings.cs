@@ -32,8 +32,6 @@ namespace Cduhub.Config
             public int HighestIntensityPercent { get; set; } = 100;
 
             public double ScaleGamma { get; set; } = 1.0;
-
-            public int AddPercent { get; set; } = 0;
         }
 
         public class AscendingAutoBrightnessSettings : CommonAutoBrightnessSettings
@@ -95,7 +93,6 @@ namespace Cduhub.Config
             hub.HighestIntensityPercent = mcdu.HighestIntensityPercent;
             hub.LowestIntensityPercent = mcdu.LowestIntensityPercent;
             hub.ScaleGamma = mcdu.ScaleGamma;
-            hub.AddPercent = mcdu.PlusBrightnessPercent;
         }
 
         private static void McduToHub(McduDotNet.CommonAscendingAutoBrightnessSettings mcdu, AscendingAutoBrightnessSettings hub)
@@ -124,7 +121,6 @@ namespace Cduhub.Config
             mcdu.HighestIntensityPercent = hub.HighestIntensityPercent;
             mcdu.LowestIntensityPercent = hub.LowestIntensityPercent;
             mcdu.ScaleGamma = hub.ScaleGamma;
-            mcdu.PlusBrightnessPercent = hub.AddPercent;
         }
 
         private static void HubToMcdu(McduDotNet.CommonAscendingAutoBrightnessSettings mcdu, AscendingAutoBrightnessSettings hub)

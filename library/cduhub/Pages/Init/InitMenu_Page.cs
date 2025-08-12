@@ -54,7 +54,11 @@ namespace Cduhub.Pages.Init
 
         private void DisplayMenu()
         {
-            Output.Clear();
+            Output
+                .Clear()
+                .Line(0)
+                .Centred("<green>INIT")
+                .LeftLabel(6, "<red><small>>BACK");
 
             _LeftInitPages.Clear();
             for(var idx = 0;idx < _AllInitPages.Length;++idx) {
@@ -74,6 +78,12 @@ namespace Cduhub.Pages.Init
                 : null;
             if(initPage != null) {
                 _Hub.CreateAndSelectPage(initPage.PageType);
+            } else {
+                switch(key) {
+                    case Key.LineSelectLeft6:
+                        _Hub.ReturnToParent();
+                        break;
+                }
             }
         }
     }

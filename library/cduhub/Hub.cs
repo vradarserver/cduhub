@@ -83,6 +83,16 @@ namespace Cduhub
         public int DisplayBrightnessPercent => _Cdu?.DisplayBrightnessPercent ?? 0;
 
         /// <summary>
+        /// The CDU's current LED intensity percent value.
+        /// </summary>
+        public int LedBrightnessPercent => _Cdu?.LedBrightnessPercent ?? 0;
+
+        /// <summary>
+        /// The CDU's current keyboard backlight brightness percent value.
+        /// </summary>
+        public int BacklightBrightnessPercent => _Cdu?.BacklightBrightnessPercent ?? 0;
+
+        /// <summary>
         /// Raised when the hub wants the parent application to close.
         /// </summary>
         public event EventHandler CloseApplication;

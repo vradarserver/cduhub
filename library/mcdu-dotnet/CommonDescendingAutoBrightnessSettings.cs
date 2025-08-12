@@ -39,7 +39,7 @@ namespace McduDotNet
                         onRange.PercentageOfRange(ambientPercent, inverted: true),
                         ScaleGamma
                     );
-                    return intensity.Clamp(scaled + PlusBrightnessPercent);
+                    return intensity.Clamp(scaled);
             }
         }
     }

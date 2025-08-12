@@ -8,14 +8,32 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace McduDotNet
+using System;
+using Cduhub.Config;
+
+namespace Cduhub.Pages.Init
 {
-    public class CommonAutoBrightnessSettings
+    class AutoBrightnessLedInit_Page : CommonAutoBrightnessInit_Page
     {
-        public int LowestIntensityPercent { get; set; } = 45;
+        protected override string Title => "LED AUTO";
 
-        public int HighestIntensityPercent { get; set; } = 100;
+        protected override string IntensityLabel => "INTENSITY";
 
-        public double ScaleGamma { get; set; } = 3.0;
+        protected override Func<int> LiveValueCallback => () => _Hub.LedBrightnessPercent;
+
+        public override Func<Type> LeftArrowCallback => () => typeof(AutoBrightnessDisplayInit_Page);
+
+        public override Func<Type> RightArrowCallback => () => typeof(AutoBrightnessKeyboardInit_Page);
+
+        public AutoBrightnessLedInit_Page(Hub hub) : base(hub)
+        {
+            SetupEditor(() => _Settings.AutoBrightness.LedIntensity);
+            Leds.TurnAllOn(true);
+        }
+
+        protected override void ApplyDefaults(BrightnessSettings defaults)
+        {
+            _Settings.AutoBrightness.LedIntensity = defaults.AutoBrightness.LedIntensity;
+        }
     }
 }

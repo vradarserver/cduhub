@@ -47,7 +47,7 @@ namespace McduDotNet
                     break;
             }
 
-            return intensity.Clamp(result + PlusBrightnessPercent);
+            return intensity.Clamp(result);
         }
     }
 }
