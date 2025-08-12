@@ -169,41 +169,6 @@ If this is the last cell of the screen then add 2.
 
 
 
-## Illumination
-
-Setting the keyboard backlight, display backlight, LED brightness and
-turning LEDs on or off all involves the same 14 byte packet to send
-a 32 BB ... 03 49 command.
-
-The packet bytes are:
-
-```
-02 32 BB 00 00 03 49 <VARIABLE WORD> 00 00 00 00 00
-```
-
-The two bytes of the variable word vary depending on what you want to
-control.
-
-Brightness bytes range from 00 (off) to FF (full-on).
-
-On / off values are either 0 (off) or 1 (on).
-
-Note that setting the LED brightness to 0 will prevent any LED from displaying.
-
-| Byte 1 | Byte 2 |
-| ---    | --- |
-| 0x00   | Keyboard backlight brightness |
-| 0x01   | Display backlight brightness |
-| 0x02   | LED brightness |
-| 0x08   | Fail LED on / off |
-| 0x09   | FM LED on / off |
-| 0x0a   | Mcdu LED on / off |
-| 0x0b   | Menu LED on / off |
-| 0x0c   | FM1 LED on / off |
-| 0x0d   | IND LED on / off |
-| 0x0e   | RDY LED on / off |
-| 0x0f   | Blank / Line LED on / off |
-| 0x10   | FM2 LED on / off |
 
 
 

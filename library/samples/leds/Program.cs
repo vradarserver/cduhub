@@ -16,43 +16,57 @@ namespace Leds
     {
         static void Main(string[] _)
         {
-            using(var cdu = CduFactory.ConnectLocal()) {
+            var deviceId = SelectDevice();
+            using(var cdu = CduFactory.ConnectLocal(deviceId)) {
                 Console.WriteLine($"Using {cdu.DeviceId}");
+
+                var supportedLeds = cdu.SupportedLeds
+                    .OrderBy(led => led.Name())
+                    .ToArray();
+                var leftLeds = new List<Led>();
+                var rightLeds = new List<Led>();
+
+                for(var idx = 0;idx < supportedLeds.Length;++idx) {
+                    var led = supportedLeds[idx];
+                    var list = idx < 6 ? leftLeds : rightLeds;
+                    list.Add(led);
+                }
 
                 cdu.Output
                     .Small()
                     .Grey()
-                    .LeftLabel(1, ">FAIL")
-                    .LeftLabel(2, ">FM")
-                    .LeftLabel(3, ">FM1")
-                    .LeftLabel(4, ">FM2")
-                    .LeftLabel(5, ">IND")
-                    .LeftLabel(6, ">LINE")
-                    .RightLabel(1, "MCDU<")
-                    .RightLabel(2, "MENU<")
-                    .RightLabel(3, "RDY<")
                     .RightLabel(5, "BRIGHT -5%<")
                     .RightLabel(6, "BRIGHT +5%<");
+
+                for(var idx = 0;idx < leftLeds.Count;++idx) {
+                    cdu.Output.LeftLabel(idx + 1, $">{leftLeds[idx].Name()}");
+                }
+                for(var idx = 0;idx < rightLeds.Count;++idx) {
+                    cdu.Output.RightLabel(idx + 1, $">{rightLeds[idx].Name()}");
+                }
+
                 cdu.RefreshDisplay();
 
                 cdu.KeyDown += (_, args) => {
-                    var refreshLeds = true;
-                    switch(args.Key) {
-                        case Key.LineSelectLeft1:   cdu.Leds.Fail = !cdu.Leds.Fail; break;
-                        case Key.LineSelectLeft2:   cdu.Leds.Fm = !cdu.Leds.Fm; break;
-                        case Key.LineSelectLeft3:   cdu.Leds.Fm1 = !cdu.Leds.Fm1; break;
-                        case Key.LineSelectLeft4:   cdu.Leds.Fm2 = !cdu.Leds.Fm2; break;
-                        case Key.LineSelectLeft5:   cdu.Leds.Ind = !cdu.Leds.Ind; break;
-                        case Key.LineSelectLeft6:   cdu.Leds.Line = !cdu.Leds.Line; break;
-                        case Key.LineSelectRight1:  cdu.Leds.Mcdu = !cdu.Leds.Mcdu; break;
-                        case Key.LineSelectRight2:  cdu.Leds.Menu = !cdu.Leds.Menu; break;
-                        case Key.LineSelectRight3:  cdu.Leds.Rdy = !cdu.Leds.Rdy; break;
-                        case Key.LineSelectRight5:  cdu.LedBrightnessPercent = Math.Max(0, cdu.LedBrightnessPercent - 5); break;
-                        case Key.LineSelectRight6:  cdu.LedBrightnessPercent = Math.Min(100, cdu.LedBrightnessPercent + 5); break;
-                        default:                    refreshLeds = false; break;
-                    }
+                    var lsNumber = args.Key.ToLineSelectNumber();
+                    if(lsNumber.Number != -1) {
+                        var list = lsNumber.IsLeft ? leftLeds : rightLeds;
+                        var idx = lsNumber.Number - 1;
+                        if(idx < list.Count) {
+                            var led = list[idx];
+                            cdu.Leds.SetLed(
+                                led,
+                                !cdu.Leds.GetLed(led)
+                            );
+                        }
 
-                    if(refreshLeds) {
+                        if(!lsNumber.IsLeft) {
+                            switch(lsNumber.Number) {
+                                case 5: cdu.LedBrightnessPercent = Math.Max(0, cdu.LedBrightnessPercent - 5); break;
+                                case 6: cdu.LedBrightnessPercent = Math.Min(100, cdu.LedBrightnessPercent + 5); break;
+                            }
+                        }
+
                         cdu.RefreshLeds();
                     }
                 };
@@ -62,6 +76,32 @@ namespace Leds
 
                 cdu.Cleanup();
             }
+        }
+
+        static DeviceIdentifier SelectDevice()
+        {
+            var identifiers = CduFactory
+                .FindLocalDevices()
+                .OrderBy(r => r.UsbVendorId)
+                .ThenBy(r => r.UsbProductId)
+                .ToArray();
+            var result = identifiers.FirstOrDefault();
+            if(identifiers.Length > 1) {
+                Console.WriteLine("Select device:");
+                for(var idx = 0;idx < identifiers.Length;++idx) {
+                    Console.WriteLine($"{idx + 1}: {identifiers[idx]}");
+                }
+                do {
+                    result = null;
+                    Console.Write("? ");
+                    var number = Console.ReadLine();
+                    if(int.TryParse(number, out var idx) && idx > 0 && idx <= identifiers.Length) {
+                        result = identifiers[idx - 1];
+                    }
+                } while(result == null);
+            }
+
+            return result;
         }
     }
 }

@@ -8,53 +8,25 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using System.Collections.Generic;
-using HidSharp;
-
-namespace McduDotNet.WinWing.Pfp7
+namespace McduDotNet
 {
     /// <summary>
-    /// Implements <see cref="ICdu"/> for a WinWing PFP-7.
+    /// An enumeration of all of the LEDs that can be driven across all supported devices.
     /// </summary>
-    class Pfp7Device : CommonWinWingPanel, ICdu
+    public enum Led
     {
-        protected override byte CommandPrefix => 0x33;
-
-        private static readonly Dictionary<Led, byte> _LedIndicatorCodeMap = new Dictionary<Led, byte>() {
-            { Led.Dspy, 0x03 },
-            { Led.Fail, 0x04 },
-            { Led.Msg, 0x05 },
-            { Led.Ofst, 0x06 },
-            { Led.Exec, 0x07 },
-        };
-        protected override Dictionary<Led, byte> LedIndicatorCodeMap => _LedIndicatorCodeMap;
-
-        public Pfp7Device(HidDevice hidDevice, DeviceIdentifier deviceId) : base(hidDevice, deviceId)
-        {
-        }
-
-        /// <inheritdoc/>
-        ~Pfp7Device() => Dispose(false);
-
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-            if(disposing) {
-                _IlluminationWriter = null;
-            }
-        }
-
-        protected override void PanelSpecificInitialisation()
-        {
-        }
-
-        public void RefreshPalette(bool skipDuplicateCheck = false, bool forceDisplayRefresh = true)
-        {
-        }
-
-        public void UseFont(McduFontFile fontFileContent, bool useFullWidth)
-        {
-        }
+        Dspy,
+        Exec,
+        Fail,
+        Fm,
+        Fm1,
+        Fm2,
+        Ind,
+        Line,
+        Mcdu,
+        Menu,
+        Msg,
+        Ofst,
+        Rdy,
     }
 }

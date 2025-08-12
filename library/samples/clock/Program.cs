@@ -41,18 +41,22 @@ namespace Clock
 
         static DeviceIdentifier SelectDevice()
         {
-            var identifiers = CduFactory.FindLocalDevices();
+            var identifiers = CduFactory
+                .FindLocalDevices()
+                .OrderBy(r => r.UsbVendorId)
+                .ThenBy(r => r.UsbProductId)
+                .ToArray();
             var result = identifiers.FirstOrDefault();
-            if(identifiers.Count > 1) {
+            if(identifiers.Length > 1) {
                 Console.WriteLine("Select device:");
-                for(var idx = 0;idx < identifiers.Count;++idx) {
+                for(var idx = 0;idx < identifiers.Length;++idx) {
                     Console.WriteLine($"{idx + 1}: {identifiers[idx]}");
                 }
                 do {
                     result = null;
                     Console.Write("? ");
                     var number = Console.ReadLine();
-                    if(int.TryParse(number, out var idx) && idx > 0 && idx <= identifiers.Count) {
+                    if(int.TryParse(number, out var idx) && idx > 0 && idx <= identifiers.Length) {
                         result = identifiers[idx - 1];
                     }
                 } while(result == null);

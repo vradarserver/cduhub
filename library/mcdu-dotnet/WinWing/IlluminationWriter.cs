@@ -8,22 +8,25 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace McduDotNet.WinWing.Mcdu
+using System.Collections.Generic;
+
+namespace McduDotNet.WinWing
 {
     /// <summary>
-    /// Handles the setting of LEDs and backlight brightnesses on the WinWing MCDU.
+    /// Handles the setting of LEDs and backlight brightnesses on WinWing panels.
     /// </summary>
     class IlluminationWriter
     {
         private UsbWriter _UsbWriter;
         private Leds _PreviousLeds;
+        private Dictionary<Led, byte> _LedIndicatorMap;
 
         /// <summary>
         /// The 02 report that controls LED on/off and display brightnesses.
         /// </summary>
         private readonly byte[] _LedOrBrightnessPacket = new byte[] {
-            0x02, 0x32, 0xbb, 0x00, 0x00, 0x03, 0x49,
-            0x00, 0x00,     // <-- these two change during Send LED calls
+            0x02, 0x32, 0xbb, 0x00, 0x00, 0x03, 0x49,   // <-- 0x32 replaced with command prefix in ctor
+            0x00, 0x00,                                 // <-- these two change during Send LED calls
             0x00, 0x00, 0x00, 0x00, 0x00
         };
         private const int _LedOrBrightnessPacketIndicatorOffset = 7;
@@ -31,19 +34,16 @@ namespace McduDotNet.WinWing.Mcdu
         private const byte _SetKeyboardBacklight =  0x00;
         private const byte _SetDisplayBrightness =  0x01;
         private const byte _SetLedBrightness =      0x02;
-        private const byte _SetFailLed =            0x08;
-        private const byte _SetFmLed =              0x09;
-        private const byte _SetMcduLed =            0x0a;
-        private const byte _SetMenuLed =            0x0b;
-        private const byte _SetFm1Led =             0x0c;
-        private const byte _SetIndLed =             0x0d;
-        private const byte _SetRdyLed =             0x0e;
-        private const byte _SetLineLed =            0x0f;
-        private const byte _SetFm2Led =             0x10;
 
-        public IlluminationWriter(UsbWriter usbWriter)
+        public IlluminationWriter(
+            UsbWriter usbWriter,
+            byte commandPrefix,
+            Dictionary<Led, byte> ledIndicatorMap
+        )
         {
+            _LedOrBrightnessPacket[1] = commandPrefix;
             _UsbWriter = usbWriter;
+            _LedIndicatorMap = ledIndicatorMap;
         }
 
         /// <summary>
@@ -85,15 +85,15 @@ namespace McduDotNet.WinWing.Mcdu
         {
             _UsbWriter.LockForOutput(() => {
                 if(skipDuplicateCheck || !(_PreviousLeds?.Equals(leds) ?? false)) {
-                    SendLight(_PreviousLeds?.Fail,  leds.Fail,  _SetFailLed);
-                    SendLight(_PreviousLeds?.Fm,    leds.Fm,    _SetFmLed);
-                    SendLight(_PreviousLeds?.Mcdu,  leds.Mcdu,  _SetMcduLed);
-                    SendLight(_PreviousLeds?.Menu,  leds.Menu,  _SetMenuLed);
-                    SendLight(_PreviousLeds?.Fm1,   leds.Fm1,   _SetFm1Led);
-                    SendLight(_PreviousLeds?.Ind,   leds.Ind,   _SetIndLed);
-                    SendLight(_PreviousLeds?.Rdy,   leds.Rdy,   _SetRdyLed);
-                    SendLight(_PreviousLeds?.Line,  leds.Line,  _SetLineLed);
-                    SendLight(_PreviousLeds?.Fm2,   leds.Fm2,   _SetFm2Led);
+                    foreach(var kvp in _LedIndicatorMap) {
+                        var led = kvp.Key;
+                        var indicatorCode = kvp.Value;
+                        SendLight(
+                            _PreviousLeds?.GetLed(led),
+                            leds.GetLed(led),
+                            indicatorCode
+                        );
+                    }
 
                     if(_PreviousLeds == null) {
                         _PreviousLeds = new Leds();

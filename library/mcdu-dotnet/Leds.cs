@@ -18,49 +18,70 @@ namespace McduDotNet
     public class Leds
     {
         /// <summary>
-        /// Gets or sets the lit state of the FAIL LED.
+        /// Gets or sets the lit state of the FAIL LED. Supported on all panels.
         /// </summary>
         public bool Fail { get; set; }
 
         /// <summary>
-        /// Gets or sets the lit state of the FM LED.
+        /// Gets or sets the lit state of the FM LED. Only supported on the MCDU.
         /// </summary>
         public bool Fm { get; set; }
 
         /// <summary>
-        /// Gets or sets the lit state of the MCDU LED.
+        /// Gets or sets the lit state of the MCDU LED. Only supported on the MCDU.
         /// </summary>
         public bool Mcdu { get; set; }
 
         /// <summary>
-        /// Gets or sets the lit state of the MENU LED.
+        /// Gets or sets the lit state of the MENU LED. Only supported on the MCDU.
         /// </summary>
         public bool Menu { get; set; }
 
         /// <summary>
-        /// Gets or sets the lit state of the FM1 LED.
+        /// Gets or sets the lit state of the FM1 LED. Only supported on the MCDU.
         /// </summary>
         public bool Fm1 { get; set; }
 
         /// <summary>
-        /// Gets or sets the lit state of the IND LED.
+        /// Gets or sets the lit state of the IND LED. Only supported on the MCDU.
         /// </summary>
         public bool Ind { get; set; }
 
         /// <summary>
-        /// Gets or sets the lit state of the RDY LED.
+        /// Gets or sets the lit state of the RDY LED. Only supported on the MCDU.
         /// </summary>
         public bool Rdy { get; set; }
 
         /// <summary>
-        /// Gets or sets the lit state of the horizontal line LED.
+        /// Gets or sets the lit state of the horizontal line LED. Only supported on the MCDU
+        /// (see <see cref="Exec"/> for the Boeing line LED).
         /// </summary>
         public bool Line { get; set; }
 
         /// <summary>
-        /// Gets or sets the lit state of the FM2 LED.
+        /// Gets or sets the lit state of the FM2 LED. Only supported on the MCDU.
         /// </summary>
         public bool Fm2 { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lit state of the DSPY LED. Only supported on the PFP.
+        /// </summary>
+        public bool Dspy { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lit state of the EXEC LED. Only supported on the PFP.
+        /// </summary>
+        public bool Exec { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lit state of the MSG LED. Only supported on the PFP.
+        /// </summary>
+        public bool Msg { get; set; }
+
+        /// <summary>
+        /// Gets or sets the lit state of the OFST LED. Only supported on the PFP.
+        /// </summary>
+        public bool Ofst { get; set; }
 
         /// <summary>
         /// Switches all of the LEDs on or off.
@@ -68,6 +89,8 @@ namespace McduDotNet
         /// <param name="on"></param>
         public void TurnAllOn(bool on)
         {
+            Dspy =  on;
+            Exec =  on;
             Fail =  on;
             Fm =    on;
             Fm1 =   on;
@@ -76,6 +99,8 @@ namespace McduDotNet
             Line =  on;
             Mcdu =  on;
             Menu =  on;
+            Msg =   on;
+            Ofst =  on;
             Rdy =   on;
         }
 
@@ -84,7 +109,9 @@ namespace McduDotNet
         {
             var result = Object.ReferenceEquals(this, obj);
             if(!result && obj is Leds other) {
-                result = Fail == other.Fail
+                result = Dspy == other.Dspy
+                      && Exec == other.Exec
+                      && Fail == other.Fail
                       && Fm == other.Fm
                       && Fm1 == other.Fm1
                       && Fm2 == other.Fm2
@@ -92,6 +119,8 @@ namespace McduDotNet
                       && Line == other.Line
                       && Mcdu == other.Mcdu
                       && Menu == other.Menu
+                      && Msg == other.Msg
+                      && Ofst == other.Ofst
                       && Rdy == other.Rdy;
             }
             return result;
@@ -104,11 +133,53 @@ namespace McduDotNet
             return Fail.GetHashCode();
         }
 
+        public bool GetLed(Led led)
+        {
+            switch(led) {
+                case Led.Dspy:  return Dspy;
+                case Led.Exec:  return Exec;
+                case Led.Fail:  return Fail;
+                case Led.Fm:    return Fm;
+                case Led.Fm1:   return Fm1;
+                case Led.Fm2:   return Fm2;
+                case Led.Ind:   return Ind;
+                case Led.Line:  return Line;
+                case Led.Mcdu:  return Mcdu;
+                case Led.Menu:  return Menu;
+                case Led.Msg:   return Msg;
+                case Led.Ofst:  return Ofst;
+                case Led.Rdy:   return Rdy;
+                default:        throw new NotImplementedException();
+            }
+        }
+
+        public void SetLed(Led led, bool on)
+        {
+            switch(led) {
+                case Led.Dspy:  Dspy = on; break;
+                case Led.Exec:  Exec = on; break;
+                case Led.Fail:  Fail = on; break;
+                case Led.Fm:    Fm = on; break;
+                case Led.Fm1:   Fm1 = on; break;
+                case Led.Fm2:   Fm2 = on; break;
+                case Led.Ind:   Ind = on; break;
+                case Led.Line:  Line = on; break;
+                case Led.Mcdu:  Mcdu = on; break;
+                case Led.Menu:  Menu = on; break;
+                case Led.Msg:   Msg = on; break;
+                case Led.Ofst:  Ofst = on; break;
+                case Led.Rdy:   Rdy = on; break;
+                default:        throw new NotImplementedException();
+            }
+        }
+
         public void CopyFrom(Leds other)
         {
             if(other == null) {
                 throw new ArgumentNullException(nameof(other));
             }
+            Dspy = other.Dspy;
+            Exec = other.Exec;
             Fail = other.Fail;
             Fm = other.Fm;
             Fm1 = other.Fm1;
@@ -117,6 +188,8 @@ namespace McduDotNet
             Line = other.Line;
             Mcdu = other.Mcdu;
             Menu = other.Menu;
+            Msg = other.Msg;
+            Ofst = other.Ofst;
             Rdy = other.Rdy;
         }
 

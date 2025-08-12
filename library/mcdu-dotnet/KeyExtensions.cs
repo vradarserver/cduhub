@@ -132,6 +132,25 @@ namespace McduDotNet
             return result;
         }
 
+        public static (int Number, bool IsLeft) ToLineSelectNumber(this Key key)
+        {
+            switch(key) {
+                case Key.LineSelectLeft1:   return (1, true);
+                case Key.LineSelectLeft2:   return (2, true);
+                case Key.LineSelectLeft3:   return (3, true);
+                case Key.LineSelectLeft4:   return (4, true);
+                case Key.LineSelectLeft5:   return (5, true);
+                case Key.LineSelectLeft6:   return (6, true);
+                case Key.LineSelectRight1:  return (1, false);
+                case Key.LineSelectRight2:  return (2, false);
+                case Key.LineSelectRight3:  return (3, false);
+                case Key.LineSelectRight4:  return (4, false);
+                case Key.LineSelectRight5:  return (5, false);
+                case Key.LineSelectRight6:  return (6, false);
+                default:                    return (-1, false);
+            }
+        }
+
         public static string ToFenixEfbMcduKeyName(this Key key)
         {
             switch(key) {

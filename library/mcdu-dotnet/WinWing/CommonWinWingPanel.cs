@@ -9,7 +9,10 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using HidSharp;
 
 namespace McduDotNet.WinWing
@@ -20,31 +23,120 @@ namespace McduDotNet.WinWing
     abstract class CommonWinWingPanel : IDisposable
     {
         protected abstract byte CommandPrefix { get; }
-        // One of the differences between panels seems to be that the first byte of the XXBB commands differs
-        // between each device. That sequence is 4 characters in string commands, so a two character name that
-        // holds the correct XXBB sequence for the device will be 4 characters long when surrounded by the {}
-        // inline string substitution characters. Hence the reason why the name is particularly terse.
+        // One of the differences between panels seems to be that the first byte of the
+        // XXBB commands differs between each device. That sequence is 4 characters in
+        // string commands, so a two character name that holds the correct XXBB sequence
+        // for the device will be 4 characters long when surrounded by the {} inline
+        // string substitution characters, and not make the packets look squiggly when
+        // written as hex strings. Hence why the name is particularly terse.
         protected string CP { get; }
+
+        protected abstract Dictionary<Led, byte> LedIndicatorCodeMap { get; }
 
         protected readonly Screen _EmptyScreen = new Screen();
         protected HidDevice _HidDevice;
         protected HidStream _HidStream;
         protected UsbWriter _UsbWriter;
         protected ScreenWriter _ScreenWriter;
+        protected IlluminationWriter _IlluminationWriter;
+        private WinWing.Mcdu.KeyboardReader _KeyboardReader;
+        private CancellationTokenSource _InputLoopCancellationTokenSource;
+        private Task _InputLoopTask;
 
+        /// <inheritdoc/>
         public DeviceIdentifier DeviceId { get; }
 
+        /// <inheritdoc/>
         public Screen Screen { get; }
 
+        /// <inheritdoc/>
         public Leds Leds { get; }
 
+        /// <inheritdoc/>
+        public IReadOnlyList<Led> SupportedLeds { get; }
+
+        /// <inheritdoc/>
         public Palette Palette { get; }
 
+        /// <inheritdoc/>
         public int XOffset { get; set; }
 
+        /// <inheritdoc/>
         public int YOffset { get; set; }
 
+        /// <inheritdoc/>
         public Compositor Output { get; }
+
+        private int _DisplayBrightnessPercent = 100;
+        /// <inheritdoc/>
+        public int DisplayBrightnessPercent
+        {
+            get => _DisplayBrightnessPercent;
+            set {
+                var normalised = Percent.Clamp(value);
+                if(normalised != DisplayBrightnessPercent) {
+                    _DisplayBrightnessPercent = normalised;
+                    _IlluminationWriter?.SendDisplayBrightnessPercent(_DisplayBrightnessPercent);
+                }
+            }
+        }
+
+        private int _BacklightBrightnessPercent = 0;
+        public int BacklightBrightnessPercent
+        {
+            get => _BacklightBrightnessPercent;
+            set {
+                var normalised = Percent.Clamp(value);
+                if(normalised != BacklightBrightnessPercent) {
+                    _BacklightBrightnessPercent = normalised;
+                    _IlluminationWriter.SendBacklightPercent(_BacklightBrightnessPercent);
+                }
+            }
+        }
+
+        private int _LedBrightnessPercent = 100;
+        /// <inheritdoc/>
+        public int LedBrightnessPercent
+        {
+            get => _LedBrightnessPercent;
+            set {
+                var normalised = Percent.Clamp(value);
+                if(normalised != LedBrightnessPercent) {
+                    _LedBrightnessPercent = normalised;
+                    _IlluminationWriter.SendLedBrightnessPercent(_LedBrightnessPercent);
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public AutoBrightnessSettings AutoBrightness { get; } = new AutoBrightnessSettings();
+
+        /// <inheritdoc/>
+        public bool HasAmbientLightSensor => true;
+
+        /// <inheritdoc/>
+        public int LeftAmbientLightNative { get; private set; }
+
+        /// <inheritdoc/>
+        public int RightAmbientLightNative { get; private set; }
+
+        /// <inheritdoc/>
+        public int AmbientLightPercent { get; private set; }
+
+        /// <inheritdoc/>
+        public event EventHandler LeftAmbientLightChanged;
+
+        protected virtual void OnLeftAmbientLightChanged() => LeftAmbientLightChanged?.Invoke(this, EventArgs.Empty);
+
+        /// <inheritdoc/>
+        public event EventHandler RightAmbientLightChanged;
+
+        protected virtual void OnRightAmbientLightChanged() => RightAmbientLightChanged?.Invoke(this, EventArgs.Empty);
+
+        /// <inheritdoc/>
+        public event EventHandler AmbientLightChanged;
+
+        protected virtual void OnAmbientLightChanged() => AmbientLightChanged?.Invoke(this, EventArgs.Empty);
 
         public event EventHandler<KeyEventArgs> KeyDown;
 
@@ -83,6 +175,7 @@ namespace McduDotNet.WinWing
             _HidDevice = hidDevice;
             DeviceId = deviceId;
             Leds = new Leds();
+            SupportedLeds = LedIndicatorCodeMap.Select(r => r.Key).ToArray();
             Screen = new Screen();
             Output = new Compositor(Screen);
             Palette = new Palette();
@@ -101,7 +194,14 @@ namespace McduDotNet.WinWing
             if(disposing) {
                 HidSharp.DeviceList.Local.Changed -= HidSharpDeviceList_Changed;
 
+                _InputLoopCancellationTokenSource?.Cancel();
+                _InputLoopTask?.Wait(5000);
+                _InputLoopTask = null;
+                _KeyboardReader = null;
+
+                _UsbWriter = null;
                 _ScreenWriter = null;
+                _IlluminationWriter = null;
 
                 var hidStream = _HidStream;
                 _HidStream = null;
@@ -125,11 +225,30 @@ namespace McduDotNet.WinWing
                 throw new McduException($"Could not open a stream to {_HidDevice}");
             }
             _UsbWriter = new UsbWriter(_HidStream);
+
+            _KeyboardReader = new WinWing.Mcdu.KeyboardReader(
+                _HidStream,
+                ProcessKeyboardEvent,
+                ProcessAmbientLightChange
+            );
+
             _ScreenWriter = new ScreenWriter(_UsbWriter);
+            _IlluminationWriter = new IlluminationWriter(
+                _UsbWriter,
+                CommandPrefix,
+                LedIndicatorCodeMap
+            );
+
+            _InputLoopCancellationTokenSource = new CancellationTokenSource();
+            _InputLoopTask = Task.Run(() => _KeyboardReader.RunInputLoop(
+                _InputLoopCancellationTokenSource.Token
+            ));
 
             PanelSpecificInitialisation();
 
             InitialiseBasicFontsAndColours();
+            RefreshLeds();
+            RefreshBrightnesses();
         }
 
         protected virtual void PanelSpecificInitialisation()
@@ -162,6 +281,92 @@ namespace McduDotNet.WinWing
                     _UsbWriter.SendStringPacket(packet);
                 }
             });
+        }
+
+        protected virtual void ProcessKeyboardEvent(Key key, bool pressed)
+        {
+            if(pressed) {
+                OnKeyDown(() => new KeyEventArgs(key, pressed));
+            } else {
+                OnKeyUp(() => new KeyEventArgs(key, pressed));
+            }
+        }
+
+        protected virtual void ProcessAmbientLightChange(UInt16 leftSensor, UInt16 rightSensor)
+        {
+            var left = LeftAmbientLightNative;
+            var right = RightAmbientLightNative;
+            var avg = AmbientLightPercent;
+
+            LeftAmbientLightNative = leftSensor;
+            RightAmbientLightNative = rightSensor;
+            var mul = ((double)LeftAmbientLightNative + (double)RightAmbientLightNative) / 2.0;
+            mul /= 0xfff;
+            AmbientLightPercent = (int)(100.0 * mul);
+
+            ApplyAutoBrightness();
+
+            if(left != LeftAmbientLightNative) {
+                OnLeftAmbientLightChanged();
+            }
+            if(right != RightAmbientLightNative) {
+                OnRightAmbientLightChanged();
+            }
+            if(avg != AmbientLightPercent) {
+                OnAmbientLightChanged();
+            }
+        }
+
+        /// <inheritdoc/>
+        public void RefreshDisplay(bool skipDuplicateCheck = false)
+        {
+            _ScreenWriter?.SendScreenToDisplay(Screen, skipDuplicateCheck);
+        }
+
+        /// <inheritdoc/>
+        public void RefreshBrightnesses()
+        {
+            _IlluminationWriter?.SendBacklightPercent(BacklightBrightnessPercent);
+            _IlluminationWriter?.SendDisplayBrightnessPercent(DisplayBrightnessPercent);
+            _IlluminationWriter?.SendLedBrightnessPercent(LedBrightnessPercent);
+        }
+
+        /// <inheritdoc/>
+        public void ApplyAutoBrightness()
+        {
+            if(AutoBrightness.Enabled) {
+                BacklightBrightnessPercent = AutoBrightness
+                    .KeyboardBacklight
+                    .BrightnessForAmbientPercent(AmbientLightPercent);
+                DisplayBrightnessPercent = AutoBrightness
+                    .DisplayBacklight
+                    .BrightnessForAmbientPercent(AmbientLightPercent);
+                LedBrightnessPercent = AutoBrightness
+                    .LedIntensity
+                    .IntensityForAmbientPercent(AmbientLightPercent);
+            }
+        }
+
+        /// <inheritdoc/>
+        public void RefreshLeds(bool skipDuplicateCheck = false)
+        {
+            _IlluminationWriter?.ApplyLeds(Leds, skipDuplicateCheck);
+        }
+
+        /// <inheritdoc/>
+        public void Cleanup(
+            int ledBrightnessPercent = 0,
+            int displayBrightnessPercent = 0,
+            int backlightBrightnessPercent = 0
+        )
+        {
+            Screen.Clear();
+            Leds.TurnAllOn(false);
+            _IlluminationWriter?.SendLedBrightnessPercent(ledBrightnessPercent);
+            _IlluminationWriter?.SendDisplayBrightnessPercent(displayBrightnessPercent);
+            _IlluminationWriter?.SendBacklightPercent(backlightBrightnessPercent);
+            RefreshDisplay();
+            RefreshLeds();
         }
 
         protected void HidSharpDeviceList_Changed(object sender, DeviceListChangedEventArgs e)
