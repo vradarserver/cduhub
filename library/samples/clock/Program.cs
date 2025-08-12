@@ -16,8 +16,9 @@ namespace Clock
     {
         static void Main(string[] _)
         {
-            using(var cdu = CduFactory.ConnectLocal()) {
-                Console.WriteLine($"Using {cdu.DeviceId} MCDU");
+            var deviceId = SelectDevice();
+            using(var cdu = CduFactory.ConnectLocal(deviceId)) {
+                Console.WriteLine($"Using {cdu.DeviceId}");
 
                 Console.WriteLine($"Press Q to quit");
                 while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
@@ -36,6 +37,28 @@ namespace Clock
 
                 cdu.Cleanup();
             }
+        }
+
+        static DeviceIdentifier SelectDevice()
+        {
+            var identifiers = CduFactory.FindLocalDevices();
+            var result = identifiers.FirstOrDefault();
+            if(identifiers.Count > 1) {
+                Console.WriteLine("Select device:");
+                for(var idx = 0;idx < identifiers.Count;++idx) {
+                    Console.WriteLine($"{idx + 1}: {identifiers[idx]}");
+                }
+                do {
+                    result = null;
+                    Console.Write("? ");
+                    var number = Console.ReadLine();
+                    if(int.TryParse(number, out var idx) && idx > 0 && idx <= identifiers.Count) {
+                        result = identifiers[idx - 1];
+                    }
+                } while(result == null);
+            }
+
+            return result;
         }
     }
 }

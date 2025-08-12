@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text;
 using HidSharp;
 using McduDotNet.WinWing.Mcdu;
+using McduDotNet.WinWing.Pfp7;
 
 namespace McduDotNet
 {
@@ -143,9 +144,18 @@ namespace McduDotNet
                     )
                     .FirstOrDefault();
                 if(hidDevice != null) {
-                    var mcdu = new McduDevice(hidDevice, deviceId);
-                    mcdu.Initialise();
-                    result = mcdu;
+                    switch(deviceId.Device) {
+                        case Device.WinWingMcdu:
+                            var mcdu = new McduDevice(hidDevice, deviceId);
+                            mcdu.Initialise();
+                            result = mcdu;
+                            break;
+                        case Device.WinWingPfp7:
+                            var pfp7 = new Pfp7Device(hidDevice, deviceId);
+                            pfp7.Initialise();
+                            result = pfp7;
+                            break;
+                    }
                 }
             }
 

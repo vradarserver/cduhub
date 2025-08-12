@@ -122,6 +122,8 @@ namespace McduDotNet
                 }
             } catch(TimeoutException) {
                 ;
+            } catch(ObjectDisposedException) {
+                ;
             } finally {
                 _HidStream.ReadTimeout = timeout;
             }

@@ -11,7 +11,7 @@
 using System.Text;
 using System.Threading;
 
-namespace McduDotNet.WinWing.Mcdu
+namespace McduDotNet.WinWing
 {
     /// <summary>
     /// Manages the sending of an entire screen buffer to the device.

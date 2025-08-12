@@ -1,0 +1,179 @@
+﻿// Copyright © 2025 onwards, Andrew Whewell
+// All rights reserved.
+//
+// Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+//    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+//    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+//    * Neither the name of the author nor the names of the program's contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+using System;
+using System.Linq;
+using HidSharp;
+
+namespace McduDotNet.WinWing
+{
+    /// <summary>
+    /// Code that all WinWing panels have in common.
+    /// </summary>
+    abstract class CommonWinWingPanel : IDisposable
+    {
+        protected abstract byte CommandPrefix { get; }
+        // One of the differences between panels seems to be that the first byte of the XXBB commands differs
+        // between each device. That sequence is 4 characters in string commands, so a two character name that
+        // holds the correct XXBB sequence for the device will be 4 characters long when surrounded by the {}
+        // inline string substitution characters. Hence the reason why the name is particularly terse.
+        protected string CP { get; }
+
+        protected readonly Screen _EmptyScreen = new Screen();
+        protected HidDevice _HidDevice;
+        protected HidStream _HidStream;
+        protected UsbWriter _UsbWriter;
+        protected ScreenWriter _ScreenWriter;
+
+        public DeviceIdentifier DeviceId { get; }
+
+        public Screen Screen { get; }
+
+        public Leds Leds { get; }
+
+        public Palette Palette { get; }
+
+        public int XOffset { get; set; }
+
+        public int YOffset { get; set; }
+
+        public Compositor Output { get; }
+
+        public event EventHandler<KeyEventArgs> KeyDown;
+
+        /// <summary>
+        /// Raises <see cref="KeyDown"/>. Doesn't bother creating args unless something is listening.
+        /// </summary>
+        /// <param name="createArgs"></param>
+        protected virtual void OnKeyDown(Func<KeyEventArgs> createArgs)
+        {
+            if(KeyDown != null) {
+                KeyDown?.Invoke(this, createArgs());
+            }
+        }
+
+        /// <inheritdoc/>
+        public event EventHandler<KeyEventArgs> KeyUp;
+
+        /// <summary>
+        /// Raises <see cref="KeyUp"/>. Doesn't bother creating args unless something is listening.
+        /// </summary>
+        /// <param name="createArgs"></param>
+        protected virtual void OnKeyUp(Func<KeyEventArgs> createArgs)
+        {
+            if(KeyUp != null) {
+                KeyUp?.Invoke(this, createArgs());
+            }
+        }
+
+        public event EventHandler Disconnected;
+
+        protected virtual void OnDisconnected() => Disconnected?.Invoke(this, EventArgs.Empty);
+
+        public CommonWinWingPanel(HidDevice hidDevice, DeviceIdentifier deviceId)
+        {
+            CP = $"{CommandPrefix:x2}bb";
+            _HidDevice = hidDevice;
+            DeviceId = deviceId;
+            Leds = new Leds();
+            Screen = new Screen();
+            Output = new Compositor(Screen);
+            Palette = new Palette();
+            HidSharp.DeviceList.Local.Changed += HidSharpDeviceList_Changed;
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if(disposing) {
+                HidSharp.DeviceList.Local.Changed -= HidSharpDeviceList_Changed;
+
+                _ScreenWriter = null;
+
+                var hidStream = _HidStream;
+                _HidStream = null;
+                try {
+                    hidStream?.Dispose();
+                } catch {
+                    ;
+                }
+            }
+        }
+
+        public void Initialise()
+        {
+            var maxOutputReportLength = _HidDevice.GetMaxOutputReportLength();
+            if(maxOutputReportLength < 64) {
+                throw new McduException(
+                    $"HID device {_HidDevice} reported an invalid max output report length of {maxOutputReportLength}"
+                );
+            }
+            if(!_HidDevice.TryOpen(out _HidStream)) {
+                throw new McduException($"Could not open a stream to {_HidDevice}");
+            }
+            _UsbWriter = new UsbWriter(_HidStream);
+            _ScreenWriter = new ScreenWriter(_UsbWriter);
+
+            PanelSpecificInitialisation();
+
+            InitialiseBasicFontsAndColours();
+        }
+
+        protected virtual void PanelSpecificInitialisation()
+        {
+        }
+
+        protected void InitialiseBasicFontsAndColours()
+        {
+            _UsbWriter?.LockForOutput(() => {
+                var packets = new string[] {
+                    $"f0000138{CP}00001e0100005f6331000000000000{CP}0000180100005f6331000008000000340018000e001800{CP}0000190100005f633100000e00000000",
+                    $"f00002380000000100050000000200000000000000{CP}0000190100005f633100000e0000000100060000000300000000000000{CP}00001901000000000000",
+                    $"f00003385f633100000e0000000200000000ff0400000000000000{CP}0000190100005f633100000e000000020000a5ffff0500000000000000{CP}00000000",
+                    $"f00004380000190100005f633100000e0000000200ffffffff0600000000000000{CP}0000190100005f633100000e0000000200ffff00ff0700000000000000",
+                    $"f000053800000000{CP}0000190100005f633100000e00000002003dff00ff0800000000000000{CP}0000190100005f633100000e0000000200ff6300000000",
+                    $"f0000638ffff0900000000000000{CP}0000190100005f633100000e00000002000000ffff0a00000000000000{CP}0000190100005f633100000e0000000000",
+                    $"f00007380000020000ffffff0b00000000000000{CP}0000190100005f633100000e0000000200425c61ff0c00000000000000{CP}0000190100005f00000000",
+                    $"f0000838633100000e0000000200777777ff0d00000000000000{CP}0000190100005f633100000e00000002005e7379ff0e00000000000000{CP}0000000000",
+                    $"f000093800190100005f633100000e0000000300000000ff0f00000000000000{CP}0000190100005f633100000e000000030000a5ffff100000000000000000",
+                    $"f0000a38000000{CP}0000190100005f633100000e0000000300ffffffff1100000000000000{CP}0000190100005f633100000e0000000300ffff0000000000",
+                    $"f0000b38ff1200000000000000{CP}0000190100005f633100000e00000003003dff00ff1300000000000000{CP}0000190100005f633100000e000000000000",
+                    $"f0000c38000300ff63ffff1400000000000000{CP}0000190100005f633100000e00000003000000ffff1500000000000000{CP}0000190100005f6300000000",
+                    $"f0000d383100000e000000030000ffffff1600000000000000{CP}0000190100005f633100000e0000000300425c61ff1700000000000000{CP}000000000000",
+                    $"f0000e38190100005f633100000e0000000300777777ff1800000000000000{CP}0000190100005f633100000e00000003005e7379ff19000000000000000000",
+                    $"f0000f380000{CP}0000190100005f633100000e0000000400000000001a00000000000000{CP}0000190100005f633100000e00000004000100000000000000",
+                    $"f00010381b00000000000000{CP}0000190100005f633100000e0000000400020000001c00000000000000{CP}00001a0100005f633100000100000000000000",
+                    $"f000111202{CP}00001c0100005f6331000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                };
+                foreach(var packet in packets) {
+                    _UsbWriter.SendStringPacket(packet);
+                }
+            });
+        }
+
+        protected void HidSharpDeviceList_Changed(object sender, DeviceListChangedEventArgs e)
+        {
+            var devicePresent = HidSharp
+                .DeviceList
+                .Local
+                .GetHidDevices()
+                .Any(device => device.DevicePath == _HidDevice.DevicePath);
+            if(!devicePresent) {
+                OnDisconnected();
+            }
+        }
+    }
+}

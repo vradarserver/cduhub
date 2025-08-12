@@ -20,14 +20,11 @@ namespace McduDotNet.WinWing.Mcdu
     /// The implementation of <see cref="IMcdu"/> for the WinWing MCDU.
     /// </summary>
 #pragma warning disable CS0618 // Stop it moaning about IMcdu being flagged as obsolete
-    class McduDevice : ICdu, IMcdu
+    class McduDevice : CommonWinWingPanel, ICdu, IMcdu
 #pragma warning restore CS0618
     {
-        private readonly Screen _EmptyScreen = new Screen();
-        private HidDevice _HidDevice;
-        private HidStream _HidStream;
-        private UsbWriter _UsbWriter;
-        private ScreenWriter _ScreenWriter;
+        protected override byte CommandPrefix => 0x32;
+
         private IlluminationWriter _IlluminationWriter;
         private FontWriter _FontWriter;
         private PaletteWriter _PaletteWriter;
@@ -37,30 +34,6 @@ namespace McduDotNet.WinWing.Mcdu
 
         /// <inheritdoc/>
         public ProductId ProductId => DeviceId.GetLegacyProductId();
-
-        /// <inheritdoc/>
-        public DeviceIdentifier DeviceId { get; }
-
-        /// <inheritdoc/>
-        public Screen Screen { get; }
-
-        /// <inheritdoc/>
-        public Compositor Output { get; }
-
-        /// <inheritdoc/>
-        public Leds Leds { get; }
-
-        /// <inheritdoc/>
-        public Palette Palette { get; }
-
-        /// <inheritdoc/>
-        public event EventHandler<KeyEventArgs> KeyDown;
-
-        /// <inheritdoc/>
-        public int XOffset { get; set; }
-
-        /// <inheritdoc/>
-        public int YOffset { get; set; }
 
         private int _DisplayBrightnessPercent = 100;
         /// <inheritdoc/>
@@ -118,31 +91,6 @@ namespace McduDotNet.WinWing.Mcdu
         /// <inheritdoc/>
         public AutoBrightnessSettings AutoBrightness { get; } = new AutoBrightnessSettings();
 
-        /// <summary>
-        /// Raises <see cref="KeyDown"/>. Doesn't bother creating args unless something is listening.
-        /// </summary>
-        /// <param name="createArgs"></param>
-        protected virtual void OnKeyDown(Func<KeyEventArgs> createArgs)
-        {
-            if(KeyDown != null) {
-                KeyDown?.Invoke(this, createArgs());
-            }
-        }
-
-        /// <inheritdoc/>
-        public event EventHandler<KeyEventArgs> KeyUp;
-
-        /// <summary>
-        /// Raises <see cref="KeyUp"/>. Doesn't bother creating args unless something is listening.
-        /// </summary>
-        /// <param name="createArgs"></param>
-        protected virtual void OnKeyUp(Func<KeyEventArgs> createArgs)
-        {
-            if(KeyUp != null) {
-                KeyUp?.Invoke(this, createArgs());
-            }
-        }
-
         /// <inheritdoc/>
         public event EventHandler LeftAmbientLightChanged;
 
@@ -158,82 +106,42 @@ namespace McduDotNet.WinWing.Mcdu
 
         protected virtual void OnAmbientLightChanged() => AmbientLightChanged?.Invoke(this, EventArgs.Empty);
 
-        /// <inheritdoc/>
-        public event EventHandler Disconnected;
-
-        protected virtual void OnDisconnected() => Disconnected?.Invoke(this, EventArgs.Empty);
-
         /// <summary>
         /// Creates a new object.
         /// </summary>
         /// <param name="hidDevice"></param>
         /// <param name="deviceId"></param>
-        public McduDevice(HidDevice hidDevice, DeviceIdentifier deviceId)
+        public McduDevice(HidDevice hidDevice, DeviceIdentifier deviceId) : base(hidDevice, deviceId)
         {
-            _HidDevice = hidDevice;
-            DeviceId = deviceId;
-            Leds = new Leds();
-            Screen = new Screen();
-            Output = new Compositor(Screen);
-            Palette = new Palette();
-            HidSharp.DeviceList.Local.Changed += HidSharpDeviceList_Changed;
         }
 
         /// <inheritdoc/>
         ~McduDevice() => Dispose(false);
 
-        /// <inheritdoc/>
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
+            base.Dispose(disposing);
             if(disposing) {
-                HidSharp.DeviceList.Local.Changed -= HidSharpDeviceList_Changed;
-
                 _InputLoopCancellationTokenSource?.Cancel();
                 _InputLoopTask?.Wait(5000);
                 _InputLoopTask = null;
                 _KeyboardReader = null;
 
                 _UsbWriter = null;
-                _ScreenWriter = null;
                 _IlluminationWriter = null;
                 _FontWriter = null;
                 _PaletteWriter = null;
-
-                var hidStream = _HidStream;
-                _HidStream = null;
-                try {
-                    hidStream?.Dispose();
-                } catch {
-                    ;
-                }
             }
         }
 
-        public void Initialise()
+        protected override void PanelSpecificInitialisation()
         {
-            var maxOutputReportLength = _HidDevice.GetMaxOutputReportLength();
-            if(maxOutputReportLength < 64) {
-                throw new McduException(
-                    $"HID device {_HidDevice} reported an invalid max output report length of {maxOutputReportLength}"
-                );
-            }
-            if(!_HidDevice.TryOpen(out _HidStream)) {
-                throw new McduException($"Could not open a stream to {_HidDevice}");
-            }
-            _UsbWriter = new UsbWriter(_HidStream);
             _KeyboardReader = new KeyboardReader(
                 _HidStream,
                 ProcessKeyboardEvent,
                 ProcessAmbientLightChange
             );
 
-            _ScreenWriter = new ScreenWriter(_UsbWriter);
             _IlluminationWriter = new IlluminationWriter(_UsbWriter);
             _FontWriter = new FontWriter(_UsbWriter);
             _PaletteWriter = new PaletteWriter(_UsbWriter);
@@ -243,7 +151,6 @@ namespace McduDotNet.WinWing.Mcdu
                 _InputLoopCancellationTokenSource.Token
             ));
 
-            UseMobiFlightInitialisationSequence();
             RefreshLeds();
         }
 
@@ -408,18 +315,6 @@ namespace McduDotNet.WinWing.Mcdu
                 skipDuplicateCheck,
                 forceDisplayRefresh
             );
-        }
-
-        private void HidSharpDeviceList_Changed(object sender, DeviceListChangedEventArgs e)
-        {
-            var mcduPresent = HidSharp
-                .DeviceList
-                .Local
-                .GetHidDevices()
-                .Any(device => device.DevicePath == _HidDevice.DevicePath);
-            if(!mcduPresent) {
-                OnDisconnected();
-            }
         }
     }
 }
