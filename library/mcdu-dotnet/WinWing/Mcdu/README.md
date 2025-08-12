@@ -1,10 +1,21 @@
 ﻿# WinWing MCDU
 
-This is what I know about the USB packets that the device sends and/or
-expects to receive. There are very large gaps in my understanding, this
+> [!NOTE]
+> This is what I know about the USB packets that the devices send and/or
+expect to receive. There are very large gaps in my understanding, this
 is not comprehensive.
+>
+> If you can fill any of the gaps then please do.
 
-If you can fill any of the gaps then please do!
+These are the bits that are unique about the MCDU. See
+[WinWing Panels Readme](../README.md) for everything that it has in common
+with other WinWing panels.
+
+## Command Prefix
+
+The command prefix is 0x32 0xbb.
+
+
 
 
 ## Keyboard Input
@@ -104,71 +115,6 @@ Offsets are zero-based in decimal from the start of the packet.
 | Space            | 0x80 | 9 |
 | Ovfy             | 0x01 | 10 |
 | Clr              | 0x02 | 10 |
-
-
-
-## Display Output
-
-The screen is a 24 x 14 alphanumeric display. Individual cells on the
-display are not directly addressable, you need to send the entire screen to
-the device.
-
-The screen is filled by sending multiple 64 byte packets. Each packet always
-starts with 0xF2, and then a sequence is generated for each cell and appended
-to the packet. When the packet is filled it is sent, even if it contains a partial
-sequence for a cell - the remaining bytes of the sequence are sent at the start
-of the next packet.
-
-E.G:
-
-```
-F2 <cell sequence><cell sequence>...<partial cell sequence>
-F2 <remainder of cell sequence><cell sequence> etc.
-```
-
-The last F2 packet is padded with zeros to 64 bytes before sending.
-
-
-
-### Cell Sequence
-
-The length of a cell sequence depends on the size of the codepoint for the
-character occupying the cell.
-
-| Length | Meaning |
-| ---    | --- |
-| 2      | Colour and font value, big-endian |
-| 1-4    | UTF-8 byte sequence for the character, big-endian |
-
-To calculate the colour and font value you start by looking up the foreground
-colour ordinal:
-
-| Ordinal | WinWing Default Colour |
-| ---     | --- |
-| 0       | Black |
-| 1       | Amber |
-| 2       | White |
-| 3       | Cyan |
-| 4       | Green |
-| 5       | Magenta |
-| 6       | Red |
-| 7       | Yellow |
-| 8       | Brown |
-| 9       | Grey |
-| 10      | Khaki |
-
-Multiply the ordinal by 0x21 (33 decimal).
-
-If the character is to be rendered in the large font then add 0.
-
-If the character is to be rendered in the small font then add 0x16B (363).
-
-If this is the first cell of the screen then add 1.
-
-If this is the last cell of the screen then add 2.
-
-
-
 
 
 
