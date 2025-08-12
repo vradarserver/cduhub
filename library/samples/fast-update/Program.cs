@@ -51,7 +51,8 @@ namespace FastUpdate
                 return result;
             }
 
-            using(var cdu = CduFactory.ConnectLocal()) {
+            var deviceId = SelectDevice();
+            using(var cdu = CduFactory.ConnectLocal(deviceId)) {
                 Console.WriteLine($"Using {cdu.DeviceId}");
 
                 Console.WriteLine($"Press Q to quit");
@@ -74,6 +75,32 @@ namespace FastUpdate
 
                 cdu.Cleanup();
             }
+        }
+
+        static DeviceIdentifier SelectDevice()
+        {
+            var identifiers = CduFactory
+                .FindLocalDevices()
+                .OrderBy(r => r.UsbVendorId)
+                .ThenBy(r => r.UsbProductId)
+                .ToArray();
+            var result = identifiers.FirstOrDefault();
+            if(identifiers.Length > 1) {
+                Console.WriteLine("Select device:");
+                for(var idx = 0;idx < identifiers.Length;++idx) {
+                    Console.WriteLine($"{idx + 1}: {identifiers[idx]}");
+                }
+                do {
+                    result = null;
+                    Console.Write("? ");
+                    var number = Console.ReadLine();
+                    if(int.TryParse(number, out var idx) && idx > 0 && idx <= identifiers.Length) {
+                        result = identifiers[idx - 1];
+                    }
+                } while(result == null);
+            }
+
+            return result;
         }
     }
 }
