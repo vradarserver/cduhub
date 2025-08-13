@@ -128,8 +128,8 @@ Known issues:
 
 ## mcdu-dotnet
 
-The code for reading and writing the MCDU USB device is in a separate library to
-the rest of CDU Hub, and can be used by applications that want to drive the device
+The code for reading and writing the CDU USB device is in a separate library to
+the rest of CDU Hub, and can be used by applications that want to drive the devices
 for themselves.
 
 The library is called `mcdu-dotnet` and it's in the `library` folder. The README
