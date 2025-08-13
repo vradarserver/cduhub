@@ -17,7 +17,7 @@ namespace McduDotNet.WinWing.Pfp7
     /// <summary>
     /// Implements <see cref="ICdu"/> for a WinWing PFP-7.
     /// </summary>
-    class Pfp7Device : CommonWinWingPanel, ICdu
+    class Pfp7Device : CommonWinWingPanel
     {
         protected override byte CommandPrefix => 0x33;
 

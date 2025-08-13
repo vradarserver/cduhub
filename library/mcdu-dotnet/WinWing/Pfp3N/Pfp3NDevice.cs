@@ -17,7 +17,7 @@ namespace McduDotNet.WinWing.Pfp3N
     /// <summary>
     /// Implements <see cref="ICdu"/> for a WinWing PFP-3N.
     /// </summary>
-    class Pfp3NDevice : CommonWinWingPanel, ICdu
+    class Pfp3NDevice : CommonWinWingPanel
     {
         protected override byte CommandPrefix => 0x31;
 
