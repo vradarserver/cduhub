@@ -8,12 +8,11 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using HidSharp;
 using McduDotNet.WinWing.Mcdu;
+using McduDotNet.WinWing.Pfp3N;
 using McduDotNet.WinWing.Pfp7;
 
 namespace McduDotNet
@@ -46,6 +45,27 @@ namespace McduDotNet
         );
 
         /// <summary>
+        /// The identifier for a WinWing PFP-3N device set to the left-hand seat position.
+        /// </summary>
+        public static readonly DeviceIdentifier WinWingPfp3NCaptainDevice = new DeviceIdentifier(
+            "Winwing PFP-3N (Captain)", 0x4098, 0xBB35, Device.WinWingPfp3N, DeviceUser.Captain
+        );
+
+        /// <summary>
+        /// The identifier for a WinWing PFP-3N device set to the right-hand seat position.
+        /// </summary>
+        public static readonly DeviceIdentifier WinWingPfp3NFirstOfficerDevice = new DeviceIdentifier(
+            "Winwing PFP-3N (F/O)", 0x4098, 0xBB3D, Device.WinWingPfp3N, DeviceUser.FirstOfficer
+        );
+
+        /// <summary>
+        /// The identifier for a WinWing PFP-3N device set to the observer seat position.
+        /// </summary>
+        public static readonly DeviceIdentifier WinWingPfp3NObserverDevice = new DeviceIdentifier(
+            "Winwing PFP-3N (Observer)", 0x4098, 0xBB39, Device.WinWingPfp3N, DeviceUser.Observer
+        );
+
+        /// <summary>
         /// The identifier for a WinWing PFP-7 device set to the left-hand seat position.
         /// </summary>
         public static readonly DeviceIdentifier WinWingPfp7CaptainDevice = new DeviceIdentifier(
@@ -73,6 +93,10 @@ namespace McduDotNet
             WinWingMcduCaptainDevice,
             WinWingMcduFirstOfficerDevice,
             WinWingMcduObserverDevice,
+
+            WinWingPfp3NCaptainDevice,
+            WinWingPfp3NFirstOfficerDevice,
+            WinWingPfp3NObserverDevice,
 
             WinWingPfp7CaptainDevice,
             WinWingPfp7FirstOfficerDevice,
@@ -149,6 +173,11 @@ namespace McduDotNet
                             var mcdu = new McduDevice(hidDevice, deviceId);
                             mcdu.Initialise();
                             result = mcdu;
+                            break;
+                        case Device.WinWingPfp3N:
+                            var pfp3N = new Pfp3NDevice(hidDevice, deviceId);
+                            pfp3N.Initialise();
+                            result = pfp3N;
                             break;
                         case Device.WinWingPfp7:
                             var pfp7 = new Pfp7Device(hidDevice, deviceId);

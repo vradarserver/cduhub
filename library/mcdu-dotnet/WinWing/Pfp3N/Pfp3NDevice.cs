@@ -8,26 +8,35 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace McduDotNet
+using System;
+using System.Collections.Generic;
+using HidSharp;
+
+namespace McduDotNet.WinWing.Pfp3N
 {
     /// <summary>
-    /// An enumeration of all of the USB CDU devices that the library can interact with.
+    /// Implements <see cref="ICdu"/> for a WinWing PFP-3N.
     /// </summary>
-    public enum Device
+    class Pfp3NDevice : CommonWinWingPanel, ICdu
     {
-        /// <summary>
-        /// A WinWing Airbus MCDU.
-        /// </summary>
-        WinWingMcdu,
+        protected override byte CommandPrefix => 0x31;
 
-        /// <summary>
-        /// A WinWing Boeing 777 PFP-7.
-        /// </summary>
-        WinWingPfp7,
+        private static readonly Dictionary<Led, byte> _LedIndicatorCodeMap = new Dictionary<Led, byte>() {
+            { Led.Dspy, 0x03 },
+            { Led.Fail, 0x04 },
+            { Led.Msg, 0x05 },
+            { Led.Ofst, 0x06 },
+            { Led.Exec, 0x07 },
+        };
+        protected override Dictionary<Led, byte> LedIndicatorCodeMap => _LedIndicatorCodeMap;
 
-        /// <summary>
-        /// A WinWing Boeing 737 PFP-3N. I do not have one of these so it might not work!
-        /// </summary>
-        WinWingPfp3N,
+        protected override Func<Key, (int Flag, int Offset)> KeyToFlagOffsetCallback => Pfp7.KeyboardMap.InputReport01FlagAndOffset;
+
+        public Pfp3NDevice(HidDevice hidDevice, DeviceIdentifier deviceId) : base(hidDevice, deviceId)
+        {
+        }
+
+        /// <inheritdoc/>
+        ~Pfp3NDevice() => Dispose(false);
     }
 }
