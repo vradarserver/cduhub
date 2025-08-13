@@ -20,7 +20,9 @@ namespace McduDotNet.WinWing
     /// <summary>
     /// Code that all WinWing panels have in common.
     /// </summary>
-    abstract class CommonWinWingPanel : IDisposable
+#pragma warning disable CS0618 // Stop it moaning about IMcdu being flagged as obsolete
+    abstract class CommonWinWingPanel : IDisposable, ICdu, IMcdu
+#pragma warning restore CS0618
     {
         protected abstract byte CommandPrefix { get; }
         // One of the differences between panels seems to be that the first byte of the
@@ -41,12 +43,17 @@ namespace McduDotNet.WinWing
         protected UsbWriter _UsbWriter;
         protected ScreenWriter _ScreenWriter;
         protected IlluminationWriter _IlluminationWriter;
+        private FontWriter _FontWriter;
+        private PaletteWriter _PaletteWriter;
         private KeyboardReader _KeyboardReader;
         private CancellationTokenSource _InputLoopCancellationTokenSource;
         private Task _InputLoopTask;
 
         /// <inheritdoc/>
         public DeviceIdentifier DeviceId { get; }
+
+        /// <inheritdoc/>
+        public ProductId ProductId => DeviceId.GetLegacyProductId();
 
         /// <inheritdoc/>
         public Screen Screen { get; }
@@ -212,6 +219,8 @@ namespace McduDotNet.WinWing
                 _UsbWriter = null;
                 _ScreenWriter = null;
                 _IlluminationWriter = null;
+                _FontWriter = null;
+                _PaletteWriter = null;
 
                 var hidStream = _HidStream;
                 _HidStream = null;
@@ -249,6 +258,8 @@ namespace McduDotNet.WinWing
                 CommandPrefix,
                 LedIndicatorCodeMap
             );
+            _FontWriter = new FontWriter(_UsbWriter);
+            _PaletteWriter = new PaletteWriter(_UsbWriter, CP);
 
             _InputLoopCancellationTokenSource = new CancellationTokenSource();
             _InputLoopTask = Task.Run(() => _KeyboardReader.RunInputLoop(
@@ -362,6 +373,49 @@ namespace McduDotNet.WinWing
         public void RefreshLeds(bool skipDuplicateCheck = false)
         {
             _IlluminationWriter?.ApplyLeds(Leds, skipDuplicateCheck);
+        }
+
+        /// <inheritdoc/>
+        public void UseFont(McduFontFile fontFileContent, bool useFullWidth)
+        {
+            _UsbWriter?.LockForOutput(() => {
+                _ScreenWriter.SendScreenToDisplay(_EmptyScreen, skipDuplicateCheck: false);
+                _FontWriter.SendFont(
+                    fontFileContent,
+                    CP,
+                    useFullWidth,
+                    DisplayBrightnessPercent,
+                    XOffset,
+                    YOffset
+                );
+
+                // As of time of writing the packet map includes a pile of 32bb...1901 commands to
+                // set the colours to WinWing's defaults. If I remove this then the font goes weird.
+                // So for now I'm just resending the colour palette to override the colours that the
+                // font set up. This will need refining at some point once I understand the meaning
+                // of the 32bbs being sent at the end of the font setup.
+                // TODO: Try to remove colour setup from font upload.
+                //
+                // One advantage of resending the palette is that we also refresh the display, which
+                // we need to do anyway. If SendPalette() is removed in the future then you will have
+                // to replace it with RefreshDisplay.
+                _PaletteWriter.ReestablishPaletteAndRefreshDisplay(_ScreenWriter, Screen);
+            });
+        }
+
+        /// <inheritdoc/>
+        public void RefreshPalette(
+            bool skipDuplicateCheck = false,
+            bool forceDisplayRefresh = true
+        )
+        {
+            _PaletteWriter?.SendPalette(
+                Palette?.ToWinWingOrdinalColours(),
+                _ScreenWriter,
+                Screen,
+                skipDuplicateCheck,
+                forceDisplayRefresh
+            );
         }
 
         /// <inheritdoc/>

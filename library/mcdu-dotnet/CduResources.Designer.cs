@@ -63,9 +63,9 @@ namespace McduDotNet {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] WinwingMcduFontPacketMap_3x29_json {
+        internal static byte[] WinWingFontPacketMap_3x29_json {
             get {
-                object obj = ResourceManager.GetObject("WinwingMcduFontPacketMap_3x29_json", resourceCulture);
+                object obj = ResourceManager.GetObject("WinWingFontPacketMap_3x29_json", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -73,9 +73,9 @@ namespace McduDotNet {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        internal static byte[] WinwingMcduFontPacketMap_3x31_json {
+        internal static byte[] WinWingFontPacketMap_3x31_json {
             get {
-                object obj = ResourceManager.GetObject("WinwingMcduFontPacketMap_3x31_json", resourceCulture);
+                object obj = ResourceManager.GetObject("WinWingFontPacketMap_3x31_json", resourceCulture);
                 return ((byte[])(obj));
             }
         }

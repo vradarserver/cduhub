@@ -12,10 +12,10 @@ using System;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace McduDotNet.WinWing.Mcdu
+namespace McduDotNet.WinWing
 {
     /// <summary>
-    /// Handles the sending of font glyphs to the WinWing MCDU device.
+    /// Handles the sending of font glyphs to the WinWing panels.
     /// </summary>
     class FontWriter
     {
@@ -28,6 +28,7 @@ namespace McduDotNet.WinWing.Mcdu
 
         public void SendFont(
             McduFontFile fontFileContent,
+            string commandPrefix,
             bool useFullWidth,
             int currentDisplayBrightnessPercent,
             int currentDisplayXOffset,
@@ -37,8 +38,8 @@ namespace McduDotNet.WinWing.Mcdu
             _UsbWriter.LockForOutput(() => {
                 byte[] mapBytes;
                 switch(fontFileContent.GlyphHeight) {
-                    case 29:    mapBytes = CduResources.WinwingMcduFontPacketMap_3x29_json; break;
-                    case 31:    mapBytes = CduResources.WinwingMcduFontPacketMap_3x31_json; break;
+                    case 29:    mapBytes = CduResources.WinWingFontPacketMap_3x29_json; break;
+                    case 31:    mapBytes = CduResources.WinWingFontPacketMap_3x31_json; break;
                     default:    throw new NotImplementedException($"Need packet map for {fontFileContent.GlyphHeight} pixel high fonts");
                 }
 
@@ -49,6 +50,7 @@ namespace McduDotNet.WinWing.Mcdu
                     glyphWidth = fontFileContent.GlyphFullWidth;
                 }
                 packetMap.OverwritePacketsWithFontFileContent(
+                    commandPrefix,
                     Percent.ToByte(currentDisplayBrightnessPercent),
                     glyphWidth,
                     fontFileContent.GlyphHeight,

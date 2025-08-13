@@ -67,6 +67,7 @@ namespace McduDotNet
         public McduFontGlyphOffsets[] SmallGlyphOffsets { get; set; } = Array.Empty<McduFontGlyphOffsets>();
 
         public void OverwritePacketsWithFontFileContent(
+            string commandPrefix,
             byte brightnessByte,
             int glyphWidth,
             int glyphHeight,
@@ -83,7 +84,7 @@ namespace McduDotNet
                 throw new InvalidOperationException($"Glyph width mismatch - font bytes per row is {glyphWidth / 8}, map is {GlyphWidth / 8}");
             }
 
-            var packetBlob = BuildPacketBlob();
+            var packetBlob = BuildPacketBlob(commandPrefix);
 
             FillPacketsWithGlyphs(packetBlob, largeGlyphs, LargeGlyphOffsets, isLarge: true);
             FillPacketsWithGlyphs(packetBlob, smallGlyphs, SmallGlyphOffsets, isLarge: false);
@@ -101,7 +102,7 @@ namespace McduDotNet
             Packets = RebuildPacketsFromBlob(packetBlob);
         }
 
-        private byte[] BuildPacketBlob()
+        private byte[] BuildPacketBlob(string commandPrefix)
         {
             var blobSize = Packets
                 .Select(packet => packet.Length / 2)
@@ -109,7 +110,7 @@ namespace McduDotNet
             var result = new byte[blobSize];
             var offset = 0;
             foreach(var packet in Packets) {
-                var buffer = new StringBuilder(packet);
+                var buffer = new StringBuilder(packet.Replace("{CP}", commandPrefix));
                 for(var idx = 0;idx < buffer.Length;++idx) {
                     switch(buffer[idx]) {
                         case '_':

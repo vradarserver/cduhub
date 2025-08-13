@@ -141,11 +141,29 @@ namespace ExtractFont
                 _PacketOffset += _Report.Length;
             }
 
+            ReplaceProbablyCommandPrefixesInMapPackets();
+
             FontPacketMap.Packets = [.._MapPackets];
             FontPacketMap.GlyphWidthOffsets = [.._GlyphWidthMapOffsets];
             FontPacketMap.GlyphHeightOffsets = [.._GlyphHeightMapOffsets];
 
             return _FontFile;
+        }
+
+        private void ReplaceProbablyCommandPrefixesInMapPackets()
+        {
+            // This is so dodgy... but then again the glyph bytes have been replaced with
+            // underscores, other variables with letters. Even so, this is so dodgy...
+
+            var commandPrefix = $"{_CommandPrefix[0]:x2}{_CommandPrefix[1]:x2}";
+            var searchFor = $"{commandPrefix}0000";
+            var replaceWith = "{CP}0000";
+
+            for(var idx = 0;idx < _MapPackets.Count;++idx) {
+                var packet = _MapPackets[idx];
+                var subbed = packet.Replace(searchFor, replaceWith);
+                _MapPackets[idx] = subbed;
+            }
         }
 
         private void EstablishFontSize(int width, int height)
@@ -186,6 +204,8 @@ namespace ExtractFont
                     _GlyphChunkIndex = 0;
                     _ReportProcessed = false;
 
+                    ReplacePacketMapCommandPrefix(idx);
+
                     var wOffset = idx + widthOffset;
                     var hOffset = idx + heightOffset;
                     var width = _Report[wOffset];
@@ -205,6 +225,7 @@ namespace ExtractFont
             if(IsFullSize(_Report) && IsReportType(0xf0, 0x00, -1, 0x3c)) {
                 var idx = _Report.IndexOf(_CommandPrefix[0], _CommandPrefix[1], 0x00, 0x00, 0x07, 0x01);
                 if(idx != -1) {
+                    ReplacePacketMapCommandPrefix(idx);
                     if(idx + 29 < _Report.Length) {
                         SetStatusAfter0701Read(idx + 29);
                     } else {
@@ -302,6 +323,21 @@ namespace ExtractFont
             }
         }
 
+        private void ReplacePacketMapCommandPrefix(int byteOffset)
+        {
+            if(_MapPackets.Count > 0) {
+                var buffer = new StringBuilder(_MapPackets[^1]);
+                var textOffset = byteOffset * 2;
+                if(textOffset + 4 <= buffer.Length) {
+                    buffer[textOffset] = '{';
+                    buffer[textOffset + 1] = 'C';
+                    buffer[textOffset + 2] = 'P';
+                    buffer[textOffset + 3] = '}';
+                }
+                _MapPackets[^1] = buffer.ToString();
+            }
+        }
+
         private void ReplacePacketMapBytes(int byteOffset, char replaceWith)
         {
             if(_MapPackets.Count > 0) {
@@ -375,6 +411,7 @@ namespace ExtractFont
             if(IsFullSize(_Report)) {
                 var idx = _Report.IndexOf(_CommandPrefix[0], _CommandPrefix[1], 0x00, 0x00, 0x18, 0x01);
                 if(idx != -1 && idx + 24 <= _Report.Length) {
+                    ReplacePacketMapCommandPrefix(idx);
                     var x = idx + xOffset;
                     var y = idx + yOffset;
                     ReplacePacketMapBytes(x, 'X');

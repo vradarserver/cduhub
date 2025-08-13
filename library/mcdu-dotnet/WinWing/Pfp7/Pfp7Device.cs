@@ -38,13 +38,5 @@ namespace McduDotNet.WinWing.Pfp7
 
         /// <inheritdoc/>
         ~Pfp7Device() => Dispose(false);
-
-        public void RefreshPalette(bool skipDuplicateCheck = false, bool forceDisplayRefresh = true)
-        {
-        }
-
-        public void UseFont(McduFontFile fontFileContent, bool useFullWidth)
-        {
-        }
     }
 }

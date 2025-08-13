@@ -10,19 +10,23 @@
 
 using System.Text;
 
-namespace McduDotNet.WinWing.Mcdu
+namespace McduDotNet.WinWing
 {
     /// <summary>
     /// Manages the sending of colour palettes to the WinWing MCDU device.
     /// </summary>
     class PaletteWriter
     {
+#pragma warning disable IDE1006 // Naming Styles
+        private readonly string CP; // See notes elsewhere as to why this name is exactly 2 chars
+#pragma warning restore IDE1006 // Naming Styles
         private UsbWriter _UsbWriter;
         private PaletteColour[] _CurrentPaletteColourArray;
 
-        public PaletteWriter(UsbWriter usbWriter)
+        public PaletteWriter(UsbWriter usbWriter, string commandPrefix)
         {
             _UsbWriter = usbWriter;
+            CP = commandPrefix;
         }
 
         /// <summary>
@@ -65,27 +69,27 @@ namespace McduDotNet.WinWing.Mcdu
 
                     var buffer = new StringBuilder();
 
-                    AddToPacketBuffer(buffer, 0x1f, ref seq, "32bb00001901000004170100000e00000001000500000002");
+                    AddToPacketBuffer(buffer, 0x1f, ref seq, $"{CP}00001901000004170100000e00000001000500000002");
                     SendPacketBuffer(buffer);
-                    AddToPacketBuffer(buffer, 0x3c, ref seq, "32bb00001901000004170100000e0000000100060000000300000000000000");
+                    AddToPacketBuffer(buffer, 0x3c, ref seq, $"{CP}00001901000004170100000e0000000100060000000300000000000000");
 
                     var colourSeq = 4;
                     foreach(var colour in colourArray) {
-                        var setForeground = $"32bb00001901000004170100000e0000000200{colour.ToWinwingColourString()}{colourSeq++:x2}00000000000000";
+                        var setForeground = $"{CP}00001901000004170100000e0000000200{colour.ToWinwingColourString()}{colourSeq++:x2}00000000000000";
                         AddToPacketBuffer(buffer, 0x3c, ref seq, setForeground);
                     }
                     foreach(var colour in colourArray) {
-                        var setBackground = $"32bb00001901000004170100000e0000000300{colour.ToWinwingColourString()}{colourSeq++:x2}00000000000000";
+                        var setBackground = $"{CP}00001901000004170100000e0000000300{colour.ToWinwingColourString()}{colourSeq++:x2}00000000000000";
                         AddToPacketBuffer(buffer, 0x3c, ref seq, setBackground);
                     }
-                    AddToPacketBuffer(buffer, 0x3c, ref seq, $"32bb00001901000004170100000e000000040000000000{colourSeq++:x2}00000000000000");
-                    AddToPacketBuffer(buffer, 0x3c, ref seq, $"32bb00001901000004170100000e000000040001000000{colourSeq++:x2}00000000000000");
-                    AddToPacketBuffer(buffer, 0x2b, ref seq, $"32bb00001901000004170100000e000000040002000000{colourSeq++:x2}00000000000000");
-                    AddToPacketBuffer(buffer, 0x2b, ref seq, $"32bb0000050100000417010001");
+                    AddToPacketBuffer(buffer, 0x3c, ref seq, $"{CP}00001901000004170100000e000000040000000000{colourSeq++:x2}00000000000000");
+                    AddToPacketBuffer(buffer, 0x3c, ref seq, $"{CP}00001901000004170100000e000000040001000000{colourSeq++:x2}00000000000000");
+                    AddToPacketBuffer(buffer, 0x2b, ref seq, $"{CP}00001901000004170100000e000000040002000000{colourSeq++:x2}00000000000000");
+                    AddToPacketBuffer(buffer, 0x2b, ref seq, $"{CP}0000050100000417010001");
                     SendPacketBuffer(buffer);
-                    AddToPacketBuffer(buffer, 0x34, ref seq, "32bb00001a01000025170100000100000002");
-                    AddToPacketBuffer(buffer, 0x34, ref seq, "32bb00001c010000251701000000000000");
-                    AddToPacketBuffer(buffer, 0x34, ref seq, "32bb0000050100002517010001");
+                    AddToPacketBuffer(buffer, 0x34, ref seq, $"{CP}00001a01000025170100000100000002");
+                    AddToPacketBuffer(buffer, 0x34, ref seq, $"{CP}00001c010000251701000000000000");
+                    AddToPacketBuffer(buffer, 0x34, ref seq, $"{CP}0000050100002517010001");
                     SendPacketBuffer(buffer);
 
                     if(forceDisplayRefresh) {
