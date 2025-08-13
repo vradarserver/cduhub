@@ -1,22 +1,21 @@
 # CDU HUB
 
-[WinWing](https://uk.winwingsim.com/view/) sell a replica of the Airbus MCDU
-panel. It plugs in over USB, it has a 24 x 14 alphanumeric colour display,
-it's got ~70 backlight buttons, two ambient light sensors, half-a-dozen LEDs
-and it looks really cool.
+[WinWing](https://uk.winwingsim.com/view/) sell replicas of various Airbus and
+Boeing CDUs. They plug in over USB, they have 24 x 14 alphanumeric colour displays,
+backlight buttons, two ambient light sensors, half-a-dozen LEDs and are very cool.
 
-It comes in very handy when flying Airbus aircraft in flight simulators, but I
-want to use it outside of flight sims as well.
+They come in very handy when flying airliners in flight simulators, but I
+want to them outside of flight sims as well.
 
-This application can display output on, and accept input from, the MCDU device.
+This application can display output on, and accept input from, these CDU devices.
 The idea is that it can be left running all the time, it has its own built-in
 set of pages and it will let other applications connect to it and display their
 pages as well.
 
 To avoid having to keep quitting and restarting whenever you want to use the
-MCDU in a flight simulator the program lets you either stop driving the display
-so that other programs can use the device, or (for supported A320 simulations)
-it can display the output from the simulator and control the simulated MCDU.
+CDU in a flight simulator the program lets you either stop driving the display
+so that other programs can use the device, or (for a small set of supported simulations)
+it can display the output from the simulator and control the simulated CDU.
 
 The application should be able to run on any platform that .NET Core 8 supports.
 This includes Windows, most major Linux distros and macOS.
@@ -43,6 +42,18 @@ CLI version of the application by cloning the repository and running this:
 ```bash
 dotnet run --project apps/cduhub-cli/cduhub-cli.csproj
 ```
+
+
+## Supported WinWing Panels
+
+| Panel  | Supported |
+| ---    | --- |
+| MCDU   | Yes |
+| PFP-7  | Yes |
+| PFP-3N | Provisional |
+| PFP-4  | Not yet |
+
+
 
 ## Supported Flight Simulators
 
