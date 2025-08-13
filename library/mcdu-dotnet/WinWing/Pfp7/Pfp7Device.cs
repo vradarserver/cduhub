@@ -39,18 +39,6 @@ namespace McduDotNet.WinWing.Pfp7
         /// <inheritdoc/>
         ~Pfp7Device() => Dispose(false);
 
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-            if(disposing) {
-                _IlluminationWriter = null;
-            }
-        }
-
-        protected override void PanelSpecificInitialisation()
-        {
-        }
-
         public void RefreshPalette(bool skipDuplicateCheck = false, bool forceDisplayRefresh = true)
         {
         }
