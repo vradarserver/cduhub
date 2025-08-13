@@ -23,6 +23,8 @@ namespace Cduhub
             _DrawPageAction = drawPageAction;
         }
 
+        public string OnOff(bool value) => value ? "ON" : "OFF";
+
         public string YesNo(bool value) => value ? "YES" : "NO";
 
         public void ToggleBool(bool value, Action<bool> setValue)

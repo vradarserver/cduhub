@@ -26,7 +26,7 @@ namespace Cduhub.Pages.Init
         public BrightnessInit_Page(Hub hub) : base(hub)
         {
             LeftOption("AUTO-BRIGHTNESS",
-                () => _Form.YesNo(_Settings.UseAutoBrightness),
+                () => _Form.OnOff(_Settings.UseAutoBrightness),
                 () => _Form.ToggleBool(_Settings.UseAutoBrightness, v => _Settings.UseAutoBrightness = v)
             );
         }
