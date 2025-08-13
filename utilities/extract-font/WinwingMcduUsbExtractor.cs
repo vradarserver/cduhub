@@ -23,16 +23,17 @@ namespace ExtractFont
         {
             LookingForOpeningReport,
             LookingForFontStart,
-            LookingFor32BB0701Head,
-            LookingFor32BB0701Tail,
+            LookingForCommand0701Head,
+            LookingForCommand0701Tail,
             LookingForBrightness,
-            LookingFor32BB1801,
+            LookingForCommand1801,
             ReadingCodepoint,
             ReadingBitmap,
             Finished
         }
 
         // Font parser state
+        private byte[] _CommandPrefix;
         private Status _Status;
         private Status _StatusAfter0701;
         private McduFontFile _FontFile;
@@ -71,10 +72,15 @@ namespace ExtractFont
         /// Extracts the font glyphs from a set of USB reports wherein each array of bytes represents a single
         /// report sent to the MCDU device.
         /// </summary>
+        /// <param name="commandPrefix"></param>
         /// <param name="usbReports"></param>
         /// <returns></returns>
-        public McduFontFile ExtractFont(IEnumerable<byte[]> usbReports)
+        public McduFontFile ExtractFont(byte[] commandPrefix, IEnumerable<byte[]> usbReports)
         {
+            if(commandPrefix?.Length != 2) {
+                throw new InvalidOperationException($"Command prefix must be two bytes");
+            }
+            _CommandPrefix = commandPrefix;
             _FontFile = new();
             _Glyphs = [];
 
@@ -110,17 +116,17 @@ namespace ExtractFont
                             case Status.LookingForFontStart:
                                 LookForFontStart();
                                 break;
-                            case Status.LookingFor32BB0701Head:
-                                LookFor32BB0701Head();
+                            case Status.LookingForCommand0701Head:
+                                LookForCommand0701Head();
                                 break;
-                            case Status.LookingFor32BB0701Tail:
-                                LookFor32BB0701Tail();
+                            case Status.LookingForCommand0701Tail:
+                                LookForCommand0701Tail();
                                 break;
                             case Status.LookingForBrightness:
                                 LookForBrightness();
                                 break;
-                            case Status.LookingFor32BB1801:
-                                LookFor32BB1801();
+                            case Status.LookingForCommand1801:
+                                LookForCommand1801();
                                 break;
                             case Status.ReadingCodepoint:
                                 ReadCodepoint();
@@ -166,7 +172,7 @@ namespace ExtractFont
         private void LookForFontStart()
         {
             if(IsFullSize(_Report)) {
-                var idx = _Report.IndexOf(0x32, 0xbb, 0x00, 0x00, 0x06, 0x01);
+                var idx = _Report.IndexOf(_CommandPrefix[0], _CommandPrefix[1], 0x00, 0x00, 0x06, 0x01);
                 if(idx != -1 && idx + 36 <= _Report.Length) {
                     const int fontIdOffset = 17;
                     const int widthOffset = 21;
@@ -174,7 +180,7 @@ namespace ExtractFont
 
                     var fontId = _Report[idx + fontIdOffset];
                     _BuildingLarge = fontId == 5;
-                    _Status = Status.LookingFor32BB0701Head;
+                    _Status = Status.LookingForCommand0701Head;
                     _StatusAfter0701 = Status.ReadingCodepoint;
                     _CodepointOffset = 0;
                     _GlyphChunkIndex = 0;
@@ -194,22 +200,22 @@ namespace ExtractFont
             }
         }
 
-        private void LookFor32BB0701Head()
+        private void LookForCommand0701Head()
         {
             if(IsFullSize(_Report) && IsReportType(0xf0, 0x00, -1, 0x3c)) {
-                var idx = _Report.IndexOf(0x32, 0xbb, 0x00, 0x00, 0x07, 0x01);
+                var idx = _Report.IndexOf(_CommandPrefix[0], _CommandPrefix[1], 0x00, 0x00, 0x07, 0x01);
                 if(idx != -1) {
                     if(idx + 29 < _Report.Length) {
                         SetStatusAfter0701Read(idx + 29);
                     } else {
-                        _Status = Status.LookingFor32BB0701Tail;
+                        _Status = Status.LookingForCommand0701Tail;
                         _SkipStartLength = (idx + 29) - _Report.Length;
                     }
                 }
             }
         }
 
-        private void LookFor32BB0701Tail()
+        private void LookForCommand0701Tail()
         {
             if(IsFullSize(_Report) && IsReportType(0xf0, 0x00, -1, 0x3c)) {
                 SetReadingCodepointStatus(4 + _SkipStartLength);
@@ -351,23 +357,23 @@ namespace ExtractFont
 
         private void LookForBrightness()
         {
-            var idx = _Report.IndexOf(0x02, 0x32, 0xbb, 0x00, 0x00, 0x03, 0x49, 0x01);
+            var idx = _Report.IndexOf(0x02, _CommandPrefix[0], _CommandPrefix[1], 0x00, 0x00, 0x03, 0x49, 0x01);
             if(idx != -1 && idx + 8 < _Report.Length) {
                 var brightnessOffset = idx + 8;
                 ReplacePacketMapBytes(brightnessOffset, 'L');
                 FontPacketMap.DisplayBrightnessOffset = _PacketOffset + brightnessOffset;
 
-                _Status = Status.LookingFor32BB1801;
+                _Status = Status.LookingForCommand1801;
             }
         }
 
-        private void LookFor32BB1801()
+        private void LookForCommand1801()
         {
             const int xOffset = 17;
             const int yOffset = 19;
 
             if(IsFullSize(_Report)) {
-                var idx = _Report.IndexOf(0x32, 0xbb, 0x00, 0x00, 0x18, 0x01);
+                var idx = _Report.IndexOf(_CommandPrefix[0], _CommandPrefix[1], 0x00, 0x00, 0x18, 0x01);
                 if(idx != -1 && idx + 24 <= _Report.Length) {
                     var x = idx + xOffset;
                     var y = idx + yOffset;
@@ -398,7 +404,7 @@ namespace ExtractFont
         private void SearchFor0701HeadAfterGlyphChunk()
         {
             _StatusAfter0701 = _Status;
-            _Status = Status.LookingFor32BB0701Head;
+            _Status = Status.LookingForCommand0701Head;
         }
 
         private static bool IsFullSize(byte[] report) => report?.Length == 64;

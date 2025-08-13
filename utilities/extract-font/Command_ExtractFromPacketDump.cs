@@ -15,17 +15,20 @@ namespace ExtractFont
     class Command_ExtractFromPacketDump
     {
         public static bool Run(
+            byte[] commandPrefix,
             string fontName,
             FileInfo packetsFileInfo,
             FileInfo fontFileInfo,
             FileInfo mapFileInfo
         )
         {
+            ArgumentOutOfRangeException.ThrowIfNotEqual(commandPrefix?.Length ?? 0, 2);
             ArgumentNullException.ThrowIfNullOrEmpty(fontName);
             ArgumentNullException.ThrowIfNull(packetsFileInfo);
             fontFileInfo ??= new(Options.SanitiseFileName(fontName));
 
             Console.WriteLine($"Extract Font File From USB Packets");
+            Console.WriteLine($"Command prefix:     0x{commandPrefix[0]:X2} 0x{commandPrefix[1]:X2}");
             Console.WriteLine($"Font name:          {fontName}");
             Console.WriteLine($"Packet dump file:   {packetsFileInfo.FullName}");
             Console.WriteLine($"Output file:        {fontFileInfo.FullName}");
@@ -34,7 +37,7 @@ namespace ExtractFont
             var allGood = true;
             try {
                 var extractor = new WinwingMcduUsbExtractor();
-                var fontFile = extractor.ExtractFont(ReadByteArraysFromFile(packetsFileInfo));
+                var fontFile = extractor.ExtractFont(commandPrefix, ReadByteArraysFromFile(packetsFileInfo));
                 fontFile.Name = fontName;
 
                 var fontFileJson = JsonConvert.SerializeObject(fontFile, Formatting.Indented);

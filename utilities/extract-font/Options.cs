@@ -11,6 +11,7 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Text;
+using Cduhub.CommandLine.Parsers;
 using Cduhub.CommandLine.Validators;
 
 namespace ExtractFont
@@ -65,6 +66,12 @@ namespace ExtractFont
         public static readonly Option<FileInfo> MandatoryOutputFileNameOption = new("--file", "-f") {
             Description = "The file to write to",
             Required = true,
+        };
+
+        public static readonly Option<byte[]> CommandPrefixOption = new("--command-prefix", "-cp") {
+            Description = "The command prefix to look for in hex (PFP-3N = 31BB, MCDU = 32BB, PFP-7 = 33BB)",
+            Required = true,
+            CustomParser = result => HexByteParser.ParseByteArray(result),
         };
 
         public static string SanitiseFileName(string fileName, char replaceInvalidWith = '-')

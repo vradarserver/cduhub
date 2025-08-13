@@ -33,6 +33,7 @@ namespace ExtractFont
         };
 
         public static Command ExtractFromPacketDumpCommand = new("from-packets", "Extract font (and optionally map) from a USB packet dump") {
+            Options.CommandPrefixOption,
             Options.PacketsFileOption,
             Options.FontFileOption,
             Options.NameOption,
@@ -67,6 +68,7 @@ namespace ExtractFont
 
             ExtractFromPacketDumpCommand.SetAction(parse => {
                 Program.Worked = Command_ExtractFromPacketDump.Run(
+                    parse.GetValue(Options.CommandPrefixOption),
                     parse.GetValue(Options.NameOption),
                     parse.GetRequiredValue(Options.PacketsFileOption),
                     parse.GetRequiredValue(Options.FontFileOption),
