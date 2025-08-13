@@ -21,6 +21,7 @@ need to substitute references to `{CP}` with the appropriate two-byte code.
 
 | Product | Command Prefix (hex) |
 | ---     | --- |
+| PFP-3N  | 31 bb (unconfirmed) |
 | MCDU    | 32 bb |
 | PFP-7   | 33 bb |
 
