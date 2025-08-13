@@ -40,6 +40,7 @@ namespace McduDotNet.WinWing
                 switch(fontFileContent.GlyphHeight) {
                     case 29:    mapBytes = CduResources.WinWingFontPacketMap_3x29_json; break;
                     case 31:    mapBytes = CduResources.WinWingFontPacketMap_3x31_json; break;
+                    case 32:    mapBytes = CduResources.WinWingFontPacketMap_3x32_json; break;
                     default:    throw new NotImplementedException($"Need packet map for {fontFileContent.GlyphHeight} pixel high fonts");
                 }
 
@@ -77,6 +78,7 @@ namespace McduDotNet.WinWing
                 case 29:    return 17;
                 case 30:    return 4;
                 case 31:    return 0;
+                case 32:    return -4;
                 default:    throw new NotImplementedException($"Need base YOffset for {glyphHeight} glyphHeight");
             }
         }
