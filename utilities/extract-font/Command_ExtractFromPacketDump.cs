@@ -36,7 +36,7 @@ namespace ExtractFont
 
             var allGood = true;
             try {
-                var extractor = new WinwingMcduUsbExtractor();
+                var extractor = new WinWingMcduUsbExtractor();
                 var fontFile = extractor.ExtractFont(commandPrefix, ReadByteArraysFromFile(packetsFileInfo));
                 fontFile.Name = fontName;
 

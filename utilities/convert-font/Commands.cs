@@ -31,6 +31,16 @@ namespace ConvertFont
             Options.FileOption,
         };
 
+        public static Command ConvertPixelFontFiles = new("from-pixel", "Convert from pixel font files to an MCDU font file") {
+            Options.LargePixelFontFile,
+            Options.SmallPixelFontFile,
+            Options.FileOption,
+            Options.GlyphWidthOption,
+            Options.GlyphHeightOption,
+            Options.GlyphFullWidthOption,
+            Options.ScaleFactorOption,
+        };
+
         public static Command CreateConvertOptions = new("create-options", "Write an empty conversion options JSON file") {
             Options.MandatoryFileOption,
             Options.OverwriteOptionsFileOption,
@@ -62,6 +72,18 @@ namespace ConvertFont
                 );
             });
 
+            ConvertPixelFontFiles.SetAction(parse => {
+                Program.Worked = Command_ConvertPixelFontFiles.Run(
+                    parse.GetValue(Options.LargePixelFontFile),
+                    parse.GetValue(Options.SmallPixelFontFile),
+                    parse.GetValue(Options.FileOption),
+                    parse.GetValue(Options.GlyphWidthOption),
+                    parse.GetValue(Options.GlyphHeightOption),
+                    parse.GetValue(Options.GlyphFullWidthOption),
+                    parse.GetValue(Options.ScaleFactorOption)
+                );
+            });
+
             CreateConvertOptions.SetAction(parse => {
                 Program.Worked = Command_CreateConvertOptions.Run(
                     parse.GetRequiredValue(Options.MandatoryFileOption),
@@ -72,7 +94,6 @@ namespace ConvertFont
             DumpFontFamilies.SetAction(_ => {
                 Program.Worked = Command_DumpFontFamilies.Run();
             });
-
         }
     }
 }

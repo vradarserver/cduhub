@@ -17,7 +17,7 @@ namespace ExtractFont
     /// <summary>
     /// Extracts fonts from a stream of packets that had been captured while being sent to a WINWING MCDU.
     /// </summary>
-    class WinwingMcduUsbExtractor
+    class WinWingMcduUsbExtractor
     {
         enum Status
         {
@@ -87,6 +87,7 @@ namespace ExtractFont
             _Status = Status.LookingForOpeningReport;
             _CountGlyphSetsRead = 0;
             _GlyphChunkIndex = 0;
+            _BuildingLarge = false;
 
             FontPacketMap = new();
             _GlyphMaps = [];
@@ -197,7 +198,11 @@ namespace ExtractFont
                     const int heightOffset = 23;
 
                     var fontId = _Report[idx + fontIdOffset];
-                    _BuildingLarge = fontId == 5;
+                    //_BuildingLarge = fontId == 5;
+                    // On the MCDU the large font is ID 5, small font ID 6. But on the PFP-7
+                    // the large font seems to be 1. So now we just assume first font is large,
+                    // next is small.
+                    _BuildingLarge = !_BuildingLarge;
                     _Status = Status.LookingForCommand0701Head;
                     _StatusAfter0701 = Status.ReadingCodepoint;
                     _CodepointOffset = 0;

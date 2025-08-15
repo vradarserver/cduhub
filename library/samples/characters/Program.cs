@@ -90,9 +90,11 @@ namespace Characters
                 cdu.KeyDown += (_, args) => {
                     switch(args.Key) {
                         case Key.Init:
+                        case Key.InitRef:
                             reloadFont();
                             break;
                         case Key.Data:
+                        case Key.Altn:
                             toggleWidth();
                             break;
                     }
@@ -125,7 +127,7 @@ namespace Characters
                 uploadFont();
                 showCharacters();
                 if(fontFile != null) {
-                    Console.WriteLine($"R / [INIT] to reload font :: W / [DATA] to toggle width");
+                    Console.WriteLine($"R / [INIT] to reload font :: W / [DATA or ALTN] to toggle width");
                 }
                 Console.WriteLine($"Press Q to quit");
 

@@ -79,7 +79,7 @@ namespace McduDotNet.WinWing
                 case 29:    return 17;
                 case 30:    return 4;
                 case 31:    return 0;
-                case 32:    return -4;
+                case 32:    return 0;
                 default:    throw new NotImplementedException($"Need base YOffset for {glyphHeight} glyphHeight");
             }
         }

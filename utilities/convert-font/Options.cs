@@ -72,6 +72,16 @@ namespace ConvertFont
             DefaultValueFactory = _ => 23,
         };
 
+        public static readonly Option<int> GlyphFullWidthOption = new("--glyphFullWidth") {
+            Description = "The glyph full width in pixels",
+            DefaultValueFactory = _ => 23,
+        };
+
+        public static readonly Option<FileInfo> LargePixelFontFile = new("--large", "-l") {
+            Description = "The large pixel font file",
+            Required = true,
+        };
+
         public static readonly Option<FileInfo> MandatoryFileOption = new("--file", "-f") {
             Description = "The name of the file to write",
             Required = true,
@@ -90,6 +100,16 @@ namespace ConvertFont
         public static readonly Option<float> PointSizeOption = new("--point") {
             Description = "The point size to use when rendering font glyphs into bitmaps to extract pixels",
             DefaultValueFactory = _ => 20F,
+        };
+
+        public static readonly Option<int> ScaleFactorOption = new("--scale") {
+            Description = "The scaling factor to use when scaling pixel fonts",
+            DefaultValueFactory = _ => 1,
+        };
+
+        public static readonly Option<FileInfo> SmallPixelFontFile = new("--small", "-s") {
+            Description = "The small pixel font file",
+            Required = true,
         };
 
         public static char ParseChar(ArgumentResult arg)

@@ -1,8 +1,7 @@
 {
   "profiles": {
     "convert-font": {
-      "commandName": "Project",
-      "commandLineArgs": "glyph --font \"AcPlus IBM EGA 9x14\" --char A --point 30"
+      "commandName": "Project"
     }
   }
 }
