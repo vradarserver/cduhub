@@ -23,6 +23,10 @@ namespace ConvertFont
 
         public bool PadTop { get; set; }
 
+        public int SpaceBottom { get; set; }
+
+        public int SpaceTop { get; set; }
+
         public Dictionary<char, string[]> Glyphs { get; } = new Dictionary<char, string[]>();
 
         public static PixelFontFile Load(FileInfo fileInfo)
@@ -36,7 +40,9 @@ namespace ConvertFont
             for(var lineIdx = 0;lineIdx < lines.Length;++lineIdx) {
                 var line = lines[lineIdx].Trim();
                 if(line != "") {
-                    var nameValueSeparatorIdx = line.IndexOf(':');
+                    var nameValueSeparatorIdx = line.StartsWith('[')
+                        ? -1
+                        : line.IndexOf(':');
                     if(nameValueSeparatorIdx != -1) {
                         if(glyphStartLineIdx > -1) {
                             throw new PixelFontFileException($"Unexpected name-value on line {lineIdx + 1}");
@@ -84,6 +90,12 @@ namespace ConvertFont
                 var expandedLines = new List<string>();
                 var buffer = new StringBuilder();
                 var emptyLine = new String('.', result.GlyphWidth);
+
+                for(var idx = 0;idx < result.SpaceTop;++idx) {
+                    if(expandedLines.Count < result.GlyphHeight) {
+                        expandedLines.Add(emptyLine);
+                    }
+                }
 
                 foreach(var line in glyphLines) {
                     buffer.Clear();
@@ -139,6 +151,12 @@ namespace ConvertFont
                     }
                 }
 
+                for(var idx = 0;idx < result.SpaceBottom;++idx) {
+                    if(expandedLines.Count < result.GlyphHeight) {
+                        expandedLines.Add(emptyLine);
+                    }
+                }
+
                 if(expandedLines.Count > result.GlyphHeight) {
                     throw new PixelFontFileException($"Glyph starting line {glyphStartLineIdx + 1} is too tall");
                 }
@@ -174,6 +192,18 @@ namespace ConvertFont
                     }
                     result.GlyphWidth = int.Parse(sizeMatch.Groups["width"].Value);
                     result.GlyphHeight = int.Parse(sizeMatch.Groups["height"].Value);
+                    break;
+                case "space-bottom":
+                    if(!int.TryParse(value, out var spaceBottom)) {
+                        throw new PixelFontFileException($"{line} is not a valid space-bottom");
+                    }
+                    result.SpaceBottom = spaceBottom;
+                    break;
+                case "space-top":
+                    if(!int.TryParse(value, out var spaceTop)) {
+                        throw new PixelFontFileException($"{line} is not a valid space-top");
+                    }
+                    result.SpaceTop = spaceTop;
                     break;
                 case "origin":
                     result.PadLeft = value.Contains("right");
