@@ -179,7 +179,7 @@ namespace Cduhub.Pages
             try {
                 var url = String.Format(_Url, stationCode);
                 var request = new HttpRequestMessage(HttpMethod.Get, url);
-                var client = _Hub.HttpClient;
+                var client = CommonHttpClient.HttpClient;
 
                 request.Headers.UserAgent.ParseAdd($"CDUHub-{Assembly.GetExecutingAssembly().GetName().Version}");
 

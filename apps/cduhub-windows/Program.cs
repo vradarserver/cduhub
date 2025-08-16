@@ -54,7 +54,7 @@ namespace Cduhub.WindowsGui
                     var mainForm = new MainForm();
                     using(Hub = new Hub()) {
                         using(UpdateChecker = new GithubUpdateChecker()) {
-                            Task.Run(() => UpdateChecker.StartCheckingAsync(Hub.HttpClient));
+                            Task.Run(() => UpdateChecker.StartCheckingAsync(CommonHttpClient.HttpClient));
                             Hub.Connect();
                             Application.Run(mainForm);
                         }

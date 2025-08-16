@@ -48,11 +48,6 @@ namespace Cduhub
         public DeviceIdentifier ConnectedDevice => _Cdu?.DeviceId;
 
         /// <summary>
-        /// The HttpClient for pages to use.
-        /// </summary>
-        public HttpClient HttpClient { get; } = new HttpClient();
-
-        /// <summary>
         /// The default font reference. This is user configurable.
         /// </summary>
         public FontReference DefaultFontReference
