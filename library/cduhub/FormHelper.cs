@@ -109,7 +109,12 @@ namespace Cduhub
             CycleStrings(paletteNames, paletteName, setPaletteName);
         }
 
-        public void CycleStrings(IEnumerable<string> allValues, string currentValue, Action<string> setNewValue, bool caseInsensitive = true)
+        public void CycleStrings(
+            IEnumerable<string> allValues,
+            string currentValue,
+            Action<string> setNewValue,
+            bool caseInsensitive = true
+        )
         {
             var materialised = allValues?.ToArray() ?? Array.Empty<string>();
             var comparison = caseInsensitive
@@ -132,6 +137,57 @@ namespace Cduhub
                 setNewValue(materialised[idx]);
                 _DrawPageAction();
             }
+        }
+
+        public void CycleArray<T>(
+            T[] allValues,
+            int currentIndex,
+            Action<int> setNewIndex
+        )
+        {
+            if(allValues.Length > 0) {
+                if(currentIndex < 0 || currentIndex >= allValues.Length) {
+                    currentIndex = 0;
+                }
+                ++currentIndex;
+                if(currentIndex >= allValues.Length) {
+                    currentIndex = 0;
+                }
+                setNewIndex(currentIndex);
+                _DrawPageAction();
+            }
+        }
+
+        public void CycleEnum<T>(
+            T currentValue,
+            Action<T> setValue,
+            Func<T, bool> filterValues = null,
+            Func<T, string> formatValue = null
+        ) where T: struct, System.Enum
+        {
+            var allValues = Enum
+                .GetValues(typeof(T))
+                .OfType<T>()
+                .Where(candidate => filterValues?.Invoke(candidate) ?? true)
+                .ToArray();
+
+            var allDescriptions = allValues
+                .Select(value => formatValue?.Invoke(value) ?? value.ToString())
+                .ToArray();
+
+            var currentIndex = -1;
+            for(var idx = 0;idx < allValues.Length;++idx) {
+                if(EqualityComparer<T>.Default.Equals(allValues[idx], currentValue)) {
+                    currentIndex = idx;
+                    break;
+                }
+            }
+
+            CycleArray(
+                allDescriptions,
+                currentIndex,
+                newIndex => setValue(allValues[newIndex])
+            );
         }
     }
 }

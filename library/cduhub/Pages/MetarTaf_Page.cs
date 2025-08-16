@@ -9,31 +9,36 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Reflection;
-using System.Runtime.Serialization;
+using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using Cduhub.Config;
 using McduDotNet;
-using Newtonsoft.Json;
 
 namespace Cduhub.Pages
 {
-    class Metar_Page : Page
+    class MetarTaf_Page : Page
     {
-        private const string _MetarUrl = "https://aviationweather.gov/api/data/metar?ids={0}&format=json";
+        private const string _Url = "https://aviationweather.gov/api/data/metar?ids={0}&format=raw&taf=true";
 
         private MetarSettings _Settings;
         private FormHelper _Form;
         private Timer _Timer = null;
         private DateTime _LastDownloadUtc;
         private DateTime _BackoffThreshold;
+        private string _Metar;
+        private string[] _Taf;
+        private bool _OutputIsReport = false;
+        private Colour _OutputColour = Colour.White;
+        private IReadOnlyList<string> _OutputLines = Array.Empty<string>();
+        private int _CurrentPageIndex = 0;
 
-        public Metar_Page(Hub hub) : base(hub)
+        public MetarTaf_Page(Hub hub) : base(hub)
         {
             Scratchpad = new Scratchpad();
             _Form = new FormHelper(DrawOptions);
@@ -44,7 +49,7 @@ namespace Cduhub.Pages
             if(selected) {
                 _Settings = ConfigStorage.Load<MetarSettings>();
                 DrawOptions();
-                DownloadMetar();
+                DownloadReport();
 
                 _Timer = new Timer() {
                     Enabled = true,
@@ -75,7 +80,9 @@ namespace Cduhub.Pages
                 .LeftLabel(1, $"<cyan>{SanitiseInput(_Settings.StationCode)}")
                 .RightLabelTitle(1, "<small>REFRESH ")
                 .RightLabel(1, $"<cyan>{(_Settings.RefreshMinutes == 0 ? "NEVER" : $"{_Settings.RefreshMinutes} <small>MINS")}")
-                .LeftLabel(6, "<red><small>>BACK");
+                .LabelLine(6).ClearRow()
+                .LeftLabel(6, "<red><small>>BACK")
+                .RightLabel(6, $"<cyan>{MetarSettings.DescribeReports(_Settings.Download)}");
             CopyScratchpadIntoDisplay();
             RefreshDisplay();
         }
@@ -95,20 +102,41 @@ namespace Cduhub.Pages
             }
         }
 
-        public override void OnKeyDown(Key key)
+        public override void OnCommonKeyDown(CommonKey key)
         {
             switch(key) {
-                case Key.LineSelectLeft1:
+                case CommonKey.LineSelectLeft1:
                     CopyScratchpadToStationCode();
                     break;
-                case Key.LineSelectRight1:
+                case CommonKey.LineSelectRight1:
                     CopyScratchpadToRefreshMinutes();
                     break;
-                case Key.LineSelectLeft6:
+                case CommonKey.LineSelectLeft6:
                     _Hub.ReturnToParent();
                     break;
+                case CommonKey.LineSelectRight6:
+                    _Form.CycleEnum(
+                        _Settings.Download,
+                        v => {
+                            _Settings.Download = v;
+                            DrawOptions();
+                            if(_OutputIsReport) {
+                                ShowReports();
+                            }
+                        },
+                        formatValue: MetarSettings.DescribeReports
+                    );
+                    break;
+                case CommonKey.LeftArrowOrPrevPage:
+                    --_CurrentPageIndex;
+                    ShowPage();
+                    break;
+                case CommonKey.RightArrowOrNextPage:
+                    ++_CurrentPageIndex;
+                    ShowPage();
+                    break;
                 default:
-                    base.OnKeyDown(key);
+                    base.OnCommonKeyDown(key);
                     break;
             }
         }
@@ -122,7 +150,7 @@ namespace Cduhub.Pages
                 _Settings.StationCode = text;
                 Scratchpad.Clear();
                 DrawOptions();
-                DownloadMetar();
+                DownloadReport();
             }
         }
 
@@ -135,33 +163,24 @@ namespace Cduhub.Pages
             }
         }
 
-        private void DownloadMetar()
+        private void DownloadReport()
         {
             _LastDownloadUtc = DateTime.UtcNow;
 
             var stationCode = _Settings.StationCode;
+            var reports = _Settings.Download;
             if(!String.IsNullOrEmpty(stationCode)) {
                 Task.Run(async () => await DownloadMetarAsync(stationCode));
             }
         }
 
-        [DataContract]
-        class MetarSubset
-        {
-            [DataMember(Name = "rawOb")]
-            public string RawObservation { get; set; }
-        }
-
         private async Task DownloadMetarAsync(string stationCode)
         {
             try {
-                var url = String.Format(_MetarUrl, stationCode);
+                var url = String.Format(_Url, stationCode);
                 var request = new HttpRequestMessage(HttpMethod.Get, url);
                 var client = _Hub.HttpClient;
 
-                request.Headers.Accept.Add(
-                    new MediaTypeWithQualityHeaderValue("application/json")
-                );
                 request.Headers.UserAgent.ParseAdd($"CDUHub-{Assembly.GetExecutingAssembly().GetName().Version}");
 
                 var response = await client.SendAsync(request);
@@ -170,51 +189,101 @@ namespace Cduhub.Pages
                     _BackoffThreshold = DateTime.UtcNow.AddMinutes(backoffMinutes);
                     ShowBadResponse(url, response.StatusCode, backoffMinutes);
                 } else {
-                    var jsonText = await response.Content.ReadAsStringAsync();
-                    var metars = JsonConvert.DeserializeObject<MetarSubset[]>(jsonText);
-                    ShowMetar(metars);
+                    var outcome = await response.Content.ReadAsStringAsync();
+                    var lines = outcome
+                        ?.Split('\n')
+                        .Select(line => line.Trim())
+                        .ToArray()
+                        ?? Array.Empty<string>();
+                    _Metar = lines.Length > 0 ? lines[0] : "";
+                    _Taf = lines.Skip(1).ToArray();
+                    if(_Taf.Length == 1 && String.IsNullOrEmpty(_Taf[0])) {
+                        _Taf = Array.Empty<string>();
+                    }
+                    if(!String.IsNullOrEmpty(_Metar) && _Taf.Length == 0) {
+                        _Taf = new string[] { "NONE AVAILABLE" };
+                    }
+                    ShowReports();
                 }
             } catch(Exception ex) {
                 ShowException(ex);
             }
         }
 
-        private void ShowMetar(MetarSubset[] metars)
+        private void ShowReports()
         {
-            var metar = metars.FirstOrDefault();
-            ShowOutput(
-                Colour.Green,
-                metar?.RawObservation ?? "No METAR downloaded"
-            );
+            _OutputIsReport = true;
+
+            var output = new StringBuilder();
+            switch(_Settings.Download) {
+                case MetarSettings.Reports.Metar:
+                    output.Append(_Metar ?? "");
+                    break;
+                case MetarSettings.Reports.Taf:
+                    output.Append(String.Join("\n", _Taf ?? Array.Empty<string>()));
+                    break;
+                case MetarSettings.Reports.MetarAndTaf:
+                    output.Append(_Metar ?? "");
+                    if(_Taf?.Length > 0) {
+                        if(output.Length > 0) {
+                            output.Append("\n >> ");
+                            if(!_Taf[0].StartsWith("TAF ")) {
+                                output.Append("TAF ");
+                            }
+                        }
+                        output.Append(String.Join("\n", _Taf ?? Array.Empty<string>()));
+                    }
+                    break;
+            }
+            if(output.Length == 0) {
+                output.Append("No reports downloaded");
+            }
+            _OutputLines = output
+                .ToString()
+                .WrapAtWhitespace(Metrics.Columns);
+            _OutputColour = Colour.Green;
+            _CurrentPageIndex = 0;
+            ShowPage();
         }
 
         private void ShowBadResponse(string url, HttpStatusCode statusCode, int backoffMinutes)
         {
-            ShowOutput(
-                Colour.Amber,
-                $"URL {url} returned status {(int)statusCode}:{statusCode} - backing off for {backoffMinutes} minutes"
-            );
+            _OutputIsReport = false;
+            _OutputLines = $"URL {url} returned status {(int)statusCode}:{statusCode} - backing off for {backoffMinutes} minutes"
+                .WrapAtWhitespace(Metrics.Columns);
+            _OutputColour = Colour.Amber;
+            _CurrentPageIndex = 0;
+            ShowPage();
         }
 
         private void ShowException(Exception ex)
         {
-            ShowOutput(
-                Colour.Red,
-                $"Exception caught during METAR download: {ex.Message}"
-            );
+            _OutputIsReport = false;
+            _OutputLines = $"Exception caught during METAR download: {ex.Message}"
+                .WrapAtWhitespace(Metrics.Columns);
+            _OutputColour = Colour.Red;
+            _CurrentPageIndex = 0;
+            ShowPage();
         }
 
-        private void ShowOutput(Colour colour, string text)
+        private void ShowPage()
         {
+            const int linesPerPage = 9;
+            var lines = _OutputLines ?? Array.Empty<string>();
+            var maxPages = lines.Count / linesPerPage;
+            _CurrentPageIndex = Math.Max(0, Math.Min(_CurrentPageIndex, maxPages));
+            var offset = _CurrentPageIndex * linesPerPage;
+
             Output
-                .Small()
+                .Small().White()
                 .Line(0)
+                .Write($"<grey>{_LastDownloadUtc.ToLocalTime():HH:mm}")
                 .RightToLeft()
-                .Write($"<grey>{DateTime.Now:HH:mm}")
+                .Write($"{_CurrentPageIndex + 1}/{maxPages + 1}")
                 .LeftToRight()
                 .Line(3)
-                .Green()
-                .WrapText(text, 9, clearLines: true);
+                .Colour(_OutputColour)
+                .Lines(lines, offset: offset, maxLines: linesPerPage, clearLines: true);
             RefreshDisplay();
         }
 
@@ -224,14 +293,14 @@ namespace Cduhub.Pages
             if(_BackoffThreshold != default) {
                 if(now >= _BackoffThreshold) {
                     _BackoffThreshold = default;
-                    DownloadMetar();
+                    DownloadReport();
                 }
             } else if(_LastDownloadUtc != default) {
                 var refreshMinutes = _Settings?.RefreshMinutes ?? 0;
                 if(refreshMinutes > 0) {
                     var threshold = _LastDownloadUtc.AddMinutes(refreshMinutes);
                     if(now >= threshold) {
-                        DownloadMetar();
+                        DownloadReport();
                     }
                 }
             }

@@ -95,6 +95,11 @@ namespace Cduhub
             Scratchpad?.KeyUp(key);
         }
 
+        public virtual void OnCommonKeyDown(CommonKey commonKey)
+        {
+            ;
+        }
+
         public virtual void OnAmbientLightChanged(int ambientLightPercent)
         {
         }

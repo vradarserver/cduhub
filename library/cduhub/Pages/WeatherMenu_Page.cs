@@ -23,15 +23,15 @@ namespace Cduhub.Pages
             Output
                 .Centred("<green>WEATHER")
                 .Newline(2)
-                .LeftLabel(1, ">METAR")
+                .LeftLabel(1, ">METAR/TAF")
                 .LeftLabel(6, "<red><small>>BACK");
         }
 
-        public override void OnKeyDown(Key key)
+        public override void OnCommonKeyDown(CommonKey key)
         {
             switch(key) {
-                case Key.LineSelectLeft1:   _Hub.CreateAndSelectPage<Metar_Page>(); break;
-                case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
+                case CommonKey.LineSelectLeft1:   _Hub.CreateAndSelectPage<MetarTaf_Page>(); break;
+                case CommonKey.LineSelectLeft6:   _Hub.ReturnToParent(); break;
             }
         }
     }

@@ -460,6 +460,9 @@ namespace Cduhub
                     CreateAndSelectPage<Pages.Init.InitMenu_Page>();
                 } else {
                     _SelectedPage?.OnKeyDown(e.Key);
+                    if(e.CommonKey != CommonKey.DeviceSpecific) {
+                        _SelectedPage?.OnCommonKeyDown(e.CommonKey);
+                    }
                 }
             }
         }

@@ -70,8 +70,8 @@ namespace McduDotNet
 
         /// <summary>
         /// Splits a long string into lines at whitespace characters. All whitespace is
-        /// turned into a single space. Newlines are preserved in the output. Lines can
-        /// exceed <paramref name="lineLength"/> if they do not contain whitespace.
+        /// turned into a single space. Newlines start a new line. Lines can exceed
+        /// <paramref name="lineLength"/> if they do not contain whitespace.
         /// </summary>
         /// <param name="text"></param>
         /// <param name="lineLength"></param>
@@ -79,7 +79,6 @@ namespace McduDotNet
         public static IReadOnlyList<string> WrapAtWhitespace(this string text, int lineLength)
         {
             var result = new List<string>();
-            var chunks = (text ?? "").Split(' ', '\t');
             var lineBuffer = new StringBuilder();
 
             void addLineToResult()
@@ -90,16 +89,27 @@ namespace McduDotNet
                 }
             }
 
-            foreach(var chunk in chunks) {
-                if(chunk.Length + lineBuffer.Length + (lineBuffer.Length > 0 ? 1 : 0) > lineLength) {
-                    addLineToResult();
+            var realLines = (text ?? "").Split('\n');
+            foreach(var realLine in realLines) {
+                var chunks = realLine
+                    .Trim('\r')
+                    .Split(' ', '\t');
+                foreach(var chunk in chunks) {
+                    if(chunk.Length + lineBuffer.Length + (lineBuffer.Length > 0 ? 1 : 0) > lineLength) {
+                        addLineToResult();
+                    }
+                    if(lineBuffer.Length > 0) {
+                        lineBuffer.Append(' ');
+                    }
+                    for(var charIdx = 0;charIdx < chunk.Length;++charIdx) {
+                        lineBuffer.Append(chunk[charIdx]);
+                        if(lineBuffer.Length == lineLength) {
+                            addLineToResult();
+                        }
+                    }
                 }
-                if(lineBuffer.Length > 0) {
-                    lineBuffer.Append(' ');
-                }
-                lineBuffer.Append(chunk);
+                addLineToResult();
             }
-            addLineToResult();
 
             return result;
         }

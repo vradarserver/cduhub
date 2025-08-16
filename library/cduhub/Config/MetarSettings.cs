@@ -19,5 +19,18 @@ namespace Cduhub.Config
         public string StationCode { get; set; } = "EGLL";
 
         public int RefreshMinutes { get; set; } = 15;
+
+        public enum Reports
+        {
+            Metar,
+            Taf,
+            MetarAndTaf,
+        }
+
+        public Reports Download { get; set; } = Reports.MetarAndTaf;
+
+        public static string DescribeReports(Reports reports) => reports == Reports.MetarAndTaf
+            ? "METAR+TAF"
+            : reports.ToString().ToUpper();
     }
 }
