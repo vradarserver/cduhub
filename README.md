@@ -61,8 +61,8 @@ dotnet run --project apps/cduhub-cli/cduhub-cli.csproj
 
 CDU Hub uses the Fenix browser EFB's MCDU page to read and control the MCDU
 display for both the captain and first officer. You can flip between the two
-MCDUs using the BLANK1 button (next to DATA) and you can jump back to the
-CDU Hub menu using the BLANK2 button (next to AIRPORT).
+MCDUs using the BRT button and you can jump back to the CDU Hub menu using
+the DIM button.
 
 
 
@@ -71,9 +71,9 @@ CDU Hub menu using the BLANK2 button (next to AIRPORT).
 This uses FlyByWire's SimBridge remote MCDU to read and control the mirrored
 MCDU. When FlyByWire add support for separate pilot and first officer MCDUs
 the program should be able to read and control them separately, and switch
-between them using the BLANK1 button (next to DATA).
+between them using the BRT button.
 
-You can jump back to the CDU Hub menu using the BLANK2 button (next to AIRPORT).
+You can jump back to the CDU Hub menu using the DIM button.
 
 Known issues:
 
@@ -89,9 +89,8 @@ Known issues:
 ### X-Plane: ToLiss
 
 This uses ToLiss's custom datarefs to read and control the pilot and first-officer
-MCDUs. You can flip between the two MCDUs using the BLANK1 button (next to DATA)
-and you can jump back to the CDU Hub menu using the BLANK2 button (next to
-AIRPORT).
+MCDUs. You can flip between the two MCDUs using the BRT button and you can jump
+back to the CDU Hub menu using the DIM button.
 
 Known issues:
 
@@ -104,10 +103,9 @@ Known issues:
 
 ### X-Plane 12: General Airbus
 
-This uses X-Plane's standard datarefs for MCDUs to read and control the pilot and
-first-officer MCDUs. You can flip between the two MCDUs using the BLANK1 button
-(next to DATA) and you can jump back to the CDU Hub menu using the BLANK2 button
-(next to AIRPORT). X-Plane 12 only.
+This uses X-Plane's standard datarefs for CDUs to read and control the pilot and
+first-officer CDUs. You can flip between the two CDUs using the BRT button and
+you can jump back to the CDU Hub menu using the DIM button. X-Plane 12 only.
 
 Known issues:
 
@@ -122,6 +120,7 @@ Known issues:
 * SEC F-PLN and ATC-COMM don't appear to have commands for them. They don't do
   anything in the A330 so I'm assuming they're just not present.
 * MCDU MENU doesn't do anything, I'm not sure I'm sending the right command there.
+* Only the PFP-7 buttons have commands set up for them.
 * LEDs don't work. I think I just need to find the commands for those.
 
 
