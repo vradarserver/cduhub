@@ -64,6 +64,9 @@ display for both the captain and first officer. You can flip between the two
 MCDUs using the BRT button and you can jump back to the CDU Hub menu using
 the DIM button.
 
+You can configure brightness settings using the INIT or INIT REF button in
+the hub.
+
 
 
 ### MSFS2020 / 2024: SimBridge (aka FlyByWire A320neo)
@@ -74,6 +77,9 @@ the program should be able to read and control them separately, and switch
 between them using the BRT button.
 
 You can jump back to the CDU Hub menu using the DIM button.
+
+You can configure brightness settings using the INIT or INIT REF button in
+the hub.
 
 Known issues:
 
@@ -92,6 +98,9 @@ This uses ToLiss's custom datarefs to read and control the pilot and first-offic
 MCDUs. You can flip between the two MCDUs using the BRT button and you can jump
 back to the CDU Hub menu using the DIM button.
 
+You can configure brightness settings using the INIT or INIT REF button in
+the hub.
+
 Known issues:
 
 * Pauses at startup. This is a side-effect of the mechanism used to interact with
@@ -101,11 +110,14 @@ Known issues:
 
 
 
-### X-Plane 12: General Airbus
+### X-Plane 12: General Airbus and Boeing
 
 This uses X-Plane's standard datarefs for CDUs to read and control the pilot and
 first-officer CDUs. You can flip between the two CDUs using the BRT button and
 you can jump back to the CDU Hub menu using the DIM button. X-Plane 12 only.
+
+You can configure brightness settings using the INIT or INIT REF button in
+the hub.
 
 Known issues:
 
@@ -117,9 +129,6 @@ Known issues:
   WebSockets (which gets aborted after 100 seconds) or UDP (which requires 3200+
   datarefs for the generic MCDUs). If I can get web sockets working with X-Plane
   then I'll switch over to those and the lag should go away.
-* SEC F-PLN and ATC-COMM don't appear to have commands for them. They don't do
-  anything in the A330 so I'm assuming they're just not present.
-* MCDU MENU doesn't do anything, I'm not sure I'm sending the right command there.
 * Only the PFP-7 buttons have commands set up for them.
 * LEDs don't work. I think I just need to find the commands for those.
 
