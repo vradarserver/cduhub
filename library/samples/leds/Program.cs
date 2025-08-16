@@ -21,7 +21,7 @@ namespace Leds
                 Console.WriteLine($"Using {cdu.DeviceId}");
 
                 var supportedLeds = cdu.SupportedLeds
-                    .OrderBy(led => led.Name())
+                    .OrderBy(led => led.Describe())
                     .ToArray();
                 var leftLeds = new List<Led>();
                 var rightLeds = new List<Led>();
@@ -39,10 +39,10 @@ namespace Leds
                     .RightLabel(6, "BRIGHT +5%<");
 
                 for(var idx = 0;idx < leftLeds.Count;++idx) {
-                    cdu.Output.LeftLabel(idx + 1, $">{leftLeds[idx].Name()}");
+                    cdu.Output.LeftLabel(idx + 1, $">{leftLeds[idx].Describe()}");
                 }
                 for(var idx = 0;idx < rightLeds.Count;++idx) {
-                    cdu.Output.RightLabel(idx + 1, $">{rightLeds[idx].Name()}");
+                    cdu.Output.RightLabel(idx + 1, $">{rightLeds[idx].Describe()}");
                 }
 
                 cdu.RefreshDisplay();

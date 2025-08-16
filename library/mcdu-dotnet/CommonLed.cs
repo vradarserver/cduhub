@@ -10,37 +10,16 @@
 
 namespace McduDotNet
 {
-    public static class LedExtensions
+    /// <summary>
+    /// The LEDs that appear on all CDU devices. This is a short list.
+    /// </summary>
+    public enum CommonLed
     {
-        public static string Describe(this Led led)
-        {
-            switch(led) {
-                case Led.Dspy:  return "DSPY";
-                case Led.Exec:  return "EXEC";
-                case Led.Fail:  return "FAIL";
-                case Led.Fm:    return "FM";
-                case Led.Fm1:   return "FM1";
-                case Led.Fm2:   return "FM2";
-                case Led.Ind:   return "IND";
-                case Led.Line:  return "LINE";
-                case Led.Mcdu:  return "MCDU";
-                case Led.Menu:  return "MENU";
-                case Led.Msg:   return "MSG";
-                case Led.Ofst:  return "OFST";
-                case Led.Rdy:   return "RDY";
-                case (Led)(-1): return "N/A";
-                default:        return "";
-            }
-        }
+        Fail = Led.Fail,
 
-        public static CommonLed ToCommonLed(this Led led)
-        {
-            switch(led) {
-                case Led.Fail:  return CommonLed.Fail;
-                case Led.Line:
-                case Led.Exec:  return CommonLed.LineOrExec;
-                default:        return CommonLed.DeviceSpecific;
-            }
-        }
+        DeviceSpecific = 100,
+
+        EitherOr = 200,
+        LineOrExec = EitherOr + 1
     }
 }
