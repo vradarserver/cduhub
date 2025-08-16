@@ -63,6 +63,94 @@ namespace McduDotNet
             }
         }
 
+        public static string Describe(this Key key)
+        {
+            switch(key) {
+                case Key.LineSelectLeft1:   return "L1";
+                case Key.LineSelectLeft2:   return "L2";
+                case Key.LineSelectLeft3:   return "L3";
+                case Key.LineSelectLeft4:   return "L4";
+                case Key.LineSelectLeft5:   return "L5";
+                case Key.LineSelectLeft6:   return "L6";
+                case Key.LineSelectRight1:  return "R1";
+                case Key.LineSelectRight2:  return "R2";
+                case Key.LineSelectRight3:  return "R3";
+                case Key.LineSelectRight4:  return "R4";
+                case Key.LineSelectRight5:  return "R5";
+                case Key.LineSelectRight6:  return "R6";
+                case Key.AtcComm:           return "ATC COMM";
+                case Key.DepArr:            return "DEP ARR";
+                case Key.FmcComm:           return "FMC COMM";
+                case Key.FPln:              return "F-PLN";
+                case Key.FuelPred:          return "FUEL PRED";
+                case Key.InitRef:           return "INIT REF";
+                case Key.McduMenu:          return "MCDU MENU";
+                case Key.NavRad:            return "NAV RAD";
+                case Key.NextPage:          return "NEXT PAGE";
+                case Key.PrevPage:          return "PREV PAGE";
+                case Key.RadNav:            return "RAD NAV";
+                case Key.SecFPln:           return "SEC F-PLN";
+                case Key.LeftArrow:         return "←";
+                case Key.UpArrow:           return "↑";
+                case Key.DownArrow:         return "↓";
+                case Key.RightArrow:        return "→";
+                case Key.Digit1:            return "1";
+                case Key.Digit2:            return "2";
+                case Key.Digit3:            return "3";
+                case Key.Digit4:            return "4";
+                case Key.Digit5:            return "5";
+                case Key.Digit6:            return "6";
+                case Key.Digit7:            return "7";
+                case Key.Digit8:            return "8";
+                case Key.Digit9:            return "9";
+                case Key.Digit0:            return "0";
+                case Key.DecimalPoint:      return ".";
+                case Key.PositiveNegative:  return "+/-";
+                case Key.Slash:             return "/";
+                case Key.Space:             return "SP";
+                case (Key)(-1):             return "N/A";
+                default:                    return key.ToString().ToUpper();
+            }
+        }
+
+        public static CommonKey ToCommonKey(this Key key)
+        {
+            switch(key) {
+                case Key.Data:
+                case Key.Dir:
+                case Key.FuelPred:
+                case Key.Perf:
+                case Key.UpArrow:
+                case Key.DownArrow:
+                case Key.Legs:
+                case Key.Exec:
+                case Key.Fix:
+                case Key.Hold:
+                case Key.VNav:              return CommonKey.DeviceSpecific;
+
+                case Key.AtcComm:
+                case Key.FmcComm:           return CommonKey.AtcCommOrFmcComm;
+                case Key.Init:
+                case Key.InitRef:           return CommonKey.InitOrInitRef;
+                case Key.FPln:
+                case Key.Rte:               return CommonKey.FPlnOrRte;
+                case Key.RadNav:
+                case Key.NavRad:            return CommonKey.RadNavOrNavRad;
+                case Key.SecFPln:
+                case Key.Altn:              return CommonKey.SecFPlnOrAltn;
+                case Key.McduMenu:
+                case Key.Menu:              return CommonKey.McduMenuOrMenu;
+                case Key.Airport:
+                case Key.DepArr:            return CommonKey.AirportOrDepArr;
+                case Key.LeftArrow:
+                case Key.PrevPage:          return CommonKey.LeftArrowOrPrevPage;
+                case Key.RightArrow:
+                case Key.NextPage:          return CommonKey.RightArrowOrNextPage;
+
+                default:                    return (CommonKey)key;
+            }
+        }
+
         public static string ToFenixEfbMcduKeyName(this Key key)
         {
             switch(key) {
@@ -240,22 +328,38 @@ namespace McduDotNet
                 case Key.LineSelectRight4:  return "ls_4r";
                 case Key.LineSelectRight5:  return "ls_5r";
                 case Key.LineSelectRight6:  return "ls_6r";
-                case Key.Dir:               return "dir_intc";
-                case Key.Prog:              return "prog";
-                case Key.Perf:              return "perf";
-                case Key.Init:              return "index";
-                case Key.Data:              return "data";
-                case Key.Blank1:            return "";
-                case Key.Brt:               return "";
-                case Key.FPln:              return "fpln";
-                case Key.RadNav:            return "navrad";
-                case Key.FuelPred:          return "fuel_pred";
-                case Key.SecFPln:           return "";          // <-- can't see anything obvious and they don't work in the XPlane-12 A330
-                case Key.AtcComm:           return "";          // <-- can't see anything obvious and they don't work in the XPlane-12 A330
-                case Key.McduMenu:          return "menu";
-                case Key.Dim:               return "";
+
                 case Key.Airport:           return "airport";
+                case Key.Altn:              return "";
+                case Key.AtcComm:           return "";          // <-- can't see anything obvious and they don't work in the XPlane-12 A330
+                case Key.Blank1:            return "";
                 case Key.Blank2:            return "";
+                case Key.Brt:               return "";
+                case Key.Data:              return "data";
+                case Key.DepArr:            return "dep_arr";
+                case Key.Dim:               return "";
+                case Key.Dir:               return "dir_intc";
+                case Key.Exec:              return "exec";
+                case Key.Fix:               return "fix";
+                case Key.FmcComm:           return "";
+                case Key.FPln:              return "fpln";
+                case Key.FuelPred:          return "fuel_pred";
+                case Key.Hold:              return "hold";
+                case Key.Init:              return "index";
+                case Key.InitRef:           return "index";
+                case Key.Legs:              return "legs";
+                case Key.McduMenu:          return "menu";
+                case Key.Menu:              return "menu";
+                case Key.NavRad:            return "navrad";
+                case Key.NextPage:          return "next";
+                case Key.Perf:              return "perf";
+                case Key.PrevPage:          return "prev";
+                case Key.Prog:              return "prog";
+                case Key.RadNav:            return "navrad";
+                case Key.Rte:               return "fpln";
+                case Key.SecFPln:           return "";          // <-- can't see anything obvious and they don't work in the XPlane-12 A330
+                case Key.VNav:              return "";
+
                 case Key.LeftArrow:         return "prev";
                 case Key.UpArrow:           return "up";
                 case Key.RightArrow:        return "next";
@@ -302,6 +406,7 @@ namespace McduDotNet
                 case Key.Space:             return "key_space";
                 case Key.Ovfy:              return "key_overfly";
                 case Key.Clr:               return "key_clear";
+                case Key.Del:               return "key_delete";
                 default:                    return "";
             }
         }

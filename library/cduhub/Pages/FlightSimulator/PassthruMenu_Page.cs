@@ -23,7 +23,7 @@ namespace Cduhub.Pages.FlightSimulator
             Output
                 .Centred("<green>PASSTHROUGH")
                 .Newline(2)
-                .Centred("BLANK2 <small>FOR HUB <large>MENU")
+                .Centred($"{_Hub.InterruptKey2Name} <small>FOR HUB <large>MENU")
                 .RightLabel(3, "<cyan>PASSTHRU<")
                 .LeftLabel(6, "<red><small>>BACK");
         }

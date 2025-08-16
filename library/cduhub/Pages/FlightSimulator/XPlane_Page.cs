@@ -78,7 +78,7 @@ namespace Cduhub.Pages.FlightSimulator
 
         public override void OnKeyDown(Key key)
         {
-            if(key != Key.Blank1) {
+            if(key.ToCommonKey() != _Hub.InterruptKey1) {
                 _XPlaneMcdu?.SendKeyToSimulator(key, pressed: true);
             } else {
                 _XPlaneMcdu?.AdvanceSelectedBufferProductId();
@@ -87,7 +87,7 @@ namespace Cduhub.Pages.FlightSimulator
 
         public override void OnKeyUp(Key key)
         {
-            if(key != Key.Blank1) {
+            if(key.ToCommonKey() != _Hub.InterruptKey1) {
                 _XPlaneMcdu?.SendKeyToSimulator(key, pressed: false);
             }
         }

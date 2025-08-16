@@ -16,6 +16,8 @@ namespace McduDotNet
     {
         public Key Key { get; }
 
+        public CommonKey CommonKey => Key.ToCommonKey();
+
         public string Character { get; }
 
         public bool Pressed { get; }

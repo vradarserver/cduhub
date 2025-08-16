@@ -30,13 +30,13 @@ namespace Cduhub
 
         public virtual FontReference PageFont => _Hub.DefaultFontReference;
 
-        public virtual Key MenuKey { get; } = Key.McduMenu;
+        public virtual CommonKey? MenuKey { get; }
 
         public virtual bool DisableMenuKey { get; }
 
         public virtual bool DisableInitKey { get; }
 
-        public virtual Key ParentKey { get; } = Key.Blank2;
+        public virtual CommonKey? ParentKey { get; }
 
         public virtual bool DisableParentKey { get; }
 

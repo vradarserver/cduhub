@@ -63,6 +63,7 @@ namespace McduDotNet
         UpArrow,
         RightArrow,
         DownArrow,
+
         Digit1,
         Digit2,
         Digit3,
@@ -103,8 +104,9 @@ namespace McduDotNet
         Z,
         Slash,
         Space,
-        Ovfy,
         Clr,
+
+        Ovfy,
         Del,
     }
 }

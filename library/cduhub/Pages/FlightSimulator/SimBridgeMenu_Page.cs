@@ -25,7 +25,7 @@ namespace Cduhub.Pages.FlightSimulator
                 .Newline()
                 .Centred("<green><small>(FLY-BY-WIRE)")
                 .Newline(2)
-                .Centred("BLANK2 <small>FOR HUB <large>MENU")
+                .Centred($"{_Hub.InterruptKey2Name} <small>FOR HUB <large>MENU")
                 .RightLabel(3, "<cyan>MCDU<")
                 .LeftLabel(5, "<amber><small>>INIT")
                 .LeftLabel(6, "<red><small>>BACK");

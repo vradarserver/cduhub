@@ -92,6 +92,22 @@ namespace Cduhub
         /// </summary>
         public int BacklightBrightnessPercent => _Cdu?.BacklightBrightnessPercent ?? 0;
 
+        public CommonKey InterruptKey1 { get; set; } = CommonKey.Brt;
+
+        public CommonKey InterruptKey2 { get; set; } = CommonKey.Dim;
+
+        public CommonKey MenuKey { get; set; } = CommonKey.McduMenuOrMenu;
+
+        public CommonKey InitKey { get; set; } = CommonKey.InitOrInitRef;
+
+        public string InterruptKey1Name => InterruptKey1.Describe(_Cdu);
+
+        public string InterruptKey2Name => InterruptKey2.Describe(_Cdu);
+
+        public string MenuKeyName => MenuKey.Describe(_Cdu);
+
+        public string InitKeyName => InitKey.Describe(_Cdu);
+
         /// <summary>
         /// Raised when the hub wants the parent application to close.
         /// </summary>
@@ -427,20 +443,14 @@ namespace Cduhub
         private void Cdu_KeyDown(object sender, McduDotNet.KeyEventArgs e)
         {
             if(!_ShuttingDown) {
-                var cdu = (ICdu)sender;
-                var initKey = Key.Init;
-                var menuKey = _SelectedPage?.MenuKey ?? Key.McduMenu;
-                var parentKey = _SelectedPage?.ParentKey ?? Key.Blank2;
+                var cdu = sender as ICdu;
+                var initCommonKey = InitKey;
+                var menuCommonKey = _SelectedPage?.MenuKey ?? MenuKey;
+                var parentCommonKey = _SelectedPage?.ParentKey ?? InterruptKey2;
 
-                if(!cdu.IsKeySupported(initKey)) {
-                    initKey = Key.InitRef;
-                }
-                if(!cdu.IsKeySupported(menuKey)) {
-                    menuKey = Key.Menu;
-                }
-                if(!cdu.IsKeySupported(parentKey)) {
-                    parentKey = Key.Dim;
-                }
+                var initKey = initCommonKey.ToKey(cdu);
+                var menuKey = menuCommonKey.ToKey(cdu);
+                var parentKey = parentCommonKey.ToKey(cdu);
 
                 if(e.Key == menuKey && !(_SelectedPage?.DisableMenuKey ?? false)) {
                     ReturnToRoot();

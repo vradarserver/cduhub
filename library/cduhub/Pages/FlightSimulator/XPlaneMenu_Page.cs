@@ -24,9 +24,9 @@ namespace Cduhub.Pages.FlightSimulator
                 .Centred("<green>X-PLANE 12")
                 .White()
                 .Newline(2)
-                .Centred("BLANK1 <small>TO SWAP <large>MCDUs")
+                .Centred($"{_Hub.InterruptKey1Name} <small>TO SWAP <large>CDUs")
                 .Newline()
-                .Centred("BLANK2 <small>FOR HUB <large>MENU")
+                .Centred($"{_Hub.InterruptKey2Name} <small>FOR HUB <large>MENU")
                 .RightLabel(3, "<cyan>MCDU<")
                 .LeftLabel(5, "<amber><small>>INIT")
                 .LeftLabel(6, "<red><small>>BACK");
