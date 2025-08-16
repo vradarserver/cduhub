@@ -14,13 +14,11 @@ using McduDotNet;
 
 namespace Cduhub.Pages.FlightSimulator
 {
-    class ToLiss_Page : Page
+    class ToLiss_Page : CommonFlightSimPage
     {
         private ToLissUdpMcdu _ToLissMcdu;
 
-        public override bool DisableMenuKey => true;
-
-        public override bool DisableInitKey => true;
+        public override DeviceType SimulatorDeviceType => DeviceType.AirbusA320Mcdu;
 
         public override FontReference PageFont => SettingsFont<ToLissUdpSettings>(r => r.Font);
 
@@ -30,16 +28,7 @@ namespace Cduhub.Pages.FlightSimulator
         {
         }
 
-        public override void OnSelected(bool selected)
-        {
-            if(selected) {
-                Connect();
-            } else {
-                Disconnect();
-            }
-        }
-
-        private void Connect()
+        protected override void Connect()
         {
             Disconnect();
 
@@ -58,7 +47,7 @@ namespace Cduhub.Pages.FlightSimulator
             mcdu.ReconnectToSimulator();
         }
 
-        private void Disconnect()
+        protected override void Disconnect()
         {
             if(_ToLissMcdu != null) {
                 var reference = _ToLissMcdu;
@@ -79,7 +68,7 @@ namespace Cduhub.Pages.FlightSimulator
         public override void OnKeyDown(Key key)
         {
             if(key.ToCommonKey() != _Hub.InterruptKey1) {
-                _ToLissMcdu?.SendKeyToSimulator(key, pressed: true);
+                _ToLissMcdu?.SendKeyToSimulator(Translate(key), pressed: true);
             } else {
                 _ToLissMcdu?.AdvanceSelectedBufferProductId();
             }
@@ -88,7 +77,7 @@ namespace Cduhub.Pages.FlightSimulator
         public override void OnKeyUp(Key key)
         {
             if(key.ToCommonKey() != _Hub.InterruptKey1) {
-                _ToLissMcdu?.SendKeyToSimulator(key, pressed: false);
+                _ToLissMcdu?.SendKeyToSimulator(Translate(key), pressed: false);
             }
         }
 

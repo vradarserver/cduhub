@@ -36,6 +36,9 @@ namespace Cduhub.FlightSim
         public override string AircraftName => "Fenix A32x";
 
         /// <inheritdoc/>
+        public override DeviceType TargetDeviceType => DeviceType.AirbusA320Mcdu;
+
+        /// <inheritdoc/>
         public override SimulatorMcduBuffer PilotBuffer { get; } = new SimulatorMcduBuffer();
 
         /// <inheritdoc/>

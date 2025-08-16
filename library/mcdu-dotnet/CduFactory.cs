@@ -23,85 +23,8 @@ namespace McduDotNet
     /// </summary>
     public static class CduFactory
     {
-        /// <summary>
-        /// The identifier for a WinWing MCDU device set to the left-hand seat position.
-        /// </summary>
-        public static readonly DeviceIdentifier WinWingMcduCaptainDevice = new DeviceIdentifier(
-            "Winwing MCDU (Captain)", 0x4098, 0xBB36, Device.WinWingMcdu, DeviceUser.Captain
-        );
-
-        /// <summary>
-        /// The identifier for a WinWing MCDU device set to the right-hand seat position.
-        /// </summary>
-        public static readonly DeviceIdentifier WinWingMcduFirstOfficerDevice = new DeviceIdentifier(
-            "Winwing MCDU (F/O)", 0x4098, 0xBB3E, Device.WinWingMcdu, DeviceUser.FirstOfficer
-        );
-
-        /// <summary>
-        /// The identifier for a WinWing MCDU device set to the observer seat position.
-        /// </summary>
-        public static readonly DeviceIdentifier WinWingMcduObserverDevice = new DeviceIdentifier(
-            "Winwing MCDU (Observer)", 0x4098, 0xBB3A, Device.WinWingMcdu, DeviceUser.Observer
-        );
-
-        /// <summary>
-        /// The identifier for a WinWing PFP-3N device set to the left-hand seat position.
-        /// </summary>
-        public static readonly DeviceIdentifier WinWingPfp3NCaptainDevice = new DeviceIdentifier(
-            "Winwing PFP-3N (Captain)", 0x4098, 0xBB35, Device.WinWingPfp3N, DeviceUser.Captain
-        );
-
-        /// <summary>
-        /// The identifier for a WinWing PFP-3N device set to the right-hand seat position.
-        /// </summary>
-        public static readonly DeviceIdentifier WinWingPfp3NFirstOfficerDevice = new DeviceIdentifier(
-            "Winwing PFP-3N (F/O)", 0x4098, 0xBB3D, Device.WinWingPfp3N, DeviceUser.FirstOfficer
-        );
-
-        /// <summary>
-        /// The identifier for a WinWing PFP-3N device set to the observer seat position.
-        /// </summary>
-        public static readonly DeviceIdentifier WinWingPfp3NObserverDevice = new DeviceIdentifier(
-            "Winwing PFP-3N (Observer)", 0x4098, 0xBB39, Device.WinWingPfp3N, DeviceUser.Observer
-        );
-
-        /// <summary>
-        /// The identifier for a WinWing PFP-7 device set to the left-hand seat position.
-        /// </summary>
-        public static readonly DeviceIdentifier WinWingPfp7CaptainDevice = new DeviceIdentifier(
-            "Winwing PFP-7 (Captain)", 0x4098, 0xBB37, Device.WinWingPfp7, DeviceUser.Captain
-        );
-
-        /// <summary>
-        /// The identifier for a WinWing PFP-7 device set to the right-hand seat position.
-        /// </summary>
-        public static readonly DeviceIdentifier WinWingPfp7FirstOfficerDevice = new DeviceIdentifier(
-            "Winwing PFP-7 (F/O)", 0x4098, 0xBB3F, Device.WinWingPfp7, DeviceUser.FirstOfficer
-        );
-
-        /// <summary>
-        /// The identifier for a WinWing PFP-7 device set to the observer seat position.
-        /// </summary>
-        public static readonly DeviceIdentifier WinWingPfp7ObserverDevice = new DeviceIdentifier(
-            "Winwing PFP-7 (Observer)", 0x4098, 0xBB3B, Device.WinWingPfp7, DeviceUser.Observer
-        );
-
-        /// <summary>
-        /// A collection of device identifiers for all supported devices.
-        /// </summary>
-        public static readonly IReadOnlyList<DeviceIdentifier> AllKnownDevices = new DeviceIdentifier[] {
-            WinWingMcduCaptainDevice,
-            WinWingMcduFirstOfficerDevice,
-            WinWingMcduObserverDevice,
-
-            WinWingPfp3NCaptainDevice,
-            WinWingPfp3NFirstOfficerDevice,
-            WinWingPfp3NObserverDevice,
-
-            WinWingPfp7CaptainDevice,
-            WinWingPfp7FirstOfficerDevice,
-            WinWingPfp7ObserverDevice,
-        };
+        //          ARE YOU HERE LOOKING FOR THE LIST OF ALL KNOWN DEVICE IDENTIFIERS?
+        //                       They've moved to SupportedDevices.cs
 
         /// <summary>
         /// Returns a device identifier corresponding to the vendor and product IDs passed
@@ -116,10 +39,12 @@ namespace McduDotNet
             int productId
         )
         {
-            return AllKnownDevices.FirstOrDefault(deviceIdentifier =>
-                   deviceIdentifier.UsbVendorId == vendorId
-                && deviceIdentifier.UsbProductId == productId
-            );
+            return SupportedDevices
+                .AllSupportedDevices
+                .FirstOrDefault(deviceIdentifier =>
+                       deviceIdentifier.UsbVendorId == vendorId
+                    && deviceIdentifier.UsbProductId == productId
+                );
         }
 
         /// <summary>
@@ -149,14 +74,43 @@ namespace McduDotNet
         /// specified then the first CDU found on the system is used. If the requested CDU
         /// cannot be found (or there are no CDUs to default to) then null is returned.
         /// </summary>
-        /// <param name="deviceId"></param>
+        /// <param name="deviceId">
+        /// The specific device to connect to, if null then the first device found is
+        /// used. Defaults to null.
+        /// </param>
+        /// <param name="device">
+        /// If not null then only devices for this product are considered if <paramref
+        /// name="deviceId"/> is not supplied. Defaults to null.
+        /// </param>
+        /// <param name="deviceUser">
+        /// If not null then only devices for this seat are considered if <paramref
+        /// name="deviceId"/> is not supplied. Defaults to null.
+        /// </param>
+        /// <param name="deviceType">
+        /// If not null then only devices for this category of CDU are considered if
+        /// <paramref name="deviceId"/> is not supplied. Defaults to null.
+        /// </param>
         /// <returns></returns>
-        public static ICdu ConnectLocal(DeviceIdentifier deviceId = null)
+        public static ICdu ConnectLocal(
+            DeviceIdentifier deviceId = null,
+            Device? device = null,
+            DeviceUser? deviceUser = null,
+            DeviceType? deviceType = null
+        )
         {
             ICdu result = null;
 
             if(deviceId == null) {
-                deviceId = FindLocalDevices().FirstOrDefault();
+                deviceId = FindLocalDevices()
+                    .Where(candidate =>
+                           (device == null || candidate.Device == device)
+                        && (deviceUser == null || candidate.DeviceUser == deviceUser)
+                        && (deviceType == null || candidate.DeviceType == deviceType)
+                    )
+                    // The order selected here is only to make it deterministic
+                    .OrderBy(candidate => candidate.UsbVendorId)
+                    .ThenBy(candidate => candidate.UsbProductId)
+                    .FirstOrDefault();
             }
 
             if(deviceId != null) {

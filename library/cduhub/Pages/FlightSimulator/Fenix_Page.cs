@@ -14,13 +14,11 @@ using McduDotNet;
 
 namespace Cduhub.Pages.FlightSimulator
 {
-    class Fenix_Page : Page
+    class Fenix_Page : CommonFlightSimPage
     {
         private FenixA320EfbMcdu _FenixA320;
 
-        public override bool DisableMenuKey => true;
-
-        public override bool DisableInitKey => true;
+        public override DeviceType SimulatorDeviceType => DeviceType.AirbusA320Mcdu;
 
         public override FontReference PageFont => SettingsFont<FenixEfbSettings>(r => r.Font);
 
@@ -30,16 +28,7 @@ namespace Cduhub.Pages.FlightSimulator
         {
         }
 
-        public override void OnSelected(bool selected)
-        {
-            if(selected) {
-                Connect();
-            } else {
-                Disconnect();
-            }
-        }
-
-        private void Connect()
+        protected override void Connect()
         {
             Disconnect();
 
@@ -58,7 +47,7 @@ namespace Cduhub.Pages.FlightSimulator
             mcdu.ReconnectToSimulator();
         }
 
-        private void Disconnect()
+        protected override void Disconnect()
         {
             if(_FenixA320 != null) {
                 var reference = _FenixA320;
@@ -79,7 +68,7 @@ namespace Cduhub.Pages.FlightSimulator
         public override void OnKeyDown(Key key)
         {
             if(key.ToCommonKey() != _Hub.InterruptKey1) {
-                _FenixA320?.SendKeyToSimulator(key, pressed: true);
+                _FenixA320?.SendKeyToSimulator(Translate(key), pressed: true);
             } else {
                 _FenixA320?.AdvanceSelectedBufferProductId();
             }
@@ -88,7 +77,7 @@ namespace Cduhub.Pages.FlightSimulator
         public override void OnKeyUp(Key key)
         {
             if(key.ToCommonKey() != _Hub.InterruptKey1) {
-                _FenixA320?.SendKeyToSimulator(key, pressed: false);
+                _FenixA320?.SendKeyToSimulator(Translate(key), pressed: false);
             }
         }
 

@@ -33,6 +33,9 @@ namespace Cduhub.FlightSim
         public override string AircraftName => "FBW SimBridge";
 
         /// <inheritdoc/>
+        public override DeviceType TargetDeviceType => DeviceType.AirbusA320Mcdu;
+
+        /// <inheritdoc/>
         public override SimulatorMcduBuffer PilotBuffer { get; } = new SimulatorMcduBuffer();
 
         /// <inheritdoc/>

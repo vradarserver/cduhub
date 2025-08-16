@@ -21,6 +21,9 @@ namespace Cduhub.FlightSim
         /// <inheritdoc/>
         public abstract string AircraftName { get; }
 
+        /// <inheritdoc/>
+        public abstract DeviceType TargetDeviceType { get; }
+
         public Screen MasterScreen { get; }
 
         public Leds MasterLeds { get; }

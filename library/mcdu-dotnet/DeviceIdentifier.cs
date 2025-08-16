@@ -40,6 +40,12 @@ namespace McduDotNet
         public DeviceUser DeviceUser { get; }
 
         /// <summary>
+        /// Gets the broad category of device (Airbus A320 MCDU, Boeing 777 PFP) that this
+        /// device replicates.
+        /// </summary>
+        public DeviceType DeviceType { get; }
+
+        /// <summary>
         /// Gets a terse description of the device represented by this identifier.
         /// </summary>
         public string Description { get; }
@@ -52,12 +58,14 @@ namespace McduDotNet
         /// <param name="productId"></param>
         /// <param name="device"></param>
         /// <param name="deviceUser"></param>
+        /// <param name="deviceType"></param>
         public DeviceIdentifier(
             string description,
             int vendorId,
             int productId,
             Device device,
-            DeviceUser deviceUser
+            DeviceUser deviceUser,
+            DeviceType deviceType
         )
         {
             Description = description;
@@ -65,6 +73,7 @@ namespace McduDotNet
             UsbProductId = productId;
             Device = device;
             DeviceUser = deviceUser;
+            DeviceType = deviceType;
         }
 
         /// <inheritdoc/>
@@ -89,7 +98,8 @@ namespace McduDotNet
                 result = UsbVendorId == other.UsbVendorId
                       && UsbProductId == other.UsbProductId
                       && Device == other.Device
-                      && DeviceUser == other.DeviceUser;
+                      && DeviceUser == other.DeviceUser
+                      && DeviceType == other.DeviceType;
             }
 
             return result;

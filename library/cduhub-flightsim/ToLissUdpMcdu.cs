@@ -31,6 +31,9 @@ namespace Cduhub.FlightSim
         /// <inheritdoc/>
         public override string AircraftName => "ToLiss";
 
+        /// <inheritdoc/>
+        public override DeviceType TargetDeviceType => DeviceType.AirbusA320Mcdu;
+
         /// <summary>
         /// Gets or sets the address of the machine running X-Plane.
         /// </summary>

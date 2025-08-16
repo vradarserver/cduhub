@@ -26,6 +26,13 @@ namespace Cduhub.FlightSim
         string AircraftName { get; }
 
         /// <summary>
+        /// The general type of CDU device that the flight simulator targets. This will be
+        /// <see cref="DeviceType.NotSpecified"/> if the simulator is not for a specific
+        /// aircraft.
+        /// </summary>
+        DeviceType TargetDeviceType { get; }
+
+        /// <summary>
         /// The content of the simulated pilot MCDU.
         /// </summary>
         SimulatorMcduBuffer PilotBuffer { get; }

@@ -14,13 +14,11 @@ using McduDotNet;
 
 namespace Cduhub.Pages.FlightSimulator
 {
-    class SimBridge_Page : Page
+    class SimBridge_Page : CommonFlightSimPage
     {
         private SimBridgeA320RemoteMcdu _SimBridgeA320;
 
-        public override bool DisableMenuKey => true;
-
-        public override bool DisableInitKey => true;
+        public override DeviceType SimulatorDeviceType => DeviceType.AirbusA320Mcdu;
 
         public override FontReference PageFont => SettingsFont<SimBridgeEfbSettings>(r => r.Font);
 
@@ -30,16 +28,7 @@ namespace Cduhub.Pages.FlightSimulator
         {
         }
 
-        public override void OnSelected(bool selected)
-        {
-            if(selected) {
-                Connect();
-            } else {
-                Disconnect();
-            }
-        }
-
-        private void Connect()
+        protected override void Connect()
         {
             Disconnect();
 
@@ -58,7 +47,7 @@ namespace Cduhub.Pages.FlightSimulator
             mcdu.ReconnectToSimulator();
         }
 
-        private void Disconnect()
+        protected override void Disconnect()
         {
             if(_SimBridgeA320 != null) {
                 var reference = _SimBridgeA320;
@@ -79,13 +68,11 @@ namespace Cduhub.Pages.FlightSimulator
         public override void OnKeyDown(Key key)
         {
             if(key.ToCommonKey() != _Hub.InterruptKey1) {
-                _SimBridgeA320?.SendKeyToSimulator(key, pressed: true);
+                _SimBridgeA320?.SendKeyToSimulator(Translate(key), pressed: true);
             } else {
                 _SimBridgeA320?.AdvanceSelectedBufferProductId();
             }
         }
-
-        private void ShowConnecting() => FullPageStatusMessage("<grey>CONNECTING", "<grey><small>(BLANK2 TO QUIT)");
 
         private void SimBridgeA320_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
 

@@ -165,7 +165,7 @@ namespace Cduhub
                 FullPageStatusMessage(
                     $"<grey>{stateText}",
                     showQuitKey
-                        ? "<grey><small>(BLANK2 TO QUIT)"
+                        ? $"<grey><small>({_Hub.InterruptKey2Name} TO QUIT)"
                         : "<grey><small>PLEASE WAIT"
                 );
             }

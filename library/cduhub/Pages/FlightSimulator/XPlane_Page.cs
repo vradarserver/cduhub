@@ -14,13 +14,11 @@ using McduDotNet;
 
 namespace Cduhub.Pages.FlightSimulator
 {
-    class XPlane_Page : Page
+    class XPlane_Page : CommonFlightSimPage
     {
         private XPlaneGenericMcdu _XPlaneMcdu;
 
-        public override bool DisableMenuKey => true;
-
-        public override bool DisableInitKey => true;
+        public override DeviceType SimulatorDeviceType => DeviceType.NotSpecified;
 
         public override FontReference PageFont => SettingsFont<XPlane12RestSettings>(r => r.Font);
 
@@ -30,16 +28,7 @@ namespace Cduhub.Pages.FlightSimulator
         {
         }
 
-        public override void OnSelected(bool selected)
-        {
-            if(selected) {
-                Connect();
-            } else {
-                Disconnect();
-            }
-        }
-
-        private void Connect()
+        protected override void Connect()
         {
             Disconnect();
 
@@ -58,7 +47,7 @@ namespace Cduhub.Pages.FlightSimulator
             mcdu.ReconnectToSimulator();
         }
 
-        private void Disconnect()
+        protected override void Disconnect()
         {
             if(_XPlaneMcdu != null) {
                 var reference = _XPlaneMcdu;
@@ -79,7 +68,7 @@ namespace Cduhub.Pages.FlightSimulator
         public override void OnKeyDown(Key key)
         {
             if(key.ToCommonKey() != _Hub.InterruptKey1) {
-                _XPlaneMcdu?.SendKeyToSimulator(key, pressed: true);
+                _XPlaneMcdu?.SendKeyToSimulator(Translate(key), pressed: true);
             } else {
                 _XPlaneMcdu?.AdvanceSelectedBufferProductId();
             }
@@ -88,7 +77,7 @@ namespace Cduhub.Pages.FlightSimulator
         public override void OnKeyUp(Key key)
         {
             if(key.ToCommonKey() != _Hub.InterruptKey1) {
-                _XPlaneMcdu?.SendKeyToSimulator(key, pressed: false);
+                _XPlaneMcdu?.SendKeyToSimulator(Translate(key), pressed: false);
             }
         }
 
