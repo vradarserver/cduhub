@@ -335,8 +335,11 @@ namespace McduDotNet
                 case Key.Blank1:            return "";
                 case Key.Blank2:            return "";
                 case Key.Brt:               return "";
+                case Key.Clb:               return "clb";
+                case Key.Crz:               return "crz";
                 case Key.Data:              return "data";
                 case Key.DepArr:            return "dep_arr";
+                case Key.Des:               return "des";
                 case Key.Dim:               return "";
                 case Key.Dir:               return "dir_intc";
                 case Key.Exec:              return "exec";
@@ -350,6 +353,7 @@ namespace McduDotNet
                 case Key.Legs:              return "legs";
                 case Key.McduMenu:          return "menu";
                 case Key.Menu:              return "menu";
+                case Key.N1Limit:           return "";
                 case Key.NavRad:            return "navrad";
                 case Key.NextPage:          return "next";
                 case Key.Perf:              return "perf";

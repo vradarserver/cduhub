@@ -90,16 +90,20 @@ namespace McduDotNet
         AtcCommOrFmcComm =          EitherOr + 10,
 
         // unmapped:
+        // Legs,        PFP-*
+        // Hold,        PFP-*
+        // Exec,        PFP-*
+        // Fix,         PFP-*
+        // Clb,         PFP-3N
+        // Crz,         PFP-3N
+        // Des,         PFP-3N
+        // N1Limit,     PFP-3N
         // Data,        MCDU
         // Dir,         MCDU
         // FuelPred,    MCDU
         // Perf,        MCDU
         // UpArrow,     MCDU
         // DownArrow,   MCDU
-        // Legs,        PFP
-        // Exec,        PFP
-        // Fix,         PFP
-        // Hold,        PFP
-        // VNav,        PFP
+        // VNav,        PFP-7
     }
 }
