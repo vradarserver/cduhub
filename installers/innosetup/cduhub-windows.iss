@@ -1,7 +1,7 @@
 #define public Root       "..\.."
 #define public Publish    "..\..\publish\cduhub-windows"
 #ifndef VERSION
-  #define public VERSION    "v0.0.0-alpha-0"
+  #define public VERSION    "localbuild"
 #endif
 
 [Setup]

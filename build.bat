@@ -1,6 +1,12 @@
 @echo off
 set "BATDIR=%~dp0"
 
+set "VS2022MSB=C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\msbuild.exe"
+set "MSBUILD=%VS2022MSB%"
+
+set "ISCC6=c:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+set "ISCC=%ISCC6%"
+
 rem ##################################################
 rem ## Parse arguments
 
@@ -18,6 +24,8 @@ set RUNARGS=
     set BADARG=BAD
     if "%1"=="solution"      set BADARG=OK & set TARGET=SLN
     if "%1"=="console"       set BADARG=OK & set TARGET=CONSOLE
+    if "%1"=="windows"       set BADARG=OK & set TARGET=WINDOWS
+    if "%1"=="winsetup"      set BADARG=OK & set TARGET=WINSETUP
     if "%1"=="restore"       set BADARG=OK & set TARGET=RESTORE
 
     if "%1"=="ambient"       set BADARG=OK & set TARGET=SAMAMBI
@@ -60,6 +68,8 @@ set RUNARGS=
     if "%TARGET%"=="SAMFSTUP"   goto :SAMFSTUP
     if "%TARGET%"=="SAMLEDS"    goto :SAMLEDS
     if "%TARGET%"=="SLN"        goto :SLN
+    if "%TARGET%"=="WINDOWS"    goto :WINDOWS
+    if "%TARGET%"=="WINSETUP"   goto :WINSETUP
 
 :USAGE
 
@@ -67,6 +77,8 @@ echo Usage: build command options
 echo restore      Restore all NuGet packages
 echo solution     Build the solution
 echo console      Build cduhub-cli
+echo windows      Build cduhub-windows
+echo winsetup     Build cduhub-windows installer
 echo.
 echo convert-font Convert font resources to MCDU-DOTNET font files
 echo extract-font Build the extract-font utility
@@ -105,6 +117,17 @@ rem ## Common actions
 :DNBUILD
     echo dotnet build -c %CONFIG% "%PROJ%"
          dotnet build -c %CONFIG% "%PROJ%"
+    if ERRORLEVEL 1 goto :EOF
+    exit /b 0
+:MSBUILD
+    if %BUILD%==NO goto :MSBUILT
+    echo "%MSBUILD%" "%PROJ%" /p:Configuration=%CONFIG% "/p:PublishDir=%PUBDIR%" /t:Publish
+         "%MSBUILD%" "%PROJ%" /p:Configuration=%CONFIG% "/p:PublishDir=%PUBDIR%" /t:Publish
+    if ERRORLEVEL 1 goto :EOF
+:MSBUILT
+    if %RUN%==NO exit /b 0
+    echo "%RUNEXE%"
+         "%RUNEXE%"
     if ERRORLEVEL 1 goto :EOF
     exit /b 0
 
@@ -178,4 +201,25 @@ rem ## Build targets
 :SAMLEDS
     set  "PROJ=%BATDIR%library\samples\leds\leds.csproj"
     call :DOTNET
+    goto :EOF
+
+:WINDOWS
+    set  "PROJ=%BATDIR%apps\cduhub-windows\cduhub-windows.csproj"
+    set  "PUBDIR=%BATDIR%publish\cduhub-windows"
+    set  "RUNEXE=%PUBDIR%\cduhub-windows.exe"
+    call :MSBUILD
+    goto :EOF
+
+:WINSETUP
+    set  "PROJ=%BATDIR%apps\cduhub-windows\cduhub-windows.csproj"
+    set  "PUBDIR=%BATDIR%publish\cduhub-windows"
+    set  "CONFIG=Release"
+    set  "RUNEXE="
+    call :MSBUILD
+    echo "%ISCC%" "%BATDIR%installers\innosetup\cduhub-windows.iss"
+         "%ISCC%" "%BATDIR%installers\innosetup\cduhub-windows.iss"
+    if ERRORLEVEL 1 goto :EOF
+    if %RUN%==NO goto :EOF
+    echo "%BATDIR%installers\innosetup\output\cduhub-windows-localbuild.exe"
+         "%BATDIR%installers\innosetup\output\cduhub-windows-localbuild.exe"
     goto :EOF
