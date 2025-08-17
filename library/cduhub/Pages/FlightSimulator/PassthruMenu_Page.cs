@@ -28,11 +28,11 @@ namespace Cduhub.Pages.FlightSimulator
                 .LeftLabel(6, "<red><small>>BACK");
         }
 
-        public override void OnKeyDown(Key key)
+        public override void OnCommonKeyDown(CommonKey commonKey)
         {
-            switch(key) {
-                case Key.LineSelectLeft6:   _Hub.ReturnToParent(); break;
-                case Key.LineSelectRight3:  _Hub.CreateAndSelectPage<Passthru_Page>(); break;
+            switch(commonKey) {
+                case CommonKey.LineSelectLeft6:  _Hub.ReturnToParent(); break;
+                case CommonKey.LineSelectRight3: _Hub.CreateAndSelectPage<Passthru_Page>(); break;
             }
         }
     }

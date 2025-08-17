@@ -147,21 +147,21 @@ namespace Cduhub.Pages.Init
         {
         }
 
-        public override void OnKeyDown(Key key)
+        public override void OnCommonKeyDown(CommonKey commonKey)
         {
-            switch(key) {
-                case Key.LineSelectLeft6:
+            switch(commonKey) {
+                case CommonKey.LineSelectLeft6:
                     if(ShowReturnToParent) {
                         _Hub.ReturnToParent();
                     } else {
-                        base.OnKeyDown(key);
+                        base.OnCommonKeyDown(commonKey);
                     }
                     break;
-                case Key.LineSelectRight6:
+                case CommonKey.LineSelectRight6:
                     if(ShowResetToDefaults) {
                         ResetToDefaults();
                     } else {
-                        base.OnKeyDown(key);
+                        base.OnCommonKeyDown(commonKey);
                     }
                     break;
                 default:
@@ -176,13 +176,13 @@ namespace Cduhub.Pages.Init
                         }
                         return ranParse;
                     }
-                    var parsed = runOption(_LeftOptions, LeftLineSelectIndex(key));
-                    parsed = parsed || runOption(_RightOptions, RightLineSelectIndex(key));
+                    var parsed = runOption(_LeftOptions, LeftLineSelectIndex(commonKey));
+                    parsed = parsed || runOption(_RightOptions, RightLineSelectIndex(commonKey));
                     if(!parsed) {
-                        parsed = CreateAndSelectPageForArrows(key);
+                        parsed = CreateAndSelectPageForArrows(commonKey);
                     }
                     if(!parsed) {
-                        base.OnKeyDown(key);
+                        base.OnCommonKeyDown(commonKey);
                     }
                     break;
             }

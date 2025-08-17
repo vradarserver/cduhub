@@ -70,17 +70,17 @@ namespace Cduhub.Pages.Init
             RefreshDisplay();
         }
 
-        public override void OnKeyDown(Key key)
+        public override void OnCommonKeyDown(CommonKey commonKey)
         {
-            var idx = LeftLineSelectIndex(key) - 1;
+            var idx = LeftLineSelectIndex(commonKey) - 1;
             var initPage = idx > -1 && idx < _LeftInitPages.Count
                 ? _LeftInitPages[idx]
                 : null;
             if(initPage != null) {
                 _Hub.CreateAndSelectPage(initPage.PageType);
             } else {
-                switch(key) {
-                    case Key.LineSelectLeft6:
+                switch(commonKey) {
+                    case CommonKey.LineSelectLeft6:
                         _Hub.ReturnToParent();
                         break;
                 }

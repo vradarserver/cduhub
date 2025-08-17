@@ -65,32 +65,29 @@ namespace Cduhub.Pages.FlightSimulator
             ConfigStorage.Save(_Settings);
         }
 
-        public override void OnKeyDown(Key key)
+        public override void OnCommonKeyDown(CommonKey commonKey)
         {
-            switch(key) {
-                case Key.LineSelectLeft1:
+            switch(commonKey) {
+                case CommonKey.LineSelectLeft1:
                     CopyScratchpadToHost();
                     break;
-                case Key.LineSelectLeft2:
+                case CommonKey.LineSelectLeft2:
                     CopyScratchpadToPort();
                     break;
-                case Key.LineSelectLeft3:
+                case CommonKey.LineSelectLeft3:
                     _Form.CycleFontNames(_Settings.Font.FontName, v => _Settings.Font.FontName = v, includeDefaultFontName: false);
                     break;
-                case Key.LineSelectLeft4:
+                case CommonKey.LineSelectLeft4:
                     _Form.ToggleBool(_Settings.Font.UseFullWidth, v => _Settings.Font.UseFullWidth = v);
                     break;
-                case Key.LineSelectLeft5:
+                case CommonKey.LineSelectLeft5:
                     _Form.CyclePaletteNames(_Settings.PaletteName, v => _Settings.PaletteName = v, includeDefaultPaletteName: false);
                     break;
-                case Key.LineSelectLeft6:
+                case CommonKey.LineSelectLeft6:
                     _Hub.ReturnToParent();
                     break;
-                case Key.LineSelectRight6:
+                case CommonKey.LineSelectRight6:
                     ResetToDefaults();
-                    break;
-                default:
-                    base.OnKeyDown(key);
                     break;
             }
         }

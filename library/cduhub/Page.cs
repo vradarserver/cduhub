@@ -130,6 +130,8 @@ namespace Cduhub
             return -1;
         }
 
+        protected virtual int LeftLineSelectIndex(CommonKey commonKey) => LeftLineSelectIndex((Key)commonKey);
+
         protected virtual int RightLineSelectIndex(Key key)
         {
             switch(key) {
@@ -142,6 +144,8 @@ namespace Cduhub
             }
             return -1;
         }
+
+        protected virtual int RightLineSelectIndex(CommonKey commonKey) => RightLineSelectIndex((Key)commonKey);
 
         protected virtual void FullPageStatusMessage(
             params string[] lines
@@ -198,16 +202,14 @@ namespace Cduhub
             );
         }
 
-        protected virtual bool CreateAndSelectPageForArrows(Key key, bool replaceCurrentInHistory = true)
+        protected virtual bool CreateAndSelectPageForArrows(CommonKey commonKey, bool replaceCurrentInHistory = true)
         {
             Type type = null;
-            switch(key) {
-                case Key.LeftArrow:
-                case Key.PrevPage:
+            switch(commonKey) {
+                case CommonKey.LeftArrowOrPrevPage:
                     type = LeftArrowCallback?.Invoke();
                     break;
-                case Key.RightArrow:
-                case Key.NextPage:
+                case CommonKey.RightArrowOrNextPage:
                     type = RightArrowCallback?.Invoke();
                     break;
             }
