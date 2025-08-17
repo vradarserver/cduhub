@@ -24,6 +24,7 @@ namespace Cduhub.WindowsGui
         protected override void OnLoad(EventArgs e)
         {
             if(!DesignMode) {
+                _CheckBox_AutoStartEnabled.Checked = AutoStartup.IsEnabled;
                 _TextBox_ThisVersion.Text = CduhubVersions.LibraryVersion.ToString();
                 _TextBox_LatestVersion.Text = CduhubVersions.UpdateInfo?.RemoteVersion.ToString() ?? "";
                 _TextBox_LatestReleaseUrl.Text = CduhubVersions.UpdateInfo?.ReleaseUrl ?? "";
@@ -41,6 +42,11 @@ namespace Cduhub.WindowsGui
             } catch {
                 ;
             }
+        }
+
+        private void CheckBox_AutoStartEnabled_CheckedChanged(object sender, EventArgs e)
+        {
+            AutoStartup.Enable(_CheckBox_AutoStartEnabled.Checked);
         }
     }
 }

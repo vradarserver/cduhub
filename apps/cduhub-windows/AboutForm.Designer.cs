@@ -40,6 +40,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
+            this._CheckBox_AutoStartEnabled = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // label1
@@ -67,7 +68,7 @@
             this._TextBox_LatestVersion.Name = "_TextBox_LatestVersion";
             this._TextBox_LatestVersion.ReadOnly = true;
             this._TextBox_LatestVersion.Size = new System.Drawing.Size(175, 23);
-            this._TextBox_LatestVersion.TabIndex = 2;
+            this._TextBox_LatestVersion.TabIndex = 4;
             // 
             // label2
             // 
@@ -86,7 +87,7 @@
             this._Button_Close.Location = new System.Drawing.Point(630, 430);
             this._Button_Close.Name = "_Button_Close";
             this._Button_Close.Size = new System.Drawing.Size(75, 25);
-            this._Button_Close.TabIndex = 4;
+            this._Button_Close.TabIndex = 12;
             this._Button_Close.Text = "Close";
             this._Button_Close.UseVisualStyleBackColor = true;
             // 
@@ -99,7 +100,7 @@
             this._TextBox_LatestReleaseUrl.Name = "_TextBox_LatestReleaseUrl";
             this._TextBox_LatestReleaseUrl.ReadOnly = true;
             this._TextBox_LatestReleaseUrl.Size = new System.Drawing.Size(563, 23);
-            this._TextBox_LatestReleaseUrl.TabIndex = 5;
+            this._TextBox_LatestReleaseUrl.TabIndex = 6;
             // 
             // label3
             // 
@@ -107,7 +108,7 @@
             this.label3.Location = new System.Drawing.Point(12, 73);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(73, 15);
-            this.label3.TabIndex = 6;
+            this.label3.TabIndex = 5;
             this.label3.Text = "Release URL:";
             // 
             // _LinkLabel_OpenReleaseUrl
@@ -131,7 +132,7 @@
             this._TextBox_License.ReadOnly = true;
             this._TextBox_License.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this._TextBox_License.Size = new System.Drawing.Size(605, 153);
-            this._TextBox_License.TabIndex = 8;
+            this._TextBox_License.TabIndex = 9;
             this._TextBox_License.Text = resources.GetString("_TextBox_License.Text");
             // 
             // label4
@@ -140,7 +141,7 @@
             this.label4.Location = new System.Drawing.Point(12, 102);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(49, 15);
-            this.label4.TabIndex = 9;
+            this.label4.TabIndex = 8;
             this.label4.Text = "License:";
             // 
             // textBox1
@@ -152,7 +153,7 @@
             this.textBox1.ReadOnly = true;
             this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.textBox1.Size = new System.Drawing.Size(605, 153);
-            this.textBox1.TabIndex = 10;
+            this.textBox1.TabIndex = 11;
             this.textBox1.Text = resources.GetString("textBox1.Text");
             // 
             // label5
@@ -161,8 +162,20 @@
             this.label5.Location = new System.Drawing.Point(12, 258);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(42, 15);
-            this.label5.TabIndex = 11;
+            this.label5.TabIndex = 10;
             this.label5.Text = "Credit:";
+            // 
+            // _CheckBox_AutoStartEnabled
+            // 
+            this._CheckBox_AutoStartEnabled.AutoSize = true;
+            this._CheckBox_AutoStartEnabled.Location = new System.Drawing.Point(287, 14);
+            this._CheckBox_AutoStartEnabled.Margin = new System.Windows.Forms.Padding(9, 3, 3, 3);
+            this._CheckBox_AutoStartEnabled.Name = "_CheckBox_AutoStartEnabled";
+            this._CheckBox_AutoStartEnabled.Size = new System.Drawing.Size(145, 19);
+            this._CheckBox_AutoStartEnabled.TabIndex = 2;
+            this._CheckBox_AutoStartEnabled.Text = "Start when user logs in";
+            this._CheckBox_AutoStartEnabled.UseVisualStyleBackColor = true;
+            this._CheckBox_AutoStartEnabled.CheckedChanged += new System.EventHandler(this.CheckBox_AutoStartEnabled_CheckedChanged);
             // 
             // AboutForm
             // 
@@ -170,6 +183,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this._Button_Close;
             this.ClientSize = new System.Drawing.Size(717, 467);
+            this.Controls.Add(this._CheckBox_AutoStartEnabled);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.label4);
@@ -210,5 +224,6 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.CheckBox _CheckBox_AutoStartEnabled;
     }
 }
