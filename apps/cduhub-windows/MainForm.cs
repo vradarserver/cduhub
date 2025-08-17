@@ -108,7 +108,7 @@ namespace Cduhub.WindowsGui
         {
             base.OnLoad(e);
             if(!DesignMode) {
-                Text = $"{Text} {Program.Version}";
+                Text = $"{Text} {CduhubVersions.LibraryVersion}";
 
                 _LinkLabel_ConfigFolder.Text = ConfigStorage.Folder;
                 Hub.ConnectedDeviceChanged += Hub_ConnectedDeviceChanged;

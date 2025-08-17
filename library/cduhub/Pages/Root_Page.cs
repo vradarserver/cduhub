@@ -14,30 +14,71 @@ namespace Cduhub.Pages
 {
     class Root_Page : Page
     {
+        private bool _HookedServices;
+
         public Root_Page(Hub hub) : base(hub)
         {
         }
 
-        public override void OnPreparePage()
+        public override void OnSelected(bool selected)
         {
+            if(!selected) {
+                UnhookServices();
+            } else {
+                DrawPage();
+                HookServices();
+            }
+        }
+
+        private void DrawPage()
+        {
+            var updateAvailable = CduhubVersions.IsLatest
+                ? ""
+                : "*";
             Output
+                .Clear()
                 .Centred("<green>CDU <small>HUB")
                 .LeftLabel(1, ">CLOCK")
                 .LeftLabel(2, ">WEATHER")
+                .LeftLabel(6, $">ABOUT{updateAvailable}")
                 .RightLabel(1, "FLIGHT SIMS<")
                 .RightLabel(6, "<red>QUIT<");
-
             Leds.Mcdu = Leds.Menu = true;
+
+            RefreshDisplay();
+            RefreshLeds();
         }
 
-        public override void OnKeyDown(Key key)
+        private void HookServices()
+        {
+            if(!_HookedServices) {
+                _HookedServices = true;
+                GithubUpdateChecker.DefaultInstance.UpdateInfoChanged += VersionChecker_UpdateInfoChanged;
+            }
+        }
+
+        private void UnhookServices()
+        {
+            if(_HookedServices) {
+                _HookedServices = false;
+                GithubUpdateChecker.DefaultInstance.UpdateInfoChanged -= VersionChecker_UpdateInfoChanged;
+            }
+        }
+
+        public override void OnCommonKeyDown(CommonKey key)
         {
             switch(key) {
-                case Key.LineSelectLeft1:   _Hub.CreateAndSelectPage<Clock_Page>(); break;
-                case Key.LineSelectLeft2:   _Hub.CreateAndSelectPage<WeatherMenu_Page>(); break;
-                case Key.LineSelectRight1:  _Hub.CreateAndSelectPage<FlightSimulator.FlightSimMenu_Page>(); break;
-                case Key.LineSelectRight6:  _Hub.Shutdown(); break;
+                case CommonKey.LineSelectLeft1:   _Hub.CreateAndSelectPage<Clock_Page>(); break;
+                case CommonKey.LineSelectLeft2:   _Hub.CreateAndSelectPage<WeatherMenu_Page>(); break;
+                case CommonKey.LineSelectLeft6:   _Hub.CreateAndSelectPage<About_Page>(); break;
+                case CommonKey.LineSelectRight1:  _Hub.CreateAndSelectPage<FlightSimulator.FlightSimMenu_Page>(); break;
+                case CommonKey.LineSelectRight6:  _Hub.Shutdown(); break;
             }
+        }
+
+        private void VersionChecker_UpdateInfoChanged(object sender, System.EventArgs e)
+        {
+            DrawPage();
         }
     }
 }

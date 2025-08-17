@@ -40,6 +40,8 @@ namespace Cduhub
 
         public const string LatestReleaseUrl = "https://api.github.com/repos/VRadarServer/cduhub/releases/latest";
 
+        public static readonly GithubUpdateChecker DefaultInstance;
+
         private UpdateInfo _UpdateInfo;
         public UpdateInfo UpdateInfo
         {
@@ -66,6 +68,12 @@ namespace Cduhub
                 Enabled = false,
             };
             _Timer.Elapsed += Timer_Elapsed;
+        }
+
+        static GithubUpdateChecker()
+        {
+            DefaultInstance = new GithubUpdateChecker();
+            Task.Run(() => DefaultInstance.StartCheckingAsync(CommonHttpClient.HttpClient));
         }
 
         ~GithubUpdateChecker() => Dispose(false);

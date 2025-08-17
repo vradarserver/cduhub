@@ -17,7 +17,6 @@ using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Cduhub.CommandLine;
 
@@ -28,10 +27,6 @@ namespace Cduhub.WindowsGui
         private const string _SingleInstanceMutexName = @"Global\CduHub-SGEZ8Z2CM8UA";
 
         public static Hub Hub { get; private set; }
-
-        public static GithubUpdateChecker UpdateChecker { get; private set; }
-
-        public static InformationalVersion Version { get; private set; }
 
         /// <summary>
         /// The main entry point for the application.
@@ -47,17 +42,14 @@ namespace Cduhub.WindowsGui
                 MessageBox.Show("Only one instance of CDU Hub can run at a time", "Already Running");
             } else {
                 try {
-                    Version = InformationalVersion.FromAssembly(
-                        Assembly.GetExecutingAssembly()
-                    );
-
                     var mainForm = new MainForm();
                     using(Hub = new Hub()) {
-                        using(UpdateChecker = new GithubUpdateChecker()) {
-                            Task.Run(() => UpdateChecker.StartCheckingAsync(CommonHttpClient.HttpClient));
-                            Hub.Connect();
-                            Application.Run(mainForm);
+                        // We just need to tickle the update checker to kick it off
+                        if(GithubUpdateChecker.DefaultInstance == null) {
+                            System.Diagnostics.Debug.Write("This will never show");
                         }
+                        Hub.Connect();
+                        Application.Run(mainForm);
                     }
                 } finally {
                     singleInstanceMutex.ReleaseMutex();

@@ -16,8 +16,6 @@ namespace Cduhub.WindowsGui
 {
     public partial class AboutForm : Form
     {
-        private UpdateInfo _UpdateInfo;
-
         public AboutForm()
         {
             InitializeComponent();
@@ -26,12 +24,10 @@ namespace Cduhub.WindowsGui
         protected override void OnLoad(EventArgs e)
         {
             if(!DesignMode) {
-                _UpdateInfo = Program.UpdateChecker.UpdateInfo;
-
-                _TextBox_ThisVersion.Text = Program.Version.ToString();
-                _TextBox_LatestVersion.Text = _UpdateInfo?.RemoteVersion.ToString() ?? "";
-                _TextBox_LatestReleaseUrl.Text = _UpdateInfo?.ReleaseUrl ?? "";
-                _LinkLabel_OpenReleaseUrl.Enabled = !String.IsNullOrEmpty(_UpdateInfo?.ReleaseUrl);
+                _TextBox_ThisVersion.Text = CduhubVersions.LibraryVersion.ToString();
+                _TextBox_LatestVersion.Text = CduhubVersions.UpdateInfo?.RemoteVersion.ToString() ?? "";
+                _TextBox_LatestReleaseUrl.Text = CduhubVersions.UpdateInfo?.ReleaseUrl ?? "";
+                _LinkLabel_OpenReleaseUrl.Enabled = !String.IsNullOrEmpty(CduhubVersions.UpdateInfo?.ReleaseUrl);
             }
         }
 
@@ -40,7 +36,7 @@ namespace Cduhub.WindowsGui
             try {
                 Process.Start(new ProcessStartInfo() {
                     UseShellExecute = true,
-                    FileName = _UpdateInfo.ReleaseUrl,
+                    FileName = CduhubVersions.UpdateInfo.ReleaseUrl,
                 });
             } catch {
                 ;

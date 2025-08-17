@@ -8,41 +8,37 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using McduDotNet;
+using System.Reflection;
+using Cduhub.CommandLine;
 
-namespace Cduhub.Pages
+namespace Cduhub
 {
-    class About_Page : Page
+    public static class CduhubVersions
     {
-        public About_Page(Hub hub) : base(hub)
-        {
-        }
+        public static InformationalVersion LibraryVersion { get; }
 
-        public override void OnSelected(bool selected)
+        public static UpdateInfo UpdateInfo => GithubUpdateChecker
+            .DefaultInstance
+            .UpdateInfo;
+
+        public static bool IsLatest
         {
-            if(selected) {
-                UpdatePage();
+            get {
+                var updateInfo = UpdateInfo;
+                return updateInfo == null
+                    ? true
+                    : !LibraryVersion.CanUpdateTo(updateInfo.RemoteVersion,
+                          allowUpdateToAlpha: false,
+                          allowUpdateToBeta: false
+                      );
             }
         }
 
-        private void UpdatePage()
+        static CduhubVersions()
         {
-            Output
-                .Clear()
-                .Centred("<green>ABOUT")
-                .LeftLabelTitle(1, "<small> VERSION")
-                .LeftLabel(1, $"<cyan>{CduhubVersions.LibraryVersion}")
-                .RightLabelTitle(1, "<small>LATEST ")
-                .RightLabel(1, $"<{(CduhubVersions.IsLatest ? "cyan" : "amber")}>{CduhubVersions.UpdateInfo?.RemoteVersion}")
-                .LeftLabel(6, "<small><red>BACK");
-            RefreshDisplay();
-        }
-
-        public override void OnCommonKeyDown(CommonKey commonKey)
-        {
-            switch(commonKey) {
-                case CommonKey.LineSelectLeft6: _Hub.ReturnToParent(); break;
-            }
+            LibraryVersion = InformationalVersion.FromAssembly(
+                Assembly.GetExecutingAssembly()
+            );
         }
     }
 }

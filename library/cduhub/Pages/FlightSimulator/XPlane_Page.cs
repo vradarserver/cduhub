@@ -33,7 +33,12 @@ namespace Cduhub.Pages.FlightSimulator
             Disconnect();
 
             var settings = ConfigStorage.Load<XPlane12RestSettings>();
-            var mcdu = new XPlaneGenericMcdu(_Hub.HttpClient, _Hub.ConnectedDevice.DeviceUser, Screen, Leds) {
+            var mcdu = new XPlaneGenericMcdu(
+                CommonHttpClient.HttpClient,
+                _Hub.ConnectedDevice.DeviceUser,
+                Screen,
+                Leds
+            ) {
                 Host = settings.Host,
                 Port = settings.Port,
             };
