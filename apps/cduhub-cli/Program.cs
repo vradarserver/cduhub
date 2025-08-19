@@ -26,6 +26,8 @@ namespace Cduhub.CommandLineInterface
             var hasBeenConnected = false;
 
             try {
+                HubBootstrap.Boot();
+
                 hub = new();
                 hub.CloseApplication += (_,_) => {
                     OutputTimestamped("Quit selected on the CDU");

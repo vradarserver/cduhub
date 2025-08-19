@@ -1,0 +1,9 @@
+<Project>
+    <Import Project="..\Directory.Build.props" />
+
+    <PropertyGroup>
+        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <PackageOutputPath>../../publish/packages/$(Configuration)</PackageOutputPath>
+    </PropertyGroup>
+
+</Project>

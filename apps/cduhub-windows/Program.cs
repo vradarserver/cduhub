@@ -42,12 +42,9 @@ namespace Cduhub.WindowsGui
                 MessageBox.Show("Only one instance of CDU Hub can run at a time", "Already Running");
             } else {
                 try {
+                    HubBootstrap.Boot();
                     var mainForm = new MainForm();
                     using(Hub = new Hub()) {
-                        // We just need to tickle the update checker to kick it off
-                        if(GithubUpdateChecker.DefaultInstance == null) {
-                            System.Diagnostics.Debug.Write("This will never show");
-                        }
                         Hub.Connect();
                         Application.Run(mainForm);
                     }

@@ -38,11 +38,7 @@ namespace Cduhub
         /// </summary>
         static ConfigStorage()
         {
-            _Folder = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "CduHub",
-                "Config"
-            );
+            _Folder = Path.Combine(WorkingFolder.Folder, "Config");
             if(!Directory.Exists(_Folder)) {
                 Directory.CreateDirectory(_Folder);
             }

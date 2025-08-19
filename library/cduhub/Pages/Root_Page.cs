@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using Cduhub.Plugin;
 using McduDotNet;
 
 namespace Cduhub.Pages
@@ -45,6 +46,10 @@ namespace Cduhub.Pages
                 .RightLabel(6, "<red>QUIT<");
             Leds.Mcdu = Leds.Menu = true;
 
+            if(RegisteredPlugins.ArePluginsRegisteredToShowOnPage(ShowOnPage.Root)) {
+                Output.RightLabel(2, "PLUGINS<");
+            }
+
             RefreshDisplay();
             RefreshLeds();
         }
@@ -53,6 +58,7 @@ namespace Cduhub.Pages
         {
             if(!_HookedServices) {
                 _HookedServices = true;
+                RegisteredPlugins.RegisteredPluginsChanged += RegisteredPlugins_RegisteredPluginsChanged;
                 GithubUpdateChecker.DefaultInstance.UpdateInfoChanged += VersionChecker_UpdateInfoChanged;
             }
         }
@@ -61,6 +67,7 @@ namespace Cduhub.Pages
         {
             if(_HookedServices) {
                 _HookedServices = false;
+                RegisteredPlugins.RegisteredPluginsChanged -= RegisteredPlugins_RegisteredPluginsChanged;
                 GithubUpdateChecker.DefaultInstance.UpdateInfoChanged -= VersionChecker_UpdateInfoChanged;
             }
         }
@@ -74,6 +81,11 @@ namespace Cduhub.Pages
                 case CommonKey.LineSelectRight1:  _Hub.CreateAndSelectPage<FlightSimulator.FlightSimMenu_Page>(); break;
                 case CommonKey.LineSelectRight6:  _Hub.Shutdown(); break;
             }
+        }
+
+        private void RegisteredPlugins_RegisteredPluginsChanged(object sender, System.EventArgs e)
+        {
+            DrawPage();
         }
 
         private void VersionChecker_UpdateInfoChanged(object sender, System.EventArgs e)

@@ -8,46 +8,61 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using Cduhub.Plugin;
+using System;
+using System.IO;
+using System.Linq;
 using Cduhub.Plugin.InProcess;
 using McduDotNet;
 
 namespace Cduhub.Pages
 {
-    class About_Page : Page
+    class PluginLoadErrors_Page : Page
     {
-        public About_Page(Hub hub) : base(hub)
+        private int _ErrorIndex;
+        private (string PluginFolder, string Error)[] _Errors;
+
+        public PluginLoadErrors_Page(Hub hub) : base(hub)
         {
         }
 
         public override void OnSelected(bool selected)
         {
             if(selected) {
-                UpdatePage();
+                _Errors = InProcessPluginLoader
+                    .LoadErrors
+                    .Select(err => (err.Key, err.Value))
+                    .ToArray();
+                DrawPage();
             }
         }
 
-        private void UpdatePage()
+        private void DrawPage()
         {
+            _ErrorIndex = _Errors.Length == 0
+                ? -1
+                : Math.Max(0, Math.Min(_ErrorIndex, _Errors.Length - 1));
+            var page = _ErrorIndex == -1
+                ? 1
+                : _ErrorIndex + 1;
+            var countPages = Math.Min(1, _Errors.Length);
+
             Output
                 .Clear()
-                .Centred("<green>ABOUT")
+                .Centred("<green>PLUGIN ERROR")
+                .RightToLeft()
+                .Write($"<white><small>{page}/{countPages}")
+                .LeftToRight()
+                .LeftLabel(6, $"<red><small>BACK");
 
-                .LeftLabelTitle(1, "<small> VERSION")
-                .LeftLabel(1, $"<cyan>{CduhubVersions.LibraryVersion}")
-
-                .RightLabelTitle(1, "<small>LATEST ")
-                .RightLabel(1, $"<{(CduhubVersions.IsLatest ? "cyan" : "amber")}>{CduhubVersions.UpdateInfo?.RemoteVersion}")
-
-                .LeftLabelTitle(2, "<small> PLUGINS")
-                .LeftLabel(2, $"<cyan>{RegisteredPlugins.CountLoaded:N0}")
-
-                .LeftLabel(6, "<small><red>BACK")
-            ;
-
-            if(InProcessPluginLoader.LoadErrors.Count > 0) {
+            if(_ErrorIndex > -1) {
+                (var pluginFolder, var error) = _Errors[_ErrorIndex];
                 Output
-                    .RightLabel(2, "<amber>LOAD ERRORS*");
+                    .LeftLabelTitle(1, " <small>PLUGIN FOLDER")
+                    .LeftLabel(1, $"<cyan>{SanitiseInput(Path.GetFileName(pluginFolder))}")
+                    .LeftLabelTitle(2, " <small>ERROR")
+                    .Large().Cyan()
+                    .LabelLine(2)
+                    .WrapText(error, 8, clearLines: true);
             }
 
             RefreshDisplay();
@@ -56,10 +71,13 @@ namespace Cduhub.Pages
         public override void OnCommonKeyDown(CommonKey commonKey)
         {
             switch(commonKey) {
-                case CommonKey.LineSelectRight2:
-                    if(InProcessPluginLoader.LoadErrors.Count > 0) {
-                        _Hub.CreateAndSelectPage<PluginLoadErrors_Page>();
-                    }
+                case CommonKey.LeftArrowOrPrevPage:
+                    --_ErrorIndex;
+                    DrawPage();
+                    break;
+                case CommonKey.RightArrowOrNextPage:
+                    ++_ErrorIndex;
+                    DrawPage();
                     break;
                 case CommonKey.LineSelectLeft6:
                     _Hub.ReturnToParent();

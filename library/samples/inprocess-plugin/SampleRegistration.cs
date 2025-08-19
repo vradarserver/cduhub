@@ -8,63 +8,23 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System;
+using Cduhub;
 using Cduhub.Plugin;
 using Cduhub.Plugin.InProcess;
-using McduDotNet;
 
-namespace Cduhub.Pages
+namespace InProcessPlugin
 {
-    class About_Page : Page
+    public class SampleRegistration : IPluginDetail
     {
-        public About_Page(Hub hub) : base(hub)
-        {
-        }
+        public Guid Id { get; } = new Guid("899f58c3-f082-4786-b57d-60cdaf7c6d1e");
 
-        public override void OnSelected(bool selected)
-        {
-            if(selected) {
-                UpdatePage();
-            }
-        }
+        public string Label => "SAMPLE-INPROC";
 
-        private void UpdatePage()
-        {
-            Output
-                .Clear()
-                .Centred("<green>ABOUT")
+        public int DisplayOrder => 0;
 
-                .LeftLabelTitle(1, "<small> VERSION")
-                .LeftLabel(1, $"<cyan>{CduhubVersions.LibraryVersion}")
+        public ShowOnPage ShowOnPage => ShowOnPage.Root;
 
-                .RightLabelTitle(1, "<small>LATEST ")
-                .RightLabel(1, $"<{(CduhubVersions.IsLatest ? "cyan" : "amber")}>{CduhubVersions.UpdateInfo?.RemoteVersion}")
-
-                .LeftLabelTitle(2, "<small> PLUGINS")
-                .LeftLabel(2, $"<cyan>{RegisteredPlugins.CountLoaded:N0}")
-
-                .LeftLabel(6, "<small><red>BACK")
-            ;
-
-            if(InProcessPluginLoader.LoadErrors.Count > 0) {
-                Output
-                    .RightLabel(2, "<amber>LOAD ERRORS*");
-            }
-
-            RefreshDisplay();
-        }
-
-        public override void OnCommonKeyDown(CommonKey commonKey)
-        {
-            switch(commonKey) {
-                case CommonKey.LineSelectRight2:
-                    if(InProcessPluginLoader.LoadErrors.Count > 0) {
-                        _Hub.CreateAndSelectPage<PluginLoadErrors_Page>();
-                    }
-                    break;
-                case CommonKey.LineSelectLeft6:
-                    _Hub.ReturnToParent();
-                    break;
-            }
-        }
+        public Page CreatePage(Hub hub) => new SamplePage(hub);
     }
 }

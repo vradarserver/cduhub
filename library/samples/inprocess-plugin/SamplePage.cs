@@ -8,63 +8,33 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using Cduhub.Plugin;
-using Cduhub.Plugin.InProcess;
-using McduDotNet;
+using System;
+using Cduhub;
 
-namespace Cduhub.Pages
+namespace InProcessPlugin
 {
-    class About_Page : Page
+    public class SamplePage : Page
     {
-        public About_Page(Hub hub) : base(hub)
+        public SamplePage(Hub hub) : base(hub)
         {
         }
 
         public override void OnSelected(bool selected)
         {
             if(selected) {
-                UpdatePage();
+                DrawPage();
             }
         }
 
-        private void UpdatePage()
+        private void DrawPage()
         {
             Output
                 .Clear()
-                .Centred("<green>ABOUT")
-
-                .LeftLabelTitle(1, "<small> VERSION")
-                .LeftLabel(1, $"<cyan>{CduhubVersions.LibraryVersion}")
-
-                .RightLabelTitle(1, "<small>LATEST ")
-                .RightLabel(1, $"<{(CduhubVersions.IsLatest ? "cyan" : "amber")}>{CduhubVersions.UpdateInfo?.RemoteVersion}")
-
-                .LeftLabelTitle(2, "<small> PLUGINS")
-                .LeftLabel(2, $"<cyan>{RegisteredPlugins.CountLoaded:N0}")
-
-                .LeftLabel(6, "<small><red>BACK")
-            ;
-
-            if(InProcessPluginLoader.LoadErrors.Count > 0) {
-                Output
-                    .RightLabel(2, "<amber>LOAD ERRORS*");
-            }
-
+                .Line(0)
+                .Write("<green>SAMPLE IN-PROCESS")
+                .MiddleLine()
+                .Centered($"0x{new Random().Next():X8}");
             RefreshDisplay();
-        }
-
-        public override void OnCommonKeyDown(CommonKey commonKey)
-        {
-            switch(commonKey) {
-                case CommonKey.LineSelectRight2:
-                    if(InProcessPluginLoader.LoadErrors.Count > 0) {
-                        _Hub.CreateAndSelectPage<PluginLoadErrors_Page>();
-                    }
-                    break;
-                case CommonKey.LineSelectLeft6:
-                    _Hub.ReturnToParent();
-                    break;
-            }
         }
     }
 }

@@ -6,4 +6,9 @@
     </PropertyGroup>
 
     <Import Project="..\..\Directory.Build.props" />
+
+    <PropertyGroup>
+        <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    </PropertyGroup>
+
 </Project>
