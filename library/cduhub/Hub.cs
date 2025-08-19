@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using Cduhub.Config;
+using Cduhub.Pages;
+using Cduhub.Plugin;
 using McduDotNet;
 
 namespace Cduhub
@@ -30,7 +32,9 @@ namespace Cduhub
         private System.Timers.Timer _ReconnectTimer;
         private bool _WaitingForConnect = true;
         private Stack<Page> _PageHistory = new Stack<Page>();
+        private readonly object _PageLock = new object();
         private Dictionary<Type, Page> _PageTypeMap = new Dictionary<Type, Page>();
+        private Dictionary<Guid, Page> _PluginPages = new Dictionary<Guid, Page>();
         private McduFontFile _CurrentFont;
         private bool? _IsCurrentFontFullWidth;
         private CduhubSettings _Settings;
@@ -388,7 +392,7 @@ namespace Cduhub
 
         public Page CreatePage(Type pageType)
         {
-            lock(_PageTypeMap) {
+            lock(_PageLock) {
                 if(!_PageTypeMap.TryGetValue(pageType, out var result)) {
                     result = (Page)Activator.CreateInstance(pageType, new object[] { this });
                     _PageTypeMap.Add(pageType, result);
@@ -414,6 +418,33 @@ namespace Cduhub
             var result = CreatePage<T>();
             SelectPage(result, replaceCurrentInHistory);
             return result;
+        }
+
+        public void ShowPluginMenuFor(EntryPointPage entryPointPage)
+        {
+            var page = CreatePage<PluginsMenu_Page>();
+            if(page.EntryPointPage != entryPointPage) {
+                page.EntryPointPage = entryPointPage;
+                page.PageNumber = 1;
+            }
+            SelectPage(page);
+        }
+
+        public void ShowPageForPlugin(RegisteredPlugin plugin)
+        {
+            if(plugin != null) {
+                lock(_PageLock) {
+                    if(!_PluginPages.TryGetValue(plugin.Id, out var page)) {
+                        page = plugin.CreatePageCallback.Invoke(this);
+                        if(page != null) {
+                            _PluginPages.Add(plugin.Id, page);
+                        }
+                    }
+                    if(page != null) {
+                        SelectPage(page);
+                    }
+                }
+            }
         }
 
         private void CleanupPageHistory()

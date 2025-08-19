@@ -18,9 +18,11 @@ namespace Cduhub.Plugin
 
         public int DisplayOrder { get; set; }
 
-        public ShowOnPage ShowOnPage { get; set; } = ShowOnPage.None;
+        public EntryPointPage EntryPointPage { get; set; } = EntryPointPage.None;
 
         public string Label { get; set; }
+
+        public Func<Hub, Page> CreatePageCallback { get; set; }
 
         public RegisteredPlugin(Guid id)
         {

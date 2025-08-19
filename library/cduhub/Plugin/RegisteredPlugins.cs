@@ -61,21 +61,21 @@ namespace Cduhub.Plugin
             }
         }
 
-        public static bool ArePluginsRegisteredToShowOnPage(ShowOnPage showOnPage)
+        public static bool EntryPointHasPlugins(EntryPointPage showOnPage)
         {
             lock(_SyncLock) {
                 return _PluginIdMap
                     .Values
-                    .Any(candidate => candidate.ShowOnPage == showOnPage);
+                    .Any(candidate => candidate.EntryPointPage == showOnPage);
             }
         }
 
-        public static IReadOnlyList<RegisteredPlugin> FindAllToShowOnPage(ShowOnPage showOnPage)
+        public static IReadOnlyList<RegisteredPlugin> AllForEntryPoint(EntryPointPage showOnPage)
         {
             lock(_SyncLock) {
                 return _PluginIdMap
                     .Values
-                    .Where(candidate => candidate.ShowOnPage == showOnPage)
+                    .Where(candidate => candidate.EntryPointPage == showOnPage)
                     .OrderBy(plugin => plugin.DisplayOrder)
                     .ThenBy(plugin => plugin.Label)
                     .ToArray();

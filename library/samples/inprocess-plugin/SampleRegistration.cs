@@ -19,11 +19,11 @@ namespace InProcessPlugin
     {
         public Guid Id { get; } = new Guid("899f58c3-f082-4786-b57d-60cdaf7c6d1e");
 
-        public string Label => "SAMPLE-INPROC";
+        public string Label => "INPROC";
 
         public int DisplayOrder => 0;
 
-        public ShowOnPage ShowOnPage => ShowOnPage.Root;
+        public EntryPointPage EntryPointPage => EntryPointPage.Root;
 
         public Page CreatePage(Hub hub) => new SamplePage(hub);
     }

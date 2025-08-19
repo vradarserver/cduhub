@@ -35,9 +35,9 @@ namespace Cduhub.Plugin.InProcess
         int DisplayOrder { get; }
 
         /// <summary>
-        /// The fixed page to display the plugin on.
+        /// The page to display the plugin on.
         /// </summary>
-        ShowOnPage ShowOnPage { get; }
+        EntryPointPage EntryPointPage { get; }
 
         /// <summary>
         /// Creates a new page instance for the hub passed across.

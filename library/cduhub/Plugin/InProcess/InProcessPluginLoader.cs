@@ -112,9 +112,10 @@ namespace Cduhub.Plugin.InProcess
         private static void ApplyRegistration(IPluginDetail registration)
         {
             RegisteredPlugins.RegisterPlugin(registration.Id, plugin => {
-                plugin.DisplayOrder = registration.DisplayOrder;
-                plugin.Label =        registration.Label;
-                plugin.ShowOnPage =   registration.ShowOnPage;
+                plugin.DisplayOrder =       registration.DisplayOrder;
+                plugin.Label =              registration.Label;
+                plugin.EntryPointPage =     registration.EntryPointPage;
+                plugin.CreatePageCallback = registration.CreatePage;
             });
         }
     }

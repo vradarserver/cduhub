@@ -31,7 +31,7 @@ namespace InProcessPlugin
             Output
                 .Clear()
                 .Line(0)
-                .Write("<green>SAMPLE IN-PROCESS")
+                .Centred("<green>SAMPLE IN-PROCESS")
                 .MiddleLine()
                 .Centered($"0x{new Random().Next():X8}");
             RefreshDisplay();

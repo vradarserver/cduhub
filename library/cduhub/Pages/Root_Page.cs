@@ -46,7 +46,7 @@ namespace Cduhub.Pages
                 .RightLabel(6, "<red>QUIT<");
             Leds.Mcdu = Leds.Menu = true;
 
-            if(RegisteredPlugins.ArePluginsRegisteredToShowOnPage(ShowOnPage.Root)) {
+            if(RegisteredPlugins.EntryPointHasPlugins(EntryPointPage.Root)) {
                 Output.RightLabel(2, "PLUGINS<");
             }
 
@@ -79,6 +79,7 @@ namespace Cduhub.Pages
                 case CommonKey.LineSelectLeft2:   _Hub.CreateAndSelectPage<WeatherMenu_Page>(); break;
                 case CommonKey.LineSelectLeft6:   _Hub.CreateAndSelectPage<About_Page>(); break;
                 case CommonKey.LineSelectRight1:  _Hub.CreateAndSelectPage<FlightSimulator.FlightSimMenu_Page>(); break;
+                case CommonKey.LineSelectRight2:  _Hub.ShowPluginMenuFor(EntryPointPage.Root); break;
                 case CommonKey.LineSelectRight6:  _Hub.Shutdown(); break;
             }
         }

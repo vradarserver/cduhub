@@ -10,7 +10,7 @@
 
 namespace Cduhub.Plugin
 {
-    public enum ShowOnPage
+    public enum EntryPointPage
     {
         None,
 
