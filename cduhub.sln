@@ -24,10 +24,16 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fenix-mcdu", "library\samples\fenix-mcdu\fenix-mcdu.csproj", "{A0E31F66-60EB-4810-8483-1202CA745D05}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "library", "library", "{7612F6B1-A4A7-431C-8688-167145D1D5F8}"
+	ProjectSection(SolutionItems) = preProject
+		library\Directory.Build.props = library\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mcdu-dotnet", "library\mcdu-dotnet\mcdu-dotnet.csproj", "{0E2D40C0-F634-4AC0-B20E-3E48EE8D3DFA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{61A9C6CD-82AE-494E-86C9-21644DAADBD6}"
+	ProjectSection(SolutionItems) = preProject
+		library\samples\Directory.Build.props = library\samples\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{C87A2F17-2182-479D-ABB2-010194C7C681}"
 EndProject
@@ -68,7 +74,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cduhub-commandline", "libra
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ambient", "library\samples\ambient\ambient.csproj", "{DCCA67BA-E85F-4E2D-8945-48326009E9B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "inprocess-plugin", "library\samples\inprocess-plugin\inprocess-plugin.csproj", "{2C957253-D368-4C07-AA17-A080EBE56E5B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "inprocess-plugin", "library\samples\inprocess-plugin\inprocess-plugin.csproj", "{2C957253-D368-4C07-AA17-A080EBE56E5B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

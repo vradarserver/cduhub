@@ -33,6 +33,7 @@ The basic approach is:
 
 2. Implement one public class, the details class.
 
+3. Add a `Manifest.json` to identify which DLL is your plugin.
 
 
 ### Plugin Details Class
@@ -68,3 +69,44 @@ evolving, see examples in the Pages namespace.
 You are allowed as many plugin detail classes in the same DLL as you like.
 The details are really describing an entry page for the plugin rather than
 the plugin itself.
+
+
+### `Manifest.json`
+
+Here's an example:
+
+```
+{
+    "FileName": "InProcessPlugin.dll",
+    "MinimumHubVersion": "1.4.0"
+}
+```
+
+The filename should be the plugin's main DLL. It should be pathed relative to the
+plugin's deployment folder.
+
+On case sensitive file systems the file must be called `Manifest.json`.
+
+### Plugin deployment
+
+After your first run of CDU Hub v1.5 and above you will have a `Plugins` folder in
+the working folder. There is a link to the working folder in the UI, by default on
+Windows it is:
+
+```
+%LOCALAPPDATA%\cduhub
+```
+
+Under the `Plugins` folder you need to create a folder just for your plugin.
+
+Copy your plugin DLL and `Manifest.json` into your plugin folder and restart CDUHub.
+
+
+### Errors
+
+Error reporting is a bit basic - go to the `About` page off root and there should be
+a count of loaded plugins there. If any plugins failed to load then press the link
+to the errors page.
+
+Make sure that you have targeted .NET Standard 2.0 and compiled against the same
+version of `CDUHub` that you are plugging into.
