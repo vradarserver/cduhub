@@ -19,7 +19,7 @@ namespace Cduhub.Config
     {
         public override string GetName() => "cduhub-settings";
 
-        public override int GetCurrentVersion() => 3;
+        public override int GetCurrentVersion() => 4;
 
         public class OffsetSettings
         {
@@ -42,5 +42,14 @@ namespace Cduhub.Config
         }
 
         public CleanupSettings Cleanup { get; set; } = new CleanupSettings();
+
+        public class PluginSettings
+        {
+            public bool InProcessEnabled { get; set; }
+
+            public bool OutOfProcessEnabled { get; set; }
+        }
+
+        public PluginSettings Plugin { get; set; } = new PluginSettings();
     }
 }

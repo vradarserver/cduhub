@@ -15,6 +15,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Cduhub.CommandLine;
+using Cduhub.Config;
 using Newtonsoft.Json;
 
 namespace Cduhub.Plugin.InProcess
@@ -39,18 +40,21 @@ namespace Cduhub.Plugin.InProcess
 
         public static void LoadPlugins()
         {
-            lock(_SyncLock) {
-                foreach(var pluginFolder in Directory.GetDirectories(Folder)) {
-                    try {
-                        var errorMessage = LoadPluginFromFolder(pluginFolder);
-                        if(!String.IsNullOrEmpty(errorMessage)) {
-                            LoadErrors[pluginFolder] = errorMessage;
-                        }
-                    } catch(Exception ex) {
-                        if(LoadErrors.TryGetValue(pluginFolder, out var error)) {
-                            LoadErrors[pluginFolder] = $"{error}. {ex.Message}";
-                        } else {
-                            LoadErrors[pluginFolder] = ex.Message;
+            var settings = ConfigStorage.Load<CduhubSettings>();
+            if(settings.Plugin.InProcessEnabled) {
+                lock(_SyncLock) {
+                    foreach(var pluginFolder in Directory.GetDirectories(Folder)) {
+                        try {
+                            var errorMessage = LoadPluginFromFolder(pluginFolder);
+                            if(!String.IsNullOrEmpty(errorMessage)) {
+                                LoadErrors[pluginFolder] = errorMessage;
+                            }
+                        } catch(Exception ex) {
+                            if(LoadErrors.TryGetValue(pluginFolder, out var error)) {
+                                LoadErrors[pluginFolder] = $"{error}. {ex.Message}";
+                            } else {
+                                LoadErrors[pluginFolder] = ex.Message;
+                            }
                         }
                     }
                 }

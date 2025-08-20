@@ -25,13 +25,20 @@ namespace Cduhub.Pages.Init
                         min: -150, max: 150
                       )
             );
-            RightOption(
-                "Y-OFFSET",
+            RightOption("Y-OFFSET",
                 () => _Settings.DisplayOffset.YPixels.ToString(),
                 () => _Form.IntegerFromScratchpad(Scratchpad,
                         v => _Settings.DisplayOffset.YPixels = v,
                         min: -150, max: 150
                       )
+            );
+            LeftOption("LOCAL",
+                () => _Form.OnOff(_Settings.Plugin.InProcessEnabled),
+                () => _Settings.Plugin.InProcessEnabled = !_Settings.Plugin.InProcessEnabled
+            );
+            RightOption("NETWORK",
+                () => _Form.OnOff(_Settings.Plugin.OutOfProcessEnabled),
+                () => _Settings.Plugin.OutOfProcessEnabled = !_Settings.Plugin.OutOfProcessEnabled
             );
             LeftOption("FONT",
                 () => _Settings.Font.FontName,
@@ -49,6 +56,13 @@ namespace Cduhub.Pages.Init
                         includeDefaultPaletteName: true
                     )
             );
+        }
+
+        protected override void AddToPage()
+        {
+            Output
+                .LabelTitleLine(2).Column("  LOCAL ".Length)
+                .Write("PLUGIN");
         }
 
         protected override void ApplySettings() => _Hub.ReloadSettings();

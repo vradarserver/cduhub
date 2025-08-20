@@ -178,6 +178,9 @@ namespace Cduhub.Pages.Init
                     }
                     var parsed = runOption(_LeftOptions, LeftLineSelectIndex(commonKey));
                     parsed = parsed || runOption(_RightOptions, RightLineSelectIndex(commonKey));
+                    if(parsed && !ApplySettingsImmediately) {
+                        DrawPage();
+                    }
                     if(!parsed) {
                         parsed = CreateAndSelectPageForArrows(commonKey);
                     }
