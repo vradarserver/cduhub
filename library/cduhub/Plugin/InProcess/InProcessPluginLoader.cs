@@ -13,7 +13,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Cduhub.CommandLine;
 using Cduhub.Config;
 using Newtonsoft.Json;
@@ -25,6 +24,17 @@ namespace Cduhub.Plugin.InProcess
         private static readonly object _SyncLock = new object();
 
         private static readonly List<string> _LoadedAssemblies = new List<string>();
+
+        private static readonly HashSet<string> _PluginFolders = new HashSet<string>();
+
+        public static IReadOnlyList<string> PluginFolders
+        {
+            get {
+                lock(_SyncLock) {
+                    return _PluginFolders.ToArray();
+                }
+            }
+        }
 
         public static string Folder { get; }
 
@@ -74,6 +84,12 @@ namespace Cduhub.Plugin.InProcess
                 );
                 if(!File.Exists(dllFileName)) {
                     errorMessage = $"No file called {dllFileName}";
+                } else if(dllFileName.Length <= pluginFolder.Length) {
+                    errorMessage = "Plugin DLL not in plugin folder";
+                } else if(dllFileName[pluginFolder.Length] != Path.DirectorySeparatorChar
+                       && dllFileName[pluginFolder.Length] != Path.AltDirectorySeparatorChar
+                ) {
+                    errorMessage = "Plugin DLL walked out of plugin folder";
                 } else if(!_LoadedAssemblies.Contains(dllFileName)) {
                     if(!InformationalVersion.TryParse(manifest.MinimumHubVersion, out var minHubVersion)) {
                         errorMessage = "Cannot parse minimum hub version";
@@ -82,7 +98,7 @@ namespace Cduhub.Plugin.InProcess
                     } else {
                         var assembly = Assembly.LoadFrom(dllFileName);
                         _LoadedAssemblies.Add(dllFileName);
-                        RegisterPluginsFrom(assembly);
+                        RegisterPluginsFrom(dllFileName, assembly);
                     }
                 }
             }
@@ -103,12 +119,15 @@ namespace Cduhub.Plugin.InProcess
             return result;
         }
 
-        private static void RegisterPluginsFrom(Assembly assembly)
+        private static void RegisterPluginsFrom(string dllFileName, Assembly assembly)
         {
             foreach(var candidateType in assembly.GetExportedTypes()) {
                 if(typeof(IPluginDetail).IsAssignableFrom(candidateType)) {
                     var registration = (IPluginDetail)Activator.CreateInstance(candidateType);
                     ApplyRegistration(registration);
+
+                    var pluginFolder = Path.GetDirectoryName(dllFileName);
+                    _PluginFolders.Add(pluginFolder);
                 }
             }
         }
