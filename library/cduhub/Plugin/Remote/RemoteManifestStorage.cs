@@ -8,17 +8,41 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.Runtime.Serialization;
+using System;
+using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
-namespace Cduhub.Plugin.InProcess
+namespace Cduhub.Plugin.Remote
 {
-    [DataContract]
-    public class Manifest
+    public static class RemoteManifestStorage
     {
-        [DataMember]
-        public string FileName { get; set; }
+        /// <summary>
+        /// Saves a remote plugin maifest.
+        /// </summary>
+        /// <param name="pluginFolderName"></param>
+        /// <param name="manifest"></param>
+        public static void Save(string pluginFolderName, RemoteManifest manifest)
+        {
+            if(manifest == null) {
+                throw new ArgumentNullException(nameof(manifest));
+            }
+            if(!Validate.IsValidDirectoryName(pluginFolderName)) {
+                throw new ArgumentException("Invalid folder name", nameof(pluginFolderName));
+            }
 
-        [DataMember]
-        public string MinimumHubVersion { get; set; }
+            var directory = Path.Combine(PluginPaths.PluginsFolderFullPath, pluginFolderName);
+            if(!Directory.Exists(directory)) {
+                Directory.CreateDirectory(directory);
+            }
+            var fileName = Path.Combine(directory, PluginPaths.RemoteManifestFilename);
+
+            var jsonText = JsonConvert.SerializeObject(
+                manifest,
+                Formatting.Indented,
+                new StringEnumConverter()
+            );
+            File.WriteAllText(fileName, jsonText);
+        }
     }
 }

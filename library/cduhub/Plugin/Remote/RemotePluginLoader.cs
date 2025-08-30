@@ -10,58 +10,49 @@
 
 using System;
 using System.IO;
-using System.Reflection;
-using Cduhub.Plugin;
+using Newtonsoft.Json;
 
-namespace Cduhub
+namespace Cduhub.Plugin.Remote
 {
-    public static class HubBootstrap
+    class RemotePluginLoader
     {
-        public static bool IsBooted { get; private set; }
-
-        public static void Boot()
+        public string LoadPluginFromFolder(string pluginFolder)
         {
-            if(!IsBooted) {
-                IsBooted = true;
+            string errorMessage = null;
 
-                // We just need to tickle the update checker to kick it off
-                if(GithubUpdateChecker.DefaultInstance == null) {
-                    System.Diagnostics.Debug.Write("This will never show");
-                }
-
-                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-
-                PluginLoader.LoadPlugins();
+            var manifest = LoadManifestFromFolder(pluginFolder);
+            if(manifest == null) {
+                errorMessage = "Bad manifest in folder";
+            } else if(manifest.Guid == Guid.Empty) {
+                errorMessage = "Manifest has no ID";
+            } else {
+                ApplyRegistration(manifest);
             }
+
+            return errorMessage;
         }
 
-        private static Assembly CurrentDomain_AssemblyResolve(
-            object sender,
-            ResolveEventArgs args
-        )
+        private RemoteManifest LoadManifestFromFolder(string pluginFolder)
         {
-            Assembly result = null;
+            RemoteManifest result = null;
 
-            var assemblyName = new AssemblyName(args.Name);
-            var searchSpec = $"{assemblyName.Name}.*";
-            var pluginFolders = PluginLoader.PluginFolders;
-            foreach(var folder in pluginFolders) {
-                foreach(var candidateFileName in Directory.GetFiles(folder, searchSpec)) {
-                    var actualExt = Path.GetExtension(candidateFileName);
-                    if(String.Equals(actualExt, ".dll", StringComparison.OrdinalIgnoreCase)) {
-                        var fullPath = Path.GetFullPath(candidateFileName);
-                        if(File.Exists(fullPath)) {
-                            result = Assembly.LoadFrom(fullPath);
-                        }
-                        break;
-                    }
-                }
-                if(result != null) {
-                    break;
-                }
+            var fileName = Path.Combine(pluginFolder, PluginPaths.RemoteManifestFilename);
+            if(File.Exists(fileName)) {
+                var json = File.ReadAllText(fileName);
+                result = JsonConvert.DeserializeObject<RemoteManifest>(json);
             }
 
             return result;
+        }
+
+        private void ApplyRegistration(RemoteManifest manifest)
+        {
+            RegisteredPlugins.RegisterPlugin(manifest.Guid, plugin => {
+                plugin.DisplayOrder =       manifest.DisplayOrder;
+                plugin.Label =              manifest.Label;
+                plugin.EntryPointPage =     manifest.EntryPoint;
+                plugin.CreatePageCallback = hub => RemotePageFactory.CreateFor(manifest.Guid, hub);
+            });
         }
     }
 }

@@ -11,128 +11,79 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using Cduhub.CommandLine;
-using Cduhub.Config;
 using Newtonsoft.Json;
 
 namespace Cduhub.Plugin.InProcess
 {
-    public static class InProcessPluginLoader
+    class InProcessPluginLoader
     {
-        private static readonly object _SyncLock = new object();
+        private readonly object _SyncLock = new object();
 
-        private static readonly List<string> _LoadedAssemblies = new List<string>();
+        private readonly List<string> _LoadedAssemblies = new List<string>();
 
-        private static readonly HashSet<string> _PluginFolders = new HashSet<string>();
-
-        public static IReadOnlyList<string> PluginFolders
+        public string LoadPluginFromFolder(string pluginFolder)
         {
-            get {
-                lock(_SyncLock) {
-                    return _PluginFolders.ToArray();
-                }
-            }
-        }
+            lock(_SyncLock) {
+                string errorMessage = null;
 
-        public static string Folder { get; }
-
-        public static Dictionary<string, string> LoadErrors { get; } = new Dictionary<string, string>();
-
-        static InProcessPluginLoader()
-        {
-            Folder = Path.Combine(WorkingFolder.Folder, "Plugins");
-            if(!Directory.Exists(Folder)) {
-                Directory.CreateDirectory(Folder);
-            }
-        }
-
-        public static void LoadPlugins()
-        {
-            var settings = ConfigStorage.Load<CduhubSettings>();
-            if(settings.Plugin.InProcessEnabled) {
-                lock(_SyncLock) {
-                    foreach(var pluginFolder in Directory.GetDirectories(Folder)) {
-                        try {
-                            var errorMessage = LoadPluginFromFolder(pluginFolder);
-                            if(!String.IsNullOrEmpty(errorMessage)) {
-                                LoadErrors[pluginFolder] = errorMessage;
-                            }
-                        } catch(Exception ex) {
-                            if(LoadErrors.TryGetValue(pluginFolder, out var error)) {
-                                LoadErrors[pluginFolder] = $"{error}. {ex.Message}";
-                            } else {
-                                LoadErrors[pluginFolder] = ex.Message;
-                            }
+                var manifest = LoadManifestFromFolder(pluginFolder);
+                if(manifest == null) {
+                    errorMessage = "Bad manifest in folder";
+                } else {
+                    var dllFileName = Path.GetFullPath(
+                        Path.Combine(pluginFolder, manifest.FileName)
+                    );
+                    if(!File.Exists(dllFileName)) {
+                        errorMessage = $"No file called {dllFileName}";
+                    } else if(dllFileName.Length <= pluginFolder.Length) {
+                        errorMessage = "Plugin DLL not in plugin folder";
+                    } else if(dllFileName[pluginFolder.Length] != Path.DirectorySeparatorChar
+                            && dllFileName[pluginFolder.Length] != Path.AltDirectorySeparatorChar
+                    ) {
+                        errorMessage = "Plugin DLL walked out of plugin folder";
+                    } else if(!_LoadedAssemblies.Contains(dllFileName)) {
+                        if(!InformationalVersion.TryParse(manifest.MinimumHubVersion, out var minHubVersion)) {
+                            errorMessage = "Cannot parse minimum hub version";
+                        } else if(minHubVersion.CompareTo(CduhubVersions.LibraryVersion) > 0) {
+                            errorMessage = "Plugin needs later version of CDU Hub";
+                        } else {
+                            var assembly = Assembly.LoadFrom(dllFileName);
+                            _LoadedAssemblies.Add(dllFileName);
+                            RegisterPluginsFrom(dllFileName, assembly);
                         }
                     }
                 }
+
+                return errorMessage;
             }
         }
 
-        private static string LoadPluginFromFolder(string pluginFolder)
+        private InProcessManifest LoadManifestFromFolder(string pluginFolder)
         {
-            string errorMessage = null;
+            InProcessManifest result = null;
 
-            var manifest = LoadManifestFromFolder(pluginFolder);
-            if(manifest == null) {
-                errorMessage = "No manifest in folder";
-            } else {
-                var dllFileName = Path.GetFullPath(
-                    Path.Combine(pluginFolder, manifest.FileName)
-                );
-                if(!File.Exists(dllFileName)) {
-                    errorMessage = $"No file called {dllFileName}";
-                } else if(dllFileName.Length <= pluginFolder.Length) {
-                    errorMessage = "Plugin DLL not in plugin folder";
-                } else if(dllFileName[pluginFolder.Length] != Path.DirectorySeparatorChar
-                       && dllFileName[pluginFolder.Length] != Path.AltDirectorySeparatorChar
-                ) {
-                    errorMessage = "Plugin DLL walked out of plugin folder";
-                } else if(!_LoadedAssemblies.Contains(dllFileName)) {
-                    if(!InformationalVersion.TryParse(manifest.MinimumHubVersion, out var minHubVersion)) {
-                        errorMessage = "Cannot parse minimum hub version";
-                    } else if(minHubVersion.CompareTo(CduhubVersions.LibraryVersion) > 0) {
-                        errorMessage = "Plugin needs later version of CDU Hub";
-                    } else {
-                        var assembly = Assembly.LoadFrom(dllFileName);
-                        _LoadedAssemblies.Add(dllFileName);
-                        RegisterPluginsFrom(dllFileName, assembly);
-                    }
-                }
-            }
-
-            return errorMessage;
-        }
-
-        private static Manifest LoadManifestFromFolder(string pluginFolder)
-        {
-            Manifest result = null;
-
-            var fileName = Path.Combine(pluginFolder, "Manifest.json");
+            var fileName = Path.Combine(pluginFolder, PluginPaths.InProcessManifestFileName);
             if(File.Exists(fileName)) {
                 var json = File.ReadAllText(fileName);
-                result = JsonConvert.DeserializeObject<Manifest>(json);
+                result = JsonConvert.DeserializeObject<InProcessManifest>(json);
             }
 
             return result;
         }
 
-        private static void RegisterPluginsFrom(string dllFileName, Assembly assembly)
+        private void RegisterPluginsFrom(string dllFileName, Assembly assembly)
         {
             foreach(var candidateType in assembly.GetExportedTypes()) {
                 if(typeof(IPluginDetail).IsAssignableFrom(candidateType)) {
                     var registration = (IPluginDetail)Activator.CreateInstance(candidateType);
                     ApplyRegistration(registration);
-
-                    var pluginFolder = Path.GetDirectoryName(dllFileName);
-                    _PluginFolders.Add(pluginFolder);
                 }
             }
         }
 
-        private static void ApplyRegistration(IPluginDetail registration)
+        private void ApplyRegistration(IPluginDetail registration)
         {
             RegisteredPlugins.RegisterPlugin(registration.Id, plugin => {
                 plugin.DisplayOrder =       registration.DisplayOrder;

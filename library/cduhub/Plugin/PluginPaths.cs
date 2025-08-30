@@ -8,61 +8,41 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using Cduhub.Plugin;
-using McduDotNet;
+using System.IO;
 
-namespace Cduhub.Pages
+namespace Cduhub.Plugin
 {
-    class About_Page : Page
+    /// <summary>
+    /// Holds the names of folders that hold plugin files, and fixed files that are
+    /// expected to be found in those folders.
+    /// </summary>
+    public static class PluginPaths
     {
-        public About_Page(Hub hub) : base(hub)
+        /// <summary>
+        /// The sub-folder of the working folder where plugins are stored.
+        /// </summary>
+        public const string PluginsFolderName = "Plugins";
+
+        /// <summary>
+        /// The expected name of manifest files for in-process plugins.
+        /// </summary>
+        public const string InProcessManifestFileName = "Manifest.json";
+
+        /// <summary>
+        /// The expected name of manifest files for remote plugins.
+        /// </summary>
+        public const string RemoteManifestFilename = "RemoteManifest.json";
+
+        /// <summary>
+        /// The full path to the plugins sub-folder.
+        /// </summary>
+        public static string PluginsFolderFullPath
         {
-        }
-
-        public override void OnSelected(bool selected)
-        {
-            if(selected) {
-                UpdatePage();
-            }
-        }
-
-        private void UpdatePage()
-        {
-            Output
-                .Clear()
-                .Centred("<green>ABOUT")
-
-                .LeftLabelTitle(1, "<small> VERSION")
-                .LeftLabel(1, $"<cyan>{CduhubVersions.LibraryVersion}")
-
-                .RightLabelTitle(1, "<small>LATEST ")
-                .RightLabel(1, $"<{(CduhubVersions.IsLatest ? "cyan" : "amber")}>{CduhubVersions.UpdateInfo?.RemoteVersion}")
-
-                .LeftLabelTitle(2, "<small> PLUGINS")
-                .LeftLabel(2, $"<cyan>{RegisteredPlugins.CountLoaded:N0}")
-
-                .LeftLabel(6, "<small><red>BACK")
-            ;
-
-            if(PluginLoader.LoadErrors.Count > 0) {
-                Output
-                    .RightLabel(2, "<amber>LOAD ERRORS*");
-            }
-
-            RefreshDisplay();
-        }
-
-        public override void OnCommonKeyDown(CommonKey commonKey)
-        {
-            switch(commonKey) {
-                case CommonKey.LineSelectRight2:
-                    if(PluginLoader.LoadErrors.Count > 0) {
-                        _Hub.CreateAndSelectPage<PluginLoadErrors_Page>();
-                    }
-                    break;
-                case CommonKey.LineSelectLeft6:
-                    _Hub.ReturnToParent();
-                    break;
+            get {
+                return Path.GetFullPath(Path.Combine(
+                    WorkingFolder.Folder,
+                    PluginsFolderName
+                ));
             }
         }
     }

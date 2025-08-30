@@ -9,9 +9,10 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Cduhub.Plugin.InProcess;
+using Cduhub.Plugin;
 using McduDotNet;
 
 namespace Cduhub.Pages
@@ -19,7 +20,7 @@ namespace Cduhub.Pages
     class PluginLoadErrors_Page : Page
     {
         private int _ErrorIndex;
-        private (string PluginFolder, string Error)[] _Errors;
+        private IReadOnlyList<(string PluginFolder, string[] Error)> _Errors;
 
         public PluginLoadErrors_Page(Hub hub) : base(hub)
         {
@@ -28,23 +29,20 @@ namespace Cduhub.Pages
         public override void OnSelected(bool selected)
         {
             if(selected) {
-                _Errors = InProcessPluginLoader
-                    .LoadErrors
-                    .Select(err => (err.Key, err.Value))
-                    .ToArray();
+                _Errors = PluginLoader.LoadErrors;
                 DrawPage();
             }
         }
 
         private void DrawPage()
         {
-            _ErrorIndex = _Errors.Length == 0
+            _ErrorIndex = _Errors.Count == 0
                 ? -1
-                : Math.Max(0, Math.Min(_ErrorIndex, _Errors.Length - 1));
+                : Math.Max(0, Math.Min(_ErrorIndex, _Errors.Count - 1));
             var page = _ErrorIndex == -1
                 ? 1
                 : _ErrorIndex + 1;
-            var countPages = Math.Min(1, _Errors.Length);
+            var countPages = Math.Min(1, _Errors.Count);
 
             Output
                 .Clear()
@@ -55,14 +53,14 @@ namespace Cduhub.Pages
                 .LeftLabel(6, $"<red><small>BACK");
 
             if(_ErrorIndex > -1) {
-                (var pluginFolder, var error) = _Errors[_ErrorIndex];
+                (var pluginFolder, var errors) = _Errors[_ErrorIndex];
                 Output
                     .LeftLabelTitle(1, " <small>PLUGIN FOLDER")
                     .LeftLabel(1, $"<cyan>{SanitiseInput(Path.GetFileName(pluginFolder))}")
                     .LeftLabelTitle(2, " <small>ERROR")
                     .Large().Cyan()
                     .LabelLine(2)
-                    .WrapText(error, 8, clearLines: true);
+                    .WrapText(String.Join("\n", errors), 8, clearLines: true);
             }
 
             RefreshDisplay();
