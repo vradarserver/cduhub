@@ -73,8 +73,8 @@ namespace McduDotNet
             int glyphHeight,
             int xOffset,
             int yOffset,
-            McduFontGlyph[] largeGlyphs,
-            McduFontGlyph[] smallGlyphs
+            Dictionary<char, byte[,]> largeGlyphs,
+            Dictionary<char, byte[,]> smallGlyphs
         )
         {
             if(glyphHeight != GlyphHeight) {
@@ -158,7 +158,7 @@ namespace McduDotNet
 
         private void FillPacketsWithGlyphs(
             byte[] packetBlob,
-            McduFontGlyph[] fontGlyphs,
+            Dictionary<char, byte[,]> fontGlyphs,
             McduFontGlyphOffsets[] fontGlyphOffsets,
             bool isLarge
         )
@@ -167,13 +167,14 @@ namespace McduDotNet
                 .GroupBy(r => r.Character)
                 .ToDictionary(k => k.Key, g => g.First());
 
-            foreach(var glyph in (fontGlyphs ?? Array.Empty<McduFontGlyph>())) {
-                if(indexedOffsets.TryGetValue(glyph.Character, out var glyphOffsets)) {
+            foreach(var kvp in fontGlyphs) {
+                var glyphCharacter = kvp.Key;
+                var glyphBitmap = kvp.Value;
+                if(indexedOffsets.TryGetValue(glyphCharacter, out var glyphOffsets)) {
                     var offsets = McduFontGlyphOffsets.DecompressMap(glyphOffsets.GlyphMap);
-                    var glyphBitmap = glyph.GetBytes();
                     if(offsets.Length != glyphBitmap.Length) {
                         throw new InvalidOperationException(
-                            $"{(isLarge ? "Large" : "Small")} character '{glyph.Character}' " +
+                            $"{(isLarge ? "Large" : "Small")} character '{glyphCharacter}' " +
                             $"is {glyphBitmap.Length} bytes but {offsets.Length} have been mapped"
                         );
                     }

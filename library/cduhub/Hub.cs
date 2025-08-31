@@ -360,7 +360,7 @@ namespace Cduhub
                     _CurrentFont = font;
                     _IsCurrentFontFullWidth = pageFont.UseFullWidth;
                     _Cdu.Screen.Clear();
-                    _Cdu.UseFont(_CurrentFont, _IsCurrentFontFullWidth.Value);
+                    _Cdu.UseFont(_CurrentFont, _IsCurrentFontFullWidth.Value, skipDuplicateCheck: false);
                 }
             }
         }

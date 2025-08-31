@@ -210,10 +210,15 @@ namespace McduDotNet
         /// </summary>
         /// <param name="fontFileContent"></param>
         /// <param name="useFullWidth">
-        /// True to use the full width of the CDU, false for tighter kerning that looks more
-        /// accurate but leaves a gap between either side of the display.
+        /// True to use the full width of the CDU, false for tighter kerning that looks
+        /// more accurate but leaves a gap between either side of the display.
         /// </param>
-        void UseFont(McduFontFile fontFileContent, bool useFullWidth);
+        /// <param name="skipDuplicateCheck">
+        /// True to force the font to be uploaded even if it has previously been uploaded.
+        /// For backwards compatability reasons this defaults to true, unlike most other
+        /// "skip duplicate" checks.
+        /// </param>
+        void UseFont(McduFontFile fontFileContent, bool useFullWidth, bool skipDuplicateCheck = true);
 
         /// <summary>
         /// Resets the display and turns everything off.

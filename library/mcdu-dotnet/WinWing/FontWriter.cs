@@ -20,51 +20,68 @@ namespace McduDotNet.WinWing
     class FontWriter
     {
         private UsbWriter _UsbWriter;
+        private DisplayFont _DisplayFont = new DisplayFont();
+
+        public DisplayFont LoadedFont => _DisplayFont;
 
         public FontWriter(UsbWriter usbWriter)
         {
             _UsbWriter = usbWriter;
         }
 
-        public void SendFont(
+        public bool SendFont(
             McduFontFile fontFileContent,
             string commandPrefix,
             bool useFullWidth,
+            Action clearScreenAction,
             int currentDisplayBrightnessPercent,
             int currentDisplayXOffset,
-            int currentDisplayYOffset
+            int currentDisplayYOffset,
+            bool skipDuplicateCheck
         )
         {
-            _UsbWriter.LockForOutput(() => {
-                byte[] mapBytes;
-                switch(fontFileContent.GlyphHeight) {
-                    case 29:    mapBytes = CduResources.WinWingFontPacketMap_3x29_json; break;
-                    case 30:    mapBytes = CduResources.WinWingFontPacketMap_3x30_json; break;
-                    case 31:    mapBytes = CduResources.WinWingFontPacketMap_3x31_json; break;
-                    case 32:    mapBytes = CduResources.WinWingFontPacketMap_3x32_json; break;
-                    default:    throw new NotImplementedException($"Need packet map for {fontFileContent.GlyphHeight} pixel high fonts");
-                }
+            var fontUploaded = false;
 
-                var mapJson = Encoding.UTF8.GetString(mapBytes);
-                var packetMap = JsonConvert.DeserializeObject<McduFontPacketMap>(mapJson);
-                var glyphWidth = fontFileContent.GlyphWidth;
-                if(useFullWidth && fontFileContent.GlyphFullWidth > 0) {
-                    glyphWidth = fontFileContent.GlyphFullWidth;
-                }
-                packetMap.OverwritePacketsWithFontFileContent(
-                    commandPrefix,
-                    Percent.ToByte(currentDisplayBrightnessPercent),
-                    glyphWidth,
-                    fontFileContent.GlyphHeight,
-                    0x24 + currentDisplayXOffset + XOffsetForGlyphWidth(glyphWidth),
-                    0x14 + currentDisplayYOffset + YOffsetForGlyphHeight(fontFileContent.GlyphHeight),
-                    fontFileContent?.LargeGlyphs,
-                    fontFileContent?.SmallGlyphs
-                );
-                foreach(var packet in packetMap.Packets) {
-                    _UsbWriter.SendStringPacket(packet);
+            _UsbWriter.LockForOutput(() => {
+                var hasChanged = _DisplayFont.CopyFrom(fontFileContent);
+                if(skipDuplicateCheck || hasChanged) {
+                    clearScreenAction();
+
+                    var glyphWidth = useFullWidth
+                        ? _DisplayFont.PixelWideWidth
+                        : _DisplayFont.PixelThinWidth;
+                    ;
+
+                    byte[] mapBytes;
+                    switch(_DisplayFont.PixelHeight) {
+                        case 29:    mapBytes = CduResources.WinWingFontPacketMap_3x29_json; break;
+                        case 30:    mapBytes = CduResources.WinWingFontPacketMap_3x30_json; break;
+                        case 31:    mapBytes = CduResources.WinWingFontPacketMap_3x31_json; break;
+                        case 32:    mapBytes = CduResources.WinWingFontPacketMap_3x32_json; break;
+                        default:    throw new NotImplementedException($"Need packet map for {_DisplayFont.PixelHeight} pixel high fonts");
+                    }
+
+                    var mapJson = Encoding.UTF8.GetString(mapBytes);
+                    var packetMap = JsonConvert.DeserializeObject<McduFontPacketMap>(mapJson);
+                    packetMap.OverwritePacketsWithFontFileContent(
+                        commandPrefix,
+                        Percent.ToByte(currentDisplayBrightnessPercent),
+                        glyphWidth,
+                        _DisplayFont.PixelHeight,
+                        0x24 + currentDisplayXOffset + XOffsetForGlyphWidth(glyphWidth),
+                        0x14 + currentDisplayYOffset + YOffsetForGlyphHeight(_DisplayFont.PixelHeight),
+                        _DisplayFont?.LargeGlyphs,
+                        _DisplayFont?.SmallGlyphs
+                    );
+                    foreach(var packet in packetMap.Packets) {
+                        _UsbWriter.SendStringPacket(packet);
+                    }
+
+                    fontUploaded = true;
                 }
             });
+
+            return fontUploaded;
         }
 
         private static int XOffsetForGlyphWidth(int glyphWidth)

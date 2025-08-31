@@ -406,34 +406,38 @@ namespace McduDotNet.WinWing
         }
 
         /// <inheritdoc/>
-        public void UseFont(McduFontFile fontFileContent, bool useFullWidth)
+        public void UseFont(McduFontFile fontFileContent, bool useFullWidth, bool skipDuplicateCheck = false)
         {
             _UsbWriter?.LockForOutput(() => {
-                _ScreenWriter.SendScreenToDisplay(
-                    _EmptyScreen,
-                    skipDuplicateCheck: false,
-                    suppressUpdatingDeviceCallback: DisplayChanging == null
-                );
-                _FontWriter.SendFont(
+                var fontUploaded = _FontWriter.SendFont(
                     fontFileContent,
                     CP,
                     useFullWidth,
+                    () => {
+                        _ScreenWriter.SendScreenToDisplay(
+                            _EmptyScreen,
+                            skipDuplicateCheck: false,
+                            suppressUpdatingDeviceCallback: DisplayChanging == null
+                        );
+                    },
                     DisplayBrightnessPercent,
                     XOffset,
-                    YOffset
+                    YOffset,
+                    skipDuplicateCheck
                 );
-
-                // As of time of writing the packet map includes a pile of 32bb...1901 commands to
-                // set the colours to WinWing's defaults. If I remove this then the font goes weird.
-                // So for now I'm just resending the colour palette to override the colours that the
-                // font set up. This will need refining at some point once I understand the meaning
-                // of the 32bbs being sent at the end of the font setup.
-                // TODO: Try to remove colour setup from font upload.
-                //
-                // One advantage of resending the palette is that we also refresh the display, which
-                // we need to do anyway. If SendPalette() is removed in the future then you will have
-                // to replace it with RefreshDisplay.
-                _PaletteWriter.ReestablishPaletteAndRefreshDisplay(_ScreenWriter, Screen);
+                if(fontUploaded) {
+                    // As of time of writing the packet map includes a pile of {CP}...1901 commands to
+                    // set the colours to WinWing's defaults. If I remove this then the font goes weird.
+                    // So for now I'm just resending the colour palette to override the colours that the
+                    // font set up. This will need refining at some point once I understand the meaning
+                    // of the {CP}s being sent at the end of the font setup.
+                    // TODO: Try to remove colour setup from font upload.
+                    //
+                    // One advantage of resending the palette is that we also refresh the display, which
+                    // we need to do anyway. If SendPalette() is removed in the future then you will have
+                    // to replace it with RefreshDisplay.
+                    _PaletteWriter.ReestablishPaletteAndRefreshDisplay(_ScreenWriter, Screen);
+                }
             });
         }
 
