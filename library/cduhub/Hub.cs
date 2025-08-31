@@ -109,6 +109,8 @@ namespace Cduhub
 
         public DisplayBuffer CurrentDisplayBuffer { get; private set; }
 
+        public DisplayPalette CurrentDisplayPalette { get; private set; }
+
         /// <summary>
         /// Raised when the hub wants the parent application to close.
         /// </summary>
@@ -147,6 +149,17 @@ namespace Cduhub
         protected virtual void OnDisplayChanging(DisplayChangingEventArgs args) => DisplayChanging?.Invoke(this, args);
 
         /// <summary>
+        /// Raised when the CDU updates the palette on the device.
+        /// </summary>
+        public event EventHandler<PaletteChangingEventArgs> PaletteChanging;
+
+        /// <summary>
+        /// Raises <see cref="PaletteChanging"/>.
+        /// </summary>
+        /// <param name="args"></param>
+        protected virtual void OnPaletteChanging(PaletteChangingEventArgs args) => PaletteChanging?.Invoke(this, args);
+
+        /// <summary>
         /// Creates a new object.
         /// </summary>
         public Hub()
@@ -175,6 +188,7 @@ namespace Cduhub
             if(_Cdu != null) {
                 _Cdu.DisplayChanging -= Cdu_DisplayChanging;
                 _Cdu.Disconnected -= Cdu_Disconnected;
+                _Cdu.PaletteChanging -= Cdu_PaletteChanging;
             }
             _Cdu?.Cleanup(
                 backlightBrightnessPercent: settings?.Cleanup.BacklightBrightnessPercentOnExit ?? 0,
@@ -253,6 +267,7 @@ namespace Cduhub
                         _Cdu.KeyUp += Cdu_KeyUp;
                         _Cdu.Disconnected += Cdu_Disconnected;
                         _Cdu.DisplayChanging += Cdu_DisplayChanging;
+                        _Cdu.PaletteChanging += Cdu_PaletteChanging;
                         _Cdu.AmbientLightChanged += Cdu_AmbientLightChanged;
                         _RootPage = new Pages.Root_Page(this);
                         _CurrentFont = null;
@@ -483,6 +498,12 @@ namespace Cduhub
         {
             CurrentDisplayBuffer = e.DisplayBuffer;
             OnDisplayChanging(e);
+        }
+
+        private void Cdu_PaletteChanging(object sender, PaletteChangingEventArgs e)
+        {
+            CurrentDisplayPalette = e.DisplayPalette;
+            OnPaletteChanging(e);
         }
 
         private void Cdu_AmbientLightChanged(object sender, EventArgs e)

@@ -15,7 +15,7 @@ namespace McduDotNet
     /// <summary>
     /// Extension methods for the <see cref="Colour"/> enum.
     /// </summary>
-    static class ColourExtensions
+    public static class ColourExtensions
     {
         [Obsolete("Legacy name, use ToWinWingUsbColourAndFontCode instead")]
         public static (byte,byte) ToUsbColourAndFontCode(this Colour colour, bool isSmallFont)

@@ -36,20 +36,11 @@ namespace Cduhub.WindowsGui
         /// <summary>
         /// The colours associated with each display colour index.
         /// </summary>
-        private Color[] _Colours = new Color[] {
-            Color.FromArgb(0x00, 0x00, 0x00),
-            Color.FromArgb(0xFF, 0xA5, 0x00),
-            Color.FromArgb(0xFF, 0xFF, 0xFF),
-            Color.FromArgb(0x00, 0xFF, 0xFF),
-            Color.FromArgb(0x00, 0xFF, 0x3D),
-            Color.FromArgb(0xFF, 0x63, 0xFF),
-            Color.FromArgb(0xFF, 0x00, 0x00),
-            Color.FromArgb(0xFF, 0xFF, 0x00),
-            Color.FromArgb(0x61, 0x5C, 0x42),
-            Color.FromArgb(0x77, 0x77, 0x77),
-            Color.FromArgb(0x79, 0x73, 0x5E),
-        };
+        private Color[] _Colours;
 
+        /// <summary>
+        /// Exactly the same colours as per <see cref="_Colours"/> except in brush form.
+        /// </summary>
         private Brush[] _ColourBrushes;
 
         /// <summary>
@@ -67,15 +58,22 @@ namespace Cduhub.WindowsGui
         /// </summary>
         private readonly Font _FallbackSmallFont = new Font(FontFamily.GenericMonospace, 16);
 
+        /// <summary>
+        /// The brush used when no palettes have been established.
+        /// </summary>
+        private readonly SolidBrush _FallbackColourBrush = new SolidBrush(Color.White);
+
         private const int _FallbackFontPixelWidth = 23;
 
         private const int _FallbackFontPixelHeight = 31;
 
         private DisplayBuffer _DisplayBuffer;
 
-        private int _XOffset;
+        private DisplayPalette _DisplayPalette;
 
-        private int _YOffset;
+        private int _XOffset = 5;
+
+        private int _YOffset = 5;
 
         /// <summary>
         /// Creates a new object.
@@ -83,26 +81,17 @@ namespace Cduhub.WindowsGui
         public CduDisplayControl()
         {
             InitializeComponent();
-            BuildColourBrushes();
             _PictureBox.Image = _PictureBoxImage;
-        }
-
-        private void BuildColourBrushes()
-        {
-            if(_ColourBrushes != null) {
-                DisposeOfColourBrushes();
-            }
-            _ColourBrushes = new Brush[_Colours.Length];
-            for(var idx = 0;idx < _Colours.Length;++idx) {
-                _ColourBrushes[idx] = new SolidBrush(_Colours[idx]);
-            }
         }
 
         private void DisposeOfColourBrushes()
         {
-            foreach(var brush in _ColourBrushes) {
-                brush.Dispose();
+            if(_ColourBrushes != null) {
+                foreach(var brush in _ColourBrushes) {
+                    brush.Dispose();
+                }
             }
+            _Colours = null;
             _ColourBrushes = null;
         }
 
@@ -121,6 +110,24 @@ namespace Cduhub.WindowsGui
             }
         }
 
+        /// <summary>
+        /// Copies the palette into the control.
+        /// </summary>
+        /// <param name="displayPalette"></param>
+        public void CopyFromDisplayPalette(DisplayPalette displayPalette)
+        {
+            if(InvokeRequired) {
+                BeginInvoke(new MethodInvoker(() => CopyFromDisplayPalette(displayPalette)));
+            } else {
+                _DisplayPalette = displayPalette;
+                CopyDisplayPaletteToControl();
+                if(_DisplayBuffer != null) {
+                    CopyDisplayBufferToPixelBuffer();
+                    RefreshPictureBox();
+                }
+            }
+        }
+
         public void SetXYOffsets(int xOffset, int yOffset)
         {
             if(InvokeRequired) {
@@ -133,12 +140,34 @@ namespace Cduhub.WindowsGui
             }
         }
 
+        private void CopyDisplayPaletteToControl()
+        {
+            DisposeOfColourBrushes();
+            if(_DisplayPalette != null) {
+                _Colours = new Color[_DisplayPalette.CountColours];
+                _ColourBrushes = new Brush[_DisplayPalette.CountColours];
+                for(var idx = 0;idx < _DisplayPalette.CountColours;++idx) {
+                    var displayColour = _DisplayPalette.Colours[idx];
+                    _Colours[idx] = Color.FromArgb(
+                        displayColour.A,
+                        displayColour.R,
+                        displayColour.G,
+                        displayColour.B
+                    );
+                    _ColourBrushes[idx] = new SolidBrush(_Colours[idx]);
+                }
+            }
+        }
+
         private void CopyDisplayBufferToPixelBuffer()
         {
             var displayBuffer = _DisplayBuffer;
             if(displayBuffer != null) {
                 using(var graphics = Graphics.FromImage(_PixelBuffer)) {
-                    graphics.Clear(_Colours[0]);
+                    graphics.Clear(_Colours == null
+                        ? Color.Black
+                        : _Colours[0]
+                    );
 
                     for(var rowIdx = 0;rowIdx < displayBuffer.CountRows;++rowIdx) {
                         for(var cellIdx = 0;cellIdx < displayBuffer.CountCells;++cellIdx) {
@@ -186,7 +215,9 @@ namespace Cduhub.WindowsGui
             graphics.DrawString(
                 text,
                 fontAndColour.IsSmallFont ? _FallbackSmallFont : _FallbackLargeFont,
-                _ColourBrushes[fontAndColour.ForegroundColourIndex],
+                _ColourBrushes == null
+                    ? _FallbackColourBrush
+                    : _ColourBrushes[fontAndColour.ForegroundColourIndex],
                 _XOffset + (cellIdx * _FallbackFontPixelWidth),
                 _YOffset + (rowIdx * _FallbackFontPixelHeight)
             );

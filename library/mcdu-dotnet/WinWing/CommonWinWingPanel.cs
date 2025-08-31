@@ -186,6 +186,15 @@ namespace McduDotNet.WinWing
         /// <param name="args"></param>
         protected virtual void OnDisplayChanging(DisplayChangingEventArgs args) => DisplayChanging?.Invoke(this, args);
 
+        /// <inheritdoc/>
+        public event EventHandler<PaletteChangingEventArgs> PaletteChanging;
+
+        /// <summary>
+        /// Raises <see cref="PaletteChanging"/>.
+        /// </summary>
+        /// <param name="args"></param>
+        protected virtual void OnPaletteChanging(PaletteChangingEventArgs args) => PaletteChanging?.Invoke(this, args);
+
         public event EventHandler Disconnected;
 
         protected virtual void OnDisconnected() => Disconnected?.Invoke(this, EventArgs.Empty);
@@ -262,7 +271,7 @@ namespace McduDotNet.WinWing
             );
 
             _ScreenWriter = new ScreenWriter(_UsbWriter) {
-                UpdatingDisplayCallback = buffer => OnDisplayChanging(
+                UpdatingDeviceCallback = buffer => OnDisplayChanging(
                     new DisplayChangingEventArgs(buffer)
                 ),
             };
@@ -272,7 +281,11 @@ namespace McduDotNet.WinWing
                 LedIndicatorCodeMap
             );
             _FontWriter = new FontWriter(_UsbWriter);
-            _PaletteWriter = new PaletteWriter(_UsbWriter, CP);
+            _PaletteWriter = new PaletteWriter(_UsbWriter, CP) {
+                UpdatingDeviceCallback = buffer => OnPaletteChanging(
+                    new PaletteChangingEventArgs(buffer)
+                ),
+            };
 
             _InputLoopCancellationTokenSource = new CancellationTokenSource();
             _InputLoopTask = Task.Run(() => _KeyboardReader.RunInputLoop(
@@ -358,7 +371,7 @@ namespace McduDotNet.WinWing
             _ScreenWriter?.SendScreenToDisplay(
                 Screen,
                 skipDuplicateCheck,
-                suppressUpdatingDisplayCallback: DisplayChanging == null
+                suppressUpdatingDeviceCallback: DisplayChanging == null
             );
         }
 
@@ -399,7 +412,7 @@ namespace McduDotNet.WinWing
                 _ScreenWriter.SendScreenToDisplay(
                     _EmptyScreen,
                     skipDuplicateCheck: false,
-                    suppressUpdatingDisplayCallback: DisplayChanging == null
+                    suppressUpdatingDeviceCallback: DisplayChanging == null
                 );
                 _FontWriter.SendFont(
                     fontFileContent,
@@ -435,7 +448,8 @@ namespace McduDotNet.WinWing
                 _ScreenWriter,
                 Screen,
                 skipDuplicateCheck,
-                forceDisplayRefresh
+                forceDisplayRefresh,
+                suppressUpdatingDisplayCallback: PaletteChanging == null
             );
         }
 

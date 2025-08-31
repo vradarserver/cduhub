@@ -115,6 +115,7 @@ namespace Cduhub.WindowsGui
                 Hub.ConnectedDeviceChanged += Hub_ConnectedDeviceChanged;
                 Hub.CloseApplication += Hub_CloseApplication;
                 Hub.DisplayChanging += Hub_DisplayChanging;
+                Hub.PaletteChanging += Hub_PaletteChanging;
                 UpdateStateDisplay();
                 UpdateConnectedFlightSimulatorsDisplay();
 
@@ -123,6 +124,7 @@ namespace Cduhub.WindowsGui
                 _ConnectedFlightSimulatorsListView.SendResizeAllColumns();
 
                 _CduDisplay.SetXYOffsets(16, 0);
+                _CduDisplay.CopyFromDisplayPalette(Hub.CurrentDisplayPalette);
                 _CduDisplay.CopyFromDisplayBuffer(Hub.CurrentDisplayBuffer);
             }
         }
@@ -162,6 +164,11 @@ namespace Cduhub.WindowsGui
         private void Hub_DisplayChanging(object sender, DisplayChangingEventArgs e)
         {
             _CduDisplay.CopyFromDisplayBuffer(e.DisplayBuffer);
+        }
+
+        private void Hub_PaletteChanging(object sender, PaletteChangingEventArgs e)
+        {
+            _CduDisplay.CopyFromDisplayPalette(e.DisplayPalette);
         }
 
         private void LinkLabel_About_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

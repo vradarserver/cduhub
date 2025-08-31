@@ -68,19 +68,6 @@ namespace McduDotNet
             };
         }
 
-        public static string BuildDuplicateCheckString(PaletteColour[] colourArray)
-        {
-            var buffer = new StringBuilder();
-
-            if(colourArray != null) {
-                foreach(var colour in colourArray) {
-                    buffer.Append(colour.ToWinwingColourString());
-                }
-            }
-
-            return buffer.ToString();
-        }
-
         public void CopyFrom(Palette other)
         {
             Black.CopyFrom(other?.Black);

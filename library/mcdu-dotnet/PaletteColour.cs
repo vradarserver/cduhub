@@ -69,8 +69,6 @@ namespace McduDotNet
 
         public override string ToString() => $"{R:X2}{G:X2}{B:X2}@{A:X2}";
 
-        public string ToWinwingColourString() => $"{B:X2}{G:X2}{R:X2}{A:X2}";
-
         public static PaletteColour Parse(string rgba)
         {
             if(!TryParse(rgba, out var result)) {

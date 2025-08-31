@@ -19,6 +19,7 @@
             if(disposing) {
                 _FallbackLargeFont.Dispose();
                 _FallbackSmallFont.Dispose();
+                _FallbackColourBrush.Dispose();
                 DisposeOfColourBrushes();
                 _PixelBuffer.Dispose();
                 _PictureBoxImage.Dispose();

@@ -8,7 +8,9 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace McduDotNet.WinWing
 {
@@ -21,7 +23,9 @@ namespace McduDotNet.WinWing
         private readonly string CP; // See notes elsewhere as to why this name is exactly 2 chars
 #pragma warning restore IDE1006 // Naming Styles
         private UsbWriter _UsbWriter;
-        private PaletteColour[] _CurrentPaletteColourArray;
+        private DisplayPalette _DisplayPalette;
+
+        public Action<DisplayPalette> UpdatingDeviceCallback { get; set; }
 
         public PaletteWriter(UsbWriter usbWriter, string commandPrefix)
         {
@@ -39,15 +43,15 @@ namespace McduDotNet.WinWing
             Screen screen
         )
         {
-            if(_CurrentPaletteColourArray == null) {
+            if(_DisplayPalette == null) {
                 screenWriter.SendScreenToDisplay(
                     screen,
                     skipDuplicateCheck: true,
-                    suppressUpdatingDisplayCallback: false
+                    suppressUpdatingDeviceCallback: false
                 );
             } else {
                 SendPalette(
-                    _CurrentPaletteColourArray,
+                    null,
                     screenWriter,
                     screen,
                     skipDuplicateCheck: true,
@@ -61,14 +65,22 @@ namespace McduDotNet.WinWing
             ScreenWriter screenWriter,
             Screen screen,
             bool skipDuplicateCheck = false,
-            bool forceDisplayRefresh = true
+            bool forceDisplayRefresh = true,
+            bool suppressUpdatingDisplayCallback = false
         )
         {
             _UsbWriter.LockForOutput(() => {
-                var duplicateCheckString = Palette.BuildDuplicateCheckString(colourArray);
-                var currentDuplicateCheckString = Palette.BuildDuplicateCheckString(_CurrentPaletteColourArray);
-                if(skipDuplicateCheck || currentDuplicateCheckString != duplicateCheckString) {
-                    _CurrentPaletteColourArray = colourArray;
+                if(_DisplayPalette == null) {
+                    _DisplayPalette = new DisplayPalette(colourArray.Length);
+                }
+                var hasChanged = colourArray != null
+                    && _DisplayPalette.CopyFrom(colourArray);
+                if(skipDuplicateCheck || hasChanged) {
+                    if(UpdatingDeviceCallback != null && !suppressUpdatingDisplayCallback) {
+                        var clone = _DisplayPalette.Clone();
+                        Task.Run(() => UpdatingDeviceCallback?.Invoke(clone));
+                    }
+
                     byte seq = 1;
 
                     var buffer = new StringBuilder();
@@ -78,12 +90,12 @@ namespace McduDotNet.WinWing
                     AddToPacketBuffer(buffer, 0x3c, ref seq, $"{CP}00001901000004170100000e0000000100060000000300000000000000");
 
                     var colourSeq = 4;
-                    foreach(var colour in colourArray) {
-                        var setForeground = $"{CP}00001901000004170100000e0000000200{colour.ToWinwingColourString()}{colourSeq++:x2}00000000000000";
+                    foreach(var colour in _DisplayPalette.Colours) {
+                        var setForeground = $"{CP}00001901000004170100000e0000000200{colour.WinWingColourString}{colourSeq++:x2}00000000000000";
                         AddToPacketBuffer(buffer, 0x3c, ref seq, setForeground);
                     }
-                    foreach(var colour in colourArray) {
-                        var setBackground = $"{CP}00001901000004170100000e0000000300{colour.ToWinwingColourString()}{colourSeq++:x2}00000000000000";
+                    foreach(var colour in _DisplayPalette.Colours) {
+                        var setBackground = $"{CP}00001901000004170100000e0000000300{colour.WinWingColourString}{colourSeq++:x2}00000000000000";
                         AddToPacketBuffer(buffer, 0x3c, ref seq, setBackground);
                     }
                     AddToPacketBuffer(buffer, 0x3c, ref seq, $"{CP}00001901000004170100000e000000040000000000{colourSeq++:x2}00000000000000");
@@ -100,7 +112,7 @@ namespace McduDotNet.WinWing
                         screenWriter.SendScreenToDisplay(
                             screen,
                             skipDuplicateCheck: true,
-                            suppressUpdatingDisplayCallback: false
+                            suppressUpdatingDeviceCallback: false
                         );
                     }
                 }
