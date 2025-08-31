@@ -40,7 +40,11 @@ namespace McduDotNet.WinWing
         )
         {
             if(_CurrentPaletteColourArray == null) {
-                screenWriter.SendScreenToDisplay(screen, skipDuplicateCheck: true);
+                screenWriter.SendScreenToDisplay(
+                    screen,
+                    skipDuplicateCheck: true,
+                    suppressUpdatingDisplayCallback: false
+                );
             } else {
                 SendPalette(
                     _CurrentPaletteColourArray,
@@ -93,7 +97,11 @@ namespace McduDotNet.WinWing
                     SendPacketBuffer(buffer);
 
                     if(forceDisplayRefresh) {
-                        screenWriter.SendScreenToDisplay(screen, skipDuplicateCheck: true);
+                        screenWriter.SendScreenToDisplay(
+                            screen,
+                            skipDuplicateCheck: true,
+                            suppressUpdatingDisplayCallback: false
+                        );
                     }
                 }
             });

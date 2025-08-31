@@ -12,9 +12,25 @@ using System;
 
 namespace McduDotNet
 {
+    /// <summary>
+    /// Extension methods for the <see cref="Colour"/> enum.
+    /// </summary>
     static class ColourExtensions
     {
+        [Obsolete("Legacy name, use ToWinWingUsbColourAndFontCode instead")]
         public static (byte,byte) ToUsbColourAndFontCode(this Colour colour, bool isSmallFont)
+        {
+            return ToWinWingUsbColourAndFontCode(colour, isSmallFont);
+        }
+
+        /// <summary>
+        /// Converts the colour and font classification into the font and colour code used
+        /// by all(?) WinWing panels.
+        /// </summary>
+        /// <param name="colour"></param>
+        /// <param name="isSmallFont"></param>
+        /// <returns></returns>
+        public static (byte,byte) ToWinWingUsbColourAndFontCode(this Colour colour, bool isSmallFont)
         {
             var code = ToWinWingColourOrdinal(colour) * 0x21;
             if(isSmallFont) {
@@ -46,6 +62,37 @@ namespace McduDotNet
                 case Colour.Grey:       return 9;
                 case Colour.Khaki:      return 10;
                 default:                throw new NotImplementedException();
+            }
+        }
+
+        /// <summary>
+        /// Returns the index number that represents this colour in the internal display buffer.
+        /// </summary>
+        /// <param name="colour"></param>
+        /// <returns></returns>
+        public static int ToDisplayBufferColourIndex(this Colour colour) => ToWinWingColourOrdinal(colour);
+
+        /// <summary>
+        /// Returns the colour associated with the colour index passed across.
+        /// </summary>
+        /// <param name="colourIndex"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public static Colour FromDisplayBufferColourIndex(int colourIndex)
+        {
+            switch(colourIndex) {
+                case 0:     return Colour.Black;
+                case 1:     return Colour.Amber;
+                case 2:     return Colour.White;
+                case 3:     return Colour.Cyan;
+                case 4:     return Colour.Green;
+                case 5:     return Colour.Magenta;
+                case 6:     return Colour.Red;
+                case 7:     return Colour.Yellow;
+                case 8:     return Colour.Brown;
+                case 9:     return Colour.Grey;
+                case 10:    return Colour.Khaki;
+                default:    throw new NotImplementedException();
             }
         }
 

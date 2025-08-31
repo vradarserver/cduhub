@@ -48,12 +48,6 @@ namespace McduDotNet
             return result.ToString();
         }
 
-        public void AppendToDuplicateCheckBuffer(StringBuilder buffer)
-        {
-            buffer.Append(Character);
-            buffer.Append(Colour.ToDuplicateCheckCode(Small));
-        }
-
         public void Clear()
         {
             Character = ' ';

@@ -177,6 +177,15 @@ namespace McduDotNet.WinWing
             }
         }
 
+        /// <inheritdoc/>
+        public event EventHandler<DisplayChangingEventArgs> DisplayChanging;
+
+        /// <summary>
+        /// Raises <see cref="DisplayChanging"/>.
+        /// </summary>
+        /// <param name="args"></param>
+        protected virtual void OnDisplayChanging(DisplayChangingEventArgs args) => DisplayChanging?.Invoke(this, args);
+
         public event EventHandler Disconnected;
 
         protected virtual void OnDisconnected() => Disconnected?.Invoke(this, EventArgs.Empty);
@@ -252,7 +261,11 @@ namespace McduDotNet.WinWing
                 ProcessAmbientLightChange
             );
 
-            _ScreenWriter = new ScreenWriter(_UsbWriter);
+            _ScreenWriter = new ScreenWriter(_UsbWriter) {
+                UpdatingDisplayCallback = buffer => OnDisplayChanging(
+                    new DisplayChangingEventArgs(buffer)
+                ),
+            };
             _IlluminationWriter = new IlluminationWriter(
                 _UsbWriter,
                 CommandPrefix,
@@ -342,7 +355,11 @@ namespace McduDotNet.WinWing
         /// <inheritdoc/>
         public void RefreshDisplay(bool skipDuplicateCheck = false)
         {
-            _ScreenWriter?.SendScreenToDisplay(Screen, skipDuplicateCheck);
+            _ScreenWriter?.SendScreenToDisplay(
+                Screen,
+                skipDuplicateCheck,
+                suppressUpdatingDisplayCallback: DisplayChanging == null
+            );
         }
 
         /// <inheritdoc/>
@@ -379,7 +396,11 @@ namespace McduDotNet.WinWing
         public void UseFont(McduFontFile fontFileContent, bool useFullWidth)
         {
             _UsbWriter?.LockForOutput(() => {
-                _ScreenWriter.SendScreenToDisplay(_EmptyScreen, skipDuplicateCheck: false);
+                _ScreenWriter.SendScreenToDisplay(
+                    _EmptyScreen,
+                    skipDuplicateCheck: false,
+                    suppressUpdatingDisplayCallback: DisplayChanging == null
+                );
                 _FontWriter.SendFont(
                     fontFileContent,
                     CP,

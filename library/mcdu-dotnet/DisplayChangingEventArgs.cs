@@ -9,64 +9,26 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using System.Text;
 
 namespace McduDotNet
 {
     /// <summary>
-    /// Describes a row of cells on the MCDU display.
+    /// The event args for the <see cref="ICdu.DisplayChanging"/> event.
     /// </summary>
-    public class Row
+    public class DisplayChangingEventArgs : EventArgs
     {
-        public Cell[] Cells { get; } = new Cell[Metrics.Columns];
+        /// <summary>
+        /// The internal representation of the display content.
+        /// </summary>
+        public DisplayBuffer DisplayBuffer { get; }
 
-        public Row()
+        /// <summary>
+        /// Creates a new object.
+        /// </summary>
+        /// <param name="displayBuffer"></param>
+        public DisplayChangingEventArgs(DisplayBuffer displayBuffer)
         {
-            for(var idx = 0;idx < Cells.Length;++idx) {
-                Cells[idx] = new Cell();
-            }
-        }
-
-        public override string ToString()
-        {
-            var buffer = new StringBuilder();
-            foreach(var cell in Cells) {
-                buffer.Append(cell.Character);
-            }
-            return buffer.ToString();
-        }
-
-        public void Clear()
-        {
-            for(var idx = 0;idx < Cells.Length;++idx) {
-                Cells[idx].Clear();
-            }
-        }
-
-        public void CopyTo(Row other)
-        {
-            if(other == null) {
-                throw new ArgumentNullException(nameof(other));
-            }
-            for(var idx = 0;idx < Cells.Length;++idx) {
-                other.Cells[idx].CopyFrom(Cells[idx]);
-            }
-        }
-
-        public void CopyFrom(Row other) => other?.CopyTo(this);
-
-        public void ShiftRight(int startColumn, int length, int count)
-        {
-            if(count > 0 && length > 0) {
-                for(var idx = length - 1;idx >= 0;--idx) {
-                    var fromIdx = startColumn + idx;
-                    var toIdx = fromIdx + count;
-                    Cells[fromIdx].CopyTo(Cells[toIdx]);
-                }
-                for(var idx = 0;idx < count;++idx) {
-                    Cells[startColumn + idx].Clear();
-                }
-            }
+            DisplayBuffer = displayBuffer;
         }
     }
 }

@@ -14,6 +14,7 @@ using System.IO;
 using System.Threading;
 using System.Windows.Forms;
 using Cduhub.FlightSim;
+using McduDotNet;
 
 namespace Cduhub.WindowsGui
 {
@@ -113,12 +114,16 @@ namespace Cduhub.WindowsGui
                 _LinkLabel_ConfigFolder.Text = ConfigStorage.Folder;
                 Hub.ConnectedDeviceChanged += Hub_ConnectedDeviceChanged;
                 Hub.CloseApplication += Hub_CloseApplication;
+                Hub.DisplayChanging += Hub_DisplayChanging;
                 UpdateStateDisplay();
                 UpdateConnectedFlightSimulatorsDisplay();
 
                 ConnectedFlightSimulators.FlightSimulatorStateChanged += ConnectedFlightSimulators_FlightSimulatorStateChanged;
                 _HookedConnectedFlightSimulators = true;
                 _ConnectedFlightSimulatorsListView.SendResizeAllColumns();
+
+                _CduDisplay.SetXYOffsets(16, 0);
+                _CduDisplay.CopyFromDisplayBuffer(Hub.CurrentDisplayBuffer);
             }
         }
 
@@ -152,6 +157,11 @@ namespace Cduhub.WindowsGui
             } else {
                 UpdateStateDisplay();
             }
+        }
+
+        private void Hub_DisplayChanging(object sender, DisplayChangingEventArgs e)
+        {
+            _CduDisplay.CopyFromDisplayBuffer(e.DisplayBuffer);
         }
 
         private void LinkLabel_About_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

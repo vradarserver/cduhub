@@ -107,6 +107,8 @@ namespace Cduhub
 
         public string InitKeyName => InitKey.Describe(_Cdu);
 
+        public DisplayBuffer CurrentDisplayBuffer { get; private set; }
+
         /// <summary>
         /// Raised when the hub wants the parent application to close.
         /// </summary>
@@ -134,6 +136,17 @@ namespace Cduhub
         }
 
         /// <summary>
+        /// Raised when the CDU updates its display.
+        /// </summary>
+        public event EventHandler<DisplayChangingEventArgs> DisplayChanging;
+
+        /// <summary>
+        /// Raises <see cref="DisplayChanging"/>.
+        /// </summary>
+        /// <param name="args"></param>
+        protected virtual void OnDisplayChanging(DisplayChangingEventArgs args) => DisplayChanging?.Invoke(this, args);
+
+        /// <summary>
         /// Creates a new object.
         /// </summary>
         public Hub()
@@ -159,6 +172,10 @@ namespace Cduhub
             timer.Dispose();
 
             var settings = _Settings;
+            if(_Cdu != null) {
+                _Cdu.DisplayChanging -= Cdu_DisplayChanging;
+                _Cdu.Disconnected -= Cdu_Disconnected;
+            }
             _Cdu?.Cleanup(
                 backlightBrightnessPercent: settings?.Cleanup.BacklightBrightnessPercentOnExit ?? 0,
                 displayBrightnessPercent:   settings?.Cleanup.DisplayBrightnessPercentOnExit ?? 0,
@@ -235,6 +252,7 @@ namespace Cduhub
                         _Cdu.KeyDown += Cdu_KeyDown;
                         _Cdu.KeyUp += Cdu_KeyUp;
                         _Cdu.Disconnected += Cdu_Disconnected;
+                        _Cdu.DisplayChanging += Cdu_DisplayChanging;
                         _Cdu.AmbientLightChanged += Cdu_AmbientLightChanged;
                         _RootPage = new Pages.Root_Page(this);
                         _CurrentFont = null;
@@ -459,6 +477,12 @@ namespace Cduhub
         private void Cdu_Disconnected(object sender, EventArgs e)
         {
             Disconnect();
+        }
+
+        private void Cdu_DisplayChanging(object sender, DisplayChangingEventArgs e)
+        {
+            CurrentDisplayBuffer = e.DisplayBuffer;
+            OnDisplayChanging(e);
         }
 
         private void Cdu_AmbientLightChanged(object sender, EventArgs e)

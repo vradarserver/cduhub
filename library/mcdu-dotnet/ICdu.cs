@@ -120,6 +120,16 @@ namespace McduDotNet
         event EventHandler<KeyEventArgs> KeyUp;
 
         /// <summary>
+        /// Raised on a background thread when the display is changed.
+        /// </summary>
+        /// <remarks>
+        /// This is passed a clone of the display buffer. It is called on a background
+        /// thread so that the event handler cannot inadvertently slow down the updating
+        /// of the display or cause the program to deadlock on the USB device lock.
+        /// </remarks>
+        event EventHandler<DisplayChangingEventArgs> DisplayChanging;
+
+        /// <summary>
         /// Raised when <see cref="LeftAmbientLightNative"/> changes.
         /// </summary>
         event EventHandler LeftAmbientLightChanged;
