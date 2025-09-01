@@ -204,6 +204,7 @@ namespace Cduhub.WindowsGui
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "CDU Hub";
+            this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
             this.groupBox1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();

@@ -76,6 +76,26 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ambient", "library\samples\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "inprocess-plugin", "library\samples\inprocess-plugin\inprocess-plugin.csproj", "{2C957253-D368-4C07-AA17-A080EBE56E5B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{8E066D89-5048-41FE-96DA-A844A333F52D}"
+	ProjectSection(SolutionItems) = preProject
+		docs\menu-init.md = docs\menu-init.md
+		docs\menu.md = docs\menu.md
+		docs\screen-clock.png = docs\screen-clock.png
+		docs\screen-flightsims-fenix-init.png = docs\screen-flightsims-fenix-init.png
+		docs\screen-flightsims-fenix-mcdu.png = docs\screen-flightsims-fenix-mcdu.png
+		docs\screen-flightsims-fenix-menu.png = docs\screen-flightsims-fenix-menu.png
+		docs\screen-flightsims.png = docs\screen-flightsims.png
+		docs\screen-init-brightness-auto-display.png = docs\screen-init-brightness-auto-display.png
+		docs\screen-init-brightness-auto-keyboard.png = docs\screen-init-brightness-auto-keyboard.png
+		docs\screen-init-brightness-auto-led.png = docs\screen-init-brightness-auto-led.png
+		docs\screen-init-brightness-fixed.png = docs\screen-init-brightness-fixed.png
+		docs\screen-init-brightness.png = docs\screen-init-brightness.png
+		docs\screen-init-cduhub.png = docs\screen-init-cduhub.png
+		docs\screen-init.png = docs\screen-init.png
+		docs\screen-root.png = docs\screen-root.png
+		docs\screen-weather-metar+taf.png = docs\screen-weather-metar+taf.png
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

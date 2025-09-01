@@ -340,5 +340,25 @@ namespace Cduhub.WindowsGui
             }
             _PictureBox.Refresh();
         }
+
+        private void CopyToClipboard()
+        {
+            try {
+                using(var pictureBoxView = new Bitmap(_PictureBox.Width, _PictureBox.Height)) {
+                    _PictureBox.DrawToBitmap(
+                        pictureBoxView,
+                        new Rectangle(0, 0, pictureBoxView.Width, pictureBoxView.Height)
+                    );
+                    Clipboard.SetImage(pictureBoxView);
+                }
+            } catch {
+                ;
+            }
+        }
+
+        private void ContextMenuItem_CopyToClipoard_Clicked(object sender, EventArgs e)
+        {
+            CopyToClipboard();
+        }
     }
 }

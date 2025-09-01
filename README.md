@@ -20,7 +20,7 @@ it can display the output from the simulator and control the simulated CDU.
 The application should be able to run on any platform that .NET Core 8 supports.
 This includes Windows, most major Linux distros and macOS.
 
-
+![Screenshot of root page](docs/screen-root.png)
 
 ## Installers
 
@@ -42,6 +42,10 @@ CLI version of the application by cloning the repository and running this:
 ```bash
 dotnet run --project apps/cduhub-cli/cduhub-cli.csproj
 ```
+
+## Pages
+
+The current set of built-in pages can be found [here](docs/menu.md).
 
 
 ## Supported WinWing Panels
