@@ -1,10 +1,10 @@
 # CDU HUB Built-In Pages
 
 > [!NOTE]
-> You'll see `>BACK` in red against the left line-select 6 button
-on many pages. It always takes you back to whichever screen you
+> You'll see `>BACK` in red against the `Left Line Select 6` button
+on many pages. It always takes you back to whichever page you
 were on previously. Pressing `DIM` or `-BRT` will also take you
-back to the previous screen.
+back to the previous page.
 
 ## ROOT
 
