@@ -100,7 +100,7 @@ namespace Cduhub.Pages.Init
 
         protected override void AddToPage()
         {
-            Output.LabelTitleLine(1).Centered("<small>BRIGHTNESS");
+            Output.LabelTitleLine(1).Centered($"<small>{IntensityLabel}");
             Output.LabelTitleLine(2).Centered("<small>LIGHT");
             DrawLiveValues();
             FixedBrightnessInit_Page.AddColourSamples(Output, 9);
