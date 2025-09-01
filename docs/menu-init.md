@@ -15,7 +15,7 @@ Basic CDU-HUB configuration.
 
 ![CDU Hub Config](screen-init-cduhub.png)
 
-The X- and Y- offsets shift the top-left corner of the image.
+The X- and Y- offsets shift the top-left corner of the display.
 
 The PLUGIN options control whether the program loads plugins at
 startup. If you change these options then you will need to
@@ -25,24 +25,26 @@ LOCAL PLUGINs are in-process .NET DLLs that target .NET Standard
 2.0 and are installed under the `<working folder>\Plugins` folder.
 
 REMOTE PLUGINS are not yet implemented, but the intention is that
-they are declared by JSON manifest files under `<working folder\Plugins>`
-and then the hub will act as an MQTT broker to accept display
+they are declared in JSON manifest files under `<working folder>\Plugins`.
+The hub will act as an MQTT broker to accept display
 output from, and send keyboard input to, local or networked MQTT
-clients.
+clients that have a manifest declared for them.
 
-Pressing left LSB 3 cycles through all of the built-in and
+Pressing `Left LSB 3` cycles through all of the built-in and
 custom fonts. This changes the default font that each page uses.
 Some pages (E.G. flight simulator pages) have their own font
 customisation.
 
-TODO: Document how to add custom fonts.
+> [!TODO]
+> Document how to add custom fonts.
 
-Pressing left LSB 4 cycles through all of the build-in and
+Pressing `Left LSB 4` cycles through all of the build-in and
 custom palettes. This changes the default palette that each page
 uses. Some pages (E.G. flight simulator pages) have their own
 palette customisation.
 
-TODO: Document how to add custom palettes.
+> [!TODO]
+> Document how to add custom palettes.
 
 ### BRIGHTNESS CONFIGURATION
 
@@ -50,12 +52,8 @@ The CDU Hub relies upon the use of two "interrupt" buttons that
 can be used to trigger behaviour on the flight simulator and
 passthrough pages.
 
-The Airbus MCDU has two blank buttons that can be used for this
-purpose. However, the Boeing PFP does not. The best candidates
-for the two interrupt buttons are the `-BRT+` buttons.
+CDU Hub uses `-BRT+` or `BRT` and `DIM` for these interrupts.
 
-For that reason on both CDUs the brightness buttons are used as
-interrupts.
 
 Controlling the brightness of the display, keyboard backlight
 and LEDs is done through this menu instead of via the hardware
@@ -72,7 +70,7 @@ settings.
 
 #### FIXED BRIGHTNESS CONFIGURATION
 
-Fixed brightness settings only have one page of settings.
+Fixed brightness has one page of settings.
 
 ![Fixed Brightness Config](screen-init-brightness-fixed.png)
 
@@ -81,8 +79,8 @@ zero then you won't be able to see them, so the hub limits the
 lower levels of those to 5%.
 
 The XX colour swatches are there to help you gauge whether the
-display is bright enough to see all of the colours. All of the
-LEDs are lit for the same reason.
+display is bright enough to see all of the colours. The LEDs are
+lit for the same reason.
 
 #### AUTOMATIC BRIGHTNESS CONFIGURATION
 
@@ -97,21 +95,21 @@ brightness.
 
 ![Auto Brightness Display Config](screen-init-brightness-auto-display.png)
 
-The BRIGHTNESS settings set a range of brightnesses. The LOW
-value is used when ambient light is below the LOW LIGHT level.
-The HIGH value is used when ambient light at above the HIGH
-level.
+The BRIGHTNESS settings set a range of display brightnesses. The
+LOW value is used when ambient light is below the LOW LIGHT
+level. The HIGH value is used when ambient light at above the
+HIGH level.
 
 When the ambient light is between the LOW and HIGH light levels
-the brightness is calculated on a scale between the LOW and
-HIGH brightness levels. The GAMMA factor adjusts the shape of
-the curve used to calculate the scale - the higher the gamma,
-the quicker the value tends towards the midpoint between LOW
-and HIGH.
+the brightness is calculated on a scale. The GAMMA factor
+adjusts the shape of the curve used to calculate the scale -
+the higher the gamma, the quicker the value tends towards the
+midpoint between LOW and HIGH. A GAMMA of 1 gives a linear
+scale.
 
 The green LIGHT value is the current value from the device's
 ambient light sensors, and the green BRIGHTNESS value is the
-brightness calculated using the settings.
+brightness calculated from the current ambient light.
 
 Pressing `NEXT PAGE` or `RIGHT ARROW` takes you to the 
 automatic brightness configuration page for the LED backlight.
@@ -120,9 +118,10 @@ automatic brightness configuration page for the LED backlight.
 
 ![Auto Brightness LED Config](screen-init-brightness-auto-led.png)
 
-See the DISPLAY configuration above - works the same way except
-this configures the LED intensity instead of the display
-brightness.
+This works the same way as the DISPLAY configuration above.
+
+The only difference is that this page lights all of the LEDs so
+that you can see the effect of the settings.
 
 Pressing `NEXT PAGE` or `RIGHT ARROW` takes you to the final
 automatic brightness configuration page, which is for the
@@ -133,14 +132,13 @@ keyboard backlight.
 ![Auto Brightness Keyboard Config](screen-init-brightness-auto-keyboard.png)
 
 This is similar to the previous screens but it works in
-reverse. With backlights you want the brightness to increase
-when there is more light falling on the device so that you can
-still see them, but the keyboard backlight is only needed when
-there isn't much ambient light.
+reverse. With the display and LED backlights you want the
+brightness to increase when there is more light falling on the
+device, but the keyboard backlight is only needed when the
+ambient light decreases.
 
 The HIGH BRIGHTNESS value is used when ambient light is below the LOW LIGHT level.
 below the HIGH LIGHT level.
 
 The LOW BRIGHTNESS value is used when ambient light is above the
 LOW LIGHT level.
-
