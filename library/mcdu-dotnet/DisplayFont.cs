@@ -21,11 +21,7 @@ namespace McduDotNet
     {
         public int PixelHeight { get; private set; }
 
-        public int PixelThinWidth { get; private set; }
-
-        public int PixelWideWidth { get; private set; }
-
-        public int RowByteWidth { get; private set; }
+        public int PixelWidth { get; private set; }
 
         private Dictionary<char, byte[,]> _LargeGlyphs = new Dictionary<char, byte[,]>();
         public Dictionary<char, byte[,]> LargeGlyphs => _LargeGlyphs;
@@ -33,26 +29,20 @@ namespace McduDotNet
         private Dictionary<char, byte[,]> _SmallGlyphs = new Dictionary<char, byte[,]>();
         public Dictionary<char, byte[,]> SmallGlyphs => _SmallGlyphs;
 
-        public bool CopyFrom(McduFontFile fontFile)
+        public bool CopyFrom(McduFontFile fontFile, bool useFullWidth)
         {
             if(fontFile == null) {
                 throw new ArgumentNullException(nameof(fontFile));
             }
-            var wideWidth = Math.Max(fontFile.GlyphWidth, fontFile.GlyphFullWidth);
-            var result = fontFile.GlyphWidth != PixelThinWidth
-                      || wideWidth != PixelWideWidth
-                      || fontFile.GlyphHeight != fontFile.GlyphHeight;
 
-            int calcRowBytes(int bits) => (bits / 8) + (bits % 8 != 0 ? 1 : 0);
+            var width = (useFullWidth && fontFile.GlyphFullWidth >= fontFile.GlyphWidth)
+                ? fontFile.GlyphFullWidth
+                : fontFile.GlyphWidth;
 
-            if(calcRowBytes(fontFile.GlyphWidth) != calcRowBytes(wideWidth)) {
-                throw new ArgumentOutOfRangeException(nameof(fontFile));
-            }
+            var result = PixelWidth != width || PixelHeight != fontFile.GlyphHeight;
 
-            PixelThinWidth = fontFile.GlyphWidth;
-            PixelWideWidth = wideWidth;
+            PixelWidth = width;
             PixelHeight = fontFile.GlyphHeight;
-            RowByteWidth = calcRowBytes(fontFile.GlyphWidth);
 
             result = CopyGlyphs(fontFile.LargeGlyphs, ref _LargeGlyphs) || result;
             result = CopyGlyphs(fontFile.SmallGlyphs, ref _SmallGlyphs) || result;
@@ -100,6 +90,44 @@ namespace McduDotNet
                 deviceGlyphs.Remove(unwantedGlyph);
             }
 
+            return result;
+        }
+
+        public void CopyFrom(DisplayFont other)
+        {
+            if(other == null) {
+                throw new ArgumentNullException(nameof(other));
+            }
+            PixelHeight = other.PixelHeight;
+            PixelWidth = other.PixelWidth;
+
+            Dictionary<char, byte[,]> cloneGlyphs(Dictionary<char, byte[,]> otherGlyphs)
+            {
+                var result = new Dictionary<char, byte[,]>();
+                foreach(var kvp in otherGlyphs) {
+                    var ch = kvp.Key;
+                    var bytes = kvp.Value;
+                    var copyBytes = new byte[bytes.GetLength(0), bytes.GetLength(1)];
+                    for(var d1 = 0;d1 < copyBytes.GetLength(0);++d1) {
+                        for(var d2 = 0;d2 < copyBytes.GetLength(1);++d2) {
+                            copyBytes[d1, d2] = bytes[d1, d2];
+                        }
+                    }
+                    result.Add(ch, copyBytes);
+                }
+                return result;
+            }
+
+            _LargeGlyphs = cloneGlyphs(other.LargeGlyphs);
+            _SmallGlyphs = cloneGlyphs(other.SmallGlyphs);
+        }
+
+        public void CopyTo(DisplayFont other) => other?.CopyFrom(this);
+
+        public DisplayFont Clone()
+        {
+            var result = new DisplayFont();
+            result.CopyFrom(this);
             return result;
         }
     }

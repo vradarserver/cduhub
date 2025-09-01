@@ -111,6 +111,12 @@ namespace Cduhub
 
         public DisplayPalette CurrentDisplayPalette { get; private set; }
 
+        public DisplayFont CurrentDisplayFont { get; private set; }
+
+        public int CurrentXOffset { get; private set; }
+
+        public int CurrentYOffset { get; private set; }
+
         /// <summary>
         /// Raised when the hub wants the parent application to close.
         /// </summary>
@@ -147,6 +153,17 @@ namespace Cduhub
         /// </summary>
         /// <param name="args"></param>
         protected virtual void OnDisplayChanging(DisplayChangingEventArgs args) => DisplayChanging?.Invoke(this, args);
+
+        /// <summary>
+        /// Raised when the CDU updates the font on the device.
+        /// </summary>
+        public event EventHandler<FontChangingEventArgs> FontChanging;
+
+        /// <summary>
+        /// Raises <see cref="FontChanging"/>.
+        /// </summary>
+        /// <param name="args"></param>
+        protected virtual void OnFontChanging(FontChangingEventArgs args) => FontChanging?.Invoke(this, args);
 
         /// <summary>
         /// Raised when the CDU updates the palette on the device.
@@ -188,6 +205,7 @@ namespace Cduhub
             if(_Cdu != null) {
                 _Cdu.DisplayChanging -= Cdu_DisplayChanging;
                 _Cdu.Disconnected -= Cdu_Disconnected;
+                _Cdu.FontChanging -= Cdu_FontChanging;
                 _Cdu.PaletteChanging -= Cdu_PaletteChanging;
             }
             _Cdu?.Cleanup(
@@ -267,6 +285,7 @@ namespace Cduhub
                         _Cdu.KeyUp += Cdu_KeyUp;
                         _Cdu.Disconnected += Cdu_Disconnected;
                         _Cdu.DisplayChanging += Cdu_DisplayChanging;
+                        _Cdu.FontChanging += Cdu_FontChanging;
                         _Cdu.PaletteChanging += Cdu_PaletteChanging;
                         _Cdu.AmbientLightChanged += Cdu_AmbientLightChanged;
                         _RootPage = new Pages.Root_Page(this);
@@ -498,6 +517,14 @@ namespace Cduhub
         {
             CurrentDisplayBuffer = e.DisplayBuffer;
             OnDisplayChanging(e);
+        }
+
+        private void Cdu_FontChanging(object sender, FontChangingEventArgs e)
+        {
+            CurrentDisplayFont = e.DisplayFont;
+            CurrentXOffset = e.XOffset;
+            CurrentYOffset = e.YOffset;
+            OnFontChanging(e);
         }
 
         private void Cdu_PaletteChanging(object sender, PaletteChangingEventArgs e)

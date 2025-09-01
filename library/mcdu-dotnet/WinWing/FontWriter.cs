@@ -10,6 +10,7 @@
 
 using System;
 using System.Text;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace McduDotNet.WinWing
@@ -22,7 +23,7 @@ namespace McduDotNet.WinWing
         private UsbWriter _UsbWriter;
         private DisplayFont _DisplayFont = new DisplayFont();
 
-        public DisplayFont LoadedFont => _DisplayFont;
+        public Action<FontChangingEventArgs> UpdatingDeviceCallback { get; set; }
 
         public FontWriter(UsbWriter usbWriter)
         {
@@ -37,20 +38,25 @@ namespace McduDotNet.WinWing
             int currentDisplayBrightnessPercent,
             int currentDisplayXOffset,
             int currentDisplayYOffset,
-            bool skipDuplicateCheck
+            bool skipDuplicateCheck,
+            bool suppressUpdatingDeviceCallback = false
         )
         {
             var fontUploaded = false;
 
             _UsbWriter.LockForOutput(() => {
-                var hasChanged = _DisplayFont.CopyFrom(fontFileContent);
+                var hasChanged = _DisplayFont.CopyFrom(fontFileContent, useFullWidth);
                 if(skipDuplicateCheck || hasChanged) {
                     clearScreenAction();
 
-                    var glyphWidth = useFullWidth
-                        ? _DisplayFont.PixelWideWidth
-                        : _DisplayFont.PixelThinWidth;
-                    ;
+                    var xOffset = 0x24 + currentDisplayXOffset + XOffsetForGlyphWidth(_DisplayFont.PixelWidth);
+                    var yOffset = 0x14 + currentDisplayYOffset + YOffsetForGlyphHeight(_DisplayFont.PixelHeight);
+
+                    if(UpdatingDeviceCallback != null && !suppressUpdatingDeviceCallback) {
+                        var clone = _DisplayFont.Clone();
+                        var args = new FontChangingEventArgs(_DisplayFont.Clone(), xOffset, yOffset);
+                        Task.Run(() => UpdatingDeviceCallback?.Invoke(args));
+                    }
 
                     byte[] mapBytes;
                     switch(_DisplayFont.PixelHeight) {
@@ -66,10 +72,10 @@ namespace McduDotNet.WinWing
                     packetMap.OverwritePacketsWithFontFileContent(
                         commandPrefix,
                         Percent.ToByte(currentDisplayBrightnessPercent),
-                        glyphWidth,
+                        _DisplayFont.PixelWidth,
                         _DisplayFont.PixelHeight,
-                        0x24 + currentDisplayXOffset + XOffsetForGlyphWidth(glyphWidth),
-                        0x14 + currentDisplayYOffset + YOffsetForGlyphHeight(_DisplayFont.PixelHeight),
+                        xOffset,
+                        yOffset,
                         _DisplayFont?.LargeGlyphs,
                         _DisplayFont?.SmallGlyphs
                     );

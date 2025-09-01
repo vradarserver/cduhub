@@ -115,6 +115,7 @@ namespace Cduhub.WindowsGui
                 Hub.ConnectedDeviceChanged += Hub_ConnectedDeviceChanged;
                 Hub.CloseApplication += Hub_CloseApplication;
                 Hub.DisplayChanging += Hub_DisplayChanging;
+                Hub.FontChanging += Hub_FontChanging;
                 Hub.PaletteChanging += Hub_PaletteChanging;
                 UpdateStateDisplay();
                 UpdateConnectedFlightSimulatorsDisplay();
@@ -123,7 +124,7 @@ namespace Cduhub.WindowsGui
                 _HookedConnectedFlightSimulators = true;
                 _ConnectedFlightSimulatorsListView.SendResizeAllColumns();
 
-                _CduDisplay.SetXYOffsets(16, 0);
+                _CduDisplay.CopyFromDisplayFont(Hub.CurrentDisplayFont, Hub.CurrentXOffset, Hub.CurrentYOffset);
                 _CduDisplay.CopyFromDisplayPalette(Hub.CurrentDisplayPalette);
                 _CduDisplay.CopyFromDisplayBuffer(Hub.CurrentDisplayBuffer);
             }
@@ -164,6 +165,11 @@ namespace Cduhub.WindowsGui
         private void Hub_DisplayChanging(object sender, DisplayChangingEventArgs e)
         {
             _CduDisplay.CopyFromDisplayBuffer(e.DisplayBuffer);
+        }
+
+        private void Hub_FontChanging(object sender, FontChangingEventArgs e)
+        {
+            _CduDisplay.CopyFromDisplayFont(e.DisplayFont, e.XOffset, e.YOffset);
         }
 
         private void Hub_PaletteChanging(object sender, PaletteChangingEventArgs e)

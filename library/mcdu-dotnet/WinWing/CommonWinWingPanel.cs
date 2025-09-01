@@ -195,6 +195,15 @@ namespace McduDotNet.WinWing
         /// <param name="args"></param>
         protected virtual void OnPaletteChanging(PaletteChangingEventArgs args) => PaletteChanging?.Invoke(this, args);
 
+        /// <inheritdoc/>
+        public event EventHandler<FontChangingEventArgs> FontChanging;
+
+        /// <summary>
+        /// Raises <see cref="FontChanging"/>.
+        /// </summary>
+        /// <param name="args"></param>
+        protected virtual void OnFontChanging(FontChangingEventArgs args) => FontChanging?.Invoke(this, args);
+
         public event EventHandler Disconnected;
 
         protected virtual void OnDisconnected() => Disconnected?.Invoke(this, EventArgs.Empty);
@@ -271,20 +280,18 @@ namespace McduDotNet.WinWing
             );
 
             _ScreenWriter = new ScreenWriter(_UsbWriter) {
-                UpdatingDeviceCallback = buffer => OnDisplayChanging(
-                    new DisplayChangingEventArgs(buffer)
-                ),
+                UpdatingDeviceCallback = args => OnDisplayChanging(args),
             };
             _IlluminationWriter = new IlluminationWriter(
                 _UsbWriter,
                 CommandPrefix,
                 LedIndicatorCodeMap
             );
-            _FontWriter = new FontWriter(_UsbWriter);
+            _FontWriter = new FontWriter(_UsbWriter) {
+                UpdatingDeviceCallback = args => OnFontChanging(args),
+            };
             _PaletteWriter = new PaletteWriter(_UsbWriter, CP) {
-                UpdatingDeviceCallback = buffer => OnPaletteChanging(
-                    new PaletteChangingEventArgs(buffer)
-                ),
+                UpdatingDeviceCallback = args => OnPaletteChanging(args),
             };
 
             _InputLoopCancellationTokenSource = new CancellationTokenSource();
@@ -423,7 +430,8 @@ namespace McduDotNet.WinWing
                     DisplayBrightnessPercent,
                     XOffset,
                     YOffset,
-                    skipDuplicateCheck
+                    skipDuplicateCheck,
+                    suppressUpdatingDeviceCallback: FontChanging == null
                 );
                 if(fontUploaded) {
                     // As of time of writing the packet map includes a pile of {CP}...1901 commands to
@@ -453,7 +461,7 @@ namespace McduDotNet.WinWing
                 Screen,
                 skipDuplicateCheck,
                 forceDisplayRefresh,
-                suppressUpdatingDisplayCallback: PaletteChanging == null
+                suppressUpdatingDeviceCallback: PaletteChanging == null
             );
         }
 

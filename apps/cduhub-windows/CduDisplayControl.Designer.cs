@@ -17,11 +17,15 @@
                 components.Dispose();
             }
             if(disposing) {
+                if(_PixelBuffer != null) {
+                    _PixelBuffer.Dispose();
+                    _PixelBuffer = null;
+                }
                 _FallbackLargeFont.Dispose();
                 _FallbackSmallFont.Dispose();
                 _FallbackColourBrush.Dispose();
                 DisposeOfColourBrushes();
-                _PixelBuffer.Dispose();
+                _PixelBuffer?.Dispose();
                 _PictureBoxImage.Dispose();
             }
             base.Dispose(disposing);

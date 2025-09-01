@@ -120,7 +120,7 @@ namespace McduDotNet
         event EventHandler<KeyEventArgs> KeyUp;
 
         /// <summary>
-        /// Raised on a background thread when the display is changed.
+        /// Raised on a background thread when the display is changing.
         /// </summary>
         /// <remarks>
         /// This is passed a clone of the display buffer. It is called on a background
@@ -130,7 +130,7 @@ namespace McduDotNet
         event EventHandler<DisplayChangingEventArgs> DisplayChanging;
 
         /// <summary>
-        /// Raised on a background thread when the display palette is changed.
+        /// Raised on a background thread when the display palette is changing.
         /// </summary>
         /// <remarks>
         /// This is passed a clone of the display palette. It is called on a background
@@ -138,6 +138,16 @@ namespace McduDotNet
         /// of the display or cause the program to deadlock on the USB device lock.
         /// </remarks>
         event EventHandler<PaletteChangingEventArgs> PaletteChanging;
+
+        /// <summary>
+        /// Raised on a background thread when the font is changing.
+        /// </summary>
+        /// <remarks>
+        /// This is passed a clone of the display font. It is called on a background
+        /// thread so that the event handler cannot inadvertently slow down the updating
+        /// of the display or cause the program to deadlock on the USB device lock.
+        /// </remarks>
+        event EventHandler<FontChangingEventArgs> FontChanging;
 
         /// <summary>
         /// Raised when <see cref="LeftAmbientLightNative"/> changes.

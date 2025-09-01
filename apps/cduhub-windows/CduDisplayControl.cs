@@ -23,15 +23,20 @@ namespace Cduhub.WindowsGui
     /// </summary>
     public partial class CduDisplayControl : UserControl
     {
+        private const int _BytesPerPixel = 4;
+        private const PixelFormat _PixelFormat = PixelFormat.Format32bppArgb;
+        private const int _FallbackPixelBufferPixelWidth = 580;
+        private const int _FallbackPixelBufferPixelHeight = 480;
+
         /// <summary>
         /// A bitmap that's the same dimensions as the device's screen.
         /// </summary>
-        private Bitmap _PixelBuffer = new(580, 480, PixelFormat.Format32bppArgb);
+        private Bitmap _PixelBuffer = new(_FallbackPixelBufferPixelWidth, _FallbackPixelBufferPixelHeight, _PixelFormat);
 
         /// <summary>
         /// The bitmap that is shown in the picture box.
         /// </summary>
-        private Bitmap _PictureBoxImage = new(580, 480, PixelFormat.Format32bppArgb);
+        private Bitmap _PictureBoxImage = new(_FallbackPixelBufferPixelWidth, _FallbackPixelBufferPixelHeight, _PixelFormat);
 
         /// <summary>
         /// The colours associated with each display colour index.
@@ -42,11 +47,6 @@ namespace Cduhub.WindowsGui
         /// Exactly the same colours as per <see cref="_Colours"/> except in brush form.
         /// </summary>
         private Brush[] _ColourBrushes;
-
-        /// <summary>
-        /// The font that the display is using.
-        /// </summary>
-        private McduFontFile _CurrentFont = null;
 
         /// <summary>
         /// The font used for large font output when <see cref="CurrentFont"/> is null.
@@ -67,7 +67,11 @@ namespace Cduhub.WindowsGui
 
         private const int _FallbackFontPixelHeight = 31;
 
+        private DisplayColour _FallbackDisplayColour = new DisplayColour() { PackedValue = 0xffffffff, };
+
         private DisplayBuffer _DisplayBuffer;
+
+        private DisplayFont _DisplayFont;
 
         private DisplayPalette _DisplayPalette;
 
@@ -111,6 +115,34 @@ namespace Cduhub.WindowsGui
         }
 
         /// <summary>
+        /// Copies the font (and optionally the X and Y offsets uploaded with the font) into the control.
+        /// </summary>
+        /// <param name="displayFont"></param>
+        /// <param name="xOffset"></param>
+        /// <param name="yOffset"></param>
+        public void CopyFromDisplayFont(DisplayFont displayFont, int xOffset = int.MinValue, int yOffset = int.MinValue)
+        {
+            if(InvokeRequired) {
+                BeginInvoke(new MethodInvoker(() => CopyFromDisplayFont(displayFont, xOffset, yOffset)));
+            } else {
+                _XOffset = xOffset == int.MinValue ? _XOffset : xOffset - 0x24;
+                _YOffset = yOffset == int.MinValue ? _YOffset : yOffset - 0x17;
+
+                _DisplayFont = displayFont;
+
+                if(_PixelBuffer != null) {
+                    _PixelBuffer.Dispose();
+                    _PixelBuffer = null;
+                }
+
+                if(_DisplayBuffer != null) {
+                    CopyDisplayBufferToPixelBuffer();
+                    RefreshPictureBox();
+                }
+            }
+        }
+
+        /// <summary>
         /// Copies the palette into the control.
         /// </summary>
         /// <param name="displayPalette"></param>
@@ -125,18 +157,6 @@ namespace Cduhub.WindowsGui
                     CopyDisplayBufferToPixelBuffer();
                     RefreshPictureBox();
                 }
-            }
-        }
-
-        public void SetXYOffsets(int xOffset, int yOffset)
-        {
-            if(InvokeRequired) {
-                BeginInvoke(new MethodInvoker(() => SetXYOffsets(xOffset, yOffset)));
-            } else {
-                _XOffset = xOffset;
-                _YOffset = yOffset;
-                CopyDisplayBufferToPixelBuffer();
-                RefreshPictureBox();
             }
         }
 
@@ -162,36 +182,57 @@ namespace Cduhub.WindowsGui
         private void CopyDisplayBufferToPixelBuffer()
         {
             var displayBuffer = _DisplayBuffer;
+            var displayFont = _DisplayFont;
+
             if(displayBuffer != null) {
+                if(_PixelBuffer == null) {
+                    CreatePixelBuffer(displayBuffer, displayFont);
+                }
                 using(var graphics = Graphics.FromImage(_PixelBuffer)) {
                     graphics.Clear(_Colours == null
                         ? Color.Black
                         : _Colours[0]
                     );
 
-                    for(var rowIdx = 0;rowIdx < displayBuffer.CountRows;++rowIdx) {
-                        for(var cellIdx = 0;cellIdx < displayBuffer.CountCells;++cellIdx) {
-                            var ch = displayBuffer.Characters[rowIdx, cellIdx];
-                            var fontAndColour = displayBuffer.FontsAndColours[rowIdx, cellIdx];
-                            DrawCharacterAt(graphics, rowIdx, cellIdx, ch, fontAndColour);
-                        }
+                    if(displayFont == null) {
+                        DrawCharactersWithFallbackFont(graphics, displayBuffer);
                     }
+                }
+
+                if(displayFont != null) {
+                    DrawCharactersWithDisplayFont(displayFont, displayBuffer);
                 }
             }
         }
 
-        private void DrawCharacterAt(
-            Graphics graphics,
-            int rowIdx,
-            int cellIdx,
-            char ch,
-            DisplayBufferFontAndColour fontAndColour
-        )
+        private void CreatePixelBuffer(DisplayBuffer displayBuffer, DisplayFont displayFont)
         {
-            if(_CurrentFont == null) {
-                DrawCharacterUsingFallbackFontAt(graphics, rowIdx, cellIdx, ch, fontAndColour);
-            } else {
-                ;
+            var width = displayBuffer == null || displayFont == null
+                ? _FallbackFontPixelWidth
+                : (_XOffset * 2) + (displayBuffer.CountCells * displayFont.PixelWidth);
+            var height = displayBuffer == null || displayFont == null
+                ? _FallbackFontPixelHeight
+                : (_YOffset * 2) + (displayBuffer.CountRows * displayFont.PixelHeight);
+
+            var pictureBoxBuffer = new Bitmap(width, height, _PixelFormat);
+            using(var graphic = Graphics.FromImage(pictureBoxBuffer)) {
+                graphic.Clear(Color.Black);
+            }
+            _PictureBox.Image = pictureBoxBuffer;
+            _PictureBoxImage.Dispose();
+            _PictureBoxImage = pictureBoxBuffer;
+
+            _PixelBuffer = new Bitmap(width, height, _PixelFormat);
+        }
+
+        private void DrawCharactersWithFallbackFont(Graphics graphics, DisplayBuffer displayBuffer)
+        {
+            for(var rowIdx = 0;rowIdx < displayBuffer.CountRows;++rowIdx) {
+                for(var cellIdx = 0;cellIdx < displayBuffer.CountCells;++cellIdx) {
+                    var ch = displayBuffer.Characters[rowIdx, cellIdx];
+                    var fontAndColour = displayBuffer.FontsAndColours[rowIdx, cellIdx];
+                    DrawCharacterUsingFallbackFontAt(graphics, rowIdx, cellIdx, ch, fontAndColour);
+                }
             }
         }
 
@@ -221,6 +262,75 @@ namespace Cduhub.WindowsGui
                 _XOffset + (cellIdx * _FallbackFontPixelWidth),
                 _YOffset + (rowIdx * _FallbackFontPixelHeight)
             );
+        }
+
+        private void DrawCharactersWithDisplayFont(DisplayFont displayFont, DisplayBuffer displayBuffer)
+        {
+            unsafe {
+                var bitmapData = _PixelBuffer.LockBits(
+                    new Rectangle(0, 0, _PixelBuffer.Width, _PixelBuffer.Height),
+                    ImageLockMode.ReadWrite,
+                    _PixelBuffer.PixelFormat
+                );
+                try {
+                    for(var rowIdx = 0;rowIdx < displayBuffer.CountRows;++rowIdx) {
+                        for(var cellIdx = 0;cellIdx < displayBuffer.CountCells;++cellIdx) {
+                            var ch = displayBuffer.Characters[rowIdx, cellIdx];
+                            var fontAndColour = displayBuffer.FontsAndColours[rowIdx, cellIdx];
+                            DrawCharacterUsingDisplayFontAt(bitmapData, displayFont, rowIdx, cellIdx, ch, fontAndColour);
+                        }
+                    }
+                } finally {
+                    _PixelBuffer.UnlockBits(bitmapData);
+                }
+            }
+        }
+
+        private unsafe void DrawCharacterUsingDisplayFontAt(
+            BitmapData bitmapData,
+            DisplayFont displayFont,
+            int screenRowIdx,
+            int screenCellIdx,
+            char ch,
+            DisplayBufferFontAndColour fontAndColour
+        )
+        {
+            var scanWidth = bitmapData.Stride;
+            var topLeftAddress = (byte*)bitmapData.Scan0;
+            var bottomRightAddress = (byte*)bitmapData.Scan0 + (scanWidth * bitmapData.Height);
+            var colourIdx = fontAndColour.ForegroundColourIndex;
+            var colour = colourIdx < _DisplayPalette?.CountColours
+                ? _DisplayPalette.Colours[colourIdx]
+                : _FallbackDisplayColour;
+
+            var glyphs = fontAndColour.IsSmallFont
+                ? displayFont.SmallGlyphs
+                : displayFont.LargeGlyphs;
+            if(glyphs.TryGetValue(ch, out var glyphBitmap)) {
+                for(var glyphRowIdx = 0;glyphRowIdx < glyphBitmap.GetLength(0);++glyphRowIdx) {
+                    var glyphBitCount = 0;
+                    for(var glyphByteIdx = 0;glyphByteIdx < glyphBitmap.GetLength(1);++glyphByteIdx) {
+                        var glyphByte = glyphBitmap[glyphRowIdx, glyphByteIdx];
+                        for(var byteBit = 0x80;glyphBitCount < displayFont.PixelWidth && byteBit != 0;byteBit >>= 1, ++glyphBitCount) {
+                            var pixelLit = (glyphByte & byteBit) == byteBit;
+                            if(pixelLit) {
+                                var pixelAddress = topLeftAddress;
+                                pixelAddress += scanWidth * _YOffset;
+                                pixelAddress += scanWidth * (screenRowIdx * displayFont.PixelHeight);
+                                pixelAddress += scanWidth * glyphRowIdx;
+                                pixelAddress += (_XOffset + glyphBitCount) * _BytesPerPixel;
+                                pixelAddress += screenCellIdx * displayFont.PixelWidth * _BytesPerPixel;
+                                if(pixelAddress >= topLeftAddress && pixelAddress <= bottomRightAddress - _BytesPerPixel) {
+                                    pixelAddress[0] = colour.B;
+                                    pixelAddress[1] = colour.G;
+                                    pixelAddress[2] = colour.R;
+                                    pixelAddress[3] = colour.A;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private void RefreshPictureBox()

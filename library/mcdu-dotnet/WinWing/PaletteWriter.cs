@@ -25,7 +25,7 @@ namespace McduDotNet.WinWing
         private UsbWriter _UsbWriter;
         private DisplayPalette _DisplayPalette;
 
-        public Action<DisplayPalette> UpdatingDeviceCallback { get; set; }
+        public Action<PaletteChangingEventArgs> UpdatingDeviceCallback { get; set; }
 
         public PaletteWriter(UsbWriter usbWriter, string commandPrefix)
         {
@@ -66,7 +66,7 @@ namespace McduDotNet.WinWing
             Screen screen,
             bool skipDuplicateCheck = false,
             bool forceDisplayRefresh = true,
-            bool suppressUpdatingDisplayCallback = false
+            bool suppressUpdatingDeviceCallback = false
         )
         {
             _UsbWriter.LockForOutput(() => {
@@ -76,9 +76,9 @@ namespace McduDotNet.WinWing
                 var hasChanged = colourArray != null
                     && _DisplayPalette.CopyFrom(colourArray);
                 if(skipDuplicateCheck || hasChanged) {
-                    if(UpdatingDeviceCallback != null && !suppressUpdatingDisplayCallback) {
-                        var clone = _DisplayPalette.Clone();
-                        Task.Run(() => UpdatingDeviceCallback?.Invoke(clone));
+                    if(UpdatingDeviceCallback != null && !suppressUpdatingDeviceCallback) {
+                        var args = new PaletteChangingEventArgs(_DisplayPalette.Clone());
+                        Task.Run(() => UpdatingDeviceCallback?.Invoke(args));
                     }
 
                     byte seq = 1;

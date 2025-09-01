@@ -27,7 +27,7 @@ namespace McduDotNet.WinWing
         private readonly char[] _DisplayCharacterBuffer = new char[1];
         private int _DisplayPacketOffset = 0;
 
-        public Action<DisplayBuffer> UpdatingDeviceCallback { get; set; }
+        public Action<DisplayChangingEventArgs> UpdatingDeviceCallback { get; set; }
 
         public ScreenWriter(UsbWriter usbWriter)
         {
@@ -54,8 +54,8 @@ namespace McduDotNet.WinWing
                 var hasChanged = _DisplayBuffer.CopyFrom(screen);
                 if(skipDuplicateCheck || hasChanged) {
                     if(UpdatingDeviceCallback != null && !suppressUpdatingDeviceCallback) {
-                        var clone = _DisplayBuffer.Clone();
-                        Task.Run(() => UpdatingDeviceCallback?.Invoke(clone));
+                        var args = new DisplayChangingEventArgs(_DisplayBuffer.Clone());
+                        Task.Run(() => UpdatingDeviceCallback?.Invoke(args));
                     }
 
                     InitialiseDisplayPacket();
