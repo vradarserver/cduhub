@@ -15,7 +15,10 @@ using System.Linq;
 namespace McduDotNet
 {
     /// <summary>
-    /// Describes a font loaded into the device.
+    /// Describes a font loaded into the device. This is similar to <see
+    /// cref="McduFontFile"/> but it is at a lower level. It is not intended as a random
+    /// write buffer, it is intended to be populated with an entire font file in one go
+    /// and to represent that buffer's contents reasonably efficiently.
     /// </summary>
     public class DisplayFont
     {

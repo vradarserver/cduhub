@@ -13,7 +13,10 @@ using System;
 namespace McduDotNet
 {
     /// <summary>
-    /// Describes the content of the display.
+    /// Describes the content of the display. This is similar to <see cref="Screen"/> but
+    /// it is at a lower level. It is not intended as a random write buffer, it is
+    /// intended to be populated with an entire screen buffer in one go and to represent
+    /// that buffer's contents reasonably efficiently.
     /// </summary>
     public class DisplayBuffer
     {

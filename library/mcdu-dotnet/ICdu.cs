@@ -14,7 +14,7 @@ using System.Collections.Generic;
 namespace McduDotNet
 {
     /// <summary>
-    /// The common interface for all CDU devices that the library can display text on and
+    /// The common interface for all CDU devices that the library can display text on, and
     /// take keyboard input from.
     /// </summary>
     public interface ICdu : IDisposable
@@ -25,18 +25,26 @@ namespace McduDotNet
         DeviceIdentifier DeviceId { get; }
 
         /// <summary>
-        /// The MCDU's display.
+        /// The CDU screen buffer. Changes to the screen buffer are not sent to the device
+        /// until <see cref="RefreshDisplay"/> is called.
         /// </summary>
         Screen Screen { get; }
 
         /// <summary>
-        /// The MCDU's LED lights.
+        /// The CDU LED light buffer. Changes to the LED lights are not sent to the device
+        /// until <see cref="RefreshLeds"/> is called.
         /// </summary>
         Leds Leds { get; }
 
         /// <summary>
-        /// Returns a read-only collection of LEDs that the device supports. You can read
-        /// and write unsupported LEDs without issue, they just won't do anything.
+        /// The CDU LED palette buffer. Changes to the palette buffer are not sent to the
+        /// device until <see cref="RefreshPalette"/> is called.
+        /// </summary>
+        Palette Palette { get; }
+
+        /// <summary>
+        /// Returns a read-only collection of LEDs that the device supports. Reads and
+        /// writes of unsupported LEDs are silently ignored.
         /// </summary>
         IReadOnlyList<Led> SupportedLeds { get; }
 
@@ -46,32 +54,30 @@ namespace McduDotNet
         IReadOnlyList<Key> SupportedKeys { get; }
 
         /// <summary>
-        /// The MCDU's colour palette.
-        /// </summary>
-        Palette Palette { get; }
-
-        /// <summary>
-        /// Gets and sets the display brightness as a percentage between 0 and 100.
+        /// Gets and sets the display backlight as a percentage between 0 and 100. Changes to
+        /// this value are immediately sent to the device, but see <see cref="RefreshBrightnesses"/>.
         /// </summary>
         int DisplayBrightnessPercent { get; set; }
 
         /// <summary>
-        /// Gets and sets the backlight brightness as a percentage between 0 and 100.
+        /// Gets and sets the keyboard backlight as a percentage between 0 and 100. Changes to
+        /// this value are immediately sent to the device, but see <see cref="RefreshBrightnesses"/>.
         /// </summary>
         int BacklightBrightnessPercent { get; set; }
 
         /// <summary>
-        /// Gets and sets the LED brightness as a percentage between 0 and 100.
+        /// Gets and sets the LED intensity as a percentage between 0 and 100. Changes to
+        /// this value are immediately sent to the device, but see <see cref="RefreshBrightnesses"/>.
         /// </summary>
         int LedBrightnessPercent { get; set; }
 
         /// <summary>
-        /// Gets and sets the offset of the display from the left edge.
+        /// Gets and sets the offset of the left edge of the screen text.
         /// </summary>
         int XOffset { get; set; }
 
         /// <summary>
-        /// Gets and sets the offset of the display from the top edge.
+        /// Gets and sets the offset of the top edge of the screen text.
         /// </summary>
         int YOffset { get; set; }
 
@@ -105,7 +111,7 @@ namespace McduDotNet
         AutoBrightnessSettings AutoBrightness { get; }
 
         /// <summary>
-        /// A fluent interface for drawing into the <see cref="Screen"/>.
+        /// A fluent interface for drawing into the <see cref="Screen"/> buffer.
         /// </summary>
         Compositor Output { get; }
 
@@ -123,9 +129,10 @@ namespace McduDotNet
         /// Raised on a background thread when the display is changing.
         /// </summary>
         /// <remarks>
-        /// This is passed a clone of the display buffer. It is called on a background
-        /// thread so that the event handler cannot inadvertently slow down the updating
-        /// of the display or cause the program to deadlock on the USB device lock.
+        /// This is passed a clone of an internal display buffer. It is called on a
+        /// background thread so that the event handler cannot inadvertently slow down the
+        /// updating of the display, or cause the program to deadlock on the USB device
+        /// lock.
         /// </remarks>
         event EventHandler<DisplayChangingEventArgs> DisplayChanging;
 
@@ -133,9 +140,10 @@ namespace McduDotNet
         /// Raised on a background thread when the display palette is changing.
         /// </summary>
         /// <remarks>
-        /// This is passed a clone of the display palette. It is called on a background
-        /// thread so that the event handler cannot inadvertently slow down the updating
-        /// of the display or cause the program to deadlock on the USB device lock.
+        /// This is passed a clone of an internal display palette buffer. It is called on
+        /// a background thread so that the event handler cannot inadvertently slow down
+        /// the updating of the display, or cause the program to deadlock on the USB
+        /// device lock.
         /// </remarks>
         event EventHandler<PaletteChangingEventArgs> PaletteChanging;
 
@@ -143,9 +151,10 @@ namespace McduDotNet
         /// Raised on a background thread when the font is changing.
         /// </summary>
         /// <remarks>
-        /// This is passed a clone of the display font. It is called on a background
-        /// thread so that the event handler cannot inadvertently slow down the updating
-        /// of the display or cause the program to deadlock on the USB device lock.
+        /// This is passed a clone of an internal display font buffer. It is called on a
+        /// background thread so that the event handler cannot inadvertently slow down the
+        /// updating of the display, or cause the program to deadlock on the USB device
+        /// lock.
         /// </remarks>
         event EventHandler<FontChangingEventArgs> FontChanging;
 
@@ -165,7 +174,7 @@ namespace McduDotNet
         event EventHandler AmbientLightChanged;
 
         /// <summary>
-        /// Raised when the MCDU has been disconnected.
+        /// Raised when the USB device has been disconnected.
         /// </summary>
         event EventHandler Disconnected;
 
@@ -173,8 +182,9 @@ namespace McduDotNet
         /// Copies the content of <see cref="Screen"/> to the display.
         /// </summary>
         /// <param name="skipDuplicateCheck">
-        /// The display is normally not refreshed if the library thinks that nothing has changed since the last
-        /// refresh. Setting this parameter to true skips that test.
+        /// The display is normally not refreshed if the library has not detected a change
+        /// to the <see cref="Screen"/> buffer content since the last call. Setting this
+        /// parameter to true skips that test.
         /// </param>
         void RefreshDisplay(bool skipDuplicateCheck = false);
 
@@ -182,8 +192,9 @@ namespace McduDotNet
         /// Copies the content of <see cref="Leds"/> to the unit.
         /// </summary>
         /// <param name="skipDuplicateCheck">
-        /// The LEDs are normally not refreshed if the library thinks that nothing has changed since the last
-        /// refresh. Setting this parameter to true skips that test.
+        /// The LEDs are normally not refreshed if the library has not detected a change
+        /// to the <see cref="Leds"/> buffer content since the last call. Setting this
+        /// parameter to true skips that test.
         /// </param>
         void RefreshLeds(bool skipDuplicateCheck = false);
 
@@ -191,27 +202,30 @@ namespace McduDotNet
         /// Copies the content of <see cref="Palette"/> to the device.
         /// </summary>
         /// <param name="skipDuplicateCheck">
-        /// The palette is not normally refreshed if the library thinks that nothing has
-        /// changed since the last refresh. Setting this parameter to true skips that
-        /// test.
+        /// The palette is normally not refreshed if the library has not detected a change
+        /// to the <see cref="Palette"/> buffer content since the last call. Setting this
+        /// parameter to true skips that test.
         /// </param>
         /// <param name="forceDisplayRefresh">
         /// Refreshing the palette has no effect on text already on screen. Setting this
         /// flag to true calls <see cref="RefreshDisplay"/> with the duplicate check
-        /// skipped.
+        /// skipped after the palette has been changed.
         /// </param>
         void RefreshPalette(bool skipDuplicateCheck = false, bool forceDisplayRefresh = true);
 
         /// <summary>
-        /// Sets the backlight, display and LED brightnesses even if the code believes that
-        /// they have not changed.
+        /// Resets the device's backlight and LED intensities to the <see
+        /// cref="DisplayBrightnessPercent"/>, <see cref="BacklightBrightnessPercent"/>
+        /// and <see cref="LedBrightnessPercent"/> values. Note that, unlike most other
+        /// properties, changes to the backlight values are immediately sent to the device,
+        /// you do not need to routintely call this function.
         /// </summary>
         void RefreshBrightnesses();
 
         /// <summary>
-        /// Apply the auto-brightness settings. Changes to the settings are not automatically
-        /// applied as they are made, you need to call this once the settings are completely
-        /// configured.
+        /// Apply the auto-brightness settings. Changes to the auto-brightness settings
+        /// are not automatically applied as they are made, you need to call this once the
+        /// settings are completely configured.
         /// </summary>
         void ApplyAutoBrightness();
 
