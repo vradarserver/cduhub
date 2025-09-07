@@ -33,7 +33,8 @@ https://github.com/vradarserver/cduhub/releases/latest
 
 ### Unix-like Operating Systems
 
-*TBD*
+The intention is to build and release FlatPak bundles that can be run under
+any distro that supports FlatPak. However, this has not yet been done.
 
 If you're comfortable with compiling .NET Core applications on your machine,
 and you have the .NET Core 8 SDK installed, then you can build and run the
@@ -42,6 +43,9 @@ CLI version of the application by cloning the repository and running this:
 ```bash
 dotnet run --project apps/cduhub-cli/cduhub-cli.csproj
 ```
+
+Instructions on how to get hold of the .NET Core SDK, clone the respository
+and build the source [can be found here](docs/build-for-unix-like.md).
 
 ## Pages
 
