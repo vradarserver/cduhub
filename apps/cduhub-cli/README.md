@@ -22,3 +22,17 @@ it can find.
 
 The program will keep running until you either press Q on the console or
 use the QUIT option on the CDU device.
+
+### list
+
+Dumps lists of things.
+
+#### devices
+
+Dumps a list of devices that the HIDSharp library can detect. CDU Hub relies
+upon HIDSharp for communication with the CDU, if HIDSharp can't see the CDU
+then things are not going to work.
+
+`--winwing`: Filters to only devices with the WinWing vendor ID (0x4098).
+
+`--path`: Shows the device path.

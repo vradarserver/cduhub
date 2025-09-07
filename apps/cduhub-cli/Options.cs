@@ -9,45 +9,19 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System.CommandLine;
-using Cduhub.CommandLine;
 
 namespace Cduhub.CommandLineInterface
 {
-    class Commands
+    class Options
     {
-        public static readonly Command ListDevices = new("devices", "Dumps all attached HID devices") {
-            Options.OnlyWinWing,
-            Options.ShowDevicePath,
+        public static readonly Option<bool> OnlyWinWing = new("--winwing") {
+            Description = "Only show WinWing devices (vendor ID 0x4098)",
+            DefaultValueFactory = _ => false,
         };
 
-        public static readonly Command List = new("list", "Lists things") {
-            Commands.ListDevices,
+        public static readonly Option<bool> ShowDevicePath = new("--path") {
+            Description = "Show device paths",
+            DefaultValueFactory = _ => false,
         };
-
-        public static readonly Command Run = new("run", "Runs the CDU Hub (default command)") {
-        };
-
-        public static readonly RootCommand RootCommand = new("The command-line interface version of the CDU Hub") {
-            Commands.Run,
-            Commands.List,
-        };
-
-        static Commands()
-        {
-            RootCommand.EnforceInHouseStandards();
-
-            ListDevices.SetAction(parser => {
-                var command = new Command_ListDevices() {
-                    FilterToWinWing = parser.GetValue(Options.OnlyWinWing),
-                    ShowDevicePath = parser.GetValue(Options.ShowDevicePath),
-                };
-                Program.Worked = command.Run();
-            });
-
-            Run.SetAction(parser => {
-                var command = new Command_Run();
-                Program.Worked = command.Run();
-            });
-        }
     }
 }

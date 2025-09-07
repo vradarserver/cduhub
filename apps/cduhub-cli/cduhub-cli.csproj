@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="HidSharp" Version="2.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\library\cduhub-commandline\cduhub-commandline.csproj" />
     <ProjectReference Include="..\..\library\cduhub\cduhub.csproj" />
   </ItemGroup>
