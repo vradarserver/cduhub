@@ -10,13 +10,16 @@ https://www.nuget.org/packages/mcdu-dotnet/
 To instantiate a CDU object call the `CduFactory` static:
 
 ```
-using(var mcdu = CduFactory.ConnectLocal())
+using(var cdu = CduFactory.ConnectLocal())
 ```
 
 You can pass an override to specify which CDU product to instantiate. There is
 also a function that enumerates the CDU USB devices that are currently active.
 
-The `ConnectLocal` function returns an instance of an `ICdu` interface.
+The `ConnectLocal` function returns an instance of an `ICdu` interface. The latest
+version of the interface is here:
+
+https://github.com/vradarserver/cduhub/blob/main/library/mcdu-dotnet/ICdu.cs
 
 
 
