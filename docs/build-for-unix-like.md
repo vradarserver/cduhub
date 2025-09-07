@@ -83,8 +83,6 @@ git version
 If it comes back with a version number then all is good. Otherwise you
 should be able to install it via your distro's package manager.
 
-On Windows I would recommend installing Git for Windows from
-https://git-scm.com/downloads/win.
 
 
 ## Download the source
@@ -112,7 +110,7 @@ the terminal would be:
   `cd src`
 * Clone CDU Hub into a directory called cduhub under src (only do this once):<br/>
   `git clone https://github.com/vradarserver/cduhub.git`
-* Switch to the cduhub directory:
+* Switch to the cduhub directory:<br/>
   `cd cduhub`
 
 If you have already done that and you just want to update the source then
@@ -132,7 +130,7 @@ into the cduhub directory and do:
 git checkout v1.4.1
 ```
 
-Replace `v1.4.1` with the version number that you want to download.
+Replace `1.4.1` with the version number that you want to download.
 
 It will show you a bunch of warnings about being on a "detached HEAD", but it
 should be using the source code for that version.
@@ -146,8 +144,9 @@ git checkout main
 
 ### ZIP or tarball
 
-If you're not using git and you just want to download a ZIP or tarball of
-the source for the latest release can be downloaded from github here:
+If you're not using git and you just want to download the source manually then
+each release page has both a ZIP and a tarball archive of the source. The archive
+for the latest version can be found here:
 
 ```
 https://github.com/vradarserver/cduhub/releases/latest
@@ -155,14 +154,16 @@ https://github.com/vradarserver/cduhub/releases/latest
 
 ## Building and running from the command-line
 
-The simplest way to get CDU Hub built and running is to run this from
-the folder where you cloned the source:
+CD into the folder where you cloned or decompressed the source and then run
+this from the command-line:
 
 ```
 dotnet run --project apps/cduhub-cli/cduhub-cli.csproj
 ```
+
 As of time of writing it'll probably show a warning about the dependency
 on a pre-release version of `System.CommandLine`, and then it'll start up.
+You can ignore the warning.
 
 The documentation for the cduhub-cli program is here:
 
