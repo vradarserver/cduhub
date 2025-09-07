@@ -80,6 +80,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{8E066D89-5
 	ProjectSection(SolutionItems) = preProject
 		docs\menu-init.md = docs\menu-init.md
 		docs\menu.md = docs\menu.md
+		docs\README.md = docs\README.md
 		docs\screen-clock.png = docs\screen-clock.png
 		docs\screen-flightsims-fenix-init.png = docs\screen-flightsims-fenix-init.png
 		docs\screen-flightsims-fenix-mcdu.png = docs\screen-flightsims-fenix-mcdu.png
