@@ -35,16 +35,15 @@ The .NET Core 8 SDK is available as a package:
 sudo apt install dotnet-sdk-8.0
 ```
 
-#### All other distros / Windows
+#### All other distros
 
 If the SDK is not available as a package (check your distro documentation)
 then it is available for download from Microsoft's site here:
 
 https://dotnet.microsoft.com/en-us/download/dotnet/8.0
 
-There are lots of downloads on there - you only need one, which is the
-SDK. If the page offers different versions of the SDK then install the
-latest version.
+There are lots of downloads on there - you only need the SDK. If the page
+offers different versions of the SDK then take the latest version.
 
 ### Check that the .NET Core 8 SDK is present (optional)
 
@@ -71,15 +70,16 @@ Git is a source control system. It lets you download the source code with
 a single command from the command-line, and likewise download any updates
 to the source with a single command.
 
-It is likely that you already have git installed with your distro. To check
-to see if that is the case run this from the command-line:
+It is likely that you already have git installed with your distro. You can
+run this from the command-line to see if you already have it installed:
 
 ```
 git version
 ```
 
 If it comes back with a version number then all is good. Otherwise you
-should be able to install it via your distro's package manager.
+should be able to install it via your distro's package manager. The package
+is typically called "git".
 
 
 
