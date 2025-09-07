@@ -12,6 +12,10 @@ These are the bits that all(*) WinWing panels have in common, more or less.
 (*) "All" is stretching things a bit, I've only looked at two (so far).
 
 
+## FCU and EFIS Notes
+
+Notes regarding the FCU and EFIS panels [can be found here](FcuAndEfis/README.md).
+
 
 ## Command Prefix
 
