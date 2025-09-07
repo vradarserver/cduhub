@@ -44,7 +44,7 @@ Replace `{VV}` with the appropriate two byte variable value.
 
 ### Variable values for all devices
 
-| Value   | Effect |
+| Value   | Sets |
 | ---     | --- |
 | `00 VV` | Panel backlight (00 to FF) |
 | `01 VV` | LCD backlight (00 to FF) |
@@ -52,7 +52,7 @@ Replace `{VV}` with the appropriate two byte variable value.
 
 ### Variable values for both EFIS panels
 
-| Value   | Effect |
+| Value   | Sets |
 | ---     | --- |
 | `03 0V` | FD LED (0 = off, 1 = on) |
 | `04 0V` | LS LED (0 = off, 1 = on) |
@@ -64,7 +64,7 @@ Replace `{VV}` with the appropriate two byte variable value.
 
 ### Variable values for FCU
 
-| Value   | Effect |
+| Value   | Sets |
 | ---     | --- |
 | `03 0V` | LOC LED (0 = off, 1 = on) |
 | `05 0V` | AP1 LED (0 = off, 1 = on) |
