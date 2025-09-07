@@ -122,5 +122,5 @@ also trying to send output to the USB device, or while another
 program is responding to input from the USB device, then things
 will get freaky.
 
-Ensure that the other program is not trying to drive the device
+Ensure that another program is not trying to drive the device
 before leaving passthrough mode.
