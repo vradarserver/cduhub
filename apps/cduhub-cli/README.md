@@ -1,7 +1,8 @@
 ﻿# CDU Hub Command-Line Interface
 
 This runs the CDU Hub library from the command-line. It has no GUI and so
-it should work under any operating system.
+it should work under any operating system that Microsoft have released a
+.NET Core 8 runtime for.
 
 
 
