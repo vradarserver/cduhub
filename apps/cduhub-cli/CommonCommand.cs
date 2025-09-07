@@ -8,36 +8,36 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Globalization;
+
 namespace Cduhub.CommandLineInterface
 {
-    class Program
+    /// <summary>
+    /// Optional base for the CLI commands.
+    /// </summary>
+    class CommonCommand
     {
-        public static bool Worked { get; set; } = true;
-
-        static int Main(string[] args)
+        protected static void OutputTimestamped(string note)
         {
-            int errorCode;
-
-            try {
-                if(args.Length == 0) {
-                    args = [ Commands.Run.Name ];
-                }
-
-                errorCode = Commands
-                    .RootCommand
-                    .Parse(args)
-                    .Invoke();
-
-                if(!Worked) {
-                    errorCode = 1;
-                }
-            } catch(Exception ex) {
-                Console.WriteLine("Caught exception during processing:");
-                Console.WriteLine(ex);
-                errorCode = 2;
+            if(String.IsNullOrEmpty(note)) {
+                Console.WriteLine();
+            } else {
+                Console.WriteLine($"[{BuildTimestamp()}] {note}");
             }
+        }
 
-            return errorCode;
+        protected static string BuildTimestamp(DateTime? time = null)
+        {
+            var now = time ?? DateTime.Now;
+
+            // Note that we need to use the invariant culture to work around
+            // Microsoft's new handling of MMM, wherein it's no longer guaranteed to
+            // be a consistent length.
+            var date = now
+                .ToString("dd-MMM", CultureInfo.InvariantCulture)
+                .ToUpperInvariant();
+
+            return $"{date} {now:HH:mm:ss}";
         }
     }
 }

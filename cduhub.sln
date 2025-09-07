@@ -78,6 +78,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "inprocess-plugin", "library
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{8E066D89-5048-41FE-96DA-A844A333F52D}"
 	ProjectSection(SolutionItems) = preProject
+		docs\build-for-unix-like.md = docs\build-for-unix-like.md
 		docs\menu-init.md = docs\menu-init.md
 		docs\menu.md = docs\menu.md
 		docs\README.md = docs\README.md

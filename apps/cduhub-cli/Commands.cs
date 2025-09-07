@@ -8,36 +8,28 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.CommandLine;
+using Cduhub.CommandLine;
+
 namespace Cduhub.CommandLineInterface
 {
-    class Program
+    class Commands
     {
-        public static bool Worked { get; set; } = true;
+        public static readonly Command Run = new("run", "Runs the CDU Hub (default command)") {
+        };
 
-        static int Main(string[] args)
+        public static readonly RootCommand RootCommand = new("The command-line interface version of the CDU Hub") {
+            Commands.Run,
+        };
+
+        static Commands()
         {
-            int errorCode;
+            RootCommand.EnforceInHouseStandards();
 
-            try {
-                if(args.Length == 0) {
-                    args = [ Commands.Run.Name ];
-                }
-
-                errorCode = Commands
-                    .RootCommand
-                    .Parse(args)
-                    .Invoke();
-
-                if(!Worked) {
-                    errorCode = 1;
-                }
-            } catch(Exception ex) {
-                Console.WriteLine("Caught exception during processing:");
-                Console.WriteLine(ex);
-                errorCode = 2;
-            }
-
-            return errorCode;
+            Run.SetAction(parser => {
+                var command = new Command_Run();
+                Program.Worked = command.Run();
+            });
         }
     }
 }
