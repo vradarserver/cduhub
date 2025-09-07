@@ -167,3 +167,15 @@ The documentation for the cduhub-cli program is here:
 
 https://github.com/vradarserver/cduhub/blob/main/apps/cduhub-cli/README.md
 
+
+### Running without building
+
+The `dotnet run` command will always check to see if the program needs to
+be built. If you have already built the program and you haven't changed
+the source then this adds unnecessary overhead.
+
+To skip the build phase you can use the `--no-build` switch to `dotnet run`:
+
+```
+dotnet run --no-build --project apps/cduhub-cli/cduhub-cli.csproj
+```
