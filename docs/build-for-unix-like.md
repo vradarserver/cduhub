@@ -146,9 +146,9 @@ If you're not using git and you just want to download the source manually then
 each release page has both a ZIP and a tarball archive of the source. The archive
 for the latest version can be found here:
 
-```
 https://github.com/vradarserver/cduhub/releases/latest
-```
+
+
 
 ## Building and running from the command-line
 
