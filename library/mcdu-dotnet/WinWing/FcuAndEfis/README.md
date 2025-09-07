@@ -308,11 +308,11 @@ the 01 report code and are zero based):
 | FcuVsPull         | 0x01 | 4 |
 | FcuAlt100         | 0x02 | 4 |
 | FcuAlt1000        | 0x04 | 4 |
-| <unused>          | 0x08 | 4 |
-| <unused>          | 0x10 | 4 |
-| <unused>          | 0x20 | 4 |
-| <unused>          | 0x40 | 4 |
-| <unused>          | 0x80 | 4 |
+| `<unused>`        | 0x08 | 4 |
+| `<unused>`        | 0x10 | 4 |
+| `<unused>`        | 0x20 | 4 |
+| `<unused>`        | 0x40 | 4 |
+| `<unused>`        | 0x80 | 4 |
 | LeftFd            | 0x01 | 5 |
 | LeftLs            | 0x02 | 5 |
 | LeftCstr          | 0x04 | 5 |
@@ -343,8 +343,8 @@ the 01 report code and are zero based):
 | LeftNeedle2Adf    | 0x08 | 8 |
 | LeftNeedle2Off    | 0x10 | 8 |
 | LeftNeedle2Vor    | 0x20 | 8 |
-| <unused>          | 0x40 | 8 |
-| <unused>          | 0x80 | 8 |
+| `<unused>`        | 0x40 | 8 |
+| `<unused>`        | 0x80 | 8 |
 | RightFd           | 0x01 | 9 |
 | RightLs           | 0x02 | 9 |
 | RightCstr         | 0x04 | 9 |
