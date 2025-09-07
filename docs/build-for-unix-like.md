@@ -40,9 +40,7 @@ sudo apt install dotnet-sdk-8.0
 If the SDK is not available as a package (check your distro documentation)
 then it is available for download from Microsoft's site here:
 
-```
 https://dotnet.microsoft.com/en-us/download/dotnet/8.0
-```
 
 There are lots of downloads on there - you only need one, which is the
 SDK. If the page offers different versions of the SDK then install the
