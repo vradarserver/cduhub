@@ -6,9 +6,21 @@ These notes are for the Airbus FCU and EFIS panels.
 
 The WinWing vendor ID is 0x4098.
 
-The product ID for the combined LEFT EFIS + FCU + RIGHT EFIS is 0xBA01.
+The EFIS and FCU panels can be daisy-chained together, and the product ID
+changes depending upon which devices are connected together.
 
+The FCU unit can run standalone, but the EFIS units have no USB port and
+must be attached to an FCU. All configurations must include an FCU.
 
+The configuration doesn't affect which commands work. You can send commands
+for a device that is not present.
+
+| Configuration                | Product ID |
+| ---                          | --- |
+| FCU                          | 0xBB10 |
+| FCU + Left EFIS              | 0xBC1D |
+| FCU + Right EFIS             | 0xBC1E |
+| FCU + Left EFIS + Right EFIS | 0xBA01 |
 
 ## Command Prefixes
 
@@ -18,9 +30,9 @@ prefixes are:
 
 | Marker | Hex ID | Device |
 | ---    | ---    | --- |
-| `{LE}`   | `0DBF`   | Left EFIS |
-| `{FU}`   | `10BB`   | FCU |
-| `{RE}`   | `0EBF`   | Right EFIS |
+| `{LE}` | `0DBF` | Left EFIS |
+| `{FU}` | `10BB` | FCU |
+| `{RE}` | `0EBF` | Right EFIS |
 
 Where a command can apply to all three panels the notes will refer
 to an `{ID}` marker. Subsitute in the appropriate two byte hex ID.
