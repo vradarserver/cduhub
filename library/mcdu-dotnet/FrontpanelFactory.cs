@@ -51,20 +51,15 @@ namespace wwDevicesDotNet
         /// <returns></returns>
         public static IReadOnlyList<DeviceIdentifier> FindLocalDevices()
         {
-            var result = new List<DeviceIdentifier>();
-
             var local = DeviceList.Local;
-            foreach(var hidDevice in local.GetHidDevices()) {
-                var deviceIdentifier = GetDeviceIdentifierForUsbIdentifiers(
+            return local
+                .GetHidDevices()
+                .Select(hidDevice => GetDeviceIdentifierForUsbIdentifiers(
                     hidDevice.VendorID,
                     hidDevice.ProductID
-                );
-                if(deviceIdentifier != null) {
-                    result.Add(deviceIdentifier);
-                }
-            }
-
-            return result;
+                ))
+                .Where(deviceIdentifier => deviceIdentifier != null)
+                .ToList();
         }
 
         /// <summary>
