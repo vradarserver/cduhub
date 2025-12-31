@@ -179,7 +179,6 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
         {
             var packet = new byte[14];
             packet[0] = 0x02;
-            // FIX: Send prefix bytes in correct order (low byte, high byte)
             packet[1] = (byte)((prefix >> 8) & 0xFF);  // High byte first
             packet[2] = (byte)(prefix & 0xFF);          // Low byte second
             packet[3] = 0x00;
@@ -440,7 +439,6 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             payload[1] = 0x00;
             payload[2] = (byte)seqNum;
             payload[3] = 0x31;
-            // FIX: Send prefix bytes in correct order (high byte, low byte)
             payload[4] = (byte)((_FcuPrefix >> 8) & 0xFF);
             payload[5] = (byte)(_FcuPrefix & 0xFF);
             payload[6] = 0x00;
@@ -449,9 +447,9 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             payload[9] = 0x01;
             payload[10] = 0x00;
             payload[11] = 0x00;
-            payload[12] = 0xFF;  // Match Python implementation
-            payload[13] = 0xFF;  // Match Python implementation
-            payload[14] = 0x02;  // Match Python implementation
+            payload[12] = 0xFF;  
+            payload[13] = 0xFF;  
+            payload[14] = 0x02;  
             payload[15] = 0x00;
             payload[16] = 0x00;
             payload[17] = 0x20;
@@ -534,7 +532,6 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             
             // LVL/CH indicators (brackets around a0 in doc)
             // Python line 106: ("vs_horz", Flag('v/s plus horizontal', Byte.A0, 0x10))
-            // FIX: This should NOT show minus sign
             if(state.VsHorzIndicator) {
                 payload[0x25] |= 0x20;  // Horizontal indicator (different bit to avoid minus)
             }
@@ -572,7 +569,6 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             followup[1] = 0x00;
             followup[2] = (byte)seqNum;
             followup[3] = 0x11;
-            // FIX: Send prefix bytes in correct order
             followup[4] = (byte)((_FcuPrefix >> 8) & 0xFF);
             followup[5] = (byte)(_FcuPrefix & 0xFF);
             followup[6] = 0x00;
@@ -581,9 +577,9 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             followup[9] = 0x01;
             followup[10] = 0x00;
             followup[11] = 0x00;
-            followup[12] = 0xFF;  // Match Python implementation
-            followup[13] = 0xFF;  // Match Python implementation
-            followup[14] = 0x02;  // Match Python implementation
+            followup[12] = 0xFF;  
+            followup[13] = 0xFF;  
+            followup[14] = 0x02;  
             // Remaining bytes are 0x00
 
             commands.Add(followup);
@@ -795,8 +791,7 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             packet[0] = 0xF0;
             packet[1] = 0x00;
             packet[2] = (byte)seqNum;
-            packet[3] = 0x1A;  // Match Python: 0x1a for EFIS
-            // FIX: Send prefix bytes in correct order
+            packet[3] = 0x1A;  
             packet[4] = (byte)((prefix >> 8) & 0xFF);
             packet[5] = (byte)(prefix & 0xFF);
             packet[6] = 0x00;
@@ -805,9 +800,9 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             packet[9] = 0x01;
             packet[10] = 0x00;
             packet[11] = 0x00;
-            packet[12] = 0xFF;  // Match Python
-            packet[13] = 0xFF;  // Match Python
-            packet[14] = 0x1D;  // Match Python
+            packet[12] = 0xFF;  
+            packet[13] = 0xFF;  
+            packet[14] = 0x1D;  
             packet[15] = 0x00;
             packet[16] = 0x00;
             packet[17] = 0x09;
