@@ -577,10 +577,12 @@ namespace WwDevicesDotNet.WinWing.FcuAndEfis
             packet[0x1B] = encoded[2];  // tens
             packet[0x1C] = encoded[3];  // ones (rightmost)
 
-            // Add decimal point for inHg mode (between tens and ones: after tens digit)
-            // The decimal point is typically bit 0x01 of the digit display byte
+            // Add decimal point for inHg mode (after 2nd digit, not 3rd)
+            // For 2992: display as 29.92 (decimal after hundreds digit)
+            // The decimal point in EFIS encoding is bit 0x80 (not 0x01 like in FCU displays)
+            // This is because DataFromStringSwappedEfis remaps: 0x01 → 0x80
             if(isInHg) {
-                packet[0x1B] |= 0x01;  // Add decimal point after tens digit (29.92)
+                packet[0x1A] |= 0x80;  // Add decimal point after hundreds digit (29.92)
             }
 
             // QNH/QFE indicators at offset 0x1D (29)
