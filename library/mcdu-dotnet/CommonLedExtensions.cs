@@ -10,7 +10,7 @@
 
 using System;
 
-namespace McduDotNet
+namespace wwDevicesDotNet
 {
     public static class CommonLedExtensions
     {

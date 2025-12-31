@@ -10,7 +10,7 @@
 
 using System;
 
-namespace McduDotNet
+namespace wwDevicesDotNet
 {
     /// <summary>
     /// Describes a combination of font and colour. Used by internal representations of

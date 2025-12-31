@@ -10,7 +10,7 @@
 
 using System.CommandLine;
 using Cduhub.CommandLine;
-using McduDotNet;
+using wwDevicesDotNet;
 using Newtonsoft.Json;
 
 namespace Colours

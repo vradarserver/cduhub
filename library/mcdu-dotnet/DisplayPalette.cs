@@ -10,7 +10,7 @@
 
 using System;
 
-namespace McduDotNet
+namespace wwDevicesDotNet
 {
     /// <summary>
     /// Describes a copy of the palette held by the device. This is similar to <see

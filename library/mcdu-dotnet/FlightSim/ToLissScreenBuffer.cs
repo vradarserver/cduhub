@@ -11,7 +11,7 @@
 using System;
 using System.Text;
 
-namespace McduDotNet.FlightSim
+namespace wwDevicesDotNet.FlightSim
 {
     /// <summary>
     /// A class that holds the content of the screen that ToLiss A320-family simulators send as datarefs.

@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Cduhub.Config;
-using McduDotNet;
+using wwDevicesDotNet;
 using Newtonsoft.Json;
 
 namespace Cduhub

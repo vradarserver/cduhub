@@ -13,7 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace McduDotNet.FlightSim
+namespace wwDevicesDotNet.FlightSim
 {
     /// <summary>
     /// A set of utility methods for interacting with the Fenix Simulations A320 MCDU as exposed

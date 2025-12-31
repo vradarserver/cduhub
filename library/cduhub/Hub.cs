@@ -15,7 +15,7 @@ using System.Threading;
 using Cduhub.Config;
 using Cduhub.Pages;
 using Cduhub.Plugin;
-using McduDotNet;
+using wwDevicesDotNet;
 
 namespace Cduhub
 {
@@ -538,7 +538,7 @@ namespace Cduhub
             _SelectedPage?.OnAmbientLightChanged(_Cdu.AmbientLightPercent);
         }
 
-        private void Cdu_KeyDown(object sender, McduDotNet.KeyEventArgs e)
+        private void Cdu_KeyDown(object sender, wwDevicesDotNet.KeyEventArgs e)
         {
             if(!_ShuttingDown) {
                 var cdu = sender as ICdu;
@@ -565,7 +565,7 @@ namespace Cduhub
             }
         }
 
-        private void Cdu_KeyUp(object sender, McduDotNet.KeyEventArgs e)
+        private void Cdu_KeyUp(object sender, wwDevicesDotNet.KeyEventArgs e)
         {
             if(!_ShuttingDown) {
                 _SelectedPage?.OnKeyUp(e.Key);

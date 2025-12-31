@@ -11,8 +11,8 @@
 using GraphQL;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
-using McduDotNet;
-using McduDotNet.FlightSim;
+using wwDevicesDotNet;
+using wwDevicesDotNet.FlightSim;
 
 namespace FenixMcdu
 {

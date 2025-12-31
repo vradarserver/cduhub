@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace McduDotNet.WinWing
+namespace wwDevicesDotNet.WinWing
 {
     /// <summary>
     /// Handles the sending of font glyphs to the WinWing panels.

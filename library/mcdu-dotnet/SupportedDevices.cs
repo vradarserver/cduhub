@@ -10,7 +10,7 @@
 
 using System.Collections.Generic;
 
-namespace McduDotNet
+namespace wwDevicesDotNet
 {
     /// <summary>
     /// An enumeration of all supported devices.
@@ -80,6 +80,41 @@ namespace McduDotNet
             "Winwing PFP-7 (Observer)", 0x4098, 0xBB3B, Device.WinWingPfp7, DeviceUser.Observer, DeviceType.Boeing777Pfp
         );
 
+        /// <summary>
+        /// The identifier for a WinWing FCU device (standalone, no EFIS).
+        /// </summary>
+        public static readonly DeviceIdentifier WinWingFcuDevice = new DeviceIdentifier(
+            "Winwing FCU", 0x4098, 0xBB10, Device.WinWingFcu, DeviceUser.NotApplicable, DeviceType.AirbusA320Fcu
+        );
+
+        /// <summary>
+        /// The identifier for a WinWing FCU device with left EFIS attached.
+        /// </summary>
+        public static readonly DeviceIdentifier WinWingFcuLeftEfisDevice = new DeviceIdentifier(
+            "Winwing FCU + Left EFIS", 0x4098, 0xBC1D, Device.WinWingFcuLeftEfis, DeviceUser.NotApplicable, DeviceType.AirbusA320Fcu
+        );
+
+        /// <summary>
+        /// The identifier for a WinWing FCU device with right EFIS attached.
+        /// </summary>
+        public static readonly DeviceIdentifier WinWingFcuRightEfisDevice = new DeviceIdentifier(
+            "Winwing FCU + Right EFIS", 0x4098, 0xBC1E, Device.WinWingFcuRightEfis, DeviceUser.NotApplicable, DeviceType.AirbusA320Fcu
+        );
+
+        /// <summary>
+        /// The identifier for a WinWing FCU device with both left and right EFIS attached.
+        /// </summary>
+        public static readonly DeviceIdentifier WinWingFcuBothEfisDevice = new DeviceIdentifier(
+            "Winwing FCU + Both EFIS", 0x4098, 0xBA01, Device.WinWingFcuBothEfis, DeviceUser.NotApplicable, DeviceType.AirbusA320Fcu
+        );
+
+        /// <summary>
+        /// The identifier for a WinWing PAP-3 Primary Autopilot Panel.
+        /// </summary>
+        public static readonly DeviceIdentifier WinWingPap3Device = new DeviceIdentifier(
+            "Winwing PAP-3", 0x4098, 0xBF0F, Device.WinWingPap3, DeviceUser.NotApplicable, DeviceType.Boeing737FrontPanel
+        );
+
         private static readonly DeviceIdentifier[] _AllSupportedDevices = new DeviceIdentifier[] {
             WinWingMcduCaptainDevice,
             WinWingMcduFirstOfficerDevice,
@@ -94,9 +129,22 @@ namespace McduDotNet
             WinWingPfp7ObserverDevice,
         };
 
+        private static readonly DeviceIdentifier[] _AllSupportedFrontpanels = new DeviceIdentifier[] {
+            WinWingFcuDevice,
+            WinWingFcuLeftEfisDevice,
+            WinWingFcuRightEfisDevice,
+            WinWingFcuBothEfisDevice,
+            WinWingPap3Device,
+        };
+
         /// <summary>
-        /// A collection of device identifiers for all supported devices.
+        /// A collection of device identifiers for all supported CDU devices.
         /// </summary>
         public static IReadOnlyList<DeviceIdentifier> AllSupportedDevices => _AllSupportedDevices;
+
+        /// <summary>
+        /// A collection of device identifiers for all supported frontpanel devices (FCU, EFIS, PAP-3, etc.).
+        /// </summary>
+        public static IReadOnlyList<DeviceIdentifier> AllSupportedFrontpanels => _AllSupportedFrontpanels;
     }
 }

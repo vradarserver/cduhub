@@ -11,7 +11,7 @@
 using System;
 using System.Collections.Generic;
 using Cduhub.Config;
-using McduDotNet;
+using wwDevicesDotNet;
 
 namespace Cduhub.Pages.Init
 {

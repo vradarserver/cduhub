@@ -10,7 +10,7 @@
 
 using System;
 
-namespace McduDotNet
+namespace wwDevicesDotNet
 {
     /// <summary>
     /// Describes the state of the LEDs.

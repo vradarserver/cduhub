@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 using HidSharp;
 
-namespace McduDotNet.WinWing.Pfp7
+namespace wwDevicesDotNet.WinWing.Pfp7
 {
     /// <summary>
     /// Implements <see cref="ICdu"/> for a WinWing PFP-7.

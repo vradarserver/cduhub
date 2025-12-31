@@ -10,7 +10,7 @@
 
 using System;
 
-namespace McduDotNet
+namespace wwDevicesDotNet
 {
     /// <summary>
     /// The event args for the <see cref="ICdu.PaletteChanging"/> event.

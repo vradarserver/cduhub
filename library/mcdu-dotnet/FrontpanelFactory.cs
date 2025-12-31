@@ -11,25 +11,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using HidSharp;
-using wwDevicesDotNet.WinWing.Mcdu;
-using wwDevicesDotNet.WinWing.Pfp3N;
-using wwDevicesDotNet.WinWing.Pfp7;
+using wwDevicesDotNet.WinWing.FcuAndEfis;
 
 namespace wwDevicesDotNet
 {
     /// <summary>
-    /// Finds USB devices and creates instances of <see cref="ICdu"/> implementations
-    /// for them.
+    /// Finds USB devices and creates instances of <see cref="IFrontpanel"/> implementations
+    /// for them. Supports FCU, EFIS, and other WinWing control panels.
     /// </summary>
-    public static class CduFactory
+    public static class FrontpanelFactory
     {
         //          ARE YOU HERE LOOKING FOR THE LIST OF ALL KNOWN DEVICE IDENTIFIERS?
         //                       They've moved to SupportedDevices.cs
 
         /// <summary>
         /// Returns a device identifier corresponding to the vendor and product IDs passed
-        /// across, or null if the vendor and product ID do not correspond with a CDU that
-        /// the library can interact with.
+        /// across, or null if the vendor and product ID do not correspond with a frontpanel
+        /// that the library can interact with.
         /// </summary>
         /// <param name="vendorId"></param>
         /// <param name="productId"></param>
@@ -40,7 +38,7 @@ namespace wwDevicesDotNet
         )
         {
             return SupportedDevices
-                .AllSupportedDevices
+                .AllSupportedFrontpanels
                 .FirstOrDefault(deviceIdentifier =>
                        deviceIdentifier.UsbVendorId == vendorId
                     && deviceIdentifier.UsbProductId == productId
@@ -48,7 +46,7 @@ namespace wwDevicesDotNet
         }
 
         /// <summary>
-        /// Returns a collection of all MCDU devices that can be found on the local machine.
+        /// Returns a collection of all frontpanel devices that can be found on the local machine.
         /// </summary>
         /// <returns></returns>
         public static IReadOnlyList<DeviceIdentifier> FindLocalDevices()
@@ -70,9 +68,10 @@ namespace wwDevicesDotNet
         }
 
         /// <summary>
-        /// Creates an initialised connection to a CDU device. If the device ID is not
-        /// specified then the first CDU found on the system is used. If the requested CDU
-        /// cannot be found (or there are no CDUs to default to) then null is returned.
+        /// Creates an initialised connection to a frontpanel device. If the device ID is not
+        /// specified then the first frontpanel found on the system is used. If the requested
+        /// frontpanel cannot be found (or there are no frontpanels to default to) then null
+        /// is returned.
         /// </summary>
         /// <param name="deviceId">
         /// The specific device to connect to, if null then the first device found is
@@ -82,29 +81,23 @@ namespace wwDevicesDotNet
         /// If not null then only devices for this product are considered if <paramref
         /// name="deviceId"/> is not supplied. Defaults to null.
         /// </param>
-        /// <param name="deviceUser">
-        /// If not null then only devices for this seat are considered if <paramref
-        /// name="deviceId"/> is not supplied. Defaults to null.
-        /// </param>
         /// <param name="deviceType">
-        /// If not null then only devices for this category of CDU are considered if
+        /// If not null then only devices for this category of frontpanel are considered if
         /// <paramref name="deviceId"/> is not supplied. Defaults to null.
         /// </param>
         /// <returns></returns>
-        public static ICdu ConnectLocal(
+        public static IFrontpanel ConnectLocal(
             DeviceIdentifier deviceId = null,
             Device? device = null,
-            DeviceUser? deviceUser = null,
             DeviceType? deviceType = null
         )
         {
-            ICdu result = null;
+            IFrontpanel result = null;
 
             if(deviceId == null) {
                 deviceId = FindLocalDevices()
                     .Where(candidate =>
                            (device == null || candidate.Device == device)
-                        && (deviceUser == null || candidate.DeviceUser == deviceUser)
                         && (deviceType == null || candidate.DeviceType == deviceType)
                     )
                     // The order selected here is only to make it deterministic
@@ -123,20 +116,15 @@ namespace wwDevicesDotNet
                     .FirstOrDefault();
                 if(hidDevice != null) {
                     switch(deviceId.Device) {
-                        case Device.WinWingMcdu:
-                            var mcdu = new McduDevice(hidDevice, deviceId);
-                            mcdu.Initialise();
-                            result = mcdu;
-                            break;
-                        case Device.WinWingPfp3N:
-                            var pfp3N = new Pfp3NDevice(hidDevice, deviceId);
-                            pfp3N.Initialise();
-                            result = pfp3N;
-                            break;
-                        case Device.WinWingPfp7:
-                            var pfp7 = new Pfp7Device(hidDevice, deviceId);
-                            pfp7.Initialise();
-                            result = pfp7;
+                        case Device.WinWingFcu:
+                        case Device.WinWingFcuLeftEfis:
+                        case Device.WinWingFcuRightEfis:
+                        case Device.WinWingFcuBothEfis:
+                            // All FCU configurations use the same device class
+                            // The device ID determines which configuration is present
+                            var fcu = new FcuEfisDevice(hidDevice, deviceId);
+                            fcu.Initialise();
+                            result = fcu;
                             break;
                     }
                 }

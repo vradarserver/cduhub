@@ -11,7 +11,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace McduDotNet
+namespace wwDevicesDotNet
 {
     /// <summary>
     /// Holds the collections of glyphs that together describe a font for a CDU device.

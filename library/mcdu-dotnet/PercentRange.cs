@@ -10,7 +10,7 @@
 
 using System;
 
-namespace McduDotNet
+namespace wwDevicesDotNet
 {
     /// <summary>
     /// A value type that holds two integers that represent the low and high values in a
