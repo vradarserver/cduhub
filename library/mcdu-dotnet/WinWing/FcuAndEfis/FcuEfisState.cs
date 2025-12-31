@@ -12,6 +12,9 @@ namespace WwDevicesDotNet.WinWing.FcuAndEfis
 {
     public class FcuEfisState : IFrontpanelState
     {
+        /// <summary>
+        /// Mach speed are sent without the decimal point. For example, Mach 0.82 is sent as 082
+        /// </summary>
         public int? Speed { get; set; }
         public int? Heading { get; set; }
         public int? Altitude { get; set; }
@@ -20,6 +23,8 @@ namespace WwDevicesDotNet.WinWing.FcuAndEfis
         public bool SpeedIsMach { get; set; } = false;
         public bool HeadingIsTrack { get; set; } = false;
         public bool VsIsFpa { get; set; } = false;
+
+        public bool AltitudeIsFlightLevel { get; set; } = false;
 
         public bool SpeedManaged { get; set; } = false;
         public bool HeadingManaged { get; set; } = false;

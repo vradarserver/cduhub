@@ -448,7 +448,33 @@ namespace WwDevicesDotNet.WinWing.FcuAndEfis
             // ALT display - nibble swapped encoding
             if(state.Altitude.HasValue) {
                 var altitude = Math.Max(0, Math.Min(99999, state.Altitude.Value));
-                var a = DataFromStringSwapped(5, altitude);
+                byte[] a;
+                
+                if(state.AltitudeIsFlightLevel) {
+                    // Flight Level mode: display "FL" + flight level (e.g., altitude 10000 → FL100)
+                    var flightLevel = altitude / 100;
+                    
+                    // Create custom encoding for "FL" + 3-digit number
+                    // We need to manually encode F, L, and three digits into the 5-position display
+                    // F = segments for letter F, L = segments for letter L
+                    // Then encode the 3-digit flight level
+                    
+                    // Encode FL as a 5-character string where first 2 chars are letters
+                    // Use special encoding for letters F and L
+                    var flString = $"FL{flightLevel:D3}";
+                    a = EncodeAlphanumericSwapped(flString);
+                } else {
+                    // Standard altitude mode: display without leading zeros
+                    var altString = altitude.ToString();
+                    
+                    // Right-align in 5-digit space but don't pad with zeros
+                    if(altString.Length < 5) {
+                        altString = altString.PadLeft(5, ' ');
+                    }
+                    
+                    a = EncodeAlphanumericSwapped(altString);
+                }
+                
                 buffer[0x20] |= a[5];  // a[5]
                 buffer[0x21] |= a[4];  // a[4]
                 buffer[0x22] |= a[3];  // a[3]
@@ -734,6 +760,50 @@ namespace WwDevicesDotNet.WinWing.FcuAndEfis
             }
 
             _Disposed = true;
+        }
+
+        byte[] EncodeAlphanumericSwapped(string text)
+        {
+            var numChars = text.Length;
+            var d = new byte[numChars];
+
+            for(int i = 0; i < numChars; i++) {
+                char c = text[i];
+                if(c >= '0' && c <= '9') {
+                    int digit = c - '0';
+                    d[numChars - 1 - i] = _EfisDigitValues[digit];
+                } else if(c == 'F') {
+                    // F: segments A,E,F,G = 0x8E
+                    d[numChars - 1 - i] = 0x8E;
+                } else if(c == 'L') {
+                    // L: segments D,E,F (bottom, bottom-left, top-left) = 0x1A
+                    d[numChars - 1 - i] = 0x1A;
+                } else if(c == ' ') {
+                    // Space: no segments
+                    d[numChars - 1 - i] = 0x00;
+                } else {
+                    // Unknown character: blank
+                    d[numChars - 1 - i] = 0x00;
+                }
+            }
+            
+            var result = new byte[numChars + 1];
+            Array.Copy(d, result, numChars);
+            result[numChars] = 0;
+
+            // Nibble swap
+            for(int i = 0; i < result.Length; i++) {
+                result[i] = (byte)(((result[i] & 0x0F) << 4) | ((result[i] & 0xF0) >> 4));
+            }
+
+            // Position swap (same logic as DataFromStringSwapped)
+            int l = numChars;
+            for(int i = 0; i < l; i++) {
+                result[l - i] = (byte)((result[l - i] & 0x0F) | (result[l - 1 - i] & 0xF0));
+                result[l - 1 - i] = (byte)(result[l - 1 - i] & 0x0F);
+            }
+            
+            return result;
         }
     }
 }
