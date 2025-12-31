@@ -10,7 +10,7 @@
 
 using System.Collections.Generic;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
     /// An enumeration of all supported devices.

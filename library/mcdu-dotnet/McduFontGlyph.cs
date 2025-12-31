@@ -11,7 +11,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
     /// Describes a single bitmap glyph in a font.

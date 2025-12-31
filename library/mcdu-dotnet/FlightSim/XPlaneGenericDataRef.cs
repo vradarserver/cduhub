@@ -11,7 +11,7 @@
 using System;
 using System.Text;
 
-namespace wwDevicesDotNet.FlightSim.SimBridgeMcdu
+namespace WwDevicesDotNet.FlightSim.SimBridgeMcdu
 {
     /// <summary>
     /// Utility methods that can help when translating between the X-Plane data refs world and the MCDU-DOTNET

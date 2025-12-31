@@ -11,9 +11,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using HidSharp;
-using wwDevicesDotNet.WinWing.FcuAndEfis;
+using WwDevicesDotNet.WinWing.FcuAndEfis;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
     /// Finds USB devices and creates instances of <see cref="IFrontpanel"/> implementations

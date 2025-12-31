@@ -11,7 +11,7 @@
 using System;
 using System.Text;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
     /// Describes a row of cells on the MCDU display.

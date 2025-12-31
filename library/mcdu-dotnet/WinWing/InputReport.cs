@@ -10,7 +10,7 @@
 
 using System;
 
-namespace wwDevicesDotNet.WinWing
+namespace WwDevicesDotNet.WinWing
 {
     /// <summary>
     /// Holds the content of an input report sent by a WinWing panel.
@@ -28,7 +28,7 @@ namespace wwDevicesDotNet.WinWing
         {
             if(length > 0) {
                 if(buffer[offset] != ReportCode) {
-                    throw new McduException($"Unexpected report code {buffer[offset]} for a report code 1 buffer");
+                    throw new WwDeviceException($"Unexpected report code {buffer[offset]} for a report code 1 buffer");
                 }
                 length = Math.Min(PacketLength, length);
                 Array.ConstrainedCopy(buffer, offset, _Packet, 0, length);

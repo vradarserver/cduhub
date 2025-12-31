@@ -10,7 +10,7 @@
 
 using System.Text;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
     /// Describes the colours that make up the palette for an MCDU device.

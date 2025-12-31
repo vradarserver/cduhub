@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace wwDevicesDotNet.WinWing
+namespace WwDevicesDotNet.WinWing
 {
     /// <summary>
     /// Manages the sending of an entire screen buffer to the device.

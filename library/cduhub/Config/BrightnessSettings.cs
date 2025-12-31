@@ -65,10 +65,10 @@ namespace Cduhub.Config
 
         public BrightnessSettings()
         {
-            McduToHub(new wwDevicesDotNet.AutoBrightnessSettings());
+            McduToHub(new WwDevicesDotNet.AutoBrightnessSettings());
         }
 
-        public void CopyToCdu(wwDevicesDotNet.ICdu cdu)
+        public void CopyToCdu(WwDevicesDotNet.ICdu cdu)
         {
             if(cdu != null) {
                 cdu.AutoBrightness.Enabled = UseAutoBrightness;
@@ -81,56 +81,56 @@ namespace Cduhub.Config
             }
         }
 
-        public void McduToHub(wwDevicesDotNet.AutoBrightnessSettings mcduSettings)
+        public void McduToHub(WwDevicesDotNet.AutoBrightnessSettings mcduSettings)
         {
             McduToHub(mcduSettings.DisplayBacklight, AutoBrightness.DisplayBacklight);
             McduToHub(mcduSettings.LedIntensity, AutoBrightness.LedIntensity);
             McduToHub(mcduSettings.KeyboardBacklight, AutoBrightness.KeyboardBacklight);
         }
 
-        private static void McduCommonToHub(wwDevicesDotNet.CommonAutoBrightnessSettings mcdu, CommonAutoBrightnessSettings hub)
+        private static void McduCommonToHub(WwDevicesDotNet.CommonAutoBrightnessSettings mcdu, CommonAutoBrightnessSettings hub)
         {
             hub.HighestIntensityPercent = mcdu.HighestIntensityPercent;
             hub.LowestIntensityPercent = mcdu.LowestIntensityPercent;
             hub.ScaleGamma = mcdu.ScaleGamma;
         }
 
-        private static void McduToHub(wwDevicesDotNet.CommonAscendingAutoBrightnessSettings mcdu, AscendingAutoBrightnessSettings hub)
+        private static void McduToHub(WwDevicesDotNet.CommonAscendingAutoBrightnessSettings mcdu, AscendingAutoBrightnessSettings hub)
         {
             McduCommonToHub(mcdu, hub);
             hub.HighIntensityAboveAmbientPercent = mcdu.HighIntensityAboveAmbientPercent;
             hub.LowIntensityBelowAmbientPercent = mcdu.LowIntensityBelowAmbientPercent;
         }
 
-        private static void McduToHub(wwDevicesDotNet.CommonDescendingAutoBrightnessSettings mcdu, DescendingAutoBrightnessSettings hub)
+        private static void McduToHub(WwDevicesDotNet.CommonDescendingAutoBrightnessSettings mcdu, DescendingAutoBrightnessSettings hub)
         {
             McduCommonToHub(mcdu, hub);
             hub.HighIntensityBelowAmbientPercent = mcdu.HighIntensityBelowAmbientPercent;
             hub.LowIntensityAboveAmbientPercent = mcdu.LowIntensityAboveAmbientPercent;
         }
 
-        public void HubToMcdu(wwDevicesDotNet.AutoBrightnessSettings mcduSettings)
+        public void HubToMcdu(WwDevicesDotNet.AutoBrightnessSettings mcduSettings)
         {
             HubToMcdu(mcduSettings.DisplayBacklight, AutoBrightness.DisplayBacklight);
             HubToMcdu(mcduSettings.LedIntensity, AutoBrightness.LedIntensity);
             HubToMcdu(mcduSettings.KeyboardBacklight, AutoBrightness.KeyboardBacklight);
         }
 
-        private static void HubCommonToMcdu(wwDevicesDotNet.CommonAutoBrightnessSettings mcdu, CommonAutoBrightnessSettings hub)
+        private static void HubCommonToMcdu(WwDevicesDotNet.CommonAutoBrightnessSettings mcdu, CommonAutoBrightnessSettings hub)
         {
             mcdu.HighestIntensityPercent = hub.HighestIntensityPercent;
             mcdu.LowestIntensityPercent = hub.LowestIntensityPercent;
             mcdu.ScaleGamma = hub.ScaleGamma;
         }
 
-        private static void HubToMcdu(wwDevicesDotNet.CommonAscendingAutoBrightnessSettings mcdu, AscendingAutoBrightnessSettings hub)
+        private static void HubToMcdu(WwDevicesDotNet.CommonAscendingAutoBrightnessSettings mcdu, AscendingAutoBrightnessSettings hub)
         {
             HubCommonToMcdu(mcdu, hub);
             mcdu.HighIntensityAboveAmbientPercent = hub.HighIntensityAboveAmbientPercent;
             mcdu.LowIntensityBelowAmbientPercent = hub.LowIntensityBelowAmbientPercent;
         }
 
-        private static void HubToMcdu(wwDevicesDotNet.CommonDescendingAutoBrightnessSettings mcdu, DescendingAutoBrightnessSettings hub)
+        private static void HubToMcdu(WwDevicesDotNet.CommonDescendingAutoBrightnessSettings mcdu, DescendingAutoBrightnessSettings hub)
         {
             HubCommonToMcdu(mcdu, hub);
             mcdu.HighIntensityBelowAmbientPercent = hub.HighIntensityBelowAmbientPercent;

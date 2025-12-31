@@ -14,8 +14,8 @@ using GraphQL;
 using GraphQL.Client.Abstractions.Websocket;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
-using wwDevicesDotNet;
-using wwDevicesDotNet.FlightSim;
+using WwDevicesDotNet;
+using WwDevicesDotNet.FlightSim;
 
 namespace Cduhub.FlightSim
 {

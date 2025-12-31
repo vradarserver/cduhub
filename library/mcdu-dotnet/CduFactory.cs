@@ -11,11 +11,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using HidSharp;
-using wwDevicesDotNet.WinWing.Mcdu;
-using wwDevicesDotNet.WinWing.Pfp3N;
-using wwDevicesDotNet.WinWing.Pfp7;
+using WwDevicesDotNet.WinWing.Mcdu;
+using WwDevicesDotNet.WinWing.Pfp3N;
+using WwDevicesDotNet.WinWing.Pfp7;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
     /// Finds USB devices and creates instances of <see cref="ICdu"/> implementations

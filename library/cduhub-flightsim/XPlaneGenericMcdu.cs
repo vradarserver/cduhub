@@ -11,8 +11,8 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using wwDevicesDotNet;
-using wwDevicesDotNet.FlightSim.SimBridgeMcdu;
+using WwDevicesDotNet;
+using WwDevicesDotNet.FlightSim.SimBridgeMcdu;
 
 namespace Cduhub.FlightSim
 {

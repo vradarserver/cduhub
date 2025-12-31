@@ -11,7 +11,7 @@
 using System;
 using System.Text;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
     /// Identifies a USB winwing device supported

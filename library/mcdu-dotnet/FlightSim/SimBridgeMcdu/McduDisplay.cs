@@ -10,7 +10,7 @@
 
 using System.Runtime.Serialization;
 
-namespace wwDevicesDotNet.FlightSim.SimBridgeMcdu
+namespace WwDevicesDotNet.FlightSim.SimBridgeMcdu
 {
     [DataContract]
     public class McduDisplay

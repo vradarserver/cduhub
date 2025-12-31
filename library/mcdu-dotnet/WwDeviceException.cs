@@ -10,22 +10,22 @@
 
 using System;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
-    /// General exceptions thrown by the MCDU.NET library.
+    /// General exceptions thrown by the WwDevicesDotNet library.
     /// </summary>
-    public class McduException : Exception
+    public class WwDeviceException : Exception
     {
-        public McduException()
+        public WwDeviceException()
         {
         }
 
-        public McduException(string message) : base(message)
+        public WwDeviceException(string message) : base(message)
         {
         }
 
-        public McduException(string message, Exception innerException) : base(message, innerException)
+        public WwDeviceException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }
