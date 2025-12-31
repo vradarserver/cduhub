@@ -10,7 +10,7 @@
 
 using System.Collections.Generic;
 
-namespace McduDotNet.WinWing
+namespace wwDevicesDotNet.WinWing
 {
     /// <summary>
     /// Handles the setting of LEDs and backlight brightnesses on WinWing panels.

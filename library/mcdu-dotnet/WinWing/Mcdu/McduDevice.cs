@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 using HidSharp;
 
-namespace McduDotNet.WinWing.Mcdu
+namespace wwDevicesDotNet.WinWing.Mcdu
 {
     /// <summary>
     /// The implementation of <see cref="IMcdu"/> for the WinWing MCDU.

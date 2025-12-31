@@ -14,9 +14,9 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using McduDotNet;
-using McduDotNet.FlightSim;
-using McduDotNet.FlightSim.SimBridgeMcdu;
+using wwDevicesDotNet;
+using wwDevicesDotNet.FlightSim;
+using wwDevicesDotNet.FlightSim.SimBridgeMcdu;
 using Newtonsoft.Json;
 
 namespace Cduhub.FlightSim

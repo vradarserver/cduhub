@@ -11,7 +11,7 @@
 using System;
 using HidSharp;
 
-namespace McduDotNet.WinWing
+namespace wwDevicesDotNet.WinWing
 {
     /// <summary>
     /// Reads a WinWing panel's keyboard and raises events on the parent device when keys

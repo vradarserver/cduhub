@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Cduhub.Plugin;
-using McduDotNet;
+using wwDevicesDotNet;
 
 namespace Cduhub.Pages
 {

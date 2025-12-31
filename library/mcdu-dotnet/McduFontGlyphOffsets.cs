@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace McduDotNet
+namespace wwDevicesDotNet
 {
     [DataContract]
     public class McduFontGlyphOffsets

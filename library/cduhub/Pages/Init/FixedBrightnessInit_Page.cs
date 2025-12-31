@@ -10,7 +10,7 @@
 
 using System;
 using Cduhub.Config;
-using McduDotNet;
+using wwDevicesDotNet;
 
 namespace Cduhub.Pages.Init
 {

@@ -10,9 +10,9 @@
 
 using System;
 using System.Text.RegularExpressions;
-using McduDotNet.FlightSim.SimBridgeMcdu;
+using wwDevicesDotNet.FlightSim.SimBridgeMcdu;
 
-namespace McduDotNet.FlightSim
+namespace wwDevicesDotNet.FlightSim
 {
     /// <summary>
     /// Methods that help when trying to convert between the MCDU-DOTNET world and the world exposed by

@@ -14,7 +14,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 
-namespace McduDotNet
+namespace wwDevicesDotNet
 {
     [DataContract]
     public class McduFontPacketMap

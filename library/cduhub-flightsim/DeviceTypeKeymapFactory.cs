@@ -10,7 +10,7 @@
 
 using System;
 using System.Collections.Generic;
-using McduDotNet;
+using wwDevicesDotNet;
 
 namespace Cduhub.FlightSim
 {

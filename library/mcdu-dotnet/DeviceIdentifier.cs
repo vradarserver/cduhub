@@ -11,10 +11,10 @@
 using System;
 using System.Text;
 
-namespace McduDotNet
+namespace wwDevicesDotNet
 {
     /// <summary>
-    /// Identifies a USB CDU device.
+    /// Identifies a USB winwing device supported
     /// </summary>
     public class DeviceIdentifier
     {

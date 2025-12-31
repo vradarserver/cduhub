@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace McduDotNet {
+namespace wwDevicesDotNet {
     using System;
     
     

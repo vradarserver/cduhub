@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace McduDotNet
+namespace wwDevicesDotNet
 {
     public static class StringExtensions
     {

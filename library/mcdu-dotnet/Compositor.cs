@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace McduDotNet
+namespace wwDevicesDotNet
 {
     public class Compositor
     {
@@ -118,27 +118,27 @@ namespace McduDotNet
 
         public Compositor Color(Colour colour) => Colour(colour);
 
-        public Compositor Amber() => Colour(McduDotNet.Colour.Amber);
+        public Compositor Amber() => Colour(wwDevicesDotNet.Colour.Amber);
 
-        public Compositor Brown() => Colour(McduDotNet.Colour.Brown);
+        public Compositor Brown() => Colour(wwDevicesDotNet.Colour.Brown);
 
-        public Compositor Cyan() => Colour(McduDotNet.Colour.Cyan);
+        public Compositor Cyan() => Colour(wwDevicesDotNet.Colour.Cyan);
 
-        public Compositor Grey() => Colour(McduDotNet.Colour.Grey);
+        public Compositor Grey() => Colour(wwDevicesDotNet.Colour.Grey);
 
-        public Compositor Gray() => Colour(McduDotNet.Colour.Grey);
+        public Compositor Gray() => Colour(wwDevicesDotNet.Colour.Grey);
 
-        public Compositor Green() => Colour(McduDotNet.Colour.Green);
+        public Compositor Green() => Colour(wwDevicesDotNet.Colour.Green);
 
-        public Compositor Khaki() => Colour(McduDotNet.Colour.Khaki);
+        public Compositor Khaki() => Colour(wwDevicesDotNet.Colour.Khaki);
 
-        public Compositor Magenta() => Colour(McduDotNet.Colour.Magenta);
+        public Compositor Magenta() => Colour(wwDevicesDotNet.Colour.Magenta);
 
-        public Compositor Red() => Colour(McduDotNet.Colour.Red);
+        public Compositor Red() => Colour(wwDevicesDotNet.Colour.Red);
 
-        public Compositor White() => Colour(McduDotNet.Colour.White);
+        public Compositor White() => Colour(wwDevicesDotNet.Colour.White);
 
-        public Compositor Yellow() => Colour(McduDotNet.Colour.Yellow);
+        public Compositor Yellow() => Colour(wwDevicesDotNet.Colour.Yellow);
 
         public Compositor Small(bool on = true)
         {
@@ -409,18 +409,18 @@ namespace McduDotNet
             for(var textIdx = 0;textIdx < cstring.Text.Length;++textIdx) {
                 while(textIdx == nextStyleChange?.Index) {
                     switch(nextStyleChange.Style) {
-                        case CompositorStringStyle.Amber:       _Screen.Colour = McduDotNet.Colour.Amber; break;
-                        case CompositorStringStyle.Brown:       _Screen.Colour = McduDotNet.Colour.Brown; break;
-                        case CompositorStringStyle.Cyan:        _Screen.Colour = McduDotNet.Colour.Cyan; break;
-                        case CompositorStringStyle.Green:       _Screen.Colour = McduDotNet.Colour.Green; break;
-                        case CompositorStringStyle.Grey:        _Screen.Colour = McduDotNet.Colour.Grey; break;
-                        case CompositorStringStyle.Khaki:       _Screen.Colour = McduDotNet.Colour.Khaki; break;
+                        case CompositorStringStyle.Amber:       _Screen.Colour = wwDevicesDotNet.Colour.Amber; break;
+                        case CompositorStringStyle.Brown:       _Screen.Colour = wwDevicesDotNet.Colour.Brown; break;
+                        case CompositorStringStyle.Cyan:        _Screen.Colour = wwDevicesDotNet.Colour.Cyan; break;
+                        case CompositorStringStyle.Green:       _Screen.Colour = wwDevicesDotNet.Colour.Green; break;
+                        case CompositorStringStyle.Grey:        _Screen.Colour = wwDevicesDotNet.Colour.Grey; break;
+                        case CompositorStringStyle.Khaki:       _Screen.Colour = wwDevicesDotNet.Colour.Khaki; break;
                         case CompositorStringStyle.Large:       _Screen.Small = false; break;
-                        case CompositorStringStyle.Magenta:     _Screen.Colour = McduDotNet.Colour.Magenta; break;
-                        case CompositorStringStyle.Red:         _Screen.Colour = McduDotNet.Colour.Red; break;
+                        case CompositorStringStyle.Magenta:     _Screen.Colour = wwDevicesDotNet.Colour.Magenta; break;
+                        case CompositorStringStyle.Red:         _Screen.Colour = wwDevicesDotNet.Colour.Red; break;
                         case CompositorStringStyle.Small:       _Screen.Small = true; break;
-                        case CompositorStringStyle.White:       _Screen.Colour = McduDotNet.Colour.White; break;
-                        case CompositorStringStyle.Yellow:      _Screen.Colour = McduDotNet.Colour.Yellow; break;
+                        case CompositorStringStyle.White:       _Screen.Colour = wwDevicesDotNet.Colour.White; break;
+                        case CompositorStringStyle.Yellow:      _Screen.Colour = wwDevicesDotNet.Colour.Yellow; break;
                     }
                     selectNextStyleChange();
                 }

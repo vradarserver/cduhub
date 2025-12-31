@@ -11,7 +11,7 @@
 using System;
 using System.Text;
 using Cduhub.Config;
-using McduDotNet;
+using wwDevicesDotNet;
 
 namespace Cduhub
 {

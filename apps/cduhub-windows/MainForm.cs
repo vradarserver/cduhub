@@ -14,7 +14,7 @@ using System.IO;
 using System.Threading;
 using System.Windows.Forms;
 using Cduhub.FlightSim;
-using McduDotNet;
+using wwDevicesDotNet;
 
 namespace Cduhub.WindowsGui
 {

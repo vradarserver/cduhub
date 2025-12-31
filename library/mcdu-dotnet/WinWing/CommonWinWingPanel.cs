@@ -15,7 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using HidSharp;
 
-namespace McduDotNet.WinWing
+namespace wwDevicesDotNet.WinWing
 {
     /// <summary>
     /// Code that all WinWing panels have in common.

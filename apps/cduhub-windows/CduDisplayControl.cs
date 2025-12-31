@@ -14,7 +14,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Text;
 using System.Windows.Forms;
-using McduDotNet;
+using wwDevicesDotNet;
 
 namespace Cduhub.WindowsGui
 {

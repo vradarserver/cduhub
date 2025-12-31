@@ -10,7 +10,7 @@
 
 using System;
 
-namespace McduDotNet.WinWing
+namespace wwDevicesDotNet.WinWing
 {
     /// <summary>
     /// Holds the content of an input report sent by a WinWing panel.
