@@ -397,8 +397,8 @@ namespace WwDevicesDotNet.WinWing.FcuAndEfis
             followup[1] = 0x00;
             followup[2] = (byte)seqNum;
             followup[3] = 0x11;
-            followup[4] = ((_FcuPrefix >> 8) & 0xFF);
-            followup[5] = (_FcuPrefix & 0xFF);
+            followup[4] = (byte)((_FcuPrefix >> 8) & 0xFF);
+            followup[5] = (byte)(_FcuPrefix & 0xFF);
             followup[6] = 0x00;
             followup[7] = 0x00;
             followup[8] = 0x03;
