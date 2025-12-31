@@ -824,21 +824,15 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             // Encode using EFIS-specific bit remapping
             var encoded = DataFromStringSwappedEfis(4, pressureStr);
             
-            // The EFIS display order is: [0]=leftmost, [1], [2], [3]=rightmost
-            // For "2992": encoded[0]='2', encoded[1]='9', encoded[2]='9', encoded[3]='2'
-            // We want to display "29.92" so decimal point should be after encoded[1]
-            packet[0x19] = encoded[0];  // leftmost digit (2)
-            packet[0x1A] = encoded[1];  // second digit (9) - decimal point goes here for XX.XX format
-            packet[0x1B] = encoded[2];  // third digit (9)
-            packet[0x1C] = encoded[3];  // rightmost digit (2)
+            packet[0x19] = encoded[0];  // leftmost digit (thousands)
+            packet[0x1A] = encoded[1];  // hundreds
+            packet[0x1B] = encoded[2];  // tens
+            packet[0x1C] = encoded[3];  // ones (rightmost)
 
-            // Add decimal point for inHg mode (between tens and ones: after second digit for XX.XX format)
-            // IMPORTANT: The decimal point bit must be set AFTER the EFIS bit remapping
-            // In EFIS wiring, bit 0x01 in standard encoding becomes bit 0x80 after remapping:
-            // n[i] |= 0x80 if d[i] & 0x01 else 0
-            // So we need to set bit 0x80 for the decimal point in EFIS displays
+            // Add decimal point for inHg mode (between tens and ones: after tens digit)
+            // The decimal point is typically bit 0x01 of the digit display byte
             if(isInHg) {
-                packet[0x1A] |= 0x80;  // Add decimal point after second digit (29.92) - use 0x80 for EFIS
+                packet[0x1B] |= 0x01;  // Add decimal point after tens digit (29.92)
             }
 
             System.Diagnostics.Debug.WriteLine($"[EFIS] Pressure {pressure} ({(isInHg ? "inHg" : "hPa")}) -> '{pressureStr}' -> bytes: [0x19]=0x{packet[0x19]:X2} [0x1A]=0x{packet[0x1A]:X2} [0x1B]=0x{packet[0x1B]:X2} [0x1C]=0x{packet[0x1C]:X2}");
