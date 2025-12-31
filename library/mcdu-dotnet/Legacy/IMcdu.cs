@@ -10,7 +10,7 @@
 
 using System;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
     /// Represents an instance of an MCDU.

@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
     /// Creates instances of <see cref="IMcdu"/>. Note that only the WinWing MCDU implements

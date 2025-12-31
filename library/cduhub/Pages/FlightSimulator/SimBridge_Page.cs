@@ -10,7 +10,7 @@
 
 using Cduhub.Config;
 using Cduhub.FlightSim;
-using wwDevicesDotNet;
+using WwDevicesDotNet;
 
 namespace Cduhub.Pages.FlightSimulator
 {

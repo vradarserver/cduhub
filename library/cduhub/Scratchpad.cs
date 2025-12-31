@@ -10,7 +10,7 @@
 
 using System;
 using System.Text;
-using wwDevicesDotNet;
+using WwDevicesDotNet;
 
 namespace Cduhub
 {

@@ -11,7 +11,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
     /// The common interface for all CDU devices that the library can display text on, and

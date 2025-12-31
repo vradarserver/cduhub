@@ -10,7 +10,7 @@
 
 using System;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
     /// The common interface for all frontpanel devices (FCU, EFIS, etc.) that the library
@@ -37,11 +37,6 @@ namespace wwDevicesDotNet
         /// Raised when a button or control is released/deactivated.
         /// </summary>
         event EventHandler<FrontpanelEventArgs> ControlDeactivated;
-
-        /// <summary>
-        /// Raised when a rotary encoder is turned.
-        /// </summary>
-        event EventHandler<FrontpanelRotaryEventArgs> RotaryChanged;
 
         /// <summary>
         /// Raised when the USB device has been disconnected.

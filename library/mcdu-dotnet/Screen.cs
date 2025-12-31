@@ -11,7 +11,7 @@
 using System;
 using System.Text;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
     /// Describes and manipulates the content of an MCDU display.

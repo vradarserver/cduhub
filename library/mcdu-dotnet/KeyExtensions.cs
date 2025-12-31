@@ -10,7 +10,7 @@
 
 using System;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
     /// Extension methods for the <see cref="Key"/> enum.

@@ -12,7 +12,7 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace wwDevicesDotNet.WinWing
+namespace WwDevicesDotNet.WinWing
 {
     /// <summary>
     /// Manages the sending of colour palettes to the WinWing MCDU device.

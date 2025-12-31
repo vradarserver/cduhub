@@ -13,7 +13,7 @@ using System.IO;
 using System.Text;
 using HidSharp;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
     /// Manages the sending of packets to a USB device.

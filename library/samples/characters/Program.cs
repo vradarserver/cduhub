@@ -10,7 +10,7 @@
 
 using System.CommandLine;
 using Cduhub.CommandLine;
-using wwDevicesDotNet;
+using WwDevicesDotNet;
 using Newtonsoft.Json;
 
 namespace Characters

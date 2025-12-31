@@ -14,7 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Cduhub.Config;
-using wwDevicesDotNet;
+using WwDevicesDotNet;
 using Newtonsoft.Json;
 
 namespace Cduhub

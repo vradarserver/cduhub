@@ -1,4 +1,4 @@
-﻿// Copyright © 2025 onwards, Andrew Whewell
+﻿// Copyright © 2025 onwards, Andrew Whewell, Laurent Andre
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,20 +8,36 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using WwDevicesDotNet;
-
-namespace Cduhub.FlightSim
+namespace WwDevicesDotNet.WinWing.FcuAndEfis
 {
-    public class SimulatorMcduBuffer
+    public class FcuEfisState : IFrontpanelState
     {
-        public Screen Screen { get; }
+        public int? Speed { get; set; }
+        public int? Heading { get; set; }
+        public int? Altitude { get; set; }
+        public int? VerticalSpeed { get; set; }
 
-        public Leds Leds { get; }
+        public bool SpeedIsMach { get; set; } = false;
+        public bool HeadingIsTrack { get; set; } = false;
+        public bool VsIsFpa { get; set; } = false;
 
-        public SimulatorMcduBuffer()
-        {
-            Screen = new Screen();
-            Leds = new Leds();
-        }
+        public bool SpeedManaged { get; set; } = false;
+        public bool HeadingManaged { get; set; } = false;
+        public bool AltitudeManaged { get; set; } = false;
+
+        public bool LatIndicator { get; set; } = false;
+        
+        public bool LvlIndicator { get; set; } = false;
+        public bool LvlLeftBracket { get; set; } = false;
+        public bool LvlRightBracket { get; set; } = false;
+        public bool VsHorzIndicator { get; set; } = false;
+
+        public int? LeftBaroPressure { get; set; }
+        public bool LeftBaroQnh { get; set; }
+        public bool LeftBaroQfe { get; set; }
+
+        public int? RightBaroPressure { get; set; }
+        public bool RightBaroQnh { get; set; }
+        public bool RightBaroQfe { get; set; }
     }
 }

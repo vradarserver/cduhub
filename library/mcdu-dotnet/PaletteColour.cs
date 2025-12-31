@@ -12,7 +12,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
     /// Describes a colour in the device's colour palette.

@@ -13,7 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Cduhub.Plugin;
-using wwDevicesDotNet;
+using WwDevicesDotNet;
 
 namespace Cduhub.Pages
 {

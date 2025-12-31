@@ -15,7 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using HidSharp;
 
-namespace wwDevicesDotNet.WinWing
+namespace WwDevicesDotNet.WinWing
 {
     /// <summary>
     /// Code that all WinWing panels have in common.
@@ -263,12 +263,12 @@ namespace wwDevicesDotNet.WinWing
         {
             var maxOutputReportLength = _HidDevice.GetMaxOutputReportLength();
             if(maxOutputReportLength < 64) {
-                throw new McduException(
+                throw new WwDeviceException(
                     $"HID device {_HidDevice} reported an invalid max output report length of {maxOutputReportLength}"
                 );
             }
             if(!_HidDevice.TryOpen(out _HidStream)) {
-                throw new McduException($"Could not open a stream to {_HidDevice}");
+                throw new WwDeviceException($"Could not open a stream to {_HidDevice}");
             }
             _UsbWriter = new UsbWriter(_HidStream);
 

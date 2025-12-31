@@ -10,7 +10,7 @@
 
 using System;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
     /// Describes the content of the display. This is similar to <see cref="Screen"/> but

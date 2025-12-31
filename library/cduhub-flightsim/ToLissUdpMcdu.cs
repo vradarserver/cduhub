@@ -12,8 +12,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Cduhub.FlightSim.XPlaneUdpModels;
-using wwDevicesDotNet;
-using wwDevicesDotNet.FlightSim;
+using WwDevicesDotNet;
+using WwDevicesDotNet.FlightSim;
 
 namespace Cduhub.FlightSim
 {

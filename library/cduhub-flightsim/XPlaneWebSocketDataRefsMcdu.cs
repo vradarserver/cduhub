@@ -18,7 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Cduhub.FlightSim.XPlaneRestModels;
 using Cduhub.FlightSim.XPlaneWebSocketModels;
-using wwDevicesDotNet;
+using WwDevicesDotNet;
 using Newtonsoft.Json;
 
 namespace Cduhub.FlightSim

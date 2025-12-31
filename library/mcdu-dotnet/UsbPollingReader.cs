@@ -13,7 +13,7 @@ using System.IO;
 using System.Threading;
 using HidSharp;
 
-namespace wwDevicesDotNet
+namespace WwDevicesDotNet
 {
     /// <summary>
     /// The abstract base for a class that takes a HidStream that's owned by its parent

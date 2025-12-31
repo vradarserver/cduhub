@@ -1,4 +1,4 @@
-﻿// Copyright © 2025 onwards, Andrew Whewell
+﻿// Copyright © 2025 onwards, Andrew Whewell, Laurent Andre
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -15,7 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using HidSharp;
 
-namespace wwDevicesDotNet.WinWing.FcuAndEfis
+namespace WwDevicesDotNet.WinWing.FcuAndEfis
 {
     /// <summary>
     /// Represents a WinWing FCU (Flight Control Unit) device with optional EFIS panels.
@@ -30,7 +30,7 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
 
         // Seven-segment display digit values for FCU displays (complex encoding)
         static readonly byte[] _EfisDigitValues = new byte[] {
-            0xFA, // 0 - matches Python
+            0xFA, // 0
             0x60, // 1
             0xD6, // 2
             0xF4, // 3
@@ -42,31 +42,12 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             0xFC  // 9
         };
 
-        // Seven-segment display digit values for EFIS baro display (simple direct mapping)
-        // Standard 7-segment layout: DP G F E D C B A
-        // Segment A = top, B = top-right, C = bottom-right, D = bottom
-        // E = bottom-left, F = top-left, G = middle, DP = decimal point
-        static readonly byte[] _EfisBaroDigitValues = new byte[] {
-            0x3F, // 0 = A B C D E F (all except G and DP)
-            0x06, // 1 = B C
-            0x5B, // 2 = A B D E G
-            0x4F, // 3 = A B C D G
-            0x66, // 4 = B C F G
-            0x6D, // 5 = A C D F G
-            0x7D, // 6 = A C D E F G
-            0x07, // 7 = A B C
-            0x7F, // 8 = all segments
-            0x6F  // 9 = A B C D F G
-        };
-
         HidDevice _HidDevice;
         HidStream _HidStream;
         bool _Disposed;
         CancellationTokenSource _InputLoopCancellationTokenSource;
         Task _InputLoopTask;
-        ushort _SequenceNumber;
         readonly byte[] _LastInputReport = new byte[25];
-        readonly object _SequenceLock = new object();
 
         /// <inheritdoc/>
         public DeviceIdentifier DeviceId { get; }
@@ -79,9 +60,6 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
 
         /// <inheritdoc/>
         public event EventHandler<FrontpanelEventArgs> ControlDeactivated;
-
-        /// <inheritdoc/>
-        public event EventHandler<FrontpanelRotaryEventArgs> RotaryChanged;
 
         /// <inheritdoc/>
         public event EventHandler Disconnected;
@@ -104,13 +82,13 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
         {
             var maxOutputReportLength = _HidDevice.GetMaxOutputReportLength();
             if(maxOutputReportLength < 64) {
-                throw new McduException(
+                throw new WwDeviceException(
                     $"HID device {_HidDevice} reported an invalid max output report length of {maxOutputReportLength}"
                 );
             }
 
             if(!_HidDevice.TryOpen(out _HidStream)) {
-                throw new McduException($"Could not open a stream to {_HidDevice}");
+                throw new WwDeviceException($"Could not open a stream to {_HidDevice}");
             }
 
             // Subscribe to device list changes for disconnect detection
@@ -201,10 +179,6 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             if(!IsConnected)
                 throw new InvalidOperationException("Device is not connected.");
 
-            // Log the command being sent for protocol debugging
-            var hex = BitConverter.ToString(data).Replace("-", " ");
-            System.Diagnostics.Debug.WriteLine($"[FCU] Sending {data.Length} bytes: {hex}");
-
             _HidStream.Write(data);
         }
 
@@ -253,9 +227,10 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
                         var mask = (byte)(1 << bit);
                         if((changed & mask) != 0) {
                             var pressed = (currentByte & mask) != 0;
-                            var controlId = GetControlId(i, mask);
+                            var control = GetControl(i, mask);
                             
-                            if(!string.IsNullOrEmpty(controlId)) {
+                            if(control.HasValue) {
+                                var controlId = control.Value.ToString();
                                 if(pressed) {
                                     ControlActivated?.Invoke(this, new FrontpanelEventArgs(controlId, data));
                                 } else {
@@ -271,138 +246,14 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             Array.Copy(data, _LastInputReport, length);
         }
 
-        string GetControlId(int offset, byte flag)
+        Control? GetControl(int offset, byte flag)
         {
-            // FCU controls
-            if(offset == 1) {
-                switch(flag) {
-                    case 0x01: return "FcuSpdMach";
-                    case 0x02: return "FcuLoc";
-                    case 0x04: return "FcuHdgTrkVsFpa";
-                    case 0x08: return "FcuAp1";
-                    case 0x10: return "FcuAp2";
-                    case 0x20: return "FcuAThr";
-                    case 0x40: return "FcuExped";
-                    case 0x80: return "FcuMetricAlt";
-                }
-            } else if(offset == 2) {
-                switch(flag) {
-                    case 0x01: return "FcuAppr";
-                    case 0x02: return "FcuSpdDec";
-                    case 0x04: return "FcuSpdInc";
-                    case 0x08: return "FcuSpdPush";
-                    case 0x10: return "FcuSpdPull";
-                    case 0x20: return "FcuHdgDec";
-                    case 0x40: return "FcuHdgInc";
-                    case 0x80: return "FcuHdgPush";
-                }
-            } else if(offset == 3) {
-                switch(flag) {
-                    case 0x01: return "FcuHdgPull";
-                    case 0x02: return "FcuAltDec";
-                    case 0x04: return "FcuAltInc";
-                    case 0x08: return "FcuAltPush";
-                    case 0x10: return "FcuAltPull";
-                    case 0x20: return "FcuVsDec";
-                    case 0x40: return "FcuVsInc";
-                    case 0x80: return "FcuVsPush";
-                }
-            } else if(offset == 4) {
-                switch(flag) {
-                    case 0x01: return "FcuVsPull";
-                    case 0x02: return "FcuAlt100";
-                    case 0x04: return "FcuAlt1000";
+            foreach(Control control in Enum.GetValues(typeof(Control))) {
+                var (mapFlag, mapOffset) = ControlMap.InputReport01FlagAndOffset(control);
+                if(mapOffset == offset && mapFlag == flag) {
+                    return control;
                 }
             }
-            // Left EFIS controls
-            else if(offset == 5) {
-                switch(flag) {
-                    case 0x01: return "LeftFd";
-                    case 0x02: return "LeftLs";
-                    case 0x04: return "LeftCstr";
-                    case 0x08: return "LeftWpt";
-                    case 0x10: return "LeftVorD";
-                    case 0x20: return "LeftNdb";
-                    case 0x40: return "LeftArpt";
-                    case 0x80: return "LeftBaroPush";
-                }
-            } else if(offset == 6) {
-                switch(flag) {
-                    case 0x01: return "LeftBaroPull";
-                    case 0x02: return "LeftBaroDec";
-                    case 0x04: return "LeftBaroInc";
-                    case 0x08: return "LeftInHg";
-                    case 0x10: return "LeftHPa";
-                    case 0x20: return "LeftModeLs";
-                    case 0x40: return "LeftModeVor";
-                    case 0x80: return "LeftModeNav";
-                }
-            } else if(offset == 7) {
-                switch(flag) {
-                    case 0x01: return "LeftModeArc";
-                    case 0x02: return "LeftModePlan";
-                    case 0x04: return "LeftRange10";
-                    case 0x08: return "LeftRange20";
-                    case 0x10: return "LeftRange40";
-                    case 0x20: return "LeftRange80";
-                    case 0x40: return "LeftRange160";
-                    case 0x80: return "LeftRange320";
-                }
-            } else if(offset == 8) {
-                switch(flag) {
-                    case 0x01: return "LeftNeedle1Adf";
-                    case 0x02: return "LeftNeedle1Off";
-                    case 0x04: return "LeftNeedle1Vor";
-                    case 0x08: return "LeftNeedle2Adf";
-                    case 0x10: return "LeftNeedle2Off";
-                    case 0x20: return "LeftNeedle2Vor";
-                }
-            }
-            // Right EFIS controls
-            else if(offset == 9) {
-                switch(flag) {
-                    case 0x01: return "RightFd";
-                    case 0x02: return "RightLs";
-                    case 0x04: return "RightCstr";
-                    case 0x08: return "RightWpt";
-                    case 0x10: return "RightVorD";
-                    case 0x20: return "RightNdb";
-                    case 0x40: return "RightArpt";
-                    case 0x80: return "RightBaroPush";
-                }
-            } else if(offset == 10) {
-                switch(flag) {
-                    case 0x01: return "RightBaroPull";
-                    case 0x02: return "RightBaroDec";
-                    case 0x04: return "RightBaroInc";
-                    case 0x08: return "RightInHg";
-                    case 0x10: return "RightHPa";
-                    case 0x20: return "RightModeLs";
-                    case 0x40: return "RightModeVor";
-                    case 0x80: return "RightModeNav";
-                }
-            } else if(offset == 11) {
-                switch(flag) {
-                    case 0x01: return "RightModeArc";
-                    case 0x02: return "RightModePlan";
-                    case 0x04: return "RightRange10";
-                    case 0x08: return "RightRange20";
-                    case 0x10: return "RightRange40";
-                    case 0x20: return "RightRange80";
-                    case 0x40: return "RightRange160";
-                    case 0x80: return "RightRange320";
-                }
-            } else if(offset == 12) {
-                switch(flag) {
-                    case 0x01: return "RightNeedle1Vor";
-                    case 0x02: return "RightNeedle1Off";
-                    case 0x04: return "RightNeedle1Adf";
-                    case 0x08: return "RightNeedle2Vor";
-                    case 0x10: return "RightNeedle2Off";
-                    case 0x20: return "RightNeedle2Adf";
-                }
-            }
-
             return null;
         }
 
@@ -431,7 +282,6 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             var payload = new byte[64];
             var followup = new byte[64];
 
-            // Use fixed package number 1 like working Python implementation
             ushort seqNum = 1;
 
             // First packet (payload)
@@ -458,8 +308,6 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             // Encode displays starting at offset 0x19 (25)
             EncodeFcuDisplays(payload, state);
             
-            // Set mode indicator flags based on documentation image
-            
             // SPD/MACH indicators at H3 position (0x1C)
             if(state.SpeedIsMach) {
                 payload[0x1C] |= 0x04;  // MACH indicator
@@ -485,29 +333,21 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             }
             
             // LAT indicator (purple in doc, between HDG and ALT)
-            // Python line 93: ("lat", Flag('hdg-trk-lat_lat', Byte.H0, 0x20))
             if(state.LatIndicator) {
                 payload[0x1F] |= 0x20;  // LAT indicator
             }
             
             // Middle section indicators at A5 position (0x20 = a[5])
-            // From Python reference implementation:
-            // ("vshdg", Flag('hdg-v/s_hdg', Byte.A5, 0x08))
-            // ("vs", Flag('hdg-v/s_v/s', Byte.A5, 0x04))
-            // ("ftrk", Flag('trk-fpa_trk', Byte.A5, 0x02))
-            // ("ffpa", Flag('trk-fpa_fpa', Byte.A5, 0x01))
-            
             // The middle section has TWO independent groups:
             // 1. HDG/TRK (bits 0x08 for HDG, 0x02 for TRK)
             // 2. V/S/FPA (bits 0x04 for V/S, 0x01 for FPA)
             
             // TRK indicator in middle section
-            if(state.TrkMiddleIndicator) {
+            if(state.HeadingIsTrack) {
                 payload[0x20] |= 0x02;  // TRK indicator in middle
             }
             // HDG indicator in middle section - shows when NOT in TRK mode
             // Note: We don't require V/S or FPA to be selected for HDG to show
-            // The UI controls this independently now
             else {
                 // Show HDG when TRK is not active
                 // The vshdg flag (0x08) represents HDG mode in the middle section
@@ -515,47 +355,35 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             }
             
             // V/S indicator in middle section
-            if(state.VsMiddleIndicator) {
+            if(!state.VsIsFpa) {
                 payload[0x20] |= 0x04;  // V/S indicator in middle
             }
             
             // FPA indicator in middle section
-            if(state.FpaMiddleIndicator) {
+            if(state.VsIsFpa) {
                 payload[0x20] |= 0x01;  // FPA indicator in middle
             }
             
-            // Altitude managed mode indicator
-            // From Python line 105: ("alt_managed", Flag('alt managed', Byte.V1, 0x10))
             if(state.AltitudeManaged) {
                 payload[0x28] |= 0x10;  // ALT managed indicator at v[1] position
             }
             
-            // LVL/CH indicators (brackets around a0 in doc)
-            // Python line 106: ("vs_horz", Flag('v/s plus horizontal', Byte.A0, 0x10))
             if(state.VsHorzIndicator) {
                 payload[0x25] |= 0x20;  // Horizontal indicator (different bit to avoid minus)
             }
             
-            // Python line 108: ("lvl", Flag('lvl change', Byte.A2, 0x10))
             if(state.LvlIndicator) {
                 payload[0x23] |= 0x10;  // Level change indicator
             }
             
-            // Python line 109: ("lvl_left", Flag('lvl change left', Byte.A3, 0x10))
-            // This is the LEFT BRACKET
             if(state.LvlLeftBracket) {
                 payload[0x22] |= 0x10;  // Left bracket
             }
             
-            // Python line 110: ("lvl_right", Flag('lvl change right', Byte.A1, 0x10))
-            // This is the RIGHT BRACKET
             if(state.LvlRightBracket) {
                 payload[0x24] |= 0x10;  // Right bracket
             }
             
-            // V/S/FPA indicators above V/S digits (black in doc, right side)
-            // Python line 113: ("fvs", Flag('v/s-fpa_v/s', Byte.V0, 0x40))
-            // Python line 114: ("ffpa2", Flag('v/s-fpa_fpa', Byte.V0, 0x80))
             if(state.VsIsFpa) {
                 payload[0x29] |= 0x80;  // FPA indicator (above V/S digits)
             } else {
@@ -569,8 +397,8 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             followup[1] = 0x00;
             followup[2] = (byte)seqNum;
             followup[3] = 0x11;
-            followup[4] = (byte)((_FcuPrefix >> 8) & 0xFF);
-            followup[5] = (byte)(_FcuPrefix & 0xFF);
+            followup[4] = ((_FcuPrefix >> 8) & 0xFF);
+            followup[5] = (_FcuPrefix & 0xFF);
             followup[6] = 0x00;
             followup[7] = 0x00;
             followup[8] = 0x03;
@@ -594,31 +422,6 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
                 buffer[i] = 0x00;
             }
 
-            // Python line 318-333 shows EXACT buffer write order starting at 0x19 (byte 25):
-            // s[2], s[1] | bl[Byte.S1.value], s[0], h[3] | bl[Byte.H3.value], h[2], h[1], h[0] | bl[Byte.H0.value],
-            // a[5] | bl[Byte.A5.value], a[4] | bl[Byte.A4.value], a[3] | bl[Byte.A3.value],
-            // a[2] | bl[Byte.A2.value], a[1] | bl[Byte.A1.value], a[0] | v[4] | bl[Byte.A0.value],
-            // v[3] | bl[Byte.V3.value], v[2] | bl[Byte.V2.value], v[1] | bl[Byte.V1.value], v[0] | bl[Byte.V0.value]
-
-            // This means the buffer layout is:
-            // 0x19: s[2]
-            // 0x1A: s[1] (+ speed flags)
-            // 0x1B: s[0]
-            // 0x1C: h[3] (+ heading flags)
-            // 0x1D: h[2]
-            // 0x1E: h[1]
-            // 0x1F: h[0] (+ heading flags)
-            // 0x20: a[5] (+ altitude flags)
-            // 0x21: a[4] (+ altitude flags)
-            // 0x22: a[3] (+ altitude flags)
-            // 0x23: a[2] (+ altitude flags)
-            // 0x24: a[1] (+ altitude flags)
-            // 0x25: a[0] - shares with v[4]
-            // 0x26: v[3] (+ v/s flags)
-            // 0x27: v[2] (+ v/s flags)
-            // 0x28: v[1] (+ v/s flags)
-            // 0x29: v[0] (+ v/s flags)
-
             // SPD display - direct encoding
             if(state.Speed.HasValue) {
                 var speed = Math.Max(0, Math.Min(999, state.Speed.Value));
@@ -627,7 +430,7 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
                 buffer[0x1B] = _EfisDigitValues[speed % 10];           // s[0]
                 
                 // MACH decimal point - only in MACH mode OR if explicitly requested
-                if(state.SpeedIsMach || state.SpeedDot) {
+                if(state.SpeedIsMach) {
                     buffer[0x1A] |= 0x01;  // Decimal point for MACH mode (e.g., 0.78)
                 }
             }
@@ -640,11 +443,6 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
                 buffer[0x1D] |= h[2];  // h[2]
                 buffer[0x1E] |= h[1];  // h[1]
                 buffer[0x1F] |= h[0];  // h[0]
-                
-                // HDG decimal point if requested
-                if(state.HeadingDot) {
-                    buffer[0x1D] |= 0x01;  // Decimal in heading display
-                }
             }
 
             // ALT display - nibble swapped encoding
@@ -657,11 +455,6 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
                 buffer[0x23] |= a[2];  // a[2]
                 buffer[0x24] |= a[1];  // a[1]
                 buffer[0x25] |= a[0];  // a[0] - shares with v[4]
-                
-                // ALT decimal point if requested
-                if(state.AltitudeDot) {
-                    buffer[0x22] |= 0x01;  // Decimal in altitude display
-                }
             }
 
             // V/S display - nibble swapped encoding
@@ -677,20 +470,6 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
                 buffer[0x28] |= v[1];  // v[1]
                 buffer[0x29] |= v[0];  // v[0]
                 
-                // Set plus/minus indicator using two bits:
-                // Python line 106: ("vs_horz", Flag('v/s plus horizontal', Byte.A0, 0x10, True))  - at 0x25
-                // Python line 107: ("vs_vert", Flag('v/s plus vertical', Byte.V2, 0x10))        - at 0x27
-                //
-                // The hardware has a plus-shaped segment:
-                // - vs_horz (bit at 0x25) controls horizontal bar (default ON in Python)
-                // - vs_vert (bit at 0x27) controls vertical bar
-                // 
-                // Horizontal only (vs_horz=1, vs_vert=0) = minus sign (-)
-                // Both bars (vs_horz=1, vs_vert=1) = plus sign (+)
-                //
-                // IMPORTANT: vs_horz defaults to True in Python, meaning horizontal bar is always on
-                // We need to explicitly set this bit to show the horizontal bar
-                
                 // Always show horizontal bar (this is the base minus sign)
                 buffer[0x25] |= 0x10;  // vs_horz - horizontal bar always on
                 
@@ -698,87 +477,38 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
                 if(vs >= 0) {
                     buffer[0x27] |= 0x10;  // vs_vert - add vertical bar for positive = plus sign
                 }
-                // For NEGATIVE values, DON'T set vertical bar - only horizontal shows = minus sign
-                
-                // V/S decimal point if requested
-                if(state.VsDot) {
-                    buffer[0x27] |= 0x01;  // Decimal in V/S display
-                }
             }
         }
 
-        // Implements Python's data_from_string_swapped function
-        // Python lines 134-142
         byte[] DataFromStringSwapped(int numDigits, int value)
         {
-            // Step 1: Create array and populate with digits (Python data_from_string, line 125-130)
+            
             var d = new byte[numDigits];
-            
-            // Convert value to string and pad with zeros
+
             var str = value.ToString().PadLeft(numDigits, '0');
-            
-            System.Diagnostics.Debug.WriteLine($"[FCU] DataFromStringSwapped({numDigits}, {value}) -> string: '{str}'");
-            
-            // Store in REVERSE order: d[l-1-i] = representations[string[i]]
-            // This means: for "320", d[2]='3', d[1]='2', d[0]='0'
             for(int i = 0; i < numDigits; i++) {
                 int digit = str[i] - '0';
                 d[numDigits - 1 - i] = _EfisDigitValues[digit];
             }
             
-            System.Diagnostics.Debug.WriteLine($"[FCU]   After reverse store: {BitConverter.ToString(d)}");
-            
-            // Step 2: Append 0 (Python line 135: d.append(0))
             var result = new byte[numDigits + 1];
             Array.Copy(d, result, numDigits);
             result[numDigits] = 0;
-            
-            System.Diagnostics.Debug.WriteLine($"[FCU]   After append 0: {BitConverter.ToString(result)}");
-            
-            // Step 3: Apply swap_nibbles to each element (Python line 137-138)
+
             for(int i = 0; i < result.Length; i++) {
                 result[i] = (byte)(((result[i] & 0x0F) << 4) | ((result[i] & 0xF0) >> 4));
             }
+
             
-            System.Diagnostics.Debug.WriteLine($"[FCU]   After swap nibbles: {BitConverter.ToString(result)}");
-            
-            // Step 4: Apply complex redistribution (Python lines 139-141)
-            // for i in range(0, len(d) - 1):
-            //     d[l-i] = (d[l-i] & 0x0f) | (d[l-1-i] & 0xf0)
-            //     d[l-1-i] = d[l-1-i] & 0x0f
             int l = numDigits;
             for(int i = 0; i < l; i++) {
                 var before_high = result[l - i];
                 var before_low = result[l - 1 - i];
                 result[l - i] = (byte)((result[l - i] & 0x0F) | (result[l - 1 - i] & 0xF0));
                 result[l - 1 - i] = (byte)(result[l - 1 - i] & 0x0F);
-                System.Diagnostics.Debug.WriteLine($"[FCU]   Redistrib i={i}: result[{l-i}]=0x{before_high:X2}->0x{result[l-i]:X2}, result[{l-1-i}]=0x{before_low:X2}->0x{result[l-1-i]:X2}");
             }
-            
-            System.Diagnostics.Debug.WriteLine($"[FCU]   Final result: {BitConverter.ToString(result)}");
             
             return result;
-        }
-
-        void EncodeSevenSegmentByte(byte[] buffer, int offset, int digit)
-        {
-            if(digit >= 0 && digit <= 9) {
-                buffer[offset] = _EfisDigitValues[digit];
-            }
-        }
-
-        void EncodeSevenSegmentNibbles(byte[] buffer, int highOffset, int lowOffset, int digit)
-        {
-            if(digit >= 0 && digit <= 9) {
-                var value = _EfisDigitValues[digit];
-                // Step 1: Swap nibbles (matches Python swap_nibbles)
-                var swapped = (byte)(((value & 0x0F) << 4) | ((value & 0xF0) >> 4));
-                
-                // Step 2: Distribute to buffer
-                // The "wired mapping" in Python: high byte gets low nibble, low byte gets high nibble
-                buffer[highOffset] |= (byte)(swapped & 0x0F);        // Low nibble to high offset
-                buffer[lowOffset] |= (byte)(swapped & 0xF0);         // High nibble to low offset
-            }
         }
 
         byte[] BuildEfisDisplayCommand(ushort prefix, int pressure, bool qnh, bool qfe)
@@ -808,15 +538,12 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             packet[17] = 0x09;
             // Bytes 18-24 are 0x00
 
-            // EFIS display uses data_from_string_swapped_efis encoding
-            // Python: data_from_string_swapped_efis(4, pressure)
             var pressureStr = pressure.ToString().PadLeft(4, '0');
             
             // Detect inHg mode: values >= 2000 are inHg (displayed as XX.XX)
             // hPa range: 870-1085, inHg range: 2570-3200 (representing 25.70-32.00)
             bool isInHg = pressure >= 2000;
             
-            // Encode using EFIS-specific bit remapping
             var encoded = DataFromStringSwappedEfis(4, pressureStr);
             
             packet[0x19] = encoded[0];  // leftmost digit (thousands)
@@ -829,8 +556,6 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             if(isInHg) {
                 packet[0x1B] |= 0x01;  // Add decimal point after tens digit (29.92)
             }
-
-            System.Diagnostics.Debug.WriteLine($"[EFIS] Pressure {pressure} ({(isInHg ? "inHg" : "hPa")}) -> '{pressureStr}' -> bytes: [0x19]=0x{packet[0x19]:X2} [0x1A]=0x{packet[0x1A]:X2} [0x1B]=0x{packet[0x1B]:X2} [0x1C]=0x{packet[0x1C]:X2}");
 
             // QNH/QFE indicators at offset 0x1D (29)
             if(qfe) {
@@ -855,30 +580,13 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
             return packet;
         }
 
-        // Implements Python's data_from_string_swapped_efis function
-        // This applies EFIS-specific bit remapping to the standard segment values
         byte[] DataFromStringSwappedEfis(int numDigits, string str)
         {
-            // Step 1: Get base segment values using data_from_string
-            // (which just converts digits to _EfisDigitValues)
             var d = new byte[numDigits];
             for(int i = 0; i < numDigits; i++) {
                 int digit = str[i] - '0';
                 d[i] = _EfisDigitValues[digit];
             }
-            
-            System.Diagnostics.Debug.WriteLine($"[EFIS] DataFromStringSwappedEfis('{str}') -> base values: {BitConverter.ToString(d)}");
-            
-            // Step 2: Apply EFIS wired segment mapping (bit remapping)
-            // Python code:
-            // n[i] |= 0x01 if d[i] & 0x08 else 0
-            // n[i] |= 0x02 if d[i] & 0x04 else 0
-            // n[i] |= 0x04 if d[i] & 0x02 else 0
-            // n[i] |= 0x08 if d[i] & 0x10 else 0
-            // n[i] |= 0x10 if d[i] & 0x80 else 0
-            // n[i] |= 0x20 if d[i] & 0x40 else 0
-            // n[i] |= 0x40 if d[i] & 0x20 else 0
-            // n[i] |= 0x80 if d[i] & 0x01 else 0
             
             var n = new byte[numDigits];
             for(int i = 0; i < numDigits; i++) {
@@ -892,8 +600,6 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
                 if((d[i] & 0x20) != 0) n[i] |= 0x40;
                 if((d[i] & 0x01) != 0) n[i] |= 0x80;
             }
-            
-            System.Diagnostics.Debug.WriteLine($"[EFIS] After bit remapping: {BitConverter.ToString(n)}");
             
             return n;
         }
@@ -1029,71 +735,5 @@ namespace wwDevicesDotNet.WinWing.FcuAndEfis
 
             _Disposed = true;
         }
-    }
-
-    public class FcuEfisState : IFrontpanelState
-    {
-        public int? Speed { get; set; }
-        public int? Heading { get; set; }
-        public int? Altitude { get; set; }
-        public int? VerticalSpeed { get; set; }
-
-        public bool SpeedIsMach { get; set; } = false;
-        public bool HeadingIsTrack { get; set; } = false;
-        public bool VsIsFpa { get; set; } = false;
-
-        public bool SpeedManaged { get; set; } = false;
-        public bool HeadingManaged { get; set; } = false;
-        public bool AltitudeManaged { get; set; } = false;
-
-        public bool SpeedDot { get; set; } = false;
-        public bool HeadingDot { get; set; } = false;
-        public bool AltitudeDot { get; set; } = false;
-        public bool VsDot { get; set; } = false;
-
-        public bool LatIndicator { get; set; } = false;
-        public bool VsMiddleIndicator { get; set; } = false;
-        public bool TrkMiddleIndicator { get; set; } = false;
-        public bool FpaMiddleIndicator { get; set; } = false;
-        
-        public bool LvlIndicator { get; set; } = false;
-        public bool LvlLeftBracket { get; set; } = false;
-        public bool LvlRightBracket { get; set; } = false;
-        public bool VsHorzIndicator { get; set; } = false;
-
-        public int? LeftBaroPressure { get; set; }
-        public bool LeftBaroQnh { get; set; }
-        public bool LeftBaroQfe { get; set; }
-
-        public int? RightBaroPressure { get; set; }
-        public bool RightBaroQnh { get; set; }
-        public bool RightBaroQfe { get; set; }
-    }
-
-    public class FcuEfisLeds : IFrontpanelLeds
-    {
-        public bool Loc { get; set; }
-        public bool Ap1 { get; set; }
-        public bool Ap2 { get; set; }
-        public bool AThr { get; set; }
-        public bool Exped { get; set; }
-        public byte ExpedYellowBrightness { get; set; } = 0;
-        public bool Appr { get; set; }
-
-        public bool LeftFd { get; set; }
-        public bool LeftLs { get; set; }
-        public bool LeftCstr { get; set; }
-        public bool LeftWpt { get; set; }
-        public bool LeftVorD { get; set; }
-        public bool LeftNdb { get; set; }
-        public bool LeftArpt { get; set; }
-
-        public bool RightFd { get; set; }
-        public bool RightLs { get; set; }
-        public bool RightCstr { get; set; }
-        public bool RightWpt { get; set; }
-        public bool RightVorD { get; set; }
-        public bool RightNdb { get; set; }
-        public bool RightArpt { get; set; }
     }
 }

@@ -18,7 +18,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using Cduhub.Config;
-using wwDevicesDotNet;
+using WwDevicesDotNet;
 
 namespace Cduhub.Pages
 {
