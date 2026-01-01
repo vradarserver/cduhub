@@ -22,11 +22,7 @@ namespace WwDevicesDotNet
 
         public Colour Colour { get; set; }
 
-        public Colour Color
-        {
-            get => Colour;
-            set => Colour = value;
-        }
+        public Colour BackgroundColour { get; set; } = Colour.Black;
 
         public bool Small { get; set; }
 
@@ -52,14 +48,16 @@ namespace WwDevicesDotNet
         {
             Character = ' ';
             Colour = Colour.White;
+            BackgroundColour = Colour.Black;
             Small = false;
         }
 
-        public void Set(char character, Colour colour, bool small)
+        public void Set(char character, Colour colour, bool small, Colour? backgroundColor = null)
         {
             Character = character;
             Colour = colour;
             Small = small;
+            BackgroundColour = backgroundColor ?? Colour.Black;
         }
 
         public void CopyFrom(Cell other)
@@ -67,7 +65,7 @@ namespace WwDevicesDotNet
             if(other == null) {
                 throw new ArgumentNullException(nameof(other));
             }
-            Set(other.Character, other.Colour, other.Small);
+            Set(other.Character, other.Colour, other.Small, other.BackgroundColour);
         }
 
         public void CopyTo(Cell other)  => other?.CopyFrom(this);
