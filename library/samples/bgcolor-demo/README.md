@@ -4,7 +4,7 @@ This document demonstrates how to use background colors on WinWing MCDU displays
 
 ## Quick Reference
 
-The WinWing display supports **121 color combinations** (11 foreground × 11 background colors).
+The WinWing display supports **121 color combinations** (11 foreground Ã— 11 background colors).
 
 ### Available Colors (Palette Indices)
 - Black, Amber, White, Cyan, Green, Magenta, Red, Yellow, Brown, Grey, Khaki
@@ -38,7 +38,7 @@ cdu.RefreshPalette();  // Apply changes to device
 
 // Now this text appears RED (even though we said "White")
 cdu.Output
-    .Colour(Colour.White)  // Index "White" ? but displays as RED
+    .Colour(Colour.White)  // Index "White" -> displays as RED
     .Write("This is RED!");
 ```
 
