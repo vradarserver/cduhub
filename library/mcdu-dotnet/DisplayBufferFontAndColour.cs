@@ -23,7 +23,7 @@ namespace WwDevicesDotNet
         /// property might change in the future if new devices support more colours, do
         /// not assume that it will always be a byte.
         /// </summary>
-        public byte PackedValue { get; set; }
+        public ushort PackedValue { get; set; }
 
         /// <summary>
         /// Gets or sets the foreground colour index number. See also <see
@@ -32,7 +32,17 @@ namespace WwDevicesDotNet
         public int ForegroundColourIndex
         {
             get => PackedValue & 0x0f;
-            set => PackedValue = (byte)((PackedValue & 0xf0) | (value & 0x0f));
+            set => PackedValue = (ushort)((PackedValue & 0xfff0) | (value & 0x0f));
+        }
+
+        /// <summary>
+        /// Gets or sets the background colour index number. See also <see
+        /// cref="BackgroundColour"/>.
+        /// </summary>
+        public int BackgroundColourIndex
+        {
+            get => (PackedValue >> 4) & 0x0f;
+            set => PackedValue = (ushort)((PackedValue & 0xff0f) | ((value & 0x0f) << 4));
         }
 
         /// <summary>
@@ -45,20 +55,29 @@ namespace WwDevicesDotNet
         }
 
         /// <summary>
+        /// Gets or sets the background colour.
+        /// </summary>
+        public Colour BackgroundColour
+        {
+            get => ColourExtensions.FromDisplayBufferColourIndex(BackgroundColourIndex);
+            set => BackgroundColourIndex = value.ToDisplayBufferColourIndex();
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the character is rendered in the small
         /// or large font.
         /// </summary>
         public bool IsSmallFont
         {
-            get => (byte)(PackedValue & 0x80) == 0x80;
-            set => PackedValue = (byte)((PackedValue & 0x7f) | (value ? 0x80 : 0x00));
+            get => (PackedValue & 0x8000) == 0x8000;
+            set => PackedValue = (ushort)((PackedValue & 0x7fff) | (value ? 0x8000 : 0x0000));
         }
 
         /// <summary>
         /// Creates a new value.
         /// </summary>
         /// <param name="packedValue"></param>
-        public DisplayBufferFontAndColour(byte packedValue)
+        public DisplayBufferFontAndColour(ushort packedValue)
         {
             PackedValue = packedValue;
         }
@@ -69,7 +88,7 @@ namespace WwDevicesDotNet
         /// <param name="colourIndex"></param>
         /// <param name="isSmallFont"></param>
         public DisplayBufferFontAndColour(int colourIndex, bool isSmallFont)
-            : this((byte)((isSmallFont ? 0x80 : 0x00) | (colourIndex & 0x0f)))
+            : this((ushort)((isSmallFont ? 0x8000 : 0x0000) | (colourIndex & 0x0f)))
         {
         }
 
@@ -83,8 +102,23 @@ namespace WwDevicesDotNet
         {
         }
 
+        /// <summary>
+        /// Creates a new value.
+        /// </summary>
+        /// <param name="foregroundColour"></param>
+        /// <param name="backgroundColour"></param>
+        /// <param name="isSmallFont"></param>
+        public DisplayBufferFontAndColour(Colour foregroundColour, Colour backgroundColour, bool isSmallFont)
+            : this((ushort)(
+                (isSmallFont ? 0x8000 : 0x0000) | 
+                (foregroundColour.ToDisplayBufferColourIndex() & 0x0f) |
+                ((backgroundColour.ToDisplayBufferColourIndex() & 0x0f) << 4)
+            ))
+        {
+        }
+
         /// <inheritdoc/>
-        public override string ToString() => $"{ForegroundColour}[{(IsSmallFont ? 's' : 'L')}]";
+        public override string ToString() => $"{ForegroundColour}[{(IsSmallFont ? 's' : 'L')}] on {BackgroundColour}";
 
         /// <summary>
         /// Sets the properties from the cell passed across.
@@ -99,6 +133,7 @@ namespace WwDevicesDotNet
             var originalPackedValue = PackedValue;
 
             ForegroundColour = cell.Colour;
+            BackgroundColour = cell.BackgroundColour;
             IsSmallFont = cell.Small;
 
             return PackedValue != originalPackedValue;
@@ -115,6 +150,7 @@ namespace WwDevicesDotNet
                 throw new ArgumentNullException(nameof(cell));
             }
             cell.Colour = ForegroundColour;
+            cell.BackgroundColour = BackgroundColour;
             cell.Small = IsSmallFont;
         }
 
@@ -139,8 +175,13 @@ namespace WwDevicesDotNet
         /// <returns></returns>
         public (byte,byte) ToWinWingUsbColourAndFontCode(bool isFirstCell, bool isLastCell)
         {
-            // As of time of writing our colour ordinals are the same as the WinWing ordinals
-            var code = ForegroundColourIndex * 0x21;
+            // Use the lookup table based on foreground and background color ordinals
+            var fgOrdinal = ForegroundColourIndex;
+            var bgOrdinal = BackgroundColourIndex;
+            
+            // Calculate code from the table pattern
+            int code = (fgOrdinal * 0x21) + (bgOrdinal * 0x03);
+            
             if(IsSmallFont) {
                 code += 0x16B;
             }
@@ -149,7 +190,7 @@ namespace WwDevicesDotNet
             } else if(isLastCell) {
                 code += 2;
             }
-
+            
             return ((byte)(code & 0xff), (byte)((code & 0xff00) >> 8));
         }
     }

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.9.34728.123
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11312.151
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{717AFCD7-BBC8-416C-97B0-BFD086BF1739}"
 	ProjectSection(SolutionItems) = preProject
@@ -98,6 +98,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{8E066D89-5
 		docs\screen-weather-metar+taf.png = docs\screen-weather-metar+taf.png
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "bgcolor-demo", "library\samples\bgcolor-demo\bgcolor-demo.csproj", "{4ECAF514-9F92-D88F-CF80-9078099107C5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -172,6 +174,10 @@ Global
 		{2C957253-D368-4C07-AA17-A080EBE56E5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C957253-D368-4C07-AA17-A080EBE56E5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C957253-D368-4C07-AA17-A080EBE56E5B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4ECAF514-9F92-D88F-CF80-9078099107C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4ECAF514-9F92-D88F-CF80-9078099107C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4ECAF514-9F92-D88F-CF80-9078099107C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4ECAF514-9F92-D88F-CF80-9078099107C5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -197,6 +203,7 @@ Global
 		{F17CBADA-C093-4F2E-BBDD-A39BA8958192} = {7612F6B1-A4A7-431C-8688-167145D1D5F8}
 		{DCCA67BA-E85F-4E2D-8945-48326009E9B8} = {61A9C6CD-82AE-494E-86C9-21644DAADBD6}
 		{2C957253-D368-4C07-AA17-A080EBE56E5B} = {61A9C6CD-82AE-494E-86C9-21644DAADBD6}
+		{4ECAF514-9F92-D88F-CF80-9078099107C5} = {61A9C6CD-82AE-494E-86C9-21644DAADBD6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C977F7C9-07B7-4BB4-A182-FDE6F96F171A}

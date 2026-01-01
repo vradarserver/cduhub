@@ -51,6 +51,30 @@ namespace WwDevicesDotNet
             set => Colour = value;
         }
 
+        private Colour _BackgroundColour = Colour.Black;
+        /// <summary>
+        /// The background colour of the next character added to the display.
+        /// </summary>
+        public Colour BackgroundColour
+        {
+            get => _BackgroundColour;
+            set {
+                if(!Enum.IsDefined(typeof(Colour), value)) {
+                    throw new ArgumentOutOfRangeException(nameof(BackgroundColour), value, "Not a valid colour");
+                }
+                _BackgroundColour = value;
+            }
+        }
+
+        /// <summary>
+        /// Alias for <see cref="BackgroundColour"/>.
+        /// </summary>
+        public Colour BackgroundColor
+        {
+            get => BackgroundColour;
+            set => BackgroundColour = value;
+        }
+
         private int _Column;
         /// <summary>
         /// The 0-based column of the next character to add.
@@ -124,6 +148,7 @@ namespace WwDevicesDotNet
             }
             RightToLeft = false;
             Colour = Colour.White;
+            BackgroundColour = Colour.Black;
             Column = 0;
             Line = 0;
             Small = false;
@@ -139,6 +164,7 @@ namespace WwDevicesDotNet
             }
             RightToLeft = other.RightToLeft;
             Colour = other.Colour;
+            BackgroundColour = other.BackgroundColour;
             Column = other.Column;
             Line = other.Line;
             Small = other.Small;
@@ -152,7 +178,7 @@ namespace WwDevicesDotNet
             bool showLowercaseInSmallUppercase = false
         )
         {
-            if(ch == ' ') { // <-- non-breaking space
+            if(ch == ' ') { // <-- non-breaking space
                 ch = ' ';   // <-- bog-standard space
             }
             var small = Small;
@@ -162,7 +188,7 @@ namespace WwDevicesDotNet
                     ch = char.ToUpper(ch);
                 }
             }
-            Rows[Line].Cells[Column].Set(ch, Colour, small);
+            Rows[Line].Cells[Column].Set(ch, Colour, small, BackgroundColour);
             if(advanceColumn) {
                 AdvanceColumn();
             }

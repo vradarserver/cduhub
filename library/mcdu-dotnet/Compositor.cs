@@ -140,6 +140,52 @@ namespace WwDevicesDotNet
 
         public Compositor Yellow() => Colour(WwDevicesDotNet.Colour.Yellow);
 
+        public Compositor BackgroundColour(Colour colour)
+        {
+            _Screen.BackgroundColour = colour;
+            return this;
+        }
+
+        public Compositor BackgroundColor(Colour colour) => BackgroundColour(colour);
+
+        public Compositor BGColour(Colour colour) => BackgroundColour(colour);
+
+        public Compositor BGColor(Colour colour) => BackgroundColour(colour);
+
+        public Compositor BGAmber() => BackgroundColour(WwDevicesDotNet.Colour.Amber);
+
+        public Compositor BGBrown() => BackgroundColour(WwDevicesDotNet.Colour.Brown);
+
+        public Compositor BGCyan() => BackgroundColour(WwDevicesDotNet.Colour.Cyan);
+
+        public Compositor BGGrey() => BackgroundColour(WwDevicesDotNet.Colour.Grey);
+
+        public Compositor BGGray() => BackgroundColour(WwDevicesDotNet.Colour.Grey);
+
+        public Compositor BGGreen() => BackgroundColour(WwDevicesDotNet.Colour.Green);
+
+        public Compositor BGKhaki() => BackgroundColour(WwDevicesDotNet.Colour.Khaki);
+
+        public Compositor BGMagenta() => BackgroundColour(WwDevicesDotNet.Colour.Magenta);
+
+        public Compositor BGRed() => BackgroundColour(WwDevicesDotNet.Colour.Red);
+
+        public Compositor BGWhite() => BackgroundColour(WwDevicesDotNet.Colour.White);
+
+        public Compositor BGYellow() => BackgroundColour(WwDevicesDotNet.Colour.Yellow);
+
+        public Compositor BGBlack() => BackgroundColour(WwDevicesDotNet.Colour.Black);
+
+        public Compositor InvertColours()
+        {
+            var temp = _Screen.Colour;
+            _Screen.Colour = _Screen.BackgroundColour;
+            _Screen.BackgroundColour = temp;
+            return this;
+        }
+
+        public Compositor InvertColors() => InvertColours();
+
         public Compositor Small(bool on = true)
         {
             _Screen.Small = on;
@@ -391,6 +437,7 @@ namespace WwDevicesDotNet
         {
             var restoreSmall = _Screen.Small;
             var restoreColour = _Screen.Colour;
+            var restoreBackgroundColour = _Screen.BackgroundColour;
 
             var styleChangeIdx = -1;
             CompositorStringStyleChange nextStyleChange;
@@ -433,6 +480,7 @@ namespace WwDevicesDotNet
 
             _Screen.Small = restoreSmall;
             _Screen.Colour = restoreColour;
+            _Screen.BackgroundColour = restoreBackgroundColour;
         }
     }
 }
