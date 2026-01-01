@@ -22,6 +22,12 @@ namespace WwDevicesDotNet
 
         public Colour Colour { get; set; }
 
+        // US spelling alias preserved for backwards compatibility.
+        public Colour Color
+        {
+            get => Colour;
+            set => Colour = value;
+        }
         public Colour BackgroundColour { get; set; } = Colour.Black;
 
         public bool Small { get; set; }
