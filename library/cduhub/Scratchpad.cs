@@ -205,7 +205,7 @@ namespace Cduhub
         protected virtual void SetCellCharacter(Cell cell, char ch)
         {
             if(ShowLowercaseInSmallUppercase) {
-                if(ch <= 'a' || ch >= 'z') {
+                if(ch < 'a' || ch > 'z') {
                     cell.Small = false;
                 } else {
                     cell.Small = true;
