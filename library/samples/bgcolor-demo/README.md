@@ -103,7 +103,7 @@ using(var cdu = CduFactory.ConnectLocal()) {
     cdu.Output
         .Line(0)
         .BGWhite()                    // Set white background
-        .Colour(Colour.Black)         // Set black foreground
+        .Black()                      // Set black foreground
         .Write("  WARNING  ")
         .BGBlack();                   // Reset to black background
     

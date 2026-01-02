@@ -143,11 +143,11 @@ namespace BackgroundColorDemo
             cdu.Output
                 .Line(12)
                 .BGGreen()
-                .Colour(Colour.Black)
+                .Black()
                 .Centred("  PUMPS OK  ")
                 .BGBlack();  // Reset background
             
-            cdu.RefreshDisplay();
+            cdu.RefreshDisplay(); 
         }
         
         static void ShowDirectCellManipulation(ICdu cdu)
