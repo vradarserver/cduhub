@@ -120,6 +120,8 @@ namespace WwDevicesDotNet
 
         public Compositor Amber() => Colour(WwDevicesDotNet.Colour.Amber);
 
+        public Compositor Black() => Colour(WwDevicesDotNet.Colour.Black);
+
         public Compositor Brown() => Colour(WwDevicesDotNet.Colour.Brown);
 
         public Compositor Cyan() => Colour(WwDevicesDotNet.Colour.Cyan);
