@@ -147,7 +147,7 @@ namespace BackgroundColorDemo
                 .Centred("  PUMPS OK  ")
                 .BGBlack();  // Reset background
             
-            cdu.RefreshDisplay(); 
+            cdu.RefreshDisplay();
         }
         
         static void ShowDirectCellManipulation(ICdu cdu)
