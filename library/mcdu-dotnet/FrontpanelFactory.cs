@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HidSharp;
 using WwDevicesDotNet.WinWing.FcuAndEfis;
+using WwDevicesDotNet.WinWing.Pap3;
 
 namespace WwDevicesDotNet
 {
@@ -120,6 +121,11 @@ namespace WwDevicesDotNet
                             var fcu = new FcuEfisDevice(hidDevice, deviceId);
                             fcu.Initialise();
                             result = fcu;
+                            break;
+                        case Device.WinWingPap3:
+                            var pap3 = new Pap3Device(hidDevice, deviceId);
+                            pap3.Initialise();
+                            result = pap3;
                             break;
                     }
                 }
