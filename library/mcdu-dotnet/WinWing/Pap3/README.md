@@ -174,7 +174,7 @@ if(pap3 != null) {
         Lnav = true,        // LNAV mode active
         AltHold = true,     // Altitude Hold active
         N1 = true,          // N1 Autothrottle mode
-        SpeedHold = false,  // Speed Hold mode off
+        Speed = false,      // Speed Hold mode off
         AtArm = true        // Autothrottle armed
     };
     pap3.UpdateLeds(leds);
