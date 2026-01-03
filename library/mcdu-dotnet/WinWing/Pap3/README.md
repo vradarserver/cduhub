@@ -42,13 +42,13 @@ Brightness commands follow this format:
 02 01 00 00 00 03 49 [TYPE] [VALUE] 00 00 00 00 00
 ```
 
-### Brightness Control Mapping (All Verified ✅)
+### Brightness Control Mapping (All Verified Working)
 
 | Type | Code | Status | Notes |
 |------|------|--------|-------|
-| Panel Backlight | 0x00 | ✅ Working | Panel background illumination |
-| Digital Tube (LCD) | 0x01 | ✅ Working | Display backlight (independent control) |
-| Marker Light (LED) | 0x02 | ✅ Working | LED brightness (independent control) |
+| Panel Backlight | 0x00 | Working | Panel background illumination |
+| Digital Tube (LCD) | 0x01 | Working | Display backlight (independent control) |
+| Marker Light (LED) | 0x02 | Working | LED brightness (independent control) |
 
 All three brightness controls are now verified and working correctly!
 
