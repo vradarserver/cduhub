@@ -91,15 +91,15 @@ Each button press toggles its corresponding LED state, which is then synchronize
 - **Autopilot:** CMD A, CMD B, CWS A, CWS B
 - **Flight Director:** FD L, FD R
 
-### ? Brightness Control (All Verified)
+### Brightness Control (All Verified)
 
 Based on hardware testing, the PAP-3 brightness control has **three fully independent controls**:
 
 | Parameter | Code | Status | Notes |
 |-----------|------|--------|-------|
-| panelBacklight | 0x00 | ? Working | Panel background illumination |
-| lcdBacklight | 0x01 | ? Working | Controls digital tube displays |
-| ledBacklight | 0x02 | ? Working | Controls LED (marker light) brightness |
+| panelBacklight | 0x00 | Yes (Working) | Panel background illumination |
+| lcdBacklight | 0x01 | Yes (Working) | Controls digital tube displays |
+| ledBacklight | 0x02 | Yes (Working) | Controls LED (marker light) brightness |
 
 All three brightness controls are now verified and working correctly with the PAP-3 hardware!
 
