@@ -209,7 +209,7 @@ namespace Pap3LedsTest
             Console.WriteLine("Testing Panel Backlight:");
             foreach(var brightness in brightnessLevels) {
                 Console.WriteLine($"  Panel: {brightness}");
-                _pap3?.SetBrightness(brightness, 00, 000);
+                _pap3?.SetBrightness(brightness, 0, 0);
                 Thread.Sleep(500);
             }
 
@@ -217,7 +217,7 @@ namespace Pap3LedsTest
             Console.WriteLine("Testing Digital Tube Backlight (LCD displays):");
             foreach(var brightness in brightnessLevels) {
                 Console.WriteLine($"  Digital Tube: {brightness}");
-                _pap3?.SetBrightness(00, brightness, 00);
+                _pap3?.SetBrightness(0, brightness, 0);
                 Thread.Sleep(500);
             }
 
@@ -225,7 +225,7 @@ namespace Pap3LedsTest
             Console.WriteLine("Testing Marker Light (LEDs):");
             foreach(var brightness in brightnessLevels) {
                 Console.WriteLine($"  Marker Light: {brightness}");
-                _pap3?.SetBrightness(000, 00, brightness);
+                _pap3?.SetBrightness(0, 0, brightness);
                 Thread.Sleep(500);
             }
 
