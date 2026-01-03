@@ -21,7 +21,7 @@ namespace Pap3LedsTest
     /// </summary>
     class Program
     {
-        static Pap3Leds _leds = new Pap3Leds();
+        static readonly Pap3Leds _leds = new Pap3Leds();
         static IFrontpanel? _pap3;
         static System.Timers.Timer? _refreshTimer;
         const int RefreshIntervalMs = 250;
