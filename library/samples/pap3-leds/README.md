@@ -42,10 +42,10 @@ This sample uses a **timer-based refresh approach**:
 
 ### Benefits
 
-? **Simple**: No need to track what changed  
-? **Robust**: Recovers automatically from communication errors  
-? **Reliable**: Hardware always reflects the current software state  
-? **Efficient**: 250ms is fast enough for any real-world application  
+- **Simple**: No need to track what changed  
+- **Robust**: Recovers automatically from communication errors  
+- **Reliable**: Hardware always reflects the current software state  
+- **Efficient**: 250ms is fast enough for any real-world application  
 
 ### Input Responsiveness
 
