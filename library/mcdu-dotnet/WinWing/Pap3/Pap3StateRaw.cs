@@ -11,53 +11,15 @@
 namespace WwDevicesDotNet.WinWing.Pap3
 {
     /// <summary>
-    /// Represents the display state for a PAP-3 Primary Autopilot Panel.
+    /// Raw display state for PAP-3 testing - allows direct byte/bit manipulation.
+    /// Used for discovering which bytes and bits control which display elements.
     /// </summary>
-    public class Pap3State : IFrontpanelState
+    public class Pap3StateRaw : IFrontpanelState
     {
         /// <summary>
-        /// Speed value. Mach speeds are sent without the decimal point (e.g., Mach 0.82 is sent as 082).
+        /// Raw display data (30 bytes starting at offset 0x1F).
+        /// Set individual bytes to test which controls which display element.
         /// </summary>
-        public int? Speed { get; set; }
-
-        /// <summary>
-        /// Course value (0-359 degrees).
-        /// </summary>
-        public int? Course { get; set; }
-
-        /// <summary>
-        /// Heading value (0-359 degrees).
-        /// </summary>
-        public int? Heading { get; set; }
-
-        /// <summary>
-        /// Altitude value (feet).
-        /// </summary>
-        public int? Altitude { get; set; }
-
-        /// <summary>
-        /// Vertical speed value (feet per minute).
-        /// </summary>
-        public int? VerticalSpeed { get; set; }
-
-        /// <summary>
-        /// True if speed display is in Mach mode, false for knots.
-        /// </summary>
-        public bool SpeedIsMach { get; set; } = false;
-
-        /// <summary>
-        /// True if altitude is displayed as flight level.
-        /// </summary>
-        public bool AltitudeIsFlightLevel { get; set; } = false;
-
-        /// <summary>
-        /// True if heading display is in Track mode, false for Heading mode.
-        /// </summary>
-        public bool HeadingIsTrack { get; set; } = false;
-
-        /// <summary>
-        /// True if vertical speed display is in FPA mode, false for V/S mode.
-        /// </summary>
-        public bool VsIsFpa { get; set; } = false;
+        public byte[] RawDisplayData { get; set; } = new byte[30];
     }
 }

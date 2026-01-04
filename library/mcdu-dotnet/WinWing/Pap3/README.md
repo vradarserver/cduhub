@@ -7,7 +7,7 @@ This folder contains the implementation for the WinWing PAP-3 Primary Autopilot 
 ### TODO Items:
 
 1. **Hardware Protocol Discovery**
-   - [X] Determine actual command prefix for PAP-3 (`_Pap3Prefix` = 0x0100, verified)
+   - [X] Determine actual command prefix for PAP-3 (`_Pap3DisplayPrefix` = 0x0FBF, verified)
    - [X] Capture and analyze HID communication packets from the device
    - [X] Verify input report structure and length
 
@@ -15,14 +15,16 @@ This folder contains the implementation for the WinWing PAP-3 Primary Autopilot 
    - [X] Map all physical buttons to correct byte offsets and bit flags in `ControlMap.cs`
 
 3. **Display Implementation**
-   - [ ] Implement display command structure in `BuildDisplayCommands()`
-   - [ ] Implement display encoding in `EncodeDisplays()`
-   - [ ] Verify seven-segment display encoding (may differ from FCU/EFIS)
-   - [ ] Test Speed/Mach mode switching
-   - [ ] Test Course display
-   - [ ] Test Heading display
-   - [ ] Test Altitude display (including Flight Level mode)
-   - [ ] Test Vertical Speed display
+   - [X] Implement display command structure in `BuildDisplayCommands()`
+   - [ ] **NOT IMPLEMENTED**: Display encoding in `EncodeDisplays()`
+   - [ ] The display encoding logic is placeholder only and does not work
+   - [ ] Display functionality requires hardware reverse engineering to determine correct byte mappings
+   - [ ] **NEEDS HARDWARE TESTING**: Verify seven-segment display byte positions
+   - [ ] **NEEDS HARDWARE TESTING**: Test Speed/Mach mode switching
+   - [ ] **NEEDS HARDWARE TESTING**: Test Course display (PLT and CPL)
+   - [ ] **NEEDS HARDWARE TESTING**: Test Heading display
+   - [ ] **NEEDS HARDWARE TESTING**: Test Altitude display (including Flight Level mode)
+   - [ ] **NEEDS HARDWARE TESTING**: Test Vertical Speed display with sign indicators
 
 4. **LED Implementation**
    - [X] Verify LED command codes in `BuildLedCommands()`
@@ -33,104 +35,45 @@ This folder contains the implementation for the WinWing PAP-3 Primary Autopilot 
    - [X] Test LCD backlight control - Working (0x01)
    - [X] Test LED brightness control - Working (0x02)
 
-## Hardware Protocol - Brightness Commands
+## Display Implementation Notes
 
-### Brightness Command Structure (Verified)
+**DISPLAY FUNCTIONALITY IS NOT IMPLEMENTED**
 
-Brightness commands follow this format:
-```
-02 01 00 00 00 03 49 [TYPE] [VALUE] 00 00 00 00 00
-```
+The `EncodeDisplays()` method contains placeholder code only. The actual display encoding for PAP-3 has not been reverse engineered.
 
-### Brightness Control Mapping (All Verified Working)
+**Why Display Support is Missing:**
+- PAP-3 display encoding differs significantly from FCU/EFIS
+- The nibble-swapped encoding pattern from FCU/EFIS does not directly apply
+- Hardware reverse engineering is required to determine:
+  1. Exact byte positions for each display segment
+  2. Segment bit mappings within each byte  
+  3. How indicators (MACH, TRK, FPA, etc.) are encoded
+  4. How the 30-byte display data block is structured
 
-| Type | Code | Status | Notes |
-|------|------|--------|-------|
-| Panel Backlight | 0x00 | Working | Panel background illumination |
-| Digital Tube (LCD) | 0x01 | Working | Display backlight (independent control) |
-| Marker Light (LED) | 0x02 | Working | LED brightness (independent control) |
+**Current Status:**
+- Display command packets are sent with correct structure (verified from packet dumps)
+- LED control is fully functional
+- Brightness control is fully functional
+- Display data encoding is placeholder and **will not work correctly**
 
-All three brightness controls are now verified and working correctly!
-
-### Example: Set Brightness Values
-
-```
-// Set panel brightness to 200:
-02 01 00 00 00 03 49 00 C8 00 00 00 00 00
-
-// Set digital tube brightness to 150:
-02 01 00 00 00 03 49 01 96 00 00 00 00 00
-
-// Set marker light (LED) brightness to 255:
-02 01 00 00 00 03 49 02 FF 00 00 00 00 00
-```
-
-## Hardware Protocol - LED Commands
-
-### LED Command Structure (Verified)
-
-LED commands follow this format:
-```
-02 01 00 00 00 03 49 [LED_CODE] [VALUE] 00 00 00 00 00
-```
-
-- Byte 0: `0x02` (Command type)
-- Bytes 1-2: `0x01 0x00` (Prefix - 0x0100)
-- Bytes 3-4: `0x00 0x00`
-- Bytes 5-6: `0x03 0x49` (LED command identifier)
-- Byte 7: LED code (see table below)
-- Byte 8: Value (`0x00` = off, `0x01` = on)
-- Bytes 9-13: `0x00` (padding)
-
-### LED Command Mapping
-
-| Value | LED Name | Description |
-|-------|----------|-------------|
-| 0x03 | N1 | Autothrottle N1 mode |
-| 0x04 | SPEED | Autothrottle Speed Hold mode |
-| 0x05 | VNAV | Vertical Navigation mode |
-| 0x06 | LVL_CHG | Level Change mode |
-| 0x07 | HDG_SEL | Heading Select mode |
-| 0x08 | LNAV | Lateral Navigation mode |
-| 0x09 | VOR_LOC | VOR/LOC mode |
-| 0x0A | APP | Approach mode |
-| 0x0B | ALT_HLD | Altitude Hold mode |
-| 0x0C | VS | Vertical Speed mode |
-| 0x0D | A_CMD | Autopilot A Command |
-| 0x0E | A_CWS | Autopilot A Control Wheel Steering |
-| 0x0F | B_CMD | Autopilot B Command |
-| 0x10 | B_CWS | Autopilot B Control Wheel Steering |
-| 0x11 | AT_ARM | Autothrottle Armed |
-| 0x12 | L_MA | Left Master Flight Director |
-| 0x13 | R_MA | Right Master Flight Director |
-
-### Example: Toggle N1 LED
-
-```
-// Turn N1 LED on:
-02 01 00 00 00 03 49 03 01 00 00 00 00 00
-
-// Turn N1 LED off:
-02 01 00 00 00 03 49 03 00 00 00 00 00 00
-```
-
-## Files
-
-- **Control.cs**: Enumeration of all PAP-3 controls (buttons, encoders)
-- **ControlMap.cs**: Maps controls to HID input report positions (placeholder mappings)
-- **Pap3State.cs**: Represents the display state for the panel
-- **Pap3Leds.cs**: Represents the LED states for the panel
-- **Pap3Device.cs**: Main device implementation implementing `IFrontpanel`
+**For Developers:**
+If you want to implement display support:
+1. Capture HID packets from SimAppPro while it updates displays
+2. Analyze the 30-byte display data block (offset 0x1F-0x3C)
+3. Map which bytes/bits control which segments
+4. Implement proper encoding in `EncodeDisplays()`
 
 ## Sample Programs
 
-A complete LED test sample is available at:
-- **[samples/pap3-leds](../../../samples/pap3-leds/)** - Interactive LED testing program
+A complete LED and display test sample is available at:
+- **[samples/pap3-leds](../../../samples/pap3-leds/)** - Interactive LED and display testing program
 
 This sample demonstrates:
 - Testing individual LEDs
-- Testing LED groups (Autopilot, Autothrottle, Flight Director, Mode)
-- Brightness control
+- Testing all LEDs in sequence
+- **Speed display testing** - Display various speeds in knots and Mach mode
+- **Indicator search testing** - Find which bits control IAS/MACH, HDG/TRK, V/S/FPA indicators
+- Brightness control (Panel, LCD, LED)
 - Event handling for button presses
 - Complete LED control patterns
 
@@ -140,109 +83,101 @@ cd library/samples/pap3-leds
 dotnet run
 ```
 
-## Usage Example
+### New Display Tests
 
+**Option 2: Test Speed Display**
+- Tests speed display with values from 0 to 999 knots
+- Tests MACH mode with values 0.50 to 0.90
+- Helps verify if speed encoding is working correctly
+
+**Option 3: Search for Indicators**
+- Interactive test to find indicator bit positions
+- Tests IAS/MACH indicator toggle
+- Tests HDG/TRK indicator toggle  
+- Tests V/S/FPA indicator toggle
+- User confirms visually if indicators change on physical panel
+- Results help identify correct byte/bit positions in code
+
+**Option 4: Verify Indicator Bits**
+- Manually toggle specific byte/bit combinations
+- Interactive verification of discovered indicator positions
+- Helps confirm exact mappings before implementation
+
+## Indicator Mapping (VERIFIED)
+
+The following indicator positions have been discovered through hardware testing and are now implemented:
+
+### IAS/MACH Indicators
+
+| Indicator | Byte Offset | Bit Mask | Buffer Index | Notes |
+|-----------|-------------|----------|--------------|-------|
+| **MACH** | 0x2E (46) | 0x80 | payload[0x2E] | Primary position |
+| **MACH** | 0x32 (50) | 0x80 | payload[0x32] | Nibble-swap repeat |
+| **IAS** | 0x36 (54) | 0x80 | payload[0x36] | Speed indicator |
+
+**Implementation:**
 ```csharp
-using WwDevicesDotNet;
-using WwDevicesDotNet.WinWing.Pap3;
-
-// Connect to the PAP-3 device
-var pap3 = FrontpanelFactory.ConnectLocal(
-    device: Device.WinWingPap3,
-    deviceType: DeviceType.Boeing737FrontPanel
-);
-
-if(pap3 != null) {
-    Console.WriteLine($"Connected to: {pap3.DeviceId.Description}");
-
-    // Update displays
-    var state = new Pap3State {
-        Speed = 250,
-        SpeedIsMach = false,
-        Course = 90,
-        Heading = 270,
-        Altitude = 10000,
-        AltitudeIsFlightLevel = false,
-        VerticalSpeed = 1000
-    };
-    pap3.UpdateDisplay(state);
-
-    // Update LEDs
-    var leds = new Pap3Leds {
-        CmdA = true,        // Autopilot A Command engaged
-        FdL = true,         // Left Flight Director on
-        Lnav = true,        // LNAV mode active
-        AltHold = true,     // Altitude Hold active
-        N1 = true,          // N1 Autothrottle mode
-        Speed = false,      // Speed Hold mode off
-        AtArm = true        // Autothrottle armed
-    };
-    pap3.UpdateLeds(leds);
-
-    // Set brightness (0-255)
-    pap3.SetBrightness(
-        panelBacklight: 200,
-        lcdBacklight: 200,
-        ledBacklight: 200
-    );
-
-    // Listen for control events
-    pap3.ControlActivated += (sender, e) => {
-        Console.WriteLine($"Control activated: {e.ControlId}");
-        
-        // Handle specific controls
-        if(e.ControlId == "CmdA") {
-            // Toggle CMD A LED
-            leds.CmdA = !leds.CmdA;
-            pap3.UpdateLeds(leds);
-        }
-    };
-
-    pap3.ControlDeactivated += (sender, e) => {
-        Console.WriteLine($"Control deactivated: {e.ControlId}");
-    };
-
-    // Keep running
-    Console.WriteLine("Press any key to exit...");
-    Console.ReadKey();
-
-    // Cleanup
-    pap3.Dispose();
+if (state.SpeedIsMach) {
+    payload[0x2E] |= 0x80;  // MACH indicator
+    payload[0x32] |= 0x80;  // MACH indicator (repeat)
+} else {
+    payload[0x36] |= 0x80;  // IAS indicator
 }
 ```
 
-## Testing Notes
+### HDG/TRK Indicators
 
-When testing with actual hardware:
+| Indicator | Byte Offset | Bit Mask | Buffer Index | Notes |
+|-----------|-------------|----------|--------------|-------|
+| **TRK** | 0x2A (42) | 0x08 | payload[0x2A] | Track mode |
+| **TRK** | 0x2E (46) | 0x08 | payload[0x2E] | Nibble-swap repeat |
+| **HDG** | 0x32 (50) | 0x08 | payload[0x32] | Heading mode |
+| **HDG** | 0x36 (54) | 0x08 | payload[0x36] | Nibble-swap repeat |
 
-1. Connect the PAP-3 device and monitor HID communication using tools like:
-   - Wireshark with USBPcap
-   - HID API Monitor
-   - USB Analyzer hardware
+**Implementation:**
+```csharp
+if (state.HeadingIsTrack) {
+    payload[0x2A] |= 0x08;  // TRK indicator
+    payload[0x2E] |= 0x08;  // TRK indicator (repeat)
+} else {
+    payload[0x32] |= 0x08;  // HDG indicator
+    payload[0x36] |= 0x08;  // HDG indicator (repeat)
+}
+```
 
-2. Capture packets for:
-   - Button presses and releases
-   - Rotary encoder movements (clockwise and counter-clockwise)
-   - Display updates for all fields
-   - LED state changes
-   - Brightness adjustments
+### V/S/FPA Indicators
 
-3. Update the code based on captured protocol data
+| Indicator | Byte Offset | Bit Mask | Buffer Index | Notes |
+|-----------|-------------|----------|--------------|-------|
+| **FPA** | 0x30 (48) | 0x80 | payload[0x30] | Flight Path Angle |
+| **FPA** | 0x34 (52) | 0x80 | payload[0x34] | Nibble-swap repeat |
+| **V/S** | 0x38 (56) | 0x80 | payload[0x38] | Vertical Speed |
 
-## Related Documentation
+**Implementation:**
+```csharp
+if (state.VsIsFpa) {
+    payload[0x30] |= 0x80;  // FPA indicator
+    payload[0x34] |= 0x80;  // FPA indicator (repeat)
+} else {
+    payload[0x38] |= 0x80;  // V/S indicator
+}
+```
 
-- See the FcuAndEfis implementation for a working reference implementation
-- The PAP-3 likely uses similar HID protocol patterns to the FCU/EFIS devices
-- Consult WinWing's documentation if available
+### Understanding the Nibble-Swap Pattern
 
-## Contributing
+The PAP-3 uses a nibble-swapped encoding similar to FCU/EFIS where:
+- **Primary indicator bit** is set at one byte position
+- **Repeat indicator bit** is set at a second byte position (4 bytes later)
+- This pattern ensures the indicator is visible across the nibble-swapped digit encoding
 
-If you have a PAP-3 device and can help with protocol discovery:
+**Pattern observed:**
+- TRK: Bytes 0x2A + 0x2E (Δ = 4 bytes)
+- HDG: Bytes 0x32 + 0x36 (Δ = 4 bytes)
+- MACH: Bytes 0x2E + 0x32 (Δ = 4 bytes)
+- FPA: Bytes 0x30 + 0x34 (Δ = 4 bytes)
 
-1. Capture HID traffic while using the device
-2. Document the packet structures
-3. Update the TODO items above with your findings
-4. Submit a pull request with the corrected implementation
+The 4-byte spacing suggests the indicators are interleaved with digit encoding in the display data block.
 
 
-# Investigation Notes
+Data LCD starts a 0x1D to 0x38
+

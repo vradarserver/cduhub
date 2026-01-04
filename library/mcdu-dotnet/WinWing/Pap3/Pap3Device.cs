@@ -24,8 +24,13 @@ namespace WwDevicesDotNet.WinWing.Pap3
     public class Pap3Device : IFrontpanel
     {
         // Command prefix for PAP-3 panel (verified from hardware testing)
-        // Prefix is 0x0100 for LED commands
-        const ushort _Pap3Prefix = 0x0100;
+        const ushort _Pap3DisplayPrefix = 0x0FBF;
+        const ushort _Pap3LedPrefix = 0x0100;
+
+        // Brightness command types (verified from hardware testing)
+        const byte _BrightnessPanelBacklight = 0x00;
+        const byte _BrightnessDigitalTube = 0x01;
+        const byte _BrightnessMarkerLight = 0x02;
 
         // Seven-segment display digit values (inherited from FCU/EFIS encoding)
         static readonly byte[] _DigitValues = new byte[] {
@@ -41,12 +46,83 @@ namespace WwDevicesDotNet.WinWing.Pap3
             0xFC  // 9
         };
 
+        // Segment bit mapping for 7-segment displays
+        // These map to the bits in _DigitValues
+        static readonly byte[] _SegmentBits = new byte[] {
+            0x80, // Bit 7: Segment A (top)
+            0x40, // Bit 6: Segment B (top right)
+            0x20, // Bit 5: Segment C (bottom right)
+            0x10, // Bit 4: Segment D (bottom)
+            0x08, // Bit 3: Segment E (bottom left)
+            0x04, // Bit 2: Segment F (top left)
+            0x02, // Bit 1: Segment G (middle)
+            0x01  // Bit 0: Decimal point
+        };
+
+
+        // Display mapping structure: defines which bit mask and offsets to use for each digit
+        class DigitMapping
+        {
+            public byte BitMask { get; set; }
+            public int[] SegmentOffsets { get; set; }
+        }
+
+        // PLT Course (Speed) - 3 digits
+        static readonly DigitMapping[] _PltCourseMapping = new DigitMapping[]
+        {
+            new DigitMapping { BitMask = 0x80, SegmentOffsets = new int[] { 0x19, 0x1D, 0x21, 0x25, 0x29, 0x2D, 0x31, 0x35 } }, // Hundreds
+            new DigitMapping { BitMask = 0x40, SegmentOffsets = new int[] { 0x19, 0x1D, 0x21, 0x25, 0x29, 0x2D, 0x31, 0x35 } }, // Tens
+            new DigitMapping { BitMask = 0x20, SegmentOffsets = new int[] { 0x19, 0x1D, 0x21, 0x25, 0x29, 0x2D, 0x31, 0x35 } }  // Ones
+        };
+
+        // CPL Course - 3 digits (offset +4 from PLT Course pattern)
+        static readonly DigitMapping[] _CplCourseMapping = new DigitMapping[]
+        {
+            new DigitMapping { BitMask = 0x40, SegmentOffsets = new int[] { 0x20, 0x24, 0x28, 0x2C, 0x30, 0x34, 0x38 } }, // Hundreds
+            new DigitMapping { BitMask = 0x20, SegmentOffsets = new int[] { 0x20, 0x24, 0x28, 0x2C, 0x30, 0x34, 0x38 } }, // Tens
+            new DigitMapping { BitMask = 0x10, SegmentOffsets = new int[] { 0x20, 0x24, 0x28, 0x2C, 0x30, 0x34, 0x38 } }  // Ones
+            // todo add Decimal point if needed 1C 10 
+        };
+
+        // Heading (HDG) - 3 digits
+        static readonly DigitMapping[] _HeadingMapping = new DigitMapping[]
+        {
+            new DigitMapping { BitMask = 0x40, SegmentOffsets = new int[] { 0x1E, 0x22, 0x26, 0x2A, 0x2E, 0x32, 0x36 } }, // Hundreds
+            new DigitMapping { BitMask = 0x20, SegmentOffsets = new int[] { 0x1E, 0x22, 0x26, 0x2A, 0x2E, 0x32, 0x36 } }, // Tens
+            new DigitMapping { BitMask = 0x10, SegmentOffsets = new int[] { 0x1E, 0x22, 0x26, 0x2A, 0x2E, 0x32, 0x36 } }  // Ones
+            // Todo Decimal point 26 08 
+        };
+
+        // Altitude - 5 digits 
+        static readonly DigitMapping[] _AltitudeMapping = new DigitMapping[]
+        {
+            new DigitMapping { BitMask = 0x04, SegmentOffsets = new int[] { 0x1E, 0x22, 0x26, 0x2A, 0x2E, 0x32, 0x36 } }, // Ten-thousands
+            new DigitMapping { BitMask = 0x02, SegmentOffsets = new int[] { 0x1E, 0x22, 0x26, 0x2A, 0x2E, 0x32, 0x36 } }, // Thousands
+            new DigitMapping { BitMask = 0x01, SegmentOffsets = new int[] { 0x1E, 0x22, 0x26, 0x2A, 0x2E, 0x32, 0x36 } }, // Hundreds
+            // Todo decilmal point 1A 01
+            new DigitMapping { BitMask = 0x80, SegmentOffsets = new int[] { 0x1F, 0x23, 0x27, 0x2B, 0x2F, 0x33, 0x37 } }, // Tens
+            new DigitMapping { BitMask = 0x40, SegmentOffsets = new int[] { 0x1F, 0x23, 0x27, 0x2B, 0x2F, 0x33, 0x37 } }  // Ones
+        };
+
+        // Vertical Speed - 4 digits
+        static readonly DigitMapping[] _VerticalSpeedMapping = new DigitMapping[]
+        {
+            new DigitMapping { BitMask = 0x08, SegmentOffsets = new int[] { 0x1F, 0x23, 0x27, 0x2B, 0x2F, 0x33, 0x37 } }, // Thousands
+            new DigitMapping { BitMask = 0x04, SegmentOffsets = new int[] { 0x1F, 0x23, 0x27, 0x2B, 0x2F, 0x33, 0x37 } }, // Hundreds
+            // Todo decimal point 1B 04
+            new DigitMapping { BitMask = 0x02, SegmentOffsets = new int[] { 0x1F, 0x23, 0x27, 0x2B, 0x2F, 0x33, 0x37 } }, // Tens
+            new DigitMapping { BitMask = 0x01, SegmentOffsets = new int[] { 0x1F, 0x23, 0x27, 0x2B, 0x2F, 0x33, 0x37 } }  // Ones
+            
+        };
+
+
         HidDevice _HidDevice;
         HidStream _HidStream;
         bool _Disposed;
         CancellationTokenSource _InputLoopCancellationTokenSource;
         Task _InputLoopTask;
         readonly byte[] _LastInputReport = new byte[25];
+        ushort _SequenceNumber = 0; // Track sequence number for display packets
 
         /// <inheritdoc/>
         public DeviceIdentifier DeviceId { get; }
@@ -90,12 +166,26 @@ namespace WwDevicesDotNet.WinWing.Pap3
                 throw new WwDeviceException($"Could not open a stream to {_HidDevice}");
             }
 
+            // Send initialization packet (verified from hardware capture)
+            SendInitPacket();
+
             // Subscribe to device list changes for disconnect detection
             DeviceList.Local.Changed += HidSharpDeviceList_Changed;
 
             // Start reading input reports on a background task
             _InputLoopCancellationTokenSource = new CancellationTokenSource();
             _InputLoopTask = Task.Run(() => RunInputLoop(_InputLoopCancellationTokenSource.Token));
+        }
+
+        void SendInitPacket()
+        {
+            // Initialization packet: F0 02 00... (all zeros)
+            var initPacket = new byte[64];
+            initPacket[0] = 0xF0;
+            initPacket[1] = 0x02;
+            // Rest is already 0x00
+            
+            SendCommand(initPacket);
         }
 
         /// <inheritdoc/>
@@ -106,6 +196,12 @@ namespace WwDevicesDotNet.WinWing.Pap3
 
             if(state is Pap3State pap3State) {
                 var commands = BuildDisplayCommands(pap3State);
+                foreach(var data in commands) {
+                    SendCommand(data);
+                }
+            }
+            else if(state is Pap3StateRaw rawState) {
+                var commands = BuildDisplayCommandsRaw(rawState);
                 foreach(var data in commands) {
                     SendCommand(data);
                 }
@@ -132,14 +228,9 @@ namespace WwDevicesDotNet.WinWing.Pap3
             if(!IsConnected)
                 return;
 
-            // Send brightness commands for PAP-3
-            // Verified from hardware testing:
-            // - 0x00: Panel backlight
-            // - 0x01: Digital Tube Backlight (LCD) - Working correctly
-            // - 0x02: Marker Light (LEDs) - Verified working
-            SendBrightnessCommand(_Pap3Prefix, 0x00, panelBacklight);
-            SendBrightnessCommand(_Pap3Prefix, 0x01, lcdBacklight);
-            SendBrightnessCommand(_Pap3Prefix, 0x02, ledBacklight);
+            SendBrightnessCommand(_Pap3LedPrefix, _BrightnessPanelBacklight, panelBacklight);
+            SendBrightnessCommand(_Pap3LedPrefix, _BrightnessDigitalTube, lcdBacklight);
+            SendBrightnessCommand(_Pap3LedPrefix, _BrightnessMarkerLight, ledBacklight);
         }
 
         void SendBrightnessCommand(ushort prefix, byte variableType, byte value)
@@ -242,43 +333,325 @@ namespace WwDevicesDotNet.WinWing.Pap3
         List<byte[]> BuildDisplayCommands(Pap3State state)
         {
             var commands = new List<byte[]>();
-            
-            // TODO: Implement display command building based on actual hardware protocol
-            // This is a placeholder that follows the FCU pattern
-            var payload = new byte[64];
 
+            commands.AddRange(BuildPap3DisplayCommands(state));
+            return commands;
+        }
+
+        List<byte[]> BuildPap3DisplayCommands(Pap3State state)
+        {
+            var commands = new List<byte[]>();
+            var payload = new byte[64];
+            var followup = new byte[64];
+
+            // Increment sequence number for each display update
+            _SequenceNumber++;
+            if(_SequenceNumber > 255) _SequenceNumber = 1;
+
+            // Pattern from hardware capture (see README packet analysis):
+            // Packet 1: 38 command with display data to unit 0F BF
+            // Packet 2: 38 command empty (to unit 00 00 - no device)
+            // Packet 3: 38 command empty (to unit 00 00 - no device)
+            // Packet 4: 2A acknowledgment packet
+            
+            // Packet 1: Main display data (38 command)
             payload[0] = 0xF0;
             payload[1] = 0x00;
-            payload[2] = 0x01; // Sequence number
-            payload[3] = 0x31; // TODO: Verify this value for PAP-3
-            payload[4] = (byte)((_Pap3Prefix >> 8) & 0xFF);
-            payload[5] = (byte)(_Pap3Prefix & 0xFF);
+            payload[2] = (byte)_SequenceNumber;
+            payload[3] = 0x38; // Command to device
+            payload[4] = (byte)((_Pap3DisplayPrefix >> 8) & 0xFF); // 0x0F
+            payload[5] = (byte)(_Pap3DisplayPrefix & 0xFF);         // 0xBF
+            payload[6] = 0x00; // Checksum bytes (set to 00 00 for now)
+            payload[7] = 0x00;
+            
+            // Fixed sequence from hardware capture (bytes 08-1E)
+            payload[8] = 0x02;
+            payload[9] = 0x01;
+            payload[10] = 0x00;
+            payload[11] = 0x00;
+            // Bytes 12-15 appear to be a checksum/identifier that gets echoed in 2A packet
+            // For now, use captured values
+            payload[12] = 0xC3;
+            payload[13] = 0x29;
+            payload[14] = 0x20;
+            payload[15] = 0x00;
+            payload[16] = 0x00;
+            payload[17] = 0xB0;
+            // Bytes 18-30 are zeros
+            
+            // LCD display data starts at byte 0x19
+            EncodePap3Displays(payload, state);
+
+            // IAS/MACH indicators (discovered from hardware testing)
+            // MACH indicator appears at bytes 15 and 19 (nibble-swap pattern)
+            // IAS indicator at byte 23
+            // Note: Only set indicators when Speed is present, otherwise clear both
+            if (state.Speed.HasValue)
+            {
+                if (state.SpeedIsMach)
+                {
+                    payload[0x2E] |= 0x80;  // Byte 15, bit 7: MACH indicator
+                    payload[0x32] |= 0x80;  // Byte 19, bit 7: MACH indicator (nibble-swap repeat)
+                }
+                else
+                {
+                    payload[0x36] |= 0x80; 
+                    payload[0x1A] |= 0x80;  
+                }
+            }
+            // If Speed is null, indicators remain cleared (already zeroed in EncodePap3Displays)
+
+            // HDG/TRK indicators (discovered from hardware testing)
+            // TRK indicator appears at bytes 11 and 15 (nibble-swap pattern)
+            // HDG indicator appears at bytes 19 and 23 (nibble-swap pattern)
+            // Note: Only set indicators when Heading is present, otherwise clear both
+            if (state.Heading.HasValue)
+            {
+                if (state.HeadingIsTrack)
+                {
+                    payload[0x2A] |= 0x08;  
+                    payload[0x2E] |= 0x08;  
+                }
+                else
+                {
+                    payload[0x32] |= 0x08;  // Byte 19, bit 3: HDG indicator
+                    payload[0x36] |= 0x08;  // Byte 23, bit 3: HDG indicator (nibble-swap repeat)
+                }
+            }
+            // If Heading is null, indicators remain cleared (already zeroed in EncodePap3Displays)
+
+            // V/S/FPA indicators (discovered from hardware testing)
+            // FPA indicator appears at bytes 17 and 21 (nibble-swap pattern)
+            // V/S indicator at byte 25
+            // Note: Only set indicators when VerticalSpeed is present, otherwise clear both
+            if (state.VerticalSpeed.HasValue)
+            {
+                if (state.VsIsFpa)
+                {
+                    payload[0x30] |= 0x80;  // Byte 17, bit 7: FPA indicator
+                    payload[0x34] |= 0x80;  // Byte 21, bit 7: FPA indicator (nibble-swap repeat)
+                }
+                else
+                {
+                    payload[0x38] |= 0x80;  // Byte 25, bit 7: V/S indicator
+                }
+            }
+            
+
+            commands.Add(payload);
+
+            // Trying without those 2 empty packets - they may not be necessary
+            // Packet 2: Empty 38 packet (to unit 00 00)
+            var empty2 = new byte[64];
+            empty2[0] = 0xF0;
+            empty2[1] = 0x00;
+            empty2[2] = (byte)((_SequenceNumber + 1) % 256);
+            empty2[3] = 0x38;
+            empty2[4] = 0x00; // Unit ID 00 00 (no device)
+            empty2[5] = 0x00;
+            commands.Add(empty2);
+
+            // Packet 3: Empty 38 packet (to unit 00 00)
+            var empty3 = new byte[64];
+            empty3[0] = 0xF0;
+            empty3[1] = 0x00;
+            empty3[2] = (byte)((_SequenceNumber + 2) % 256);
+            empty3[3] = 0x38;
+            empty3[4] = 0x00; // Unit ID 00 00 (no device)
+            empty3[5] = 0x00;
+            commands.Add(empty3);
+
+            // Packet 2: Acknowledgment (2A packet)
+            followup[0] = 0xF0;
+            followup[1] = 0x00;
+            followup[2] = (byte)((_SequenceNumber + 3) % 256);
+            followup[3] = 0x2A; // Acknowledgment command
+            // Bytes 04-1C are zeros
+            followup[29] = (byte)((_Pap3DisplayPrefix >> 8) & 0xFF); // 0x0F (Unit ID being acknowledged)
+            followup[30] = (byte)(_Pap3DisplayPrefix & 0xFF);         // 0xBF
+            followup[31] = 0x00;
+            followup[32] = 0x00;
+            followup[33] = 0x03;
+            followup[34] = 0x01;
+            followup[35] = 0x00;
+            followup[36] = 0x00;
+            // Bytes 37-40 echo the checksum from the 38 packet (bytes 12-15)
+            followup[37] = payload[12]; // 0xC3
+            followup[38] = payload[13]; // 0x29
+            followup[39] = payload[14]; // 0x20
+            followup[40] = 0x00;
+            // Remaining bytes are zeros
+
+            commands.Add(followup);
+
+            // Update sequence number to account for all 4 packets
+            _SequenceNumber = (ushort)((_SequenceNumber + 4) % 256);
+
+            return commands;
+        }
+
+        void EncodePap3Displays(byte[] buffer, Pap3State state)
+        {
+            // Clear the display area first to avoid stale data
+            // Clear all display data from 0x19 (25) to 0x38 (56) - 32 bytes total
+            for (int i = 0x19; i <= 0x38; i++)
+            {
+                buffer[i] = 0x00;
+            }
+
+            // Encode Speed display (if present) - PLT Course
+            if (state.Speed.HasValue) {
+                var speed = Math.Max(0, Math.Min(999, state.Speed.Value));
+                EncodeMultiDigitValue(buffer, speed, 3, _PltCourseMapping);
+                
+                // Add MACH decimal point if in MACH mode
+                if(state.SpeedIsMach) {
+                    // Decimal point position needs verification from diagram
+                    buffer[0x16] |= 0x80;
+                }
+            }
+
+            // Encode Course display (if present) - CPL Course
+            if (state.Course.HasValue) {
+                var course = Math.Max(0, Math.Min(999, state.Course.Value));
+                EncodeMultiDigitValue(buffer, course, 3, _CplCourseMapping);
+            }
+
+            // Encode Heading display (if present)
+            if (state.Heading.HasValue) {
+                var heading = Math.Max(0, Math.Min(999, state.Heading.Value));
+                EncodeMultiDigitValue(buffer, heading, 3, _HeadingMapping);
+            }
+
+            // Encode Altitude display (if present)
+            if (state.Altitude.HasValue) {
+                var altitude = Math.Max(0, Math.Min(99999, state.Altitude.Value));
+                EncodeMultiDigitValue(buffer, altitude, 5, _AltitudeMapping);
+            }
+
+            // Encode Vertical Speed display (if present)
+            if (state.VerticalSpeed.HasValue) {
+                var vs = Math.Abs(state.VerticalSpeed.Value);
+                vs = Math.Max(0, Math.Min(9999, vs));
+                EncodeMultiDigitValue(buffer, vs, 4, _VerticalSpeedMapping);
+                
+                // Set negative sign if needed
+                if(state.VerticalSpeed.Value < 0) {
+                    // Negative sign position needs verification from diagram
+                    buffer[0x21] |= 0x80;
+                }
+            }
+        }
+
+        void EncodeMultiDigitValue(byte[] buffer, int value, int numDigits, DigitMapping[] mapping)
+        {
+            var valueStr = value.ToString().PadLeft(numDigits, '0');
+            
+            for (int i = 0; i < numDigits && i < mapping.Length; i++)
+            {
+                int digit = valueStr[i] - '0';
+                EncodeDigitWithMapping(buffer, digit, mapping[i]);
+            }
+        }
+
+        void EncodeDigitWithMapping(byte[] buffer, int digit, DigitMapping mapping)
+        {
+            if (digit < 0 || digit > 9)
+                return;
+
+            var segmentValue = _DigitValues[digit];
+            
+            // For each segment bit in the 7-segment encoding
+            for (int segIdx = 0; segIdx < _SegmentBits.Length && segIdx < mapping.SegmentOffsets.Length; segIdx++)
+            {
+                // Check if this segment should be lit for this digit
+                if ((segmentValue & _SegmentBits[segIdx]) != 0)
+                {
+                    // Set the bit at the corresponding offset
+                    buffer[mapping.SegmentOffsets[segIdx]] |= mapping.BitMask;
+                }
+            }
+        }
+
+        List<byte[]> BuildDisplayCommandsRaw(Pap3StateRaw state)
+        {
+            var commands = new List<byte[]>();
+
+            // Increment sequence number
+            _SequenceNumber++;
+            if(_SequenceNumber > 255) _SequenceNumber = 1;
+
+            // Packet 1: Main display data with raw bytes
+            var payload = new byte[64];
+            payload[0] = 0xF0;
+            payload[1] = 0x00;
+            payload[2] = (byte)_SequenceNumber;
+            payload[3] = 0x38;
+            payload[4] = (byte)((_Pap3DisplayPrefix >> 8) & 0xFF);
+            payload[5] = (byte)(_Pap3DisplayPrefix & 0xFF);
             payload[6] = 0x00;
             payload[7] = 0x00;
             payload[8] = 0x02;
             payload[9] = 0x01;
             payload[10] = 0x00;
             payload[11] = 0x00;
-            payload[12] = 0xFF;
-            payload[13] = 0xFF;
-            payload[14] = 0x02;
+            payload[12] = 0xC3;
+            payload[13] = 0x29;
+            payload[14] = 0x20;
             payload[15] = 0x00;
             payload[16] = 0x00;
-            payload[17] = 0x20;
+            payload[17] = 0xB0;
 
-            // Encode displays
-            EncodeDisplays(payload, state);
+            // Copy raw display data ONLY (30 bytes starting at offset 0x1F = 31)
+            // Do NOT encode speed or any other values - just use raw bytes
+            Array.Copy(state.RawDisplayData, 0, payload, 0x1F, Math.Min(30, state.RawDisplayData.Length));
 
             commands.Add(payload);
 
-            return commands;
-        }
+            // Packet 2: Empty 38 packet (to unit 00 00)
+            var empty2 = new byte[64];
+            empty2[0] = 0xF0;
+            empty2[1] = 0x00;
+            empty2[2] = (byte)((_SequenceNumber + 1) % 256);
+            empty2[3] = 0x38;
+            empty2[4] = 0x00;
+            empty2[5] = 0x00;
+            commands.Add(empty2);
 
-        void EncodeDisplays(byte[] buffer, Pap3State state)
-        {
-            // TODO: Implement actual display encoding based on PAP-3 hardware protocol
-            // This is a placeholder implementation
-            // The actual offsets and encoding will need to be determined through hardware testing
+            // Packet 3: Empty 38 packet (to unit 00 00)
+            var empty3 = new byte[64];
+            empty3[0] = 0xF0;
+            empty3[1] = 0x00;
+            empty3[2] = (byte)((_SequenceNumber + 2) % 256);
+            empty3[3] = 0x38;
+            empty3[4] = 0x00;
+            empty3[5] = 0x00;
+            commands.Add(empty3);
+
+            // Packet 4: Acknowledgment
+            var followup = new byte[64];
+            followup[0] = 0xF0;
+            followup[1] = 0x00;
+            followup[2] = (byte)((_SequenceNumber + 3) % 256);
+            followup[3] = 0x2A;
+            followup[29] = (byte)((_Pap3DisplayPrefix >> 8) & 0xFF);
+            followup[30] = (byte)(_Pap3DisplayPrefix & 0xFF);
+            followup[31] = 0x00;
+            followup[32] = 0x00;
+            followup[33] = 0x03;
+            followup[34] = 0x01;
+            followup[35] = 0x00;
+            followup[36] = 0x00;
+            followup[37] = payload[12];
+            followup[38] = payload[13];
+            followup[39] = payload[14];
+            followup[40] = 0x00;
+
+            commands.Add(followup);
+
+            _SequenceNumber = (ushort)((_SequenceNumber + 3) % 256);
+
+            return commands;
         }
 
         List<byte[]> BuildLedCommands(Pap3Leds leds)
@@ -287,23 +660,24 @@ namespace WwDevicesDotNet.WinWing.Pap3
 
             // LED command codes verified from hardware testing
             // Format: 02 01 00 00 00 03 49 [code] [value] 00 00 00 00 00
-            commands.Add(BuildLedCommand(_Pap3Prefix, 0x03, leds.N1));
-            commands.Add(BuildLedCommand(_Pap3Prefix, 0x04, leds.Speed));
-            commands.Add(BuildLedCommand(_Pap3Prefix, 0x05, leds.Vnav));
-            commands.Add(BuildLedCommand(_Pap3Prefix, 0x06, leds.LvlChg));
-            commands.Add(BuildLedCommand(_Pap3Prefix, 0x07, leds.HdgSel));
-            commands.Add(BuildLedCommand(_Pap3Prefix, 0x08, leds.Lnav));
-            commands.Add(BuildLedCommand(_Pap3Prefix, 0x09, leds.VorLoc));
-            commands.Add(BuildLedCommand(_Pap3Prefix, 0x0A, leds.App));
-            commands.Add(BuildLedCommand(_Pap3Prefix, 0x0B, leds.AltHold));
-            commands.Add(BuildLedCommand(_Pap3Prefix, 0x0C, leds.Vs));
-            commands.Add(BuildLedCommand(_Pap3Prefix, 0x0D, leds.CmdA));
-            commands.Add(BuildLedCommand(_Pap3Prefix, 0x0E, leds.CwsA));
-            commands.Add(BuildLedCommand(_Pap3Prefix, 0x0F, leds.CmdB));
-            commands.Add(BuildLedCommand(_Pap3Prefix, 0x10, leds.CwsB));
-            commands.Add(BuildLedCommand(_Pap3Prefix, 0x11, leds.AtArm));
-            commands.Add(BuildLedCommand(_Pap3Prefix, 0x12, leds.FdL));
-            commands.Add(BuildLedCommand(_Pap3Prefix, 0x13, leds.FdR));
+            // LED commands use prefix 0x0100
+            commands.Add(BuildLedCommand(_Pap3LedPrefix, 0x03, leds.N1));
+            commands.Add(BuildLedCommand(_Pap3LedPrefix, 0x04, leds.Speed));
+            commands.Add(BuildLedCommand(_Pap3LedPrefix, 0x05, leds.Vnav));
+            commands.Add(BuildLedCommand(_Pap3LedPrefix, 0x06, leds.LvlChg));
+            commands.Add(BuildLedCommand(_Pap3LedPrefix, 0x07, leds.HdgSel));
+            commands.Add(BuildLedCommand(_Pap3LedPrefix, 0x08, leds.Lnav));
+            commands.Add(BuildLedCommand(_Pap3LedPrefix, 0x09, leds.VorLoc));
+            commands.Add(BuildLedCommand(_Pap3LedPrefix, 0x0A, leds.App));
+            commands.Add(BuildLedCommand(_Pap3LedPrefix, 0x0B, leds.AltHold));
+            commands.Add(BuildLedCommand(_Pap3LedPrefix, 0x0C, leds.Vs));
+            commands.Add(BuildLedCommand(_Pap3LedPrefix, 0x0D, leds.CmdA));
+            commands.Add(BuildLedCommand(_Pap3LedPrefix, 0x0E, leds.CwsA));
+            commands.Add(BuildLedCommand(_Pap3LedPrefix, 0x0F, leds.CmdB));
+            commands.Add(BuildLedCommand(_Pap3LedPrefix, 0x10, leds.CwsB));
+            commands.Add(BuildLedCommand(_Pap3LedPrefix, 0x11, leds.AtArm));
+            commands.Add(BuildLedCommand(_Pap3LedPrefix, 0x12, leds.FdL));
+            commands.Add(BuildLedCommand(_Pap3LedPrefix, 0x13, leds.FdR));
 
             return commands;
         }
