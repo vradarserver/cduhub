@@ -23,7 +23,13 @@ namespace WwDevicesDotNet.WinWing.Pap3
         /// <summary>
         /// Course value (0-359 degrees).
         /// </summary>
-        public int? Course { get; set; }
+        public int? PltCourse { get; set; }
+
+        /// <summary>
+        /// Course value (0-359 degrees).
+        /// </summary>
+        public int? CplCourse { get; set; }
+
 
         /// <summary>
         /// Heading value (0-359 degrees).

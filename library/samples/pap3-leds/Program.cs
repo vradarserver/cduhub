@@ -83,22 +83,39 @@ namespace Pap3LedsTest
                         case ConsoleKey.D1:
                             TestAllLedsSequence();
                             break;
-                        case ConsoleKey.D2:
-                            TestSpeedDisplay();
-                            break;
-                        case ConsoleKey.D3:
-                            SearchIndicators();
-                            break;
-                        case ConsoleKey.D4:
-                            VerifyIndicatorBits();
-                            break;
                         case ConsoleKey.D0:
                             TurnOffAllLeds();
                             break;
                         case ConsoleKey.B:
                             TestBrightness();
                             break;
+                        case ConsoleKey.D:
+                            TestAllDisplays();
+                            break;
+                        case ConsoleKey.S:
+                            TestSpeedDisplay();
+                            break;
+                        case ConsoleKey.C:
+                            TestCourseDisplays();
+                            break;
                         case ConsoleKey.H:
+                            TestHeadingDisplay();
+                            break;
+                        case ConsoleKey.A:
+                            TestAltitudeDisplay();
+                            break;
+                        case ConsoleKey.V:
+                            TestVerticalSpeedDisplay();
+                            break;
+                        case ConsoleKey.I:
+                            TestIndicatorsSequence();
+                            break;
+                        case ConsoleKey.X:
+                            ClearAllDisplays();
+                            _pap3.UpdateDisplay(_displayState);
+                            Console.WriteLine("All displays cleared.");
+                            break;
+                        case ConsoleKey.M:
                             ShowMenu();
                             break;
                         default:
@@ -134,23 +151,27 @@ namespace Pap3LedsTest
         {
             Console.WriteLine("=== PAP-3 LED & Display Test Menu ===");
             Console.WriteLine();
-            Console.WriteLine("Tests:");
+            Console.WriteLine("LED Tests:");
             Console.WriteLine("  1 - Test all LEDs in sequence");
-            Console.WriteLine("  2 - Test indicators in sequence (IAS/MACH, HDG/TRK, V/S/FPA)");
-            Console.WriteLine("  3 - Search for indicators (Raw byte/bit testing)");
-            Console.WriteLine("  4 - Verify specific indicator bits");
-            Console.WriteLine();
-            Console.WriteLine("Controls:");
             Console.WriteLine("  0 - Turn off all LEDs");
-            Console.WriteLine("  B - Test brightness levels (Backlight, Digital Tube, Marker Light)");
-            Console.WriteLine("  H - Show this menu");
+            Console.WriteLine("  B - Test brightness levels");
+            Console.WriteLine();
+            Console.WriteLine("Display Tests:");
+            Console.WriteLine("  D - Test all displays (count 0-999 on all displays)");
+            Console.WriteLine("  S - Test Speed display (IAS/MACH with indicators)");
+            Console.WriteLine("  C - Test Course displays (PLT & CPL)");
+            Console.WriteLine("  H - Test Heading display (HDG/TRK)");
+            Console.WriteLine("  A - Test Altitude display");
+            Console.WriteLine("  V - Test Vertical Speed display (V/S/FPA)");
+            Console.WriteLine("  I - Test all indicators sequence");
+            Console.WriteLine("  X - Clear all displays");
+            Console.WriteLine();
+            Console.WriteLine("Other:");
+            Console.WriteLine("  M - Show this menu");
             Console.WriteLine("  Q - Quit");
             Console.WriteLine();
             Console.WriteLine("Interactive Mode:");
             Console.WriteLine("  Press any physical button on the PAP-3 to toggle its LED!");
-            Console.WriteLine("  Supported: N1, SPEED, LNAV, VNAV, LVL CHG, HDG SEL, VOR LOC,");
-            Console.WriteLine("            APP, ALT HOLD, V/S, CMD A, CMD B, CWS A, CWS B,");
-            Console.WriteLine("            AT ARM, FD Pilot (L), FD Copilot (R)");
             Console.WriteLine();
         }
 
@@ -258,136 +279,297 @@ namespace Pap3LedsTest
         static void TestSpeedDisplay()
         {
             Console.WriteLine();
-            Console.WriteLine("=== Indicator Sequence Test ===");
+            Console.WriteLine("=== Speed Display Test (PLT Course) ===");
             Console.WriteLine();
-            Console.WriteLine("This test will toggle all indicators in sequence.");
-            Console.WriteLine("Watch the physical PAP-3 panel to verify each indicator.");
-            Console.WriteLine();
-            Console.WriteLine("Press any key to start, or Q to cancel...");
+            Console.WriteLine("Testing IAS mode (0-999 knots)...");
             
-            var key = Console.ReadKey(intercept: true);
-            if(key.Key == ConsoleKey.Q) {
-                Console.WriteLine("Test cancelled.");
-                return;
+            _displayState.SpeedIsMach = false;
+            
+            // Count up from 0 to 999
+            for(int speed = 0; speed <= 999; speed += 10) {
+                _displayState.Speed = speed;
+                _pap3?.UpdateDisplay(_displayState);
+                Console.Write($"\rSpeed: {speed:000} IAS");
+                Thread.Sleep(50);
             }
+            
             Console.WriteLine();
-            Console.WriteLine("Starting indicator sequence test...");
+            Console.WriteLine();
+            Console.WriteLine("Testing MACH mode (0.00 - 0.99)...");
+            
+            _displayState.SpeedIsMach = true;
+            
+            // MACH values: displayed as 000-099 representing 0.00 to 0.99
+            for(int mach = 0; mach <= 99; mach++) {
+                _displayState.Speed = mach;
+                _pap3?.UpdateDisplay(_displayState);
+                Console.Write($"\rSpeed: 0.{mach:00} MACH");
+                Thread.Sleep(50);
+            }
+            
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("Test complete! Press any key to continue...");
+            Console.ReadKey(intercept: true);
+            
+            ClearAllDisplays();
+            _pap3?.UpdateDisplay(_displayState);
+        }
+
+        static void TestCourseDisplays()
+        {
+            Console.WriteLine();
+            Console.WriteLine("=== Course Displays Test (PLT & CPL) ===");
+            Console.WriteLine();
+            Console.WriteLine("Testing synchronized course displays (0-359 degrees)...");
+            
+            // Test both course displays simultaneously
+            for(int course = 0; course <= 359; course += 5) {
+                _displayState.PltCourse = course;
+                _displayState.CplCourse = (course + 180) % 360; // CPL Course (offset)
+                _pap3?.UpdateDisplay(_displayState);
+                Console.Write($"\rPLT: {course:000}°  CPL: {_displayState.CplCourse:000}°");
+                Thread.Sleep(50);
+            }
+            
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("Test complete! Press any key to continue...");
+            Console.ReadKey(intercept: true);
+            
+            ClearAllDisplays();
+            _pap3?.UpdateDisplay(_displayState);
+        }
+
+        static void TestHeadingDisplay()
+        {
+            Console.WriteLine();
+            Console.WriteLine("=== Heading Display Test ===");
+            Console.WriteLine();
+            Console.WriteLine("Testing HDG mode (0-359 degrees)...");
+            
+            _displayState.HeadingIsTrack = false;
+            
+            // Count from 0 to 359
+            for(int heading = 0; heading <= 359; heading += 5) {
+                _displayState.Heading = heading;
+                _pap3?.UpdateDisplay(_displayState);
+                Console.Write($"\rHeading: {heading:000}° HDG");
+                Thread.Sleep(50);
+            }
+            
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("Testing TRK mode (0-359 degrees)...");
+            
+            _displayState.HeadingIsTrack = true;
+            
+            for(int heading = 0; heading <= 359; heading += 5) {
+                _displayState.Heading = heading;
+                _pap3?.UpdateDisplay(_displayState);
+                Console.Write($"\rHeading: {heading:000}° TRK");
+                Thread.Sleep(50);
+            }
+            
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("Test complete! Press any key to continue...");
+            Console.ReadKey(intercept: true);
+            
+            ClearAllDisplays();
+            _pap3?.UpdateDisplay(_displayState);
+        }
+
+        static void TestAltitudeDisplay()
+        {
+            Console.WriteLine();
+            Console.WriteLine("=== Altitude Display Test ===");
+            Console.WriteLine();
+            Console.WriteLine("Testing altitude (0 - 50,000 feet)...");
+            
+            // Count from 0 to 50,000 in increments
+            for(int altitude = 0; altitude <= 50000; altitude += 500) {
+                _displayState.Altitude = altitude;
+                _pap3?.UpdateDisplay(_displayState);
+                Console.Write($"\rAltitude: {altitude:00000} ft");
+                Thread.Sleep(30);
+            }
+            
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("Testing flight level mode...");
+            
+            _displayState.AltitudeIsFlightLevel = true;
+            
+            // Count from FL000 to FL500
+            for(int fl = 0; fl <= 500; fl += 10) {
+                _displayState.Altitude = fl * 100; // FL is in hundreds of feet
+                _pap3?.UpdateDisplay(_displayState);
+                Console.Write($"\rFlight Level: FL{fl:000}");
+                Thread.Sleep(30);
+            }
+            
+            _displayState.AltitudeIsFlightLevel = false;
+            
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("Test complete! Press any key to continue...");
+            Console.ReadKey(intercept: true);
+            
+            ClearAllDisplays();
+            _pap3?.UpdateDisplay(_displayState);
+        }
+
+        static void TestVerticalSpeedDisplay()
+        {
+            Console.WriteLine();
+            Console.WriteLine("=== Vertical Speed Display Test ===");
+            Console.WriteLine();
+            Console.WriteLine("Testing V/S mode (-9999 to +9999 fpm)...");
+            
+            _displayState.VsIsFpa = false;
+            
+            // Count from -9999 to +9999
+            for(int vs = -9999; vs <= 9999; vs += 200) {
+                _displayState.VerticalSpeed = vs;
+                _pap3?.UpdateDisplay(_displayState);
+                string sign = vs >= 0 ? "+" : "";
+                Console.Write($"\rVertical Speed: {sign}{vs:0000} fpm V/S");
+                Thread.Sleep(20);
+            }
+            
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("Testing FPA mode (-9.9 to +9.9 degrees)...");
+            
+            _displayState.VsIsFpa = true;
+            
+            // FPA values: typically -9.9 to +9.9 degrees, displayed as -099 to +099
+            for(int fpa = -99; fpa <= 99; fpa += 5) {
+                _displayState.VerticalSpeed = fpa * 10; // Scale for display
+                _pap3?.UpdateDisplay(_displayState);
+                string sign = fpa >= 0 ? "+" : "";
+                double fpaValue = fpa / 10.0;
+                Console.Write($"\rFlight Path Angle: {sign}{fpaValue:0.0}° FPA");
+                Thread.Sleep(30);
+            }
+            
+            _displayState.VsIsFpa = false;
+            
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("Test complete! Press any key to continue...");
+            Console.ReadKey(intercept: true);
+            
+            ClearAllDisplays();
+            _pap3?.UpdateDisplay(_displayState);
+        }
+
+        static void TestIndicatorsSequence()
+        {
+            Console.WriteLine();
+            Console.WriteLine("=== All Indicators Sequence Test ===");
+            Console.WriteLine();
+            Console.WriteLine("This test cycles through all indicators to verify they work correctly.");
+            Console.WriteLine("Watch the physical PAP-3 panel to confirm each indicator lights up.");
+            Console.WriteLine();
+            Console.WriteLine("Press any key to start...");
+            Console.ReadKey(intercept: true);
             Console.WriteLine();
 
-            // Test IAS indicator
+            // Test Speed indicators
             Console.WriteLine("Testing IAS indicator...");
-            _displayState.Speed = 1;  // Dummy value to show indicator
-            _displayState.SpeedIsMach = false;  // IAS mode
-            _pap3?.UpdateDisplay(_displayState);
-            Thread.Sleep(2000);
-
-            // Test MACH indicator
-            Console.WriteLine("Testing MACH indicator...");
-            _displayState.Speed = 1;  // Dummy value to show indicator
-            _displayState.SpeedIsMach = true;   // MACH mode
-            _pap3?.UpdateDisplay(_displayState);
-            Thread.Sleep(2000);
-
-            // Clear speed indicators
-            Console.WriteLine("Clearing speed indicators...");
-            _displayState.Speed = null;  // Clear value to hide indicators
+            _displayState.Speed = 250;
             _displayState.SpeedIsMach = false;
             _pap3?.UpdateDisplay(_displayState);
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
 
-            // Test HDG indicator
+            Console.WriteLine("Testing MACH indicator...");
+            _displayState.Speed = 82;
+            _displayState.SpeedIsMach = true;
+            _pap3?.UpdateDisplay(_displayState);
+            Thread.Sleep(2000);
+
+            _displayState.Speed = null;
+            _displayState.SpeedIsMach = false;
+            _pap3?.UpdateDisplay(_displayState);
+            Thread.Sleep(500);
+
+            // Test Heading indicators
             Console.WriteLine("Testing HDG indicator...");
-            _displayState.Heading = 1;  // Dummy value to show indicator
-            _displayState.HeadingIsTrack = false;  // HDG mode
-            _pap3?.UpdateDisplay(_displayState);
-            Thread.Sleep(2000);
-
-            // Test TRK indicator
-            Console.WriteLine("Testing TRK indicator...");
-            _displayState.Heading = 1;  // Dummy value to show indicator
-            _displayState.HeadingIsTrack = true;   // TRK mode
-            _pap3?.UpdateDisplay(_displayState);
-            Thread.Sleep(2000);
-
-            // Clear heading indicators
-            Console.WriteLine("Clearing heading indicators...");
-            _displayState.Heading = null;  // Clear value to hide indicators
+            _displayState.Heading = 270;
             _displayState.HeadingIsTrack = false;
             _pap3?.UpdateDisplay(_displayState);
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
 
-            // Test V/S indicator
+            Console.WriteLine("Testing TRK indicator...");
+            _displayState.Heading = 270;
+            _displayState.HeadingIsTrack = true;
+            _pap3?.UpdateDisplay(_displayState);
+            Thread.Sleep(2000);
+
+            _displayState.Heading = null;
+            _displayState.HeadingIsTrack = false;
+            _pap3?.UpdateDisplay(_displayState);
+            Thread.Sleep(500);
+
+            // Test V/S indicators
             Console.WriteLine("Testing V/S indicator...");
-            _displayState.VerticalSpeed = 1;  // Dummy value to show indicator
-            _displayState.VsIsFpa = false;  // V/S mode
-            _pap3?.UpdateDisplay(_displayState);
-            Thread.Sleep(2000);
-
-            // Test FPA indicator
-            Console.WriteLine("Testing FPA indicator...");
-            _displayState.VerticalSpeed = 1;  // Dummy value to show indicator
-            _displayState.VsIsFpa = true;   // FPA mode
-            _pap3?.UpdateDisplay(_displayState);
-            Thread.Sleep(2000);
-
-            // Clear all indicators
-            Console.WriteLine("Clearing all indicators...");
-            _displayState.VerticalSpeed = null;  // Clear value to hide indicators
+            _displayState.VerticalSpeed = 2000;
             _displayState.VsIsFpa = false;
             _pap3?.UpdateDisplay(_displayState);
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
 
-            // Full sequence test: cycle through all indicators
-            Console.WriteLine();
-            Console.WriteLine("Full sequence: Cycling through all indicators...");
-            Console.WriteLine();
+            Console.WriteLine("Testing FPA indicator...");
+            _displayState.VerticalSpeed = 30;
+            _displayState.VsIsFpa = true;
+            _pap3?.UpdateDisplay(_displayState);
+            Thread.Sleep(2000);
 
+            _displayState.VerticalSpeed = null;
+            _displayState.VsIsFpa = false;
+            _pap3?.UpdateDisplay(_displayState);
+            Thread.Sleep(500);
+
+            // Rapid cycling test
+            Console.WriteLine();
+            Console.WriteLine("Rapid cycling through all indicators (3 cycles)...");
             for(int cycle = 0; cycle < 3; cycle++) {
-                Console.WriteLine($"Cycle {cycle + 1}/3:");
+                Console.WriteLine($"Cycle {cycle + 1}/3");
                 
-                Console.WriteLine("  → IAS");
-                _displayState.Speed = 1;
+                _displayState.Speed = 250;
                 _displayState.SpeedIsMach = false;
                 _pap3?.UpdateDisplay(_displayState);
-                Thread.Sleep(800);
+                Thread.Sleep(400);
 
-                Console.WriteLine("  → MACH");
-                _displayState.Speed = 1;
+                _displayState.Speed = 82;
                 _displayState.SpeedIsMach = true;
                 _pap3?.UpdateDisplay(_displayState);
-                Thread.Sleep(800);
+                Thread.Sleep(400);
 
-                Console.WriteLine("  → HDG");
                 _displayState.Speed = null;
-                _displayState.Heading = 1;
+                _displayState.Heading = 270;
                 _displayState.HeadingIsTrack = false;
                 _pap3?.UpdateDisplay(_displayState);
-                Thread.Sleep(800);
+                Thread.Sleep(400);
 
-                Console.WriteLine("  → TRK");
-                _displayState.Heading = 1;
                 _displayState.HeadingIsTrack = true;
                 _pap3?.UpdateDisplay(_displayState);
-                Thread.Sleep(800);
+                Thread.Sleep(400);
 
-                Console.WriteLine("  → V/S");
                 _displayState.Heading = null;
-                _displayState.VerticalSpeed = 1;
+                _displayState.VerticalSpeed = 2000;
                 _displayState.VsIsFpa = false;
                 _pap3?.UpdateDisplay(_displayState);
-                Thread.Sleep(800);
+                Thread.Sleep(400);
 
-                Console.WriteLine("  → FPA");
-                _displayState.VerticalSpeed = 1;
                 _displayState.VsIsFpa = true;
                 _pap3?.UpdateDisplay(_displayState);
-                Thread.Sleep(800);
+                Thread.Sleep(400);
 
-                Console.WriteLine("  → Clear");
-                _displayState.VerticalSpeed = null;
-                _displayState.VsIsFpa = false;
+                ClearAllDisplays();
                 _pap3?.UpdateDisplay(_displayState);
-                Thread.Sleep(500);
+                Thread.Sleep(200);
             }
 
             Console.WriteLine();
@@ -396,211 +578,34 @@ namespace Pap3LedsTest
             Console.ReadKey(intercept: true);
         }
 
-        static void SearchIndicators()
+        static void TestAllDisplays()
         {
             Console.WriteLine();
-            Console.WriteLine("=== Indicator Search Test (Raw Byte/Bit Testing) ===");
+            Console.WriteLine("=== All Displays Count Test ===");
             Console.WriteLine();
-            Console.WriteLine("This test sends raw bytes to discover indicator positions.");
-            Console.WriteLine("We'll test each byte and bit in the display data area to find:");
-            Console.WriteLine("  - IAS/MACH indicator");
-            Console.WriteLine("  - HDG/TRK indicator");
-            Console.WriteLine("  - V/S/FPA indicator");
-            Console.WriteLine();
-            Console.WriteLine("Strategy:");
-            Console.WriteLine("  1. Test each byte position (0-29) with value 0xFF");
-            Console.WriteLine("  2. Note which bytes light up indicators");
-            Console.WriteLine("  3. For interesting bytes, test individual bits (0-7)");
-            Console.WriteLine();
-            Console.WriteLine("Press any key to start, or Q to cancel...");
-            
-            var key = Console.ReadKey(intercept: true);
-            if(key.Key == ConsoleKey.Q) {
-                Console.WriteLine("Test cancelled.");
-                return;
-            }
-            Console.WriteLine();
-            Console.WriteLine("Starting indicator search...");
+            Console.WriteLine("Counting 0-999 on all displays simultaneously...");
             Console.WriteLine();
 
-            // Phase 1: Byte-by-byte scan
-            Console.WriteLine("=== Phase 1: Scanning bytes 0-29 for indicators ===");
-            Console.WriteLine();
-            
-            var indicatorBytes = new List<int>();
-            
-            for(int bytePos = 0; bytePos < 30; bytePos++) {
-                Console.WriteLine($"Testing byte {bytePos} (offset 0x{(0x1F + bytePos):X2})...");
+            for(int count = 0; count <= 999; count += 5) {
+                _displayState.Speed = count;           // PLT Course (IAS)
+                _displayState.PltCourse = count;          // CPL Course
+                _displayState.Heading = count % 360;   // Heading (wrap at 360)
+                _displayState.Altitude = count * 10;   // Altitude (scaled)
+                _displayState.VerticalSpeed = (count - 500) * 2; // V/S (centered at 500)
                 
-                var rawState = new Pap3StateRaw();
-                rawState.RawDisplayData[bytePos] = 0xFF;  // Test this byte
+                _pap3?.UpdateDisplay(_displayState);
                 
-                _pap3?.UpdateDisplay(rawState);
-                Thread.Sleep(300);
-                
-                Console.WriteLine($"  Byte {bytePos} = 0xFF");
-                Console.WriteLine("  Do you see any indicator light up? (Y/N/S to skip)");
-                
-                key = Console.ReadKey(intercept: true);
-                Console.WriteLine();
-                
-                if(key.Key == ConsoleKey.Y) {
-                    Console.WriteLine($"  ✓ Byte {bytePos} affects an indicator!");
-                    indicatorBytes.Add(bytePos);
-                    
-                    Console.WriteLine("  Which indicator? (1=IAS/MACH, 2=HDG/TRK, 3=V/S/FPA, 0=Other)");
-                    key = Console.ReadKey(intercept: true);
-                    Console.WriteLine();
-                    
-                    string indicatorName = key.Key switch {
-                        ConsoleKey.D1 => "IAS/MACH",
-                        ConsoleKey.D2 => "HDG/TRK",
-                        ConsoleKey.D3 => "V/S/FPA",
-                        _ => "Unknown"
-                    };
-                    Console.WriteLine($"  → Marked as {indicatorName} indicator");
-                } else if(key.Key == ConsoleKey.S) {
-                    Console.WriteLine("  Skipping remaining bytes...");
-                    break;
-                }
-                
-                Console.WriteLine();
+                Console.Write($"\rCount: {count:000}  |  PLT: {count:000}  CPL: {count:000}  HDG: {count % 360:000}  ALT: {count * 10:00000}  V/S: {(count - 500) * 2:+0000;-0000}");
+                Thread.Sleep(30);
             }
 
-            // Phase 2: Bit-by-bit scan for identified bytes
-            if(indicatorBytes.Count > 0) {
-                Console.WriteLine();
-                Console.WriteLine($"=== Phase 2: Testing individual bits for {indicatorBytes.Count} interesting byte(s) ===");
-                Console.WriteLine();
-                
-                foreach(var bytePos in indicatorBytes) {
-                    Console.WriteLine($"Testing bits in byte {bytePos} (offset 0x{(0x1F + bytePos):X2})");
-                    Console.WriteLine();
-                    
-                    for(int bitPos = 0; bitPos < 8; bitPos++) {
-                        byte bitMask = (byte)(1 << bitPos);
-                        
-                        Console.WriteLine($"  Bit {bitPos} (mask 0x{bitMask:X2})");
-                        
-                        var rawState = new Pap3StateRaw();
-                        rawState.RawDisplayData[bytePos] = bitMask;
-                        
-                        _pap3?.UpdateDisplay(rawState);
-                        Thread.Sleep(300);
-                        
-                        Console.WriteLine($"    Does an indicator light up? (Y/N/S to skip this byte)");
-                        key = Console.ReadKey(intercept: true);
-                        Console.WriteLine();
-                        
-                        if(key.Key == ConsoleKey.Y) {
-                            Console.WriteLine($"    ✓ Byte {bytePos}, bit {bitPos} (0x{bitMask:X2}) lights an indicator!");
-                            Console.WriteLine($"      In code: buffer[0x{(0x1F + bytePos):X2}] |= 0x{bitMask:X2};");
-                        } else if(key.Key == ConsoleKey.S) {
-                            break;
-                        }
-                    }
-                    Console.WriteLine();
-                }
-            }
-
-            // Summary
             Console.WriteLine();
-            Console.WriteLine("=== Search Complete ===");
             Console.WriteLine();
-            if(indicatorBytes.Count == 0) {
-                Console.WriteLine("No indicator bytes found.");
-                Console.WriteLine("The indicators may be at bytes you haven't reached yet,");
-                Console.WriteLine("or they may use a different encoding method.");
-            } else {
-                Console.WriteLine($"Found {indicatorBytes.Count} byte(s) that affect indicators:");
-                foreach(var bytePos in indicatorBytes) {
-                    Console.WriteLine($"  - Byte {bytePos} (offset 0x{(0x1F + bytePos):X2})");
-                }
-                Console.WriteLine();
-                Console.WriteLine("Update Pap3Device.BuildPap3DisplayCommands() with these findings!");
-            }
-            Console.WriteLine();
-            Console.WriteLine("Press any key to continue...");
+            Console.WriteLine("Test complete! Press any key to continue...");
             Console.ReadKey(intercept: true);
             
-            // Clear display
             ClearAllDisplays();
             _pap3?.UpdateDisplay(_displayState);
-        }
-
-        static void VerifyIndicatorBits()
-        {
-            Console.WriteLine();
-            Console.WriteLine("=== Verify Indicator Bits ===");
-            Console.WriteLine();
-            Console.WriteLine("This test allows you to manually verify specific indicator bits.");
-            Console.WriteLine("You can toggle bits and observe the corresponding indicators.");
-            Console.WriteLine();
-            Console.WriteLine("Press any key to start, or Q to cancel...");
-            
-            var key = Console.ReadKey(intercept: true);
-            if(key.Key == ConsoleKey.Q) {
-                Console.WriteLine("Test cancelled.");
-                return;
-            }
-            Console.WriteLine();
-            Console.WriteLine("Starting indicator bit verification...");
-            Console.WriteLine();
-
-            // Prepare a raw state for testing
-            var rawState = new Pap3StateRaw();
-            
-            // Main loop for bit verification
-            bool verifying = true;
-            while(verifying) {
-                Console.WriteLine("Current raw display data:");
-                for(int i = 0; i < 30; i++) {
-                    Console.Write($"{i:D2}: 0x{rawState.RawDisplayData[i]:X2}  ");
-                }
-                Console.WriteLine();
-                
-                Console.WriteLine("Enter byte/bit to toggle (e.g., '2 3' for byte 2, bit 3), or Q to quit:");
-                
-                string? input = Console.ReadLine();
-                if(string.IsNullOrWhiteSpace(input)) {
-                    Console.WriteLine("Invalid input. Please specify a byte and bit.");
-                    continue;
-                }
-                
-                if(input.Trim().ToUpper() == "Q") {
-                    verifying = false;
-                    break;
-                }
-                
-                // Parse byte and bit from input
-                string[] parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if(parts.Length != 2 || !int.TryParse(parts[0], out int byteNum) || !int.TryParse(parts[1], out int bitNum)) {
-                    Console.WriteLine("Invalid input format. Please enter byte and bit numbers.");
-                    continue;
-                }
-                
-                if(byteNum < 0 || byteNum > 29 || bitNum < 0 || bitNum > 7) {
-                    Console.WriteLine("Byte must be 0-29 and bit must be 0-7.");
-                    continue;
-                }
-                
-                // Toggle the specified bit in the raw display data
-                byte mask = (byte)(1 << bitNum);
-                rawState.RawDisplayData[byteNum] ^= mask;
-                
-                Console.WriteLine($"Toggled byte {byteNum}, bit {bitNum}. New value: 0x{rawState.RawDisplayData[byteNum]:X2}");
-                
-                // Update display with new raw state
-                _pap3?.UpdateDisplay(rawState);
-                
-                Console.WriteLine("Observe the physical indicators and verify their response.");
-                Console.WriteLine("Press any key to continue...");
-                Console.ReadKey(intercept: true);
-            }
-
-            Console.WriteLine();
-            Console.WriteLine("Indicator bit verification complete!");
-            Console.WriteLine();
         }
 
         static void TurnOffAllLeds()
@@ -627,11 +632,14 @@ namespace Pap3LedsTest
         static void ClearAllDisplays()
         {
             _displayState.Speed = null;
-            _displayState.Course = null;
+            _displayState.PltCourse = null;
+            _displayState.CplCourse = null;
             _displayState.Heading = null;
             _displayState.Altitude = null;
             _displayState.VerticalSpeed = null;
             _displayState.SpeedIsMach = false;
+            _displayState.HeadingIsTrack = false;
+            _displayState.VsIsFpa = false;
             _displayState.AltitudeIsFlightLevel = false;
         }
 

@@ -32,30 +32,36 @@ namespace WwDevicesDotNet.WinWing.Pap3
         const byte _BrightnessDigitalTube = 0x01;
         const byte _BrightnessMarkerLight = 0x02;
 
-        // Seven-segment display digit values (inherited from FCU/EFIS encoding)
+        // Seven-segment display digit values.
+        // Bit order matches `_SegmentBits`: G, F, E, D, C, B, A, DP
         static readonly byte[] _DigitValues = new byte[] {
-            0xFA, // 0
-            0x60, // 1
-            0xD6, // 2
-            0xF4, // 3
-            0x6C, // 4
-            0xBC, // 5
-            0xBE, // 6
-            0xE0, // 7
-            0xFE, // 8
-            0xFC  // 9
+            0x7E, // 0: A B C D E F
+            0x0C, // 1: B C
+            0xB6, // 2: A B D E G
+            0x9E, // 3: A B C D G
+            0xCC, // 4: B C F G
+            0xDA, // 5: A C D F G
+            0xFA, // 6: A C D E F G
+            0x0E, // 7: A B C
+            0xFE, // 8: A B C D E F G
+            0xDE  // 9: A B C D F G
         };
 
         // Segment bit mapping for 7-segment displays
-        // These map to the bits in _DigitValues
+        // These map to the bits in `_DigitValues`.
+        //
+        // IMPORTANT: The PAP-3 digit byte encoding uses a non-standard segment order that matches
+        // the segment offsets used in the digit mappings (7 offsets per digit):
+        //   G (middle), F (top left), E (bottom left), D (bottom), C (bottom right), B (top right), A (top)
+        // Decimal point is bit 0.
         static readonly byte[] _SegmentBits = new byte[] {
-            0x80, // Bit 7: Segment A (top)
-            0x40, // Bit 6: Segment B (top right)
-            0x20, // Bit 5: Segment C (bottom right)
+            0x80, // Bit 7: Segment G (middle)
+            0x40, // Bit 6: Segment F (top left)
+            0x20, // Bit 5: Segment E (bottom left)
             0x10, // Bit 4: Segment D (bottom)
-            0x08, // Bit 3: Segment E (bottom left)
-            0x04, // Bit 2: Segment F (top left)
-            0x02, // Bit 1: Segment G (middle)
+            0x08, // Bit 3: Segment C (bottom right)
+            0x04, // Bit 2: Segment B (top right)
+            0x02, // Bit 1: Segment A (top)
             0x01  // Bit 0: Decimal point
         };
 
@@ -70,9 +76,9 @@ namespace WwDevicesDotNet.WinWing.Pap3
         // PLT Course (Speed) - 3 digits
         static readonly DigitMapping[] _PltCourseMapping = new DigitMapping[]
         {
-            new DigitMapping { BitMask = 0x80, SegmentOffsets = new int[] { 0x19, 0x1D, 0x21, 0x25, 0x29, 0x2D, 0x31, 0x35 } }, // Hundreds
-            new DigitMapping { BitMask = 0x40, SegmentOffsets = new int[] { 0x19, 0x1D, 0x21, 0x25, 0x29, 0x2D, 0x31, 0x35 } }, // Tens
-            new DigitMapping { BitMask = 0x20, SegmentOffsets = new int[] { 0x19, 0x1D, 0x21, 0x25, 0x29, 0x2D, 0x31, 0x35 } }  // Ones
+            new DigitMapping { BitMask = 0x80, SegmentOffsets = new int[] { 0x1D, 0x21, 0x25, 0x29, 0x2D, 0x31, 0x35 } }, // Hundreds
+            new DigitMapping { BitMask = 0x40, SegmentOffsets = new int[] { 0x1D, 0x21, 0x25, 0x29, 0x2D, 0x31, 0x35 } }, // Tens
+            new DigitMapping { BitMask = 0x20, SegmentOffsets = new int[] { 0x1D, 0x21, 0x25, 0x29, 0x2D, 0x31, 0x35 } }  // Ones
         };
 
         // CPL Course - 3 digits (offset +4 from PLT Course pattern)
@@ -82,6 +88,13 @@ namespace WwDevicesDotNet.WinWing.Pap3
             new DigitMapping { BitMask = 0x20, SegmentOffsets = new int[] { 0x20, 0x24, 0x28, 0x2C, 0x30, 0x34, 0x38 } }, // Tens
             new DigitMapping { BitMask = 0x10, SegmentOffsets = new int[] { 0x20, 0x24, 0x28, 0x2C, 0x30, 0x34, 0x38 } }  // Ones
             // todo add Decimal point if needed 1C 10 
+        };
+
+        static readonly DigitMapping[] _SpeedMapping = new DigitMapping[]
+        {
+            new DigitMapping { BitMask = 0x08, SegmentOffsets = new int[] { 0x1D, 0x21, 0x25, 0x29, 0x2D, 0x31, 0x35 } },
+            new DigitMapping { BitMask = 0x04, SegmentOffsets = new int[] { 0x1D, 0x21, 0x25, 0x29, 0x2D, 0x31, 0x35 } },
+            new DigitMapping { BitMask = 0x02, SegmentOffsets = new int[] { 0x1D, 0x21, 0x25, 0x29, 0x2D, 0x31, 0x35 } }
         };
 
         // Heading (HDG) - 3 digits
@@ -426,6 +439,23 @@ namespace WwDevicesDotNet.WinWing.Pap3
             // Note: Only set indicators when VerticalSpeed is present, otherwise clear both
             if (state.VerticalSpeed.HasValue)
             {
+
+                payload[0x1F] |= 0x0;
+                payload[0x2C] |= 0x0;
+                payload[0x28] |= 0x0;
+
+                if ((state.VerticalSpeed.Value > 0))
+                {
+                    payload[0x1F] |= 0x10;
+                    payload[0x2C] |= 0x80;
+                    payload[0x28] |= 0x80;
+                }
+                else if (state.VerticalSpeed.Value < 0)
+                {
+                    payload[0x1F] |= 0x10;
+                }
+
+
                 if (state.VsIsFpa)
                 {
                     payload[0x30] |= 0x80;  // Byte 17, bit 7: FPA indicator
@@ -435,6 +465,7 @@ namespace WwDevicesDotNet.WinWing.Pap3
                 {
                     payload[0x38] |= 0x80;  // Byte 25, bit 7: V/S indicator
                 }
+                
             }
             
 
@@ -502,18 +533,22 @@ namespace WwDevicesDotNet.WinWing.Pap3
             // Encode Speed display (if present) - PLT Course
             if (state.Speed.HasValue) {
                 var speed = Math.Max(0, Math.Min(999, state.Speed.Value));
-                EncodeMultiDigitValue(buffer, speed, 3, _PltCourseMapping);
+                EncodeMultiDigitValue(buffer, speed, 3, _SpeedMapping);
                 
-                // Add MACH decimal point if in MACH mode
+                // Add MACH decimal point if in MACH mode (e.g., 0.82)
+                // Hardware: MACH "0.xx" decimal point is controlled at offset 0x19, bit 0x40.
                 if(state.SpeedIsMach) {
-                    // Decimal point position needs verification from diagram
-                    buffer[0x16] |= 0x80;
+                    buffer[0x19] |= 0x40;
                 }
             }
 
             // Encode Course display (if present) - CPL Course
-            if (state.Course.HasValue) {
-                var course = Math.Max(0, Math.Min(999, state.Course.Value));
+            if (state.PltCourse.HasValue) {
+                var course = Math.Max(0, Math.Min(999, state.PltCourse.Value));
+                EncodeMultiDigitValue(buffer, course, 3, _PltCourseMapping);
+            }
+            if (state.CplCourse.HasValue) {
+                var course = Math.Max(0, Math.Min(999, state.CplCourse.Value));
                 EncodeMultiDigitValue(buffer, course, 3, _CplCourseMapping);
             }
 
