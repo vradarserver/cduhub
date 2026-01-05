@@ -4,10 +4,10 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <AssemblyName>McduDotNet</AssemblyName>
         <RootNamespace>McduDotNet</RootNamespace>
-        <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+        <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
         <PackageId>mcdu-dotnet</PackageId>
         <Title>MCDU DotNet</Title>
-        <Authors>Andrew Whewell</Authors>
+        <Authors>Andrew Whewell, Laurent Andre</Authors>
         <Description>A .NET Standard 2.0 library to read and write the WinWing MCDU peripheral</Description>
         <Copyright>Copyright © 2025 onwards, Andrew Whewell</Copyright>
         <PackageProjectUrl>https://github.com/vradarserver/cduhub</PackageProjectUrl>

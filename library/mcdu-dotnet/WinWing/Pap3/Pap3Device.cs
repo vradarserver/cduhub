@@ -73,7 +73,7 @@ namespace WwDevicesDotNet.WinWing.Pap3
             public int[] SegmentOffsets { get; set; }
         }
 
-        // PLT Course (Speed) - 3 digits
+        // PLT Course - 3 digits
         static readonly DigitMapping[] _PltCourseMapping = new DigitMapping[]
         {
             new DigitMapping { BitMask = 0x80, SegmentOffsets = new int[] { 0x1D, 0x21, 0x25, 0x29, 0x2D, 0x31, 0x35 } }, // Hundreds
@@ -81,7 +81,7 @@ namespace WwDevicesDotNet.WinWing.Pap3
             new DigitMapping { BitMask = 0x20, SegmentOffsets = new int[] { 0x1D, 0x21, 0x25, 0x29, 0x2D, 0x31, 0x35 } }  // Ones
         };
 
-        // CPL Course - 3 digits (offset +4 from PLT Course pattern)
+        // CPL Course - 3 digits
         static readonly DigitMapping[] _CplCourseMapping = new DigitMapping[]
         {
             new DigitMapping { BitMask = 0x40, SegmentOffsets = new int[] { 0x20, 0x24, 0x28, 0x2C, 0x30, 0x34, 0x38 } }, // Hundreds
@@ -141,7 +141,7 @@ namespace WwDevicesDotNet.WinWing.Pap3
         CancellationTokenSource _InputLoopCancellationTokenSource;
         Task _InputLoopTask;
         readonly byte[] _LastInputReport = new byte[25];
-        ushort _SequenceNumber = 0; // Track sequence number for display packets
+        ushort _SequenceNumber = 0; 
 
         /// <inheritdoc/>
         public DeviceIdentifier DeviceId { get; }
@@ -185,7 +185,6 @@ namespace WwDevicesDotNet.WinWing.Pap3
                 throw new WwDeviceException($"Could not open a stream to {_HidDevice}");
             }
 
-            // Send initialization packet (verified from hardware capture)
             SendInitPacket();
 
             // Subscribe to device list changes for disconnect detection
@@ -359,7 +358,6 @@ namespace WwDevicesDotNet.WinWing.Pap3
             _SequenceNumber++;
             if(_SequenceNumber > 255) _SequenceNumber = 1;
 
-            // Pattern from hardware capture (see README packet analysis):
             // Packet 1: 38 command with display data to unit 0F BF
             // Packet 2: 38 command empty (to unit 00 00 - no device)
             // Packet 3: 38 command empty (to unit 00 00 - no device)
