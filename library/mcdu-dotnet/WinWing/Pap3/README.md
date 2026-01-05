@@ -131,7 +131,7 @@ This mapping is made in these `DigitMapping` arrays:
         new DigitMapping { BitMask = 0x20, SegmentOffsets = new int[] { 0x1D, 0x21, 0x25, 0x29, 0x2D, 0x31, 0x35 } }  // Ones
     };
 ```
-decimal points and indicator are modified directly in the payload bytes when needed. 
+Decimal points and indicator are modified directly in the payload bytes when needed. 
 
 
 ## Keys / Input reports
