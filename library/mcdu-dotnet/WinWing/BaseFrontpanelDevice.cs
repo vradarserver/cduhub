@@ -142,7 +142,7 @@ namespace WwDevicesDotNet.WinWing
         protected virtual void RunInputLoop(CancellationToken cancellationToken)
         {
             var readBuffer = new byte[25];
-            _HidStream.ReadTimeout = 100;
+            _HidStream.ReadTimeout = 1000;
 
             while(!cancellationToken.IsCancellationRequested) {
                 try {
@@ -159,6 +159,9 @@ namespace WwDevicesDotNet.WinWing
                 } catch(System.IO.IOException) {
                     break;
                 }
+
+                // Yield to prevent busy-waiting
+                Thread.Sleep(1);
             }
         }
 

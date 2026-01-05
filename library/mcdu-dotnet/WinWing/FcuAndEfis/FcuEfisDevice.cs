@@ -68,33 +68,6 @@ namespace WwDevicesDotNet.WinWing.FcuAndEfis
         }
 
         /// <inheritdoc/>
-        protected override void RunInputLoop(System.Threading.CancellationToken cancellationToken)
-        {
-            var readBuffer = new byte[25];
-            _HidStream.ReadTimeout = 1000;
-
-            while(!cancellationToken.IsCancellationRequested) {
-                try {
-                    if(_HidStream != null && _HidStream.CanRead) {
-                        var bytesRead = _HidStream.Read(readBuffer, 0, readBuffer.Length);
-                        if(bytesRead > 0 && readBuffer[0] == 0x01) {
-                            ProcessReport(readBuffer, bytesRead);
-                        }
-                    }
-                } catch(TimeoutException) {
-                    // Expected when no data available
-                } catch(ObjectDisposedException) {
-                    break;
-                } catch(System.IO.IOException) {
-                    break;
-                }
-
-                // Yield to prevent busy-waiting
-                System.Threading.Thread.Sleep(1);
-            }
-        }
-
-        /// <inheritdoc/>
         public override void UpdateDisplay(IFrontpanelState state)
         {
             if(!IsConnected)
