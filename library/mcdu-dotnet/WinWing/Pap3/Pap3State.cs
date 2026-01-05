@@ -1,4 +1,4 @@
-﻿// Copyright © 2025 onwards, Andrew Whewell, Laurent Andre
+﻿// Copyright © 2025 onwards, Laurent Andre
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -16,7 +16,7 @@ namespace WwDevicesDotNet.WinWing.Pap3
     public class Pap3State : IFrontpanelState
     {
         /// <summary>
-        /// Speed value. Mach speeds are sent without the decimal point (e.g., Mach 0.82 is sent as 082).
+        /// Speed value. Mach speeds are sent without the decimal point (e.g., Mach 0.82 is sent as 82).
         /// </summary>
         public int? Speed { get; set; }
 
@@ -29,7 +29,6 @@ namespace WwDevicesDotNet.WinWing.Pap3
         /// Course value (0-359 degrees).
         /// </summary>
         public int? CplCourse { get; set; }
-
 
         /// <summary>
         /// Heading value (0-359 degrees).

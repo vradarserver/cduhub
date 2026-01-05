@@ -1,6 +1,7 @@
 ﻿# FCU and EFIS Panel USB Notes
 
 These notes are for the Airbus FCU and EFIS panels.
+Notes from the fork (c)Andrew Whewell 
 
 ## USB Vendor and Product IDs
 
