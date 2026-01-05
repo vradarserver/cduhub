@@ -210,8 +210,6 @@ The mapping between bits and controls is defined in `ControlMap.InputReport01Fla
 
 ### Protocol Investigation
 
-- **Verify disengage switch behavior**: External documentation suggests offset `0x05`, bit `0x01` may be a second disengage flag (switch DOWN position vs UP). Current implementation only maps offset `0x04`, bit `0x80`. Test if the disengage switch is 3-position (UP/CENTER/DOWN) instead of 2-position.
-- **Verify light sensor range**: External documentation claims offset `0x14` contains light sensor value with range `0x00-0x0F` (4-bit, 16 values). This seems unusually small - verify actual hardware range.
 - **Implement rotary encoder full-cycle tracking**: External documentation describes "full cycle" bytes for rotary encoders (offsets 0x16, 0x18, 0x1A, 0x1C, 0x1E, 0x20). These counters may be useful for detecting multi-turn rotations. Current implementation doesn't use these values.
 - **Investigate** to find the Command that disable the AT/ARM on the Magenetic version of the PAP
 

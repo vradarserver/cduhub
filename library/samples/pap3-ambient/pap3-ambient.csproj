@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <RootNamespace>Pap3AmbientTest</RootNamespace>
+        <AssemblyName>pap3-ambient</AssemblyName>
+        <Nullable>enable</Nullable>
+        <LangVersion>8.0</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\mcdu-dotnet\mcdu-dotnet.csproj" />
+    </ItemGroup>
+
+</Project>
