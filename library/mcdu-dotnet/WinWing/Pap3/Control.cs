@@ -75,6 +75,8 @@ namespace WwDevicesDotNet.WinWing.Pap3
         Bank15,
         Bank20,
         Bank25,
-        Bank30
+        Bank30,
+        DisengageDown,
+        DisengageUp
     }
 }
