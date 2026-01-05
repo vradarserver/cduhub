@@ -61,10 +61,10 @@ namespace Pap3AmbientTest
                 Console.WriteLine();
 
                 // Set up event handlers for ambient light changes
-                 pap3.AmbientLightChanged += (sender, args) =>
-                 {
-                     Console.WriteLine($"[EVENT] Ambient light percent changed: {pap3.AmbientLightPercent}%");
-                 };
+                pap3.AmbientLightChanged += (sender, args) =>
+                {
+                    Console.WriteLine($"[EVENT] Ambient light percent changed: {pap3.AmbientLightPercent}%");
+                };
 
                 // Turn on all LEDs and set displays to visualize brightness changes
                 var leds = new Pap3Leds
