@@ -87,7 +87,6 @@ namespace WwDevicesDotNet.WinWing.Pap3
             new DigitMapping { BitMask = 0x40, SegmentOffsets = new int[] { 0x20, 0x24, 0x28, 0x2C, 0x30, 0x34, 0x38 } }, // Hundreds
             new DigitMapping { BitMask = 0x20, SegmentOffsets = new int[] { 0x20, 0x24, 0x28, 0x2C, 0x30, 0x34, 0x38 } }, // Tens
             new DigitMapping { BitMask = 0x10, SegmentOffsets = new int[] { 0x20, 0x24, 0x28, 0x2C, 0x30, 0x34, 0x38 } }  // Ones
-            // todo add Decimal point if needed 1C 10 
         };
 
         // Speed - 4 digits physical window
@@ -113,7 +112,6 @@ namespace WwDevicesDotNet.WinWing.Pap3
             new DigitMapping { BitMask = 0x40, SegmentOffsets = new int[] { 0x1E, 0x22, 0x26, 0x2A, 0x2E, 0x32, 0x36 } }, // Hundreds
             new DigitMapping { BitMask = 0x20, SegmentOffsets = new int[] { 0x1E, 0x22, 0x26, 0x2A, 0x2E, 0x32, 0x36 } }, // Tens
             new DigitMapping { BitMask = 0x10, SegmentOffsets = new int[] { 0x1E, 0x22, 0x26, 0x2A, 0x2E, 0x32, 0x36 } }  // Ones
-            // Todo Decimal point 26 08 
         };
 
         // Altitude - 5 digits 
@@ -122,7 +120,6 @@ namespace WwDevicesDotNet.WinWing.Pap3
             new DigitMapping { BitMask = 0x04, SegmentOffsets = new int[] { 0x1E, 0x22, 0x26, 0x2A, 0x2E, 0x32, 0x36 } }, // Ten-thousands
             new DigitMapping { BitMask = 0x02, SegmentOffsets = new int[] { 0x1E, 0x22, 0x26, 0x2A, 0x2E, 0x32, 0x36 } }, // Thousands
             new DigitMapping { BitMask = 0x01, SegmentOffsets = new int[] { 0x1E, 0x22, 0x26, 0x2A, 0x2E, 0x32, 0x36 } }, // Hundreds
-            // Todo decilmal point 1A 01
             new DigitMapping { BitMask = 0x80, SegmentOffsets = new int[] { 0x1F, 0x23, 0x27, 0x2B, 0x2F, 0x33, 0x37 } }, // Tens
             new DigitMapping { BitMask = 0x40, SegmentOffsets = new int[] { 0x1F, 0x23, 0x27, 0x2B, 0x2F, 0x33, 0x37 } }  // Ones
         };
@@ -132,7 +129,6 @@ namespace WwDevicesDotNet.WinWing.Pap3
         {
             new DigitMapping { BitMask = 0x08, SegmentOffsets = new int[] { 0x1F, 0x23, 0x27, 0x2B, 0x2F, 0x33, 0x37 } }, // Thousands
             new DigitMapping { BitMask = 0x04, SegmentOffsets = new int[] { 0x1F, 0x23, 0x27, 0x2B, 0x2F, 0x33, 0x37 } }, // Hundreds
-            // Todo decimal point 1B 04
             new DigitMapping { BitMask = 0x02, SegmentOffsets = new int[] { 0x1F, 0x23, 0x27, 0x2B, 0x2F, 0x33, 0x37 } }, // Tens
             new DigitMapping { BitMask = 0x01, SegmentOffsets = new int[] { 0x1F, 0x23, 0x27, 0x2B, 0x2F, 0x33, 0x37 } }  // Ones
             

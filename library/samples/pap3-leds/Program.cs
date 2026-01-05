@@ -98,7 +98,7 @@ namespace Pap3LedsTest
                         case ConsoleKey.C:
                             TestCourseDisplays();
                             break;
-                        case ConsoleKey.H:
+                        case ConsoleKey.G:
                             TestHeadingDisplay();
                             break;
                         case ConsoleKey.A:
@@ -112,7 +112,7 @@ namespace Pap3LedsTest
                             break;
                         case ConsoleKey.X:
                             ClearAllDisplays();
-                            _Pap3.UpdateDisplay(_DisplayState);
+                            _Pap3?.UpdateDisplay(_DisplayState);
                             Console.WriteLine("All displays cleared.");
                             break;
                         case ConsoleKey.M:
@@ -140,11 +140,6 @@ namespace Pap3LedsTest
             // Regularly refresh the LED state
             // This ensures the hardware stays in sync with the model
             _Pap3?.UpdateLeds(_Leds);
-            
-            // NOTE: Display refresh is disabled because EncodeDisplays() is not yet implemented.
-            // Sending display packets with unencoded data clears the displays.
-            // Uncomment this line once display encoding is working:
-            // _pap3?.UpdateDisplay(_displayState);
         }
 
         static void ShowMenu()
@@ -160,7 +155,7 @@ namespace Pap3LedsTest
             Console.WriteLine("  D - Test all displays (count 0-999 on all displays)");
             Console.WriteLine("  S - Test Speed display (IAS/MACH with indicators)");
             Console.WriteLine("  C - Test Course displays (PLT & CPL)");
-            Console.WriteLine("  H - Test Heading display (HDG/TRK)");
+            Console.WriteLine("  G - Test Heading display (HDG/TRK)");
             Console.WriteLine("  A - Test Altitude display");
             Console.WriteLine("  V - Test Vertical Speed display (V/S/FPA)");
             Console.WriteLine("  I - Test all indicators sequence");
@@ -515,6 +510,10 @@ namespace Pap3LedsTest
 
             // Test V/S indicators
             Console.WriteLine("Testing V/S indicator...");
+            _DisplayState.VerticalSpeed = 2000;
+            _DisplayState.VsIsFpa = false;
+            _Pap3?.UpdateDisplay(_DisplayState);
+            Thread.Sleep(2000);
             _DisplayState.VerticalSpeed = 2000;
             _DisplayState.VsIsFpa = false;
             _Pap3?.UpdateDisplay(_DisplayState);
