@@ -47,7 +47,7 @@ namespace WwDevicesDotNet.WinWing
         public event EventHandler Disconnected;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BaseFrontpanelDevice"/> class.
+        /// Initializes a new instance of the <see cref="BaseFrontpanelDevice{TControl}"/> class.
         /// </summary>
         /// <param name="hidDevice">The HID device to communicate with.</param>
         /// <param name="deviceId">The device identifier.</param>
