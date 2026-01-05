@@ -155,7 +155,7 @@ The mapping between bits and controls is defined in `ControlMap.InputReport01Fla
 ## TODO
 
 - Change the state model to accept "strings" instead of int for the displays instead of individual digits. ( could display letters like FL on the altitude )
-- isolate common parts of Pap3Device and FCU into a base WinWing panel class
+- Isolate common parts of Pap3Device and FCU into a base WinWing panel class
 - Add support for additional WinWing panels (e.g. PDC 3N / 3M) when available.
 
 
