@@ -211,6 +211,6 @@ The mapping between bits and controls is defined in `ControlMap.InputReport01Fla
 ### Protocol Investigation
 
 - **Implement rotary encoder full-cycle tracking**: External documentation describes "full cycle" bytes for rotary encoders (offsets 0x16, 0x18, 0x1A, 0x1C, 0x1E, 0x20). These counters may be useful for detecting multi-turn rotations. Current implementation doesn't use these values.
-- **Investigate** to find the Command that disable the AT/ARM on the Magenetic version of the PAP
+- **Investigate** to find the Command that disable the AT/ARM on the Magnetic version of the PAP
 
 
