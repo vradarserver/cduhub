@@ -18,7 +18,7 @@ namespace WwDevicesDotNet.WinWing.Pap3
     /// Represents a WinWing PAP-3 Primary Autopilot Panel device.
     /// Handles communication with the physical PAP-3 hardware via HID protocol.
     /// </summary>
-    public class Pap3Device : BaseFrontpanelDevice
+    public class Pap3Device : BaseFrontpanelDevice<Control>
     {
         // Command prefix for PAP-3 panel (verified from hardware testing)
         const ushort _Pap3DisplayPrefix = 0x0FBF;
@@ -177,7 +177,7 @@ namespace WwDevicesDotNet.WinWing.Pap3
         }
 
         /// <inheritdoc/>
-        protected override object GetControl(int offset, byte flag)
+        protected override Control? GetControl(int offset, byte flag)
         {
             foreach (Control control in Enum.GetValues(typeof(Control))) {
                 var (mapFlag, mapOffset) = ControlMap.InputReport01FlagAndOffset(control);

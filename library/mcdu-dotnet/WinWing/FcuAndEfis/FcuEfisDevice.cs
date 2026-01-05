@@ -18,7 +18,7 @@ namespace WwDevicesDotNet.WinWing.FcuAndEfis
     /// Represents a WinWing FCU (Flight Control Unit) device with optional EFIS panels.
     /// Handles communication with the physical FCU hardware via HID protocol.
     /// </summary>
-    public class FcuEfisDevice : BaseFrontpanelDevice
+    public class FcuEfisDevice : BaseFrontpanelDevice<Control>
     {
         // Command prefixes for different panels
         const ushort _LeftEfisPrefix = 0x0DBF;
@@ -56,7 +56,7 @@ namespace WwDevicesDotNet.WinWing.FcuAndEfis
         }
 
         /// <inheritdoc/>
-        protected override object GetControl(int offset, byte flag)
+        protected override Control? GetControl(int offset, byte flag)
         {
             foreach(Control control in Enum.GetValues(typeof(Control))) {
                 var (mapFlag, mapOffset) = ControlMap.InputReport01FlagAndOffset(control);
