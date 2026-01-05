@@ -10,9 +10,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using HidSharp;
 
 namespace WwDevicesDotNet.WinWing.FcuAndEfis
@@ -21,7 +18,7 @@ namespace WwDevicesDotNet.WinWing.FcuAndEfis
     /// Represents a WinWing FCU (Flight Control Unit) device with optional EFIS panels.
     /// Handles communication with the physical FCU hardware via HID protocol.
     /// </summary>
-    public class FcuEfisDevice : IFrontpanel
+    public class FcuEfisDevice : BaseFrontpanelDevice
     {
         // Command prefixes for different panels
         const ushort _LeftEfisPrefix = 0x0DBF;
@@ -42,65 +39,63 @@ namespace WwDevicesDotNet.WinWing.FcuAndEfis
             0xFC  // 9
         };
 
-        HidDevice _HidDevice;
-        HidStream _HidStream;
-        bool _Disposed;
-        CancellationTokenSource _InputLoopCancellationTokenSource;
-        Task _InputLoopTask;
-        readonly byte[] _LastInputReport = new byte[25];
-
-        /// <inheritdoc/>
-        public DeviceIdentifier DeviceId { get; }
-
-        /// <inheritdoc/>
-        public bool IsConnected => _HidStream != null;
-
-        /// <inheritdoc/>
-        public event EventHandler<FrontpanelEventArgs> ControlActivated;
-
-        /// <inheritdoc/>
-        public event EventHandler<FrontpanelEventArgs> ControlDeactivated;
-
-        /// <inheritdoc/>
-        public event EventHandler Disconnected;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="FcuEfisDevice"/> class.
         /// </summary>
         /// <param name="hidDevice">The HID device to communicate with.</param>
         /// <param name="deviceId">The device identifier.</param>
         public FcuEfisDevice(HidDevice hidDevice, DeviceIdentifier deviceId)
+            : base(hidDevice, deviceId)
         {
-            _HidDevice = hidDevice;
-            DeviceId = deviceId;
-        }
-
-        /// <summary>
-        /// Initializes the device connection and starts reading input.
-        /// </summary>
-        public void Initialise()
-        {
-            var maxOutputReportLength = _HidDevice.GetMaxOutputReportLength();
-            if(maxOutputReportLength < 64) {
-                throw new WwDeviceException(
-                    $"HID device {_HidDevice} reported an invalid max output report length of {maxOutputReportLength}"
-                );
-            }
-
-            if(!_HidDevice.TryOpen(out _HidStream)) {
-                throw new WwDeviceException($"Could not open a stream to {_HidDevice}");
-            }
-
-            // Subscribe to device list changes for disconnect detection
-            DeviceList.Local.Changed += HidSharpDeviceList_Changed;
-
-            // Start reading input reports on a background task
-            _InputLoopCancellationTokenSource = new CancellationTokenSource();
-            _InputLoopTask = Task.Run(() => RunInputLoop(_InputLoopCancellationTokenSource.Token));
         }
 
         /// <inheritdoc/>
-        public void UpdateDisplay(IFrontpanelState state)
+        protected override void SendInitPacket()
+        {
+            // FCU doesn't require an explicit initialization packet
+        }
+
+        /// <inheritdoc/>
+        protected override object GetControl(int offset, byte flag)
+        {
+            foreach(Control control in Enum.GetValues(typeof(Control))) {
+                var (mapFlag, mapOffset) = ControlMap.InputReport01FlagAndOffset(control);
+                if(mapOffset == offset && mapFlag == flag) {
+                    return control;
+                }
+            }
+            return null;
+        }
+
+        /// <inheritdoc/>
+        protected override void RunInputLoop(System.Threading.CancellationToken cancellationToken)
+        {
+            var readBuffer = new byte[25];
+            _HidStream.ReadTimeout = 1000;
+
+            while(!cancellationToken.IsCancellationRequested) {
+                try {
+                    if(_HidStream != null && _HidStream.CanRead) {
+                        var bytesRead = _HidStream.Read(readBuffer, 0, readBuffer.Length);
+                        if(bytesRead > 0 && readBuffer[0] == 0x01) {
+                            ProcessReport(readBuffer, bytesRead);
+                        }
+                    }
+                } catch(TimeoutException) {
+                    // Expected when no data available
+                } catch(ObjectDisposedException) {
+                    break;
+                } catch(System.IO.IOException) {
+                    break;
+                }
+
+                // Yield to prevent busy-waiting
+                System.Threading.Thread.Sleep(1);
+            }
+        }
+
+        /// <inheritdoc/>
+        public override void UpdateDisplay(IFrontpanelState state)
         {
             if(!IsConnected)
                 return;
@@ -114,7 +109,7 @@ namespace WwDevicesDotNet.WinWing.FcuAndEfis
         }
 
         /// <inheritdoc/>
-        public void UpdateLeds(IFrontpanelLeds leds)
+        public override void UpdateLeds(IFrontpanelLeds leds)
         {
             if(!IsConnected)
                 return;
@@ -128,7 +123,7 @@ namespace WwDevicesDotNet.WinWing.FcuAndEfis
         }
 
         /// <inheritdoc/>
-        public void SetBrightness(byte panelBacklight, byte lcdBacklight, byte ledBacklight)
+        public override void SetBrightness(byte panelBacklight, byte lcdBacklight, byte ledBacklight)
         {
             if(!IsConnected)
                 return;
@@ -151,110 +146,6 @@ namespace WwDevicesDotNet.WinWing.FcuAndEfis
                 SendBrightnessCommand(_RightEfisPrefix, 0x01, lcdBacklight);
                 SendBrightnessCommand(_RightEfisPrefix, 0x11, ledBacklight);
             }
-        }
-
-        void SendBrightnessCommand(ushort prefix, byte variableType, byte value)
-        {
-            var packet = new byte[14];
-            packet[0] = 0x02;
-            packet[1] = (byte)((prefix >> 8) & 0xFF);  // High byte first
-            packet[2] = (byte)(prefix & 0xFF);          // Low byte second
-            packet[3] = 0x00;
-            packet[4] = 0x00;
-            packet[5] = 0x03;
-            packet[6] = 0x49;
-            packet[7] = variableType;
-            packet[8] = value;
-            // Remaining bytes are already 0x00
-
-            SendCommand(packet);
-        }
-
-        /// <summary>
-        /// Sends a command to the FCU device.
-        /// </summary>
-        /// <param name="data">The data to send.</param>
-        void SendCommand(byte[] data)
-        {
-            if(!IsConnected)
-                throw new InvalidOperationException("Device is not connected.");
-
-            _HidStream.Write(data);
-        }
-
-        void RunInputLoop(CancellationToken cancellationToken)
-        {
-            var readBuffer = new byte[25]; // FCU/EFIS reports are 25 bytes
-            _HidStream.ReadTimeout = 1000;
-
-            while(!cancellationToken.IsCancellationRequested) {
-                try {
-                    if(_HidStream != null && _HidStream.CanRead) {
-                        var bytesRead = _HidStream.Read(readBuffer, 0, readBuffer.Length);
-                        if(bytesRead > 0 && readBuffer[0] == 0x01) {
-                            ProcessReport(readBuffer, bytesRead);
-                        }
-                    }
-                } catch(TimeoutException) {
-                    // Expected when no data available
-                } catch(ObjectDisposedException) {
-                    // Stream was disposed
-                    break;
-                } catch(System.IO.IOException) {
-                    // Device disconnected
-                    break;
-                }
-
-                // Yield to prevent busy-waiting
-                Thread.Sleep(1);
-            }
-        }
-
-        void ProcessReport(byte[] data, int length)
-        {
-            if(length < 25)
-                return;
-
-            // Compare with last report to detect changes
-            for(var i = 1; i < 13; i++) {
-                var currentByte = data[i];
-                var lastByte = _LastInputReport[i];
-                
-                if(currentByte != lastByte) {
-                    var changed = (byte)(currentByte ^ lastByte);
-                    
-                    for(byte bit = 0; bit < 8; bit++) {
-                        var mask = (byte)(1 << bit);
-                        if((changed & mask) != 0) {
-                            var pressed = (currentByte & mask) != 0;
-                            var control = GetControl(i, mask);
-                            
-                            if(control.HasValue) {
-                                var controlId = control.Value.ToString();
-                                if(pressed) {
-                                    ControlActivated?.Invoke(this, new FrontpanelEventArgs(controlId, data));
-                                } else {
-                                    ControlDeactivated?.Invoke(this, new FrontpanelEventArgs(controlId, data));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Copy current report for next comparison
-            Array.Copy(data, _LastInputReport, length);
-        }
-
-        Control? GetControl(int offset, byte flag)
-        {
-            foreach(Control control in Enum.GetValues(typeof(Control))) {
-                var (mapFlag, mapOffset) = ControlMap.InputReport01FlagAndOffset(control);
-                if(mapOffset == offset && mapFlag == flag) {
-                    return control;
-                }
-            }
-            return null;
         }
 
         List<byte[]> BuildDisplayCommands(FcuEfisState state)
@@ -712,56 +603,6 @@ namespace WwDevicesDotNet.WinWing.FcuAndEfis
         {
             return DeviceId.Device == Device.WinWingFcuRightEfis
                 || DeviceId.Device == Device.WinWingFcuBothEfis;
-        }
-
-        void HidSharpDeviceList_Changed(object sender, DeviceListChangedEventArgs e)
-        {
-            if(_HidDevice != null) {
-                var devicePresent = DeviceList.Local
-                    .GetHidDevices()
-                    .Any(device => device.DevicePath == _HidDevice.DevicePath);
-                
-                if(!devicePresent) {
-                    OnDisconnected();
-                }
-            }
-        }
-
-        void OnDisconnected()
-        {
-            Disconnected?.Invoke(this, EventArgs.Empty);
-        }
-
-        public void Dispose()
-        {
-            if(_Disposed)
-                return;
-
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        void Dispose(bool disposing)
-        {
-            if(disposing) {
-                DeviceList.Local.Changed -= HidSharpDeviceList_Changed;
-
-                _InputLoopCancellationTokenSource?.Cancel();
-                _InputLoopTask?.Wait(5000);
-                _InputLoopTask = null;
-
-                var hidStream = _HidStream;
-                _HidStream = null;
-                try {
-                    hidStream?.Dispose();
-                } catch {
-                    ;
-                }
-
-                _HidDevice = null;
-            }
-
-            _Disposed = true;
         }
 
         byte[] EncodeAlphanumericSwapped(string text)

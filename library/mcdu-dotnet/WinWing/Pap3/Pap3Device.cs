@@ -10,9 +10,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using HidSharp;
 
 namespace WwDevicesDotNet.WinWing.Pap3
@@ -21,7 +18,7 @@ namespace WwDevicesDotNet.WinWing.Pap3
     /// Represents a WinWing PAP-3 Primary Autopilot Panel device.
     /// Handles communication with the physical PAP-3 hardware via HID protocol.
     /// </summary>
-    public class Pap3Device : IFrontpanel
+    public class Pap3Device : BaseFrontpanelDevice
     {
         // Command prefix for PAP-3 panel (verified from hardware testing)
         const ushort _Pap3DisplayPrefix = 0x0FBF;
@@ -134,20 +131,7 @@ namespace WwDevicesDotNet.WinWing.Pap3
             
         };
 
-
-        HidDevice _HidDevice;
-        HidStream _HidStream;
-        bool _Disposed;
-        CancellationTokenSource _InputLoopCancellationTokenSource;
-        Task _InputLoopTask;
-        readonly byte[] _LastInputReport = new byte[25];
         ushort _SequenceNumber = 0; 
-
-        /// <inheritdoc/>
-        public DeviceIdentifier DeviceId { get; }
-
-        /// <inheritdoc/>
-        public bool IsConnected => _HidStream != null;
 
         /// <summary>
         /// Gets the native value from the device's left ambient light sensor.
@@ -165,15 +149,6 @@ namespace WwDevicesDotNet.WinWing.Pap3
         /// </summary>
         public int AmbientLightPercent { get; private set; }
 
-        /// <inheritdoc/>
-        public event EventHandler<FrontpanelEventArgs> ControlActivated;
-
-        /// <inheritdoc/>
-        public event EventHandler<FrontpanelEventArgs> ControlDeactivated;
-
-        /// <inheritdoc/>
-        public event EventHandler Disconnected;
-
         /// <summary>
         /// Raised when the normalized ambient light percentage changes.
         /// </summary>
@@ -185,38 +160,12 @@ namespace WwDevicesDotNet.WinWing.Pap3
         /// <param name="hidDevice">The HID device to communicate with.</param>
         /// <param name="deviceId">The device identifier.</param>
         public Pap3Device(HidDevice hidDevice, DeviceIdentifier deviceId)
+            : base(hidDevice, deviceId)
         {
-            _HidDevice = hidDevice;
-            DeviceId = deviceId;
         }
 
-        /// <summary>
-        /// Initializes the device connection and starts reading input.
-        /// </summary>
-        public void Initialise()
-        {
-            var maxOutputReportLength = _HidDevice.GetMaxOutputReportLength();
-            if(maxOutputReportLength < 64) {
-                throw new WwDeviceException(
-                    $"HID device {_HidDevice} reported an invalid max output report length of {maxOutputReportLength}"
-                );
-            }
-
-            if(!_HidDevice.TryOpen(out _HidStream)) {
-                throw new WwDeviceException($"Could not open a stream to {_HidDevice}");
-            }
-
-            SendInitPacket();
-
-            // Subscribe to device list changes for disconnect detection
-            DeviceList.Local.Changed += HidSharpDeviceList_Changed;
-
-            // Start reading input reports on a background task
-            _InputLoopCancellationTokenSource = new CancellationTokenSource();
-            _InputLoopTask = Task.Run(() => RunInputLoop(_InputLoopCancellationTokenSource.Token));
-        }
-
-        void SendInitPacket()
+        /// <inheritdoc/>
+        protected override void SendInitPacket()
         {
             // Initialization packet: F0 02 00... (all zeros)
             var initPacket = new byte[64];
@@ -228,92 +177,19 @@ namespace WwDevicesDotNet.WinWing.Pap3
         }
 
         /// <inheritdoc/>
-        public void UpdateDisplay(IFrontpanelState state)
+        protected override object GetControl(int offset, byte flag)
         {
-            if(!IsConnected)
-                return;
-        
-            var commands = BuildDisplayCommands((Pap3State)state);
-            foreach(var data in commands) {
-                SendCommand(data);
+            foreach (Control control in Enum.GetValues(typeof(Control))) {
+                var (mapFlag, mapOffset) = ControlMap.InputReport01FlagAndOffset(control);
+                if(mapOffset == offset && mapFlag == flag) {
+                    return control;
+                }
             }
+            return null;
         }
 
         /// <inheritdoc/>
-        public void UpdateLeds(IFrontpanelLeds leds)
-        {
-            if(!IsConnected)
-                return;
-
-            if(leds is Pap3Leds pap3Leds) {
-                var commands = BuildLedCommands(pap3Leds);
-                foreach(var data in commands) {
-                    SendCommand(data);
-                }
-            }
-        }
-
-        /// <inheritdoc/>
-        public void SetBrightness(byte panelBacklight, byte lcdBacklight, byte ledBacklight)
-        {
-            if(!IsConnected)
-                return;
-
-            SendBrightnessCommand(_Pap3LedPrefix, _BrightnessPanelBacklight, panelBacklight);
-            SendBrightnessCommand(_Pap3LedPrefix, _BrightnessDigitalTube, lcdBacklight);
-            SendBrightnessCommand(_Pap3LedPrefix, _BrightnessMarkerLight, ledBacklight);
-        }
-
-        void SendBrightnessCommand(ushort prefix, byte variableType, byte value)
-        {
-            var packet = new byte[14];
-            packet[0] = 0x02;
-            packet[1] = (byte)((prefix >> 8) & 0xFF);
-            packet[2] = (byte)(prefix & 0xFF);
-            packet[3] = 0x00;
-            packet[4] = 0x00;
-            packet[5] = 0x03;
-            packet[6] = 0x49;
-            packet[7] = variableType;
-            packet[8] = value;
-
-            SendCommand(packet);
-        }
-
-        void SendCommand(byte[] data)
-        {
-            if(!IsConnected)
-                throw new InvalidOperationException("Device is not connected.");
-
-            _HidStream.Write(data);
-        }
-
-        void RunInputLoop(CancellationToken cancellationToken)
-        {
-            var readBuffer = new byte[25];
-            _HidStream.ReadTimeout = 100; // Reduced from 1000ms to 100ms for faster response
-
-            while(!cancellationToken.IsCancellationRequested) {
-                try {
-                    if(_HidStream != null && _HidStream.CanRead) {
-                        var bytesRead = _HidStream.Read(readBuffer, 0, readBuffer.Length);
-                        if(bytesRead > 0 && readBuffer[0] == 0x01) {
-                            ProcessReport(readBuffer, bytesRead);
-                        }
-                    }
-                } catch(TimeoutException) {
-                    // Expected when no data available - don't sleep, just continue
-                } catch(ObjectDisposedException) {
-                    // Stream was disposed
-                    break;
-                } catch(System.IO.IOException) {
-                    // Device disconnected
-                    break;
-                }
-            }
-        }
-
-        void ProcessReport(byte[] data, int length)
+        protected override void ProcessReport(byte[] data, int length)
         {
             if(length < 25)
                 return;
@@ -342,45 +218,45 @@ namespace WwDevicesDotNet.WinWing.Pap3
                 }
             }
 
-            // Compare with last report to detect control changes
-            for(var i = 1; i < 13; i++) {
-                var currentByte = data[i];
-                var lastByte = _LastInputReport[i];
-                
-                if(currentByte != lastByte) {
-                    var changed = (byte)(currentByte ^ lastByte);
-                    
-                    for(byte bit = 0; bit < 8; bit++) {
-                        var mask = (byte)(1 << bit);
-                        if((changed & mask) != 0) {
-                            var pressed = (currentByte & mask) != 0;
-                            var control = GetControl(i, mask);
-                            
-                            if(control.HasValue) {
-                                var controlId = control.Value.ToString();
-                                if(pressed) {
-                                    ControlActivated?.Invoke(this, new FrontpanelEventArgs(controlId, data));
-                                } else {
-                                    ControlDeactivated?.Invoke(this, new FrontpanelEventArgs(controlId, data));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            Array.Copy(data, _LastInputReport, length);
+            // Call base implementation for standard control processing
+            base.ProcessReport(data, length);
         }
 
-        Control? GetControl(int offset, byte flag)
+        /// <inheritdoc/>
+        public override void UpdateDisplay(IFrontpanelState state)
         {
-            foreach (Control control in Enum.GetValues(typeof(Control))) {
-                var (mapFlag, mapOffset) = ControlMap.InputReport01FlagAndOffset(control);
-                if(mapOffset == offset && mapFlag == flag) {
-                    return control;
+            if(!IsConnected)
+                return;
+        
+            var commands = BuildDisplayCommands((Pap3State)state);
+            foreach(var data in commands) {
+                SendCommand(data);
+            }
+        }
+
+        /// <inheritdoc/>
+        public override void UpdateLeds(IFrontpanelLeds leds)
+        {
+            if(!IsConnected)
+                return;
+
+            if(leds is Pap3Leds pap3Leds) {
+                var commands = BuildLedCommands(pap3Leds);
+                foreach(var data in commands) {
+                    SendCommand(data);
                 }
             }
-            return null;
+        }
+
+        /// <inheritdoc/>
+        public override void SetBrightness(byte panelBacklight, byte lcdBacklight, byte ledBacklight)
+        {
+            if(!IsConnected)
+                return;
+
+            SendBrightnessCommand(_Pap3LedPrefix, _BrightnessPanelBacklight, panelBacklight);
+            SendBrightnessCommand(_Pap3LedPrefix, _BrightnessDigitalTube, lcdBacklight);
+            SendBrightnessCommand(_Pap3LedPrefix, _BrightnessMarkerLight, ledBacklight);
         }
 
         List<byte[]> BuildDisplayCommands(Pap3State state)
@@ -668,56 +544,6 @@ namespace WwDevicesDotNet.WinWing.Pap3
             packet[8] = (byte)(on ? 0x01 : 0x00);
 
             return packet;
-        }
-
-        void HidSharpDeviceList_Changed(object sender, DeviceListChangedEventArgs e)
-        {
-            if(_HidDevice != null) {
-                var devicePresent = DeviceList.Local
-                    .GetHidDevices()
-                    .Any(device => device.DevicePath == _HidDevice.DevicePath);
-                
-                if(!devicePresent) {
-                    OnDisconnected();
-                }
-            }
-        }
-
-        void OnDisconnected()
-        {
-            Disconnected?.Invoke(this, EventArgs.Empty);
-        }
-
-        public void Dispose()
-        {
-            if(_Disposed)
-                return;
-
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        void Dispose(bool disposing)
-        {
-            if(disposing) {
-                DeviceList.Local.Changed -= HidSharpDeviceList_Changed;
-
-                _InputLoopCancellationTokenSource?.Cancel();
-                _InputLoopTask?.Wait(5000);
-                _InputLoopTask = null;
-
-                var hidStream = _HidStream;
-                _HidStream = null;
-                try {
-                    hidStream?.Dispose();
-                } catch {
-                    ;
-                }
-
-                _HidDevice = null;
-            }
-
-            _Disposed = true;
         }
     }
 }
