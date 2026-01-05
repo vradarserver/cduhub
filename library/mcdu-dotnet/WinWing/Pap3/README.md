@@ -120,7 +120,7 @@ The base 7-seg values are in `_DigitValues`.
 When you have 2 values around an indicator, it means that the indicator is lit by 2 leds ! 
 ( very noticable on the MACH indicator if you only lit one )
 
-This mapping is made in these 
+This mapping is made in these `DigitMapping` arrays:
 
 ```        
 // PLT Course - 3 digits
