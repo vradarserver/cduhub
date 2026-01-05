@@ -78,7 +78,7 @@ f0 02 <all zeros> 00
 
 Don't know the meaning of {03} and {02} 
 These are mandatory for the display to work. I tried without the 2 38 full zeros packets and the display did not work.
-I suspect they will correspond the two other unites of the PAP3 ( PDC 3N and PDC 3M )
+I suspect they will correspond the two other units of the PAP3 ( PDC 3N and PDC 3M )
 
 ```
 00  0102  03 0405 06 07  08  09 0a 0b 0c 0d 0e 0f 10  11 12 13 14 15 16 17 18 19 .. .. .. .. .. 38 39 3a 3b 3c 3d 3e 3f
