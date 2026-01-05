@@ -149,6 +149,22 @@ namespace WwDevicesDotNet.WinWing.Pap3
         /// <inheritdoc/>
         public bool IsConnected => _HidStream != null;
 
+        /// <summary>
+        /// Gets the native value from the device's left ambient light sensor.
+        /// </summary>
+        internal int LeftAmbientLightNative { get; private set; }
+
+        /// <summary>
+        /// Gets the native value from the device's right ambient light sensor.
+        /// </summary>
+        internal int RightAmbientLightNative { get; private set; }
+
+        /// <summary>
+        /// Gets a normalized ambient light value calculated from left and right sensors,
+        /// where 0 is completely dark and 100 is completely illuminated.
+        /// </summary>
+        public int AmbientLightPercent { get; private set; }
+
         /// <inheritdoc/>
         public event EventHandler<FrontpanelEventArgs> ControlActivated;
 
@@ -157,6 +173,11 @@ namespace WwDevicesDotNet.WinWing.Pap3
 
         /// <inheritdoc/>
         public event EventHandler Disconnected;
+
+        /// <summary>
+        /// Raised when the normalized ambient light percentage changes.
+        /// </summary>
+        public event EventHandler AmbientLightChanged;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Pap3Device"/> class.
@@ -289,8 +310,6 @@ namespace WwDevicesDotNet.WinWing.Pap3
                     // Device disconnected
                     break;
                 }
-                
-                // Removed Thread.Sleep(1) - let the HID read timeout handle the delay
             }
         }
 
@@ -299,7 +318,31 @@ namespace WwDevicesDotNet.WinWing.Pap3
             if(length < 25)
                 return;
 
-            // Compare with last report to detect changes
+            // Process ambient light sensor data (offsets 17-18 for left, 19-20 for right)
+            var leftSensor = (ushort)(data[17] | (data[18] << 8));
+            var rightSensor = (ushort)(data[19] | (data[20] << 8));
+
+            var leftChanged = leftSensor != LeftAmbientLightNative;
+            var rightChanged = rightSensor != RightAmbientLightNative;
+
+            if(leftChanged || rightChanged) {
+                LeftAmbientLightNative = leftSensor;
+                RightAmbientLightNative = rightSensor;
+
+                // Calculate normalized percentage (0-100)
+                var avg = ((double)LeftAmbientLightNative + (double)RightAmbientLightNative) / 2.0;
+                avg /= 0xfff; // Normalize to 0-1
+                var newPercent = (int)(100.0 * avg);
+                var percentChanged = newPercent != AmbientLightPercent;
+                AmbientLightPercent = newPercent;
+
+                // Raise events
+                if(percentChanged) {
+                    AmbientLightChanged?.Invoke(this, EventArgs.Empty);
+                }
+            }
+
+            // Compare with last report to detect control changes
             for(var i = 1; i < 13; i++) {
                 var currentByte = data[i];
                 var lastByte = _LastInputReport[i];
