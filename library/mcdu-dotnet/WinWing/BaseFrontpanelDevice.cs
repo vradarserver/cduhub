@@ -20,7 +20,9 @@ namespace WwDevicesDotNet.WinWing
     /// Base class for WinWing frontpanel devices (FCU, EFIS, PAP-3, etc.).
     /// Handles common HID communication, input loop, and event infrastructure.
     /// </summary>
-    public abstract class BaseFrontpanelDevice : IFrontpanel
+    /// <typeparam name="TControl">The control enum type for this device.</typeparam>
+    public abstract class BaseFrontpanelDevice<TControl> : IFrontpanel
+        where TControl : struct, Enum
     {
         protected HidDevice _HidDevice;
         protected HidStream _HidStream;
@@ -45,7 +47,7 @@ namespace WwDevicesDotNet.WinWing
         public event EventHandler Disconnected;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BaseFrontpanelDevice"/> class.
+        /// Initializes a new instance of the <see cref="BaseFrontpanelDevice{TControl}"/> class.
         /// </summary>
         /// <param name="hidDevice">The HID device to communicate with.</param>
         /// <param name="deviceId">The device identifier.</param>
@@ -90,7 +92,7 @@ namespace WwDevicesDotNet.WinWing
         /// <param name="offset">The byte offset in the input report.</param>
         /// <param name="flag">The bit flag within the byte.</param>
         /// <returns>The control enum value, or null if no control matches.</returns>
-        protected abstract object GetControl(int offset, byte flag);
+        protected abstract TControl? GetControl(int offset, byte flag);
 
         /// <inheritdoc/>
         public abstract void UpdateDisplay(IFrontpanelState state);
@@ -188,8 +190,8 @@ namespace WwDevicesDotNet.WinWing
                             var pressed = (currentByte & mask) != 0;
                             var control = GetControl(i, mask);
                             
-                            if(control != null) {
-                                var controlId = control.ToString();
+                            if(control.HasValue) {
+                                var controlId = control.Value.ToString();
                                 if(pressed) {
                                     ControlActivated?.Invoke(this, new FrontpanelEventArgs(controlId, data));
                                 } else {
