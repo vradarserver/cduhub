@@ -118,7 +118,7 @@ The base 7-seg values are in `_DigitValues`.
 ![The mapping of LCD and indicators](docs/Pap3-lcd-mapping.svg)
 
 When you have 2 values around an indicator, it means that the indicator is lit by 2 leds ! 
-( very noticable on the MACH indicator if you only lit one )
+( very noticeable on the MACH indicator if you only lit one )
 
 This mapping is made in these `DigitMapping` arrays:
 
