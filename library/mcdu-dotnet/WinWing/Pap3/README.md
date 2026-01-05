@@ -9,7 +9,6 @@ The implementation lives in:
 - `Pap3Leds` (LED state model)
 - `ControlMap` / `Control` (input report mapping)
 
-
 ## USB Vendor and Product IDs
 
 The WinWing vendor ID is `0x4098`.
@@ -144,6 +143,57 @@ The device sends a stream of `0x01` input reports (25 bytes).
 
 The mapping between bits and controls is defined in `ControlMap.InputReport01FlagAndOffset()`.
 
+### Input Report Mapping Table
+
+| Offset | Bit    | Control          | Description                    |
+|--------|--------|------------------|--------------------------------|
+| 0x01   | 0x01   | N1               | N1 button                      |
+| 0x01   | 0x02   | Speed            | SPEED button                   |
+| 0x01   | 0x04   | Vnav             | VNAV button                    |
+| 0x01   | 0x08   | LvlChg           | LVL CHG button                 |
+| 0x01   | 0x10   | HdgSel           | HDG SEL button                 |
+| 0x01   | 0x20   | Lnav             | LNAV button                    |
+| 0x01   | 0x40   | VorLoc           | VOR LOC button                 |
+| 0x01   | 0x80   | App              | APP button                     |
+| 0x02   | 0x01   | AltHold          | ALT HOLD button                |
+| 0x02   | 0x02   | Vs               | V/S button                     |
+| 0x02   | 0x04   | CmdA             | CMD A button                   |
+| 0x02   | 0x08   | CwsA             | CWS A button                   |
+| 0x02   | 0x10   | CmdB             | CMD B button                   |
+| 0x02   | 0x20   | CwsB             | CWS B button                   |
+| 0x02   | 0x40   | CO               | C/O button (IAS/MACH toggle)   |
+| 0x02   | 0x80   | SpdIntv          | SPD INTV button                |
+| 0x03   | 0x01   | AltIntv          | ALT INTV button                |
+| 0x03   | 0x02   | PltCourseDec     | Pilot Course decrement         |
+| 0x03   | 0x04   | PltCourseInc     | Pilot Course increment         |
+| 0x03   | 0x08   | SpdDec           | Speed decrement                |
+| 0x03   | 0x10   | SpdInc           | Speed increment                |
+| 0x03   | 0x20   | HdgDec           | Heading decrement              |
+| 0x03   | 0x40   | HdgInc           | Heading increment              |
+| 0x03   | 0x80   | AltDec           | Altitude decrement             |
+| 0x04   | 0x01   | AltInc           | Altitude increment             |
+| 0x04   | 0x02   | CplCourseDec     | Copilot Course decrement       |
+| 0x04   | 0x04   | CplCourseInc     | Copilot Course increment       |
+| 0x04   | 0x08   | PltFdOn          | Pilot F/D switch ON            |
+| 0x04   | 0x10   | PltFdOff         | Pilot F/D switch OFF           |
+| 0x04   | 0x20   | CplFdOn          | Copilot F/D switch ON          |
+| 0x04   | 0x40   | CplFdOff         | Copilot F/D switch OFF         |
+| 0x04   | 0x80   | DisengageUp      | Disengage switch UP position   |
+| 0x05   | 0x01   | DisengageDown    | Disengage switch DOWN position |
+| 0x05   | 0x02   | Bank10           | Bank angle 10°                 |
+| 0x05   | 0x04   | Bank15           | Bank angle 15°                 |
+| 0x05   | 0x08   | Bank20           | Bank angle 20°                 |
+| 0x05   | 0x10   | Bank25           | Bank angle 25°                 |
+| 0x05   | 0x20   | Bank30           | Bank angle 30°                 |
+| 0x05   | 0x40   | VsDn             | V/S knob rotate down           |
+| 0x05   | 0x80   | VsUp             | V/S knob rotate up             |
+| 0x06   | 0x01   | ATArmOn          | A/T ARM switch ON              |
+| 0x06   | 0x02   | ATArmOff         | A/T ARM switch OFF             |
+
+**Notes:**
+- Rotary encoder absolute positions and full-cycle counters are at offsets 0x15-0x20 (see documentation for details)
+- Light sensor value is at offset 0x14
+
 (See `ControlMap.cs` for the authoritative table.)
 
 
@@ -157,5 +207,12 @@ The mapping between bits and controls is defined in `ControlMap.InputReport01Fla
 - Change the state model to accept "strings" instead of int for the displays instead of individual digits. ( could display letters like FL on the altitude )
 - Isolate common parts of Pap3Device and FCU into a base WinWing panel class
 - Add support for additional WinWing panels (e.g. PDC 3N / 3M) when available.
+
+### Protocol Investigation
+
+- **Verify disengage switch behavior**: External documentation suggests offset `0x05`, bit `0x01` may be a second disengage flag (switch DOWN position vs UP). Current implementation only maps offset `0x04`, bit `0x80`. Test if the disengage switch is 3-position (UP/CENTER/DOWN) instead of 2-position.
+- **Verify light sensor range**: External documentation claims offset `0x14` contains light sensor value with range `0x00-0x0F` (4-bit, 16 values). This seems unusually small - verify actual hardware range.
+- **Implement rotary encoder full-cycle tracking**: External documentation describes "full cycle" bytes for rotary encoders (offsets 0x16, 0x18, 0x1A, 0x1C, 0x1E, 0x20). These counters may be useful for detecting multi-turn rotations. Current implementation doesn't use these values.
+- **Investigate** to find the Command that disable the AT/ARM on the Magenetic version of the PAP
 
 

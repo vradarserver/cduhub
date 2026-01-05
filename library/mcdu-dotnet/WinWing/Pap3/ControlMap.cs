@@ -58,8 +58,9 @@ namespace WwDevicesDotNet.WinWing.Pap3
                 case Control.PltFdOff:      return (0x10, 4);
                 case Control.CplFdOn:       return (0x20, 4);
                 case Control.CplFdOff:      return (0x40, 4);
-                case Control.Disengage:     return (0x80, 4);
-                
+                case Control.DisengageUp:   return (0x80, 4);
+
+                case Control.DisengageDown: return (0x01, 5);
                 case Control.Bank10:        return (0x02, 5);
                 case Control.Bank15:        return (0x04, 5);
                 case Control.Bank20:        return (0x08, 5);
