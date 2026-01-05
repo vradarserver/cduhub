@@ -1,4 +1,4 @@
-﻿// Copyright © 2025 onwards, Andrew Whewell, Laurent Andre
+﻿// Copyright © 2025 onwards, Laurent Andre
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -22,8 +22,6 @@ namespace WwDevicesDotNet.WinWing.Pap3
         /// <returns>A tuple containing the flag (bit mask) and offset (byte position).</returns>
         public static (int Flag, int Offset) InputReport01FlagAndOffset(Control control)
         {
-            // TODO: These mappings need to be determined from actual hardware testing
-            // This is a placeholder structure based on the FCU/EFIS pattern
             switch(control) {
 
                 case Control.N1:            return (0x01, 1);
@@ -34,7 +32,6 @@ namespace WwDevicesDotNet.WinWing.Pap3
                 case Control.Lnav:          return (0x20, 1); 
                 case Control.VorLoc:        return (0x40, 1);
                 case Control.App:           return (0x80, 1);
-
 
                 case Control.AltHold:       return (0x01, 2);
                 case Control.Vs:            return (0x02, 2);
@@ -72,8 +69,8 @@ namespace WwDevicesDotNet.WinWing.Pap3
                 case Control.VsDn:          return (0x40, 5);
                 case Control.VsUp:          return (0x80, 5);
 
-                case Control.ATArmOff: return (0x02, 6);
-                case Control.ATArmOn: return (0x01, 6);
+                case Control.ATArmOff:      return (0x02, 6);
+                case Control.ATArmOn:       return (0x01, 6);
 
 
                 default:                        return (0, 0);

@@ -1,4 +1,4 @@
-﻿// Copyright © 2025 onwards, Andrew Whewell, Laurent andre
+﻿// Copyright © 2025 onward Laurent andre
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:

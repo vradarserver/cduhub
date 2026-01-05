@@ -1,4 +1,4 @@
-﻿// Copyright © 2025 onwards, Andrew Whewell, Laurent Andre
+﻿// Copyright © 2025 onwards, Laurent Andre
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -16,14 +16,19 @@ namespace WwDevicesDotNet.WinWing.Pap3
     public class Pap3State : IFrontpanelState
     {
         /// <summary>
-        /// Speed value. Mach speeds are sent without the decimal point (e.g., Mach 0.82 is sent as 082).
+        /// Speed value. Mach speeds are sent without the decimal point (e.g., Mach 0.82 is sent as 82).
         /// </summary>
         public int? Speed { get; set; }
 
         /// <summary>
         /// Course value (0-359 degrees).
         /// </summary>
-        public int? Course { get; set; }
+        public int? PltCourse { get; set; }
+
+        /// <summary>
+        /// Course value (0-359 degrees).
+        /// </summary>
+        public int? CplCourse { get; set; }
 
         /// <summary>
         /// Heading value (0-359 degrees).
@@ -49,5 +54,15 @@ namespace WwDevicesDotNet.WinWing.Pap3
         /// True if altitude is displayed as flight level.
         /// </summary>
         public bool AltitudeIsFlightLevel { get; set; } = false;
+
+        /// <summary>
+        /// True if heading display is in Track mode, false for Heading mode.
+        /// </summary>
+        public bool HeadingIsTrack { get; set; } = false;
+
+        /// <summary>
+        /// True if vertical speed display is in FPA mode, false for V/S mode.
+        /// </summary>
+        public bool VsIsFpa { get; set; } = false;
     }
 }

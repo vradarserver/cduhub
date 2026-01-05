@@ -1,10 +1,12 @@
-# PAP-3 LED Test Sample
+# PAP-3 LED & Display Test Sample
 
-This sample demonstrates how to control the LEDs on a WinWing PAP-3 Primary Autopilot Panel device using a timer-based refresh approach.
+This sample demonstrates how to control the LEDs and LCD displays on a WinWing PAP-3 Primary Autopilot Panel device using a timer-based refresh approach.
 
 ## Overview
 
-The PAP-3 has 17 LEDs that can be controlled individually:
+The PAP-3 has 17 LEDs and 5 LCD displays that can be controlled:
+
+### LEDs (17 total)
 
 **Autothrottle LEDs:**
 - N1
@@ -30,6 +32,15 @@ The PAP-3 has 17 LEDs that can be controlled individually:
 **Flight Director LEDs:**
 - FD L (Left Master Flight Director)
 - FD R (Right Master Flight Director)
+
+### LCD Displays (5 total)
+
+**Display Windows:**
+1. **Speed/Mach** - Shows airspeed in knots or Mach number
+2. **Course** - Shows course setting (0-359°)
+3. **Heading** - Shows heading (0-359°)
+4. **Altitude** - Shows altitude in feet or flight level
+5. **Vertical Speed** - Shows rate of climb/descent (fpm)
 
 ## Architecture
 
@@ -64,11 +75,46 @@ This sample provides:
    - All 17 LEDs can be toggled by pressing their associated buttons
    - LED state is maintained and synced every 250ms
    - Perfect for testing button-to-LED mapping
-3. **Brightness Test** - Tests three independent brightness controls:
+3. **LCD Display Test (Experimental)** - Tests all 5 LCD displays:
+   - Speed display (knots or Mach)
+   - Course display (degrees)
+   - Heading display (degrees)
+   - Altitude display (feet or flight level)
+   - Vertical Speed display (fpm)
+   - ?? Note: Display encoding is not yet fully implemented, packets are sent but may not render correctly
+4. **Brightness Test** - Tests three independent brightness controls:
    - **Panel Backlight** (0x00) - Controls panel backlight ? Working
    - **Digital Tube Backlight** (0x01) - Controls LCD/Display backlight ? Working
    - **Marker Light** (0x02) - Controls LED brightness ? Working
-4. **Real-time Input Monitoring** - Shows button press/release events as they happen
+5. **Real-time Input Monitoring** - Shows button press/release events as they happen
+
+### LCD Display Testing (Experimental)
+
+The sample implements **experimental LCD display testing**:
+
+```
+Press '2' ? Run display test sequence
+- Tests Speed (250 kts, Mach 0.82)
+- Tests Course (90°, 270°)
+- Tests Heading (180°, 45°)
+- Tests Altitude (10000 ft, FL350)
+- Tests V/S (+2000, -1500 fpm)
+- Tests all displays together (cruise scenario)
+```
+
+**Current Status:** 
+- ? Display packet structure verified (4-packet sequence)
+- ? Correct device prefix discovered (0x0FBF for displays)
+- ? Initialization packet implemented
+- ?? Display encoding (`EncodeDisplays()`) not yet implemented
+- ?? Displays may not update correctly until encoding is complete
+
+The test will send packets to the device, but you may see:
+- No changes on displays (encoding needed)
+- Garbage characters (wrong encoding)
+- Partial updates (some displays working)
+
+This is expected and helps with development/debugging!
 
 ### Interactive LED Control
 
@@ -120,13 +166,14 @@ dotnet run
 Once the program starts, you'll see a menu:
 
 ```
-=== PAP-3 LED Test Menu ===
+=== PAP-3 LED & Display Test Menu ===
 
 Tests:
   1 - Test all LEDs in sequence
+  2 - Test LCD displays (experimental)
 
 Controls:
-  0 - Turn off all LEDs
+  0 - Turn off all LEDs and clear displays
   B - Test brightness levels (Backlight, Digital Tube, Marker Light)
   H - Show this menu
   Q - Quit
@@ -135,6 +182,40 @@ Controls:
 Press the corresponding key to run a test. You can also press physical buttons on the PAP-3 device to see input events logged to the console.
 
 ## Code Examples
+
+### Control LCD Displays
+
+```csharp
+var displayState = new Pap3State {
+    Speed = 250,              // Airspeed in knots
+    SpeedIsMach = false,      // False = knots, True = Mach
+    Course = 90,              // Course 0-359°
+    Heading = 270,            // Heading 0-359°
+    Altitude = 35000,         // Altitude in feet
+    AltitudeIsFlightLevel = true,  // True = show as FL350
+    VerticalSpeed = 2000      // V/S in feet per minute
+};
+
+// Timer will sync these changes within 250ms
+pap3.UpdateDisplay(displayState);
+```
+
+### Display Mach Speed
+
+```csharp
+// Mach speeds are sent without decimal point
+// Mach 0.82 ? Speed = 82
+displayState.Speed = 82;
+displayState.SpeedIsMach = true;
+```
+
+### Display Flight Level
+
+```csharp
+// Altitude 37000 feet displayed as FL370
+displayState.Altitude = 37000;
+displayState.AltitudeIsFlightLevel = true;
+```
 
 ### Turn on specific LEDs
 
