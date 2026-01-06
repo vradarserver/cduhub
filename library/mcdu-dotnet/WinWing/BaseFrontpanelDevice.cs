@@ -155,15 +155,12 @@ namespace WwDevicesDotNet.WinWing
                         }
                     }
                 } catch(TimeoutException) {
-                    // Expected when no data available
+                    // Expected when no data available - Read() blocks until data or timeout
                 } catch(ObjectDisposedException) {
                     break;
                 } catch(System.IO.IOException) {
                     break;
                 }
-
-                // Yield to prevent busy-waiting
-                Thread.Sleep(1);
             }
         }
 

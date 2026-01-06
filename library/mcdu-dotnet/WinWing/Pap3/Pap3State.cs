@@ -66,9 +66,12 @@ namespace WwDevicesDotNet.WinWing.Pap3
         public bool VsIsFpa { get; set; } = false;
 
         /// <summary>
-        /// True if the magnetic altitude hold solenoid should be engaged (locked).
-        /// When true, the altitude knob is locked down and cannot pop up.
-        /// When false, the altitude knob is free to pop up when pulled.
+        /// True if the auto-throttle (A/T ARM) magnetic solenoid should be engaged (locked).
+        /// When true, the A/T ARM switch is locked in position and cannot be moved.
+        /// When false, the A/T ARM switch is free to be moved.
+        /// 
+        /// This controls the magnetic hold mechanism on the A/T ARM switch, not the altitude controls.
+        /// Use UpdateSolenoid() to sync this state with the hardware.
         /// </summary>
         public bool MagneticActivated { get; set; } = false;
     }

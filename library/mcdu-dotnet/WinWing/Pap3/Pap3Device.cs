@@ -576,8 +576,8 @@ namespace WwDevicesDotNet.WinWing.Pap3
         }
 
         /// <summary>
-        /// Engages (arms) the altitude hold solenoid, locking the altitude knob down.
-        /// This prevents the knob from popping up.
+        /// Engages (arms) the auto-throttle solenoid, locking the A/T ARM switch in position.
+        /// This prevents the switch from being moved until released.
         /// Based on captured USB traffic: sends value 0x01.
         /// </summary>
         public void EngageSolenoid()
@@ -590,7 +590,8 @@ namespace WwDevicesDotNet.WinWing.Pap3
         }
 
         /// <summary>
-        /// Releases (disarms) the altitude hold solenoid, allowing the altitude knob to pop up.
+        /// Releases (disarms) the auto-throttle solenoid, allowing the A/T ARM switch to be moved freely.
+        /// The solenoid will remain released until explicitly re-engaged with EngageSolenoid().
         /// Based on captured USB traffic: sends value 0x00.
         /// </summary>
         public void ReleaseSolenoid()
