@@ -108,6 +108,25 @@ namespace WwDevicesDotNet
     /// </summary>
     public interface IFrontpanelState
     {
+        /// <summary>
+        /// Speed value (knots or Mach). Supported by all frontpanels.
+        /// </summary>
+        int? Speed { get; set; }
+
+        /// <summary>
+        /// Heading value (0-359 degrees). Supported by all frontpanels.
+        /// </summary>
+        int? Heading { get; set; }
+
+        /// <summary>
+        /// Altitude value (feet). Supported by all frontpanels.
+        /// </summary>
+        int? Altitude { get; set; }
+
+        /// <summary>
+        /// Vertical speed value (feet per minute). Supported by all frontpanels.
+        /// </summary>
+        int? VerticalSpeed { get; set; }
     }
 
     /// <summary>
