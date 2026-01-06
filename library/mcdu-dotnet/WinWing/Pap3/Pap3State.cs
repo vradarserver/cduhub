@@ -64,5 +64,12 @@ namespace WwDevicesDotNet.WinWing.Pap3
         /// True if vertical speed display is in FPA mode, false for V/S mode.
         /// </summary>
         public bool VsIsFpa { get; set; } = false;
+
+        /// <summary>
+        /// True if the magnetic altitude hold solenoid should be engaged (locked).
+        /// When true, the altitude knob is locked down and cannot pop up.
+        /// When false, the altitude knob is free to pop up when pulled.
+        /// </summary>
+        public bool MagneticActivated { get; set; } = false;
     }
 }

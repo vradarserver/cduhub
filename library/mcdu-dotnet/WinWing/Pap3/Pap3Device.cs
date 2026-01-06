@@ -131,7 +131,9 @@ namespace WwDevicesDotNet.WinWing.Pap3
             
         };
 
-        ushort _SequenceNumber = 0; 
+        ushort _SequenceNumber = 0;
+        bool _LastMagneticState = false;
+        System.Threading.Timer _SolenoidTimer;
 
         /// <summary>
         /// Gets the native value from the device's left ambient light sensor.
@@ -227,10 +229,37 @@ namespace WwDevicesDotNet.WinWing.Pap3
         {
             if(!IsConnected)
                 return;
-        
-            var commands = BuildDisplayCommands((Pap3State)state);
-            foreach(var data in commands) {
-                SendCommand(data);
+
+            if(state is Pap3State pap3State) {
+                // Update displays only - solenoid managed separately via UpdateSolenoid()
+                var commands = BuildDisplayCommands(pap3State);
+                foreach(var data in commands) {
+                    SendCommand(data);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Updates the solenoid state based on the provided state.
+        /// Only sends command if the magnetic state has changed to reduce USB traffic.
+        /// Call this method explicitly when you want to sync the solenoid with your state.
+        /// </summary>
+        /// <param name="state">The frontpanel state containing MagneticActivated property.</param>
+        public void UpdateSolenoid(IFrontpanelState state)
+        {
+            if(!IsConnected)
+                return;
+
+            if(state is Pap3State pap3State) {
+                // Only send command if magnetic state has changed
+                if(pap3State.MagneticActivated != _LastMagneticState) {
+                    if(pap3State.MagneticActivated) {
+                        SendCommand(BuildEngageSolenoidCommand());
+                    } else {
+                        SendCommand(BuildReleaseSolenoidCommand());
+                    }
+                    _LastMagneticState = pap3State.MagneticActivated;
+                }
             }
         }
 
@@ -543,6 +572,103 @@ namespace WwDevicesDotNet.WinWing.Pap3
             packet[7] = ledCode;
             packet[8] = (byte)(on ? 0x01 : 0x00);
 
+            return packet;
+        }
+
+        /// <summary>
+        /// Engages (arms) the altitude hold solenoid, locking the altitude knob down.
+        /// This prevents the knob from popping up.
+        /// Based on captured USB traffic: sends value 0x01.
+        /// </summary>
+        public void EngageSolenoid()
+        {
+            if(!IsConnected)
+                return;
+
+            SendCommand(BuildEngageSolenoidCommand());
+            _LastMagneticState = true;
+        }
+
+        /// <summary>
+        /// Releases (disarms) the altitude hold solenoid, allowing the altitude knob to pop up.
+        /// Based on captured USB traffic: sends value 0x00.
+        /// </summary>
+        public void ReleaseSolenoid()
+        {
+            if(!IsConnected)
+                return;
+
+            SendCommand(BuildReleaseSolenoidCommand());
+            _LastMagneticState = false;
+        }
+
+        /// <summary>
+        /// Triggers a full solenoid cycle for testing.
+        /// This performs: release (disarm), wait 50ms, then engage (arm).
+        /// Useful for testing that the solenoid mechanism works correctly.
+        /// </summary>
+        public void TriggerSolenoid()
+        {
+            if(!IsConnected)
+                return;
+
+            // Release first (allow knob to pop up)
+            SendCommand(BuildReleaseSolenoidCommand());
+            
+            // Small delay
+            System.Threading.Thread.Sleep(50);
+            
+            // Then engage (lock knob down)
+            SendCommand(BuildEngageSolenoidCommand());
+        }
+
+        /// <inheritdoc/>
+        protected override void Dispose(bool disposing)
+        {
+            if(disposing) {
+                // Cleanup solenoid timer
+                _SolenoidTimer?.Dispose();
+                _SolenoidTimer = null;
+            }
+
+            base.Dispose(disposing);
+        }
+
+        byte[] BuildEngageSolenoidCommand()
+        {
+            // Engage (arm) solenoid command uses display prefix (0x0FBF)
+            // Captured behavior: This LOCKS the knob down (arms the solenoid)
+            // Packet: 02 0f bf 00 00 03 49 1e 01 00 00 00 00 00
+            var packet = new byte[14];
+            packet[0] = 0x02;
+            packet[1] = 0x0F;  // Display prefix high byte
+            packet[2] = 0xBF;  // Display prefix low byte
+            packet[3] = 0x00;
+            packet[4] = 0x00;
+            packet[5] = 0x03;
+            packet[6] = 0x49;
+            packet[7] = 0x1E;  // Solenoid command code
+            packet[8] = 0x01;  // Engage (arm) value - locks knob down
+            // Remaining bytes 9-13 are 0x00
+            return packet;
+        }
+
+        byte[] BuildReleaseSolenoidCommand()
+        {
+            // Release (disarm) solenoid command
+            // Captured behavior: This RELEASES the knob (allows it to pop up)
+            // Packet: 02 0f bf 00 00 03 49 1e 00 00 00 00 00 00
+            var packet = new byte[14];
+            packet[0] = 0x02;
+            packet[1] = 0x0F;  // Display prefix high byte
+            packet[2] = 0xBF;  // Display prefix low byte
+            packet[3] = 0x00;
+            packet[4] = 0x00;
+            packet[5] = 0x03;
+            packet[6] = 0x49;
+            packet[7] = 0x1E;  // Solenoid command code
+            packet[8] = 0x00;  // Release (disarm) value - allows knob to pop up
+            // Remaining bytes 9-13 are 0x00
             return packet;
         }
     }
