@@ -21,7 +21,7 @@ namespace McduDotNet.WinWing.Pfp7
     {
         protected override byte CommandPrefix => 0x33;
 
-        private static readonly Dictionary<Led, byte> _LedIndicatorCodeMap = new Dictionary<Led, byte>() {
+        private static readonly Dictionary<Led, byte> _LedIndicatorCodeMap = new() {
             { Led.Dspy, 0x03 },
             { Led.Fail, 0x04 },
             { Led.Msg, 0x05 },

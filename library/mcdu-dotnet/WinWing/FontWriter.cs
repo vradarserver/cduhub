@@ -21,9 +21,9 @@ namespace McduDotNet.WinWing
     class FontWriter
     {
         private UsbWriter _UsbWriter;
-        private DisplayFont _DisplayFont = new DisplayFont();
+        private readonly DisplayFont _DisplayFont = new();
 
-        public Action<FontChangingEventArgs> UpdatingDeviceCallback { get; set; }
+        public Action<FontChangingEventArgs>? UpdatingDeviceCallback { get; set; }
 
         public FontWriter(UsbWriter usbWriter)
         {
@@ -69,21 +69,23 @@ namespace McduDotNet.WinWing
 
                     var mapJson = Encoding.UTF8.GetString(mapBytes);
                     var packetMap = JsonConvert.DeserializeObject<McduFontPacketMap>(mapJson);
-                    packetMap.OverwritePacketsWithFontFileContent(
-                        commandPrefix,
-                        Percent.ToByte(currentDisplayBrightnessPercent),
-                        _DisplayFont.PixelWidth,
-                        _DisplayFont.PixelHeight,
-                        xOffset,
-                        yOffset,
-                        _DisplayFont?.LargeGlyphs,
-                        _DisplayFont?.SmallGlyphs
-                    );
-                    foreach(var packet in packetMap.Packets) {
-                        _UsbWriter.SendStringPacket(packet);
-                    }
+                    if(packetMap != null) {
+                        packetMap.OverwritePacketsWithFontFileContent(
+                            commandPrefix,
+                            Percent.ToByte(currentDisplayBrightnessPercent),
+                            _DisplayFont.PixelWidth,
+                            _DisplayFont.PixelHeight,
+                            xOffset,
+                            yOffset,
+                            _DisplayFont.LargeGlyphs,
+                            _DisplayFont.SmallGlyphs
+                        );
+                        foreach(var packet in packetMap.Packets) {
+                            _UsbWriter.SendStringPacket(packet);
+                        }
 
-                    fontUploaded = true;
+                        fontUploaded = true;
+                    }
                 }
             });
 

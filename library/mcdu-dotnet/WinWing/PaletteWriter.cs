@@ -23,9 +23,9 @@ namespace McduDotNet.WinWing
         private readonly string CP; // See notes elsewhere as to why this name is exactly 2 chars
 #pragma warning restore IDE1006 // Naming Styles
         private UsbWriter _UsbWriter;
-        private DisplayPalette _DisplayPalette;
+        private DisplayPalette? _DisplayPalette;
 
-        public Action<PaletteChangingEventArgs> UpdatingDeviceCallback { get; set; }
+        public Action<PaletteChangingEventArgs>? UpdatingDeviceCallback { get; set; }
 
         public PaletteWriter(UsbWriter usbWriter, string commandPrefix)
         {
@@ -61,7 +61,7 @@ namespace McduDotNet.WinWing
         }
 
         public void SendPalette(
-            PaletteColour[] colourArray,
+            PaletteColour[]? colourArray,
             ScreenWriter screenWriter,
             Screen screen,
             bool skipDuplicateCheck = false,
@@ -70,50 +70,52 @@ namespace McduDotNet.WinWing
         )
         {
             _UsbWriter.LockForOutput(() => {
-                if(_DisplayPalette == null) {
+                if(_DisplayPalette == null && colourArray != null) {
                     _DisplayPalette = new DisplayPalette(colourArray.Length);
                 }
-                var hasChanged = colourArray != null
-                    && _DisplayPalette.CopyFrom(colourArray);
-                if(skipDuplicateCheck || hasChanged) {
-                    if(UpdatingDeviceCallback != null && !suppressUpdatingDeviceCallback) {
-                        var args = new PaletteChangingEventArgs(_DisplayPalette.Clone());
-                        Task.Run(() => UpdatingDeviceCallback?.Invoke(args));
-                    }
+                if(_DisplayPalette != null) {
+                    var hasChanged = colourArray != null
+                        && _DisplayPalette.CopyFrom(colourArray);
+                    if(skipDuplicateCheck || hasChanged) {
+                        if(UpdatingDeviceCallback != null && !suppressUpdatingDeviceCallback) {
+                            var args = new PaletteChangingEventArgs(_DisplayPalette.Clone());
+                            Task.Run(() => UpdatingDeviceCallback?.Invoke(args));
+                        }
 
-                    byte seq = 1;
+                        byte seq = 1;
 
-                    var buffer = new StringBuilder();
+                        var buffer = new StringBuilder();
 
-                    AddToPacketBuffer(buffer, 0x1f, ref seq, $"{CP}00001901000004170100000e00000001000500000002");
-                    SendPacketBuffer(buffer);
-                    AddToPacketBuffer(buffer, 0x3c, ref seq, $"{CP}00001901000004170100000e0000000100060000000300000000000000");
+                        AddToPacketBuffer(buffer, 0x1f, ref seq, $"{CP}00001901000004170100000e00000001000500000002");
+                        SendPacketBuffer(buffer);
+                        AddToPacketBuffer(buffer, 0x3c, ref seq, $"{CP}00001901000004170100000e0000000100060000000300000000000000");
 
-                    var colourSeq = 4;
-                    foreach(var colour in _DisplayPalette.Colours) {
-                        var setForeground = $"{CP}00001901000004170100000e0000000200{colour.WinWingColourString}{colourSeq++:x2}00000000000000";
-                        AddToPacketBuffer(buffer, 0x3c, ref seq, setForeground);
-                    }
-                    foreach(var colour in _DisplayPalette.Colours) {
-                        var setBackground = $"{CP}00001901000004170100000e0000000300{colour.WinWingColourString}{colourSeq++:x2}00000000000000";
-                        AddToPacketBuffer(buffer, 0x3c, ref seq, setBackground);
-                    }
-                    AddToPacketBuffer(buffer, 0x3c, ref seq, $"{CP}00001901000004170100000e000000040000000000{colourSeq++:x2}00000000000000");
-                    AddToPacketBuffer(buffer, 0x3c, ref seq, $"{CP}00001901000004170100000e000000040001000000{colourSeq++:x2}00000000000000");
-                    AddToPacketBuffer(buffer, 0x2b, ref seq, $"{CP}00001901000004170100000e000000040002000000{colourSeq++:x2}00000000000000");
-                    AddToPacketBuffer(buffer, 0x2b, ref seq, $"{CP}0000050100000417010001");
-                    SendPacketBuffer(buffer);
-                    AddToPacketBuffer(buffer, 0x34, ref seq, $"{CP}00001a01000025170100000100000002");
-                    AddToPacketBuffer(buffer, 0x34, ref seq, $"{CP}00001c010000251701000000000000");
-                    AddToPacketBuffer(buffer, 0x34, ref seq, $"{CP}0000050100002517010001");
-                    SendPacketBuffer(buffer);
+                        var colourSeq = 4;
+                        foreach(var colour in _DisplayPalette.Colours) {
+                            var setForeground = $"{CP}00001901000004170100000e0000000200{colour.WinWingColourString}{colourSeq++:x2}00000000000000";
+                            AddToPacketBuffer(buffer, 0x3c, ref seq, setForeground);
+                        }
+                        foreach(var colour in _DisplayPalette.Colours) {
+                            var setBackground = $"{CP}00001901000004170100000e0000000300{colour.WinWingColourString}{colourSeq++:x2}00000000000000";
+                            AddToPacketBuffer(buffer, 0x3c, ref seq, setBackground);
+                        }
+                        AddToPacketBuffer(buffer, 0x3c, ref seq, $"{CP}00001901000004170100000e000000040000000000{colourSeq++:x2}00000000000000");
+                        AddToPacketBuffer(buffer, 0x3c, ref seq, $"{CP}00001901000004170100000e000000040001000000{colourSeq++:x2}00000000000000");
+                        AddToPacketBuffer(buffer, 0x2b, ref seq, $"{CP}00001901000004170100000e000000040002000000{colourSeq++:x2}00000000000000");
+                        AddToPacketBuffer(buffer, 0x2b, ref seq, $"{CP}0000050100000417010001");
+                        SendPacketBuffer(buffer);
+                        AddToPacketBuffer(buffer, 0x34, ref seq, $"{CP}00001a01000025170100000100000002");
+                        AddToPacketBuffer(buffer, 0x34, ref seq, $"{CP}00001c010000251701000000000000");
+                        AddToPacketBuffer(buffer, 0x34, ref seq, $"{CP}0000050100002517010001");
+                        SendPacketBuffer(buffer);
 
-                    if(forceDisplayRefresh) {
-                        screenWriter.SendScreenToDisplay(
-                            screen,
-                            skipDuplicateCheck: true,
-                            suppressUpdatingDeviceCallback: false
-                        );
+                        if(forceDisplayRefresh) {
+                            screenWriter.SendScreenToDisplay(
+                                screen,
+                                skipDuplicateCheck: true,
+                                suppressUpdatingDeviceCallback: false
+                            );
+                        }
                     }
                 }
             });

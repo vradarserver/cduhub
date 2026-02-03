@@ -26,10 +26,10 @@ namespace McduDotNet
 
         public int PixelWidth { get; private set; }
 
-        private Dictionary<char, byte[,]> _LargeGlyphs = new Dictionary<char, byte[,]>();
+        private Dictionary<char, byte[,]> _LargeGlyphs = new();
         public Dictionary<char, byte[,]> LargeGlyphs => _LargeGlyphs;
 
-        private Dictionary<char, byte[,]> _SmallGlyphs = new Dictionary<char, byte[,]>();
+        private Dictionary<char, byte[,]> _SmallGlyphs = new();
         public Dictionary<char, byte[,]> SmallGlyphs => _SmallGlyphs;
 
         public bool CopyFrom(McduFontFile fontFile, bool useFullWidth)
@@ -57,11 +57,7 @@ namespace McduDotNet
         {
             var result = false;
 
-            if(deviceGlyphs == null) {
-                result = true;
-                deviceGlyphs = new Dictionary<char, byte[,]>();
-            }
-            var unwantedGlyphs = new HashSet<char>(deviceGlyphs?.Select(kvp => kvp.Key));
+            var unwantedGlyphs = new HashSet<char>(deviceGlyphs.Select(kvp => kvp.Key));
 
             foreach(var glyph in fileGlyphs ?? Array.Empty<McduFontGlyph>()) {
                 if(!deviceGlyphs.TryGetValue(glyph.Character, out var deviceByteArray)) {
@@ -104,7 +100,7 @@ namespace McduDotNet
             PixelHeight = other.PixelHeight;
             PixelWidth = other.PixelWidth;
 
-            Dictionary<char, byte[,]> cloneGlyphs(Dictionary<char, byte[,]> otherGlyphs)
+            static Dictionary<char, byte[,]> cloneGlyphs(Dictionary<char, byte[,]> otherGlyphs)
             {
                 var result = new Dictionary<char, byte[,]>();
                 foreach(var kvp in otherGlyphs) {

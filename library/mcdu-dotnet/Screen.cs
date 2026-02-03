@@ -177,8 +177,9 @@ namespace McduDotNet
             }
         }
 
-        public void Write(string text, bool showLowercaseInSmallUppercase = false)
+        public void Write(string? text, bool showLowercaseInSmallUppercase = false)
         {
+            text ??= "";
             if(!RightToLeft) {
                 foreach(var ch in text) {
                     Put(
@@ -198,15 +199,16 @@ namespace McduDotNet
             }
         }
 
-        public void WriteLine(string text)
+        public void WriteLine(string? text)
         {
             Write(text);
             ++Line;
             GotoStartOfLine();
         }
 
-        public void CentreColumnFor(string text)
+        public void CentreColumnFor(string? text)
         {
+            text ??= "";
             Column = Math.Max(0, (Metrics.Columns - text.Length) / 2);
         }
 
@@ -222,14 +224,14 @@ namespace McduDotNet
 
         public void GotoMiddleLine() => Line = Metrics.Lines / 2;
 
-        public void LeftLineSelect(int line, string text)
+        public void LeftLineSelect(int line, string? text)
         {
             Line = line * 2;
             ForLeftToRight();
             Write(text);
         }
 
-        public void RightLineSelect(int line, string text)
+        public void RightLineSelect(int line, string? text)
         {
             Line = line * 2;
             ForRightToLeft();
@@ -237,13 +239,13 @@ namespace McduDotNet
             ForLeftToRight();
         }
 
-        public void WriteCentred(string text)
+        public void WriteCentred(string? text)
         {
             CentreColumnFor(text);
             Write(text);
         }
 
-        public void WriteLineCentred(string text)
+        public void WriteLineCentred(string? text)
         {
             CentreColumnFor(text);
             WriteLine(text);

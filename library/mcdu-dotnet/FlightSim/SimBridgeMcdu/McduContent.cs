@@ -16,7 +16,7 @@ namespace McduDotNet.FlightSim.SimBridgeMcdu
     public class McduContent
     {
         [DataMember]
-        public Annunciators Annunciators { get; } = new Annunciators();
+        public Annunciators Annunciators { get; } = new();
 
         [DataMember]
         public bool[] Arrows { get; set; } = new bool[4];
@@ -36,18 +36,18 @@ namespace McduDotNet.FlightSim.SimBridgeMcdu
         public double IntegralBrightness { get; set; }
 
         [DataMember]
-        public string[][] Lines { get; set; }
+        public string[][] Lines { get; set; } = new string[][]{};
 
         [DataMember]
-        public string Page { get; set; }
+        public string Page { get; set; } = "";
 
         [DataMember]
-        public string ScratchPad { get; set; }
+        public string ScratchPad { get; set; } = "";
 
         [DataMember]
-        public string Title { get; set; }
+        public string Title { get; set; } = "";
 
         [DataMember]
-        public string TitleLeft { get; set; }
+        public string TitleLeft { get; set; } = "";
     }
 }

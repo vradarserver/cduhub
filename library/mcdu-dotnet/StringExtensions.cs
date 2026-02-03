@@ -16,9 +16,9 @@ namespace McduDotNet
 {
     public static class StringExtensions
     {
-        public static byte[] ToByteArray(this string hexString)
+        public static byte[] ToByteArray(this string? hexString)
         {
-            hexString = hexString ?? "";
+            hexString ??= "";
 
             var buffer = new byte[hexString.Length / 2];
             byte b = 0;
@@ -76,8 +76,9 @@ namespace McduDotNet
         /// <param name="text"></param>
         /// <param name="lineLength"></param>
         /// <returns></returns>
-        public static IReadOnlyList<string> WrapAtWhitespace(this string text, int lineLength)
+        public static IReadOnlyList<string> WrapAtWhitespace(this string? text, int lineLength)
         {
+            text ??= "";
             var result = new List<string>();
             var lineBuffer = new StringBuilder();
 
@@ -89,7 +90,7 @@ namespace McduDotNet
                 }
             }
 
-            var realLines = (text ?? "").Split('\n');
+            var realLines = text.Split('\n');
             foreach(var realLine in realLines) {
                 var chunks = realLine
                     .Trim('\r')

@@ -17,9 +17,9 @@ namespace McduDotNet.WinWing
     /// </summary>
     class IlluminationWriter
     {
-        private UsbWriter _UsbWriter;
-        private Leds _PreviousLeds;
-        private Dictionary<Led, byte> _LedIndicatorMap;
+        private readonly UsbWriter _UsbWriter;
+        private readonly Dictionary<Led, byte> _LedIndicatorMap;
+        private Leds? _PreviousLeds;
 
         /// <summary>
         /// The 02 report that controls LED on/off and display brightnesses.

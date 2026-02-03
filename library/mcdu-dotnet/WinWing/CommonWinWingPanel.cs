@@ -37,17 +37,18 @@ namespace McduDotNet.WinWing
 
         protected abstract Func<Key, (int Flag, int Offset)> KeyToFlagOffsetCallback { get; }
 
-        protected readonly Screen _EmptyScreen = new Screen();
+        protected readonly Screen _EmptyScreen = new();
         protected HidDevice _HidDevice;
-        protected HidStream _HidStream;
-        protected UsbWriter _UsbWriter;
-        protected ScreenWriter _ScreenWriter;
-        protected IlluminationWriter _IlluminationWriter;
-        private FontWriter _FontWriter;
-        private PaletteWriter _PaletteWriter;
-        private KeyboardReader _KeyboardReader;
-        private CancellationTokenSource _InputLoopCancellationTokenSource;
-        private Task _InputLoopTask;
+
+        protected HidStream? _HidStream;
+        protected UsbWriter? _UsbWriter;
+        protected ScreenWriter? _ScreenWriter;
+        protected IlluminationWriter? _IlluminationWriter;
+        private FontWriter? _FontWriter;
+        private PaletteWriter? _PaletteWriter;
+        private KeyboardReader? _KeyboardReader;
+        private CancellationTokenSource? _InputLoopCancellationTokenSource;
+        private Task? _InputLoopTask;
 
         /// <inheritdoc/>
         public DeviceIdentifier DeviceId { get; }
@@ -101,7 +102,7 @@ namespace McduDotNet.WinWing
                 var normalised = Percent.Clamp(value);
                 if(normalised != BacklightBrightnessPercent) {
                     _BacklightBrightnessPercent = normalised;
-                    _IlluminationWriter.SendBacklightPercent(_BacklightBrightnessPercent);
+                    _IlluminationWriter?.SendBacklightPercent(_BacklightBrightnessPercent);
                 }
             }
         }
@@ -115,13 +116,13 @@ namespace McduDotNet.WinWing
                 var normalised = Percent.Clamp(value);
                 if(normalised != LedBrightnessPercent) {
                     _LedBrightnessPercent = normalised;
-                    _IlluminationWriter.SendLedBrightnessPercent(_LedBrightnessPercent);
+                    _IlluminationWriter?.SendLedBrightnessPercent(_LedBrightnessPercent);
                 }
             }
         }
 
         /// <inheritdoc/>
-        public AutoBrightnessSettings AutoBrightness { get; } = new AutoBrightnessSettings();
+        public AutoBrightnessSettings AutoBrightness { get; } = new();
 
         /// <inheritdoc/>
         public bool HasAmbientLightSensor => true;
@@ -136,21 +137,21 @@ namespace McduDotNet.WinWing
         public int AmbientLightPercent { get; private set; }
 
         /// <inheritdoc/>
-        public event EventHandler LeftAmbientLightChanged;
+        public event EventHandler? LeftAmbientLightChanged;
 
         protected virtual void OnLeftAmbientLightChanged() => LeftAmbientLightChanged?.Invoke(this, EventArgs.Empty);
 
         /// <inheritdoc/>
-        public event EventHandler RightAmbientLightChanged;
+        public event EventHandler? RightAmbientLightChanged;
 
         protected virtual void OnRightAmbientLightChanged() => RightAmbientLightChanged?.Invoke(this, EventArgs.Empty);
 
         /// <inheritdoc/>
-        public event EventHandler AmbientLightChanged;
+        public event EventHandler? AmbientLightChanged;
 
         protected virtual void OnAmbientLightChanged() => AmbientLightChanged?.Invoke(this, EventArgs.Empty);
 
-        public event EventHandler<KeyEventArgs> KeyDown;
+        public event EventHandler<KeyEventArgs>? KeyDown;
 
         /// <summary>
         /// Raises <see cref="KeyDown"/>. Doesn't bother creating args unless something is listening.
@@ -164,7 +165,7 @@ namespace McduDotNet.WinWing
         }
 
         /// <inheritdoc/>
-        public event EventHandler<KeyEventArgs> KeyUp;
+        public event EventHandler<KeyEventArgs>? KeyUp;
 
         /// <summary>
         /// Raises <see cref="KeyUp"/>. Doesn't bother creating args unless something is listening.
@@ -178,7 +179,7 @@ namespace McduDotNet.WinWing
         }
 
         /// <inheritdoc/>
-        public event EventHandler<DisplayChangingEventArgs> DisplayChanging;
+        public event EventHandler<DisplayChangingEventArgs>? DisplayChanging;
 
         /// <summary>
         /// Raises <see cref="DisplayChanging"/>.
@@ -187,7 +188,7 @@ namespace McduDotNet.WinWing
         protected virtual void OnDisplayChanging(DisplayChangingEventArgs args) => DisplayChanging?.Invoke(this, args);
 
         /// <inheritdoc/>
-        public event EventHandler<PaletteChangingEventArgs> PaletteChanging;
+        public event EventHandler<PaletteChangingEventArgs>? PaletteChanging;
 
         /// <summary>
         /// Raises <see cref="PaletteChanging"/>.
@@ -196,7 +197,7 @@ namespace McduDotNet.WinWing
         protected virtual void OnPaletteChanging(PaletteChangingEventArgs args) => PaletteChanging?.Invoke(this, args);
 
         /// <inheritdoc/>
-        public event EventHandler<FontChangingEventArgs> FontChanging;
+        public event EventHandler<FontChangingEventArgs>? FontChanging;
 
         /// <summary>
         /// Raises <see cref="FontChanging"/>.
@@ -204,7 +205,7 @@ namespace McduDotNet.WinWing
         /// <param name="args"></param>
         protected virtual void OnFontChanging(FontChangingEventArgs args) => FontChanging?.Invoke(this, args);
 
-        public event EventHandler Disconnected;
+        public event EventHandler? Disconnected;
 
         protected virtual void OnDisconnected() => Disconnected?.Invoke(this, EventArgs.Empty);
 
@@ -213,11 +214,11 @@ namespace McduDotNet.WinWing
             CP = $"{CommandPrefix:x2}bb";
             _HidDevice = hidDevice;
             DeviceId = deviceId;
-            Leds = new Leds();
+            Leds = new();
             SupportedLeds = LedIndicatorCodeMap.Select(r => r.Key).ToArray();
-            Screen = new Screen();
-            Output = new Compositor(Screen);
-            Palette = new Palette();
+            Screen = new();
+            Output = new(Screen);
+            Palette = new();
             HidSharp.DeviceList.Local.Changed += HidSharpDeviceList_Changed;
 
             SupportedKeys = Enum.GetValues(typeof(Key))
@@ -416,7 +417,7 @@ namespace McduDotNet.WinWing
         public void UseFont(McduFontFile fontFileContent, bool useFullWidth, bool skipDuplicateCheck = false)
         {
             _UsbWriter?.LockForOutput(() => {
-                var fontUploaded = _FontWriter.SendFont(
+                var fontUploaded = _FontWriter != null && _ScreenWriter != null && _FontWriter.SendFont(
                     fontFileContent,
                     CP,
                     useFullWidth,
@@ -444,7 +445,7 @@ namespace McduDotNet.WinWing
                     // One advantage of resending the palette is that we also refresh the display, which
                     // we need to do anyway. If SendPalette() is removed in the future then you will have
                     // to replace it with RefreshDisplay.
-                    _PaletteWriter.ReestablishPaletteAndRefreshDisplay(_ScreenWriter, Screen);
+                    _PaletteWriter?.ReestablishPaletteAndRefreshDisplay(_ScreenWriter!, Screen);
                 }
             });
         }
@@ -455,14 +456,16 @@ namespace McduDotNet.WinWing
             bool forceDisplayRefresh = true
         )
         {
-            _PaletteWriter?.SendPalette(
-                Palette?.ToWinWingOrdinalColours(),
-                _ScreenWriter,
-                Screen,
-                skipDuplicateCheck,
-                forceDisplayRefresh,
-                suppressUpdatingDeviceCallback: PaletteChanging == null
-            );
+            if(_ScreenWriter != null) {
+                _PaletteWriter?.SendPalette(
+                    Palette.ToWinWingOrdinalColours(),
+                    _ScreenWriter,
+                    Screen,
+                    skipDuplicateCheck,
+                    forceDisplayRefresh,
+                    suppressUpdatingDeviceCallback: PaletteChanging == null
+                );
+            }
         }
 
         /// <inheritdoc/>

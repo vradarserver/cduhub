@@ -64,7 +64,7 @@ namespace McduDotNet.FlightSim
             RegexOptions.Compiled
         );
 
-        private static void UpdateScreen(McduContent mcdu, Screen screen)
+        private static void UpdateScreen(McduContent? mcdu, Screen? screen)
         {
             var rowBuffer = new Row();
             if(mcdu != null && screen != null) {
@@ -77,7 +77,7 @@ namespace McduDotNet.FlightSim
                     OverlayRow(arrows, smallRow: false, rowBuffer, RowAlign.Right, screen, 0);
                 }
 
-                for(var lineIdx = 0;lineIdx < (mcdu.Lines?.Length ?? 0);++lineIdx) {
+                for(var lineIdx = 0;lineIdx < mcdu.Lines.Length;++lineIdx) {
                     var rowNumber = lineIdx + 1;
                     var smallRow = lineIdx % 2 == 0;
                     var lines = mcdu.Lines[lineIdx];

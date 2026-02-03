@@ -31,15 +31,31 @@ namespace McduDotNet.FlightSim
 
         class RowStyles
         {
-            public StringBuilder Style_w = new StringBuilder();
-            public StringBuilder Style_g = new StringBuilder();
-            public StringBuilder Style_y = new StringBuilder();
-            public StringBuilder Style_b = new StringBuilder();
-            public StringBuilder Style_a = new StringBuilder();
-            public StringBuilder Style_m = new StringBuilder();
-            public StringBuilder Style_s = new StringBuilder();
-            public StringBuilder Style_Lg = new StringBuilder();
-            public StringBuilder Style_Lw = new StringBuilder();
+            public StringBuilder Style_w = new();
+            public StringBuilder Style_g = new();
+            public StringBuilder Style_y = new();
+            public StringBuilder Style_b = new();
+            public StringBuilder Style_a = new();
+            public StringBuilder Style_m = new();
+            public StringBuilder Style_s = new();
+            public StringBuilder Style_Lg = new();
+            public StringBuilder Style_Lw = new();
+
+            public StringBuilder? SelectBufferForStyleCode(string style)
+            {
+                switch(style) {
+                    case "w":   return Style_w;
+                    case "g":   return Style_g;
+                    case "y":   return Style_y;
+                    case "b":   return Style_b;
+                    case "a":   return Style_a;
+                    case "m":   return Style_m;
+                    case "s":   return Style_s;
+                    case "Lg":  return Style_Lg;
+                    case "Lw":  return Style_Lw;
+                }
+                return null;
+            }
         }
 
         private RowVariants[] _Rows = new RowVariants[Metrics.Lines];
@@ -202,32 +218,27 @@ namespace McduDotNet.FlightSim
             _VertSlewKeys = value;
         }
 
+        private RowStyles GetRowStylesForRowNumber(int rowNumber, Variant rowVariant)
+        {
+            var flavours = _Rows[rowNumber];
+            var result = flavours.RowStyles[(int)rowVariant];
+            if(result == null) {
+                result = new();
+                flavours.RowStyles[(int)rowVariant] = result;
+            }
+
+            return result;
+        }
+
         private void SetText(string style, string value, int rowNumber, Variant rowVariant)
         {
             if(value != null) {
-                var flavours = _Rows[rowNumber];
-                var styles = flavours.RowStyles[(int)rowVariant];
-                if(styles == null) {
-                    styles = new RowStyles();
-                    flavours.RowStyles[(int)rowVariant] = styles;
-                }
-
                 var bytes = Convert.FromBase64String(value);
                 var text = Encoding.UTF8.GetString(bytes);
                 text = text.Trim('\0');
 
-                StringBuilder buffer = null;
-                switch(style) {
-                    case "w":   buffer = styles.Style_w; break;
-                    case "g":   buffer = styles.Style_g; break;
-                    case "y":   buffer = styles.Style_y; break;
-                    case "b":   buffer = styles.Style_b; break;
-                    case "a":   buffer = styles.Style_a; break;
-                    case "m":   buffer = styles.Style_m; break;
-                    case "s":   buffer = styles.Style_s; break;
-                    case "Lg":  buffer = styles.Style_Lg; break;
-                    case "Lw":  buffer = styles.Style_Lw; break;
-                }
+                var styles = GetRowStylesForRowNumber(rowNumber, rowVariant);
+                var buffer = styles.SelectBufferForStyleCode(style);
                 if(buffer != null) {
                     buffer.Clear();
                     buffer.Append(text);
@@ -238,25 +249,8 @@ namespace McduDotNet.FlightSim
         private void SetCell(string style, char ch, int rowNumber, int columnNumber, Variant rowVariant)
         {
             if(columnNumber >= 0 && columnNumber < Metrics.Columns) {
-                var flavours = _Rows[rowNumber];
-                var styles = flavours.RowStyles[(int)rowVariant];
-                if(styles == null) {
-                    styles = new RowStyles();
-                    flavours.RowStyles[(int)rowVariant] = styles;
-                }
-
-                StringBuilder buffer = null;
-                switch(style) {
-                    case "w":   buffer = styles.Style_w; break;
-                    case "g":   buffer = styles.Style_g; break;
-                    case "y":   buffer = styles.Style_y; break;
-                    case "b":   buffer = styles.Style_b; break;
-                    case "a":   buffer = styles.Style_a; break;
-                    case "m":   buffer = styles.Style_m; break;
-                    case "s":   buffer = styles.Style_s; break;
-                    case "Lg":  buffer = styles.Style_Lg; break;
-                    case "Lw":  buffer = styles.Style_Lw; break;
-                }
+                var styles = GetRowStylesForRowNumber(rowNumber, rowVariant);
+                var buffer = styles.SelectBufferForStyleCode(style);
                 if(buffer != null) {
                     while(buffer.Length <= columnNumber) {
                         buffer.Append(' ');

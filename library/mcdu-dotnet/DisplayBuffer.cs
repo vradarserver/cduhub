@@ -75,6 +75,9 @@ namespace McduDotNet
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         public bool CopyFrom(Screen screen)
         {
+            if(screen == null) {
+                throw new ArgumentNullException(nameof(screen));
+            }
             AssertScreenMatchesDimensions(screen);
 
             var result = false;
@@ -100,6 +103,9 @@ namespace McduDotNet
         /// <param name="screen"></param>
         public void CopyTo(Screen screen)
         {
+            if(screen == null) {
+                throw new ArgumentNullException(nameof(screen));
+            }
             AssertScreenMatchesDimensions(screen);
 
             for(var rowIdx = 0;rowIdx < screen.Rows.Length;++rowIdx) {
@@ -149,9 +155,6 @@ namespace McduDotNet
 
         private void AssertScreenMatchesDimensions(Screen screen)
         {
-            if(screen == null) {
-                throw new ArgumentNullException(nameof(screen));
-            }
             if(screen.Rows.Length != CountRows) {
                 throw new ArgumentOutOfRangeException(nameof(screen));
             }

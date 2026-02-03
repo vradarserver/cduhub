@@ -14,8 +14,8 @@ using System.Text;
 namespace McduDotNet.FlightSim.SimBridgeMcdu
 {
     /// <summary>
-    /// Utility methods that can help when translating between the X-Plane data refs world and the MCDU-DOTNET
-    /// world.
+    /// Utility methods that can help when translating between the X-Plane data refs world
+    /// and the MCDU-DOTNET world.
     /// </summary>
     public static class XPlaneGenericDataRef
     {

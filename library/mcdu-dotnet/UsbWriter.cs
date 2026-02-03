@@ -20,7 +20,7 @@ namespace McduDotNet
     /// </summary>
     class UsbWriter
     {
-        private readonly object _OutputLock = new object();
+        private readonly object _OutputLock = new();
 
         // The USB writer does not own this object. It is owned by the parent. It is
         // disposable but the parent is responsible for disposing of it.

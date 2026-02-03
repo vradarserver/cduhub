@@ -33,12 +33,12 @@ namespace McduDotNet
         public string[] BitArray { get; set; } = Array.Empty<string>();
 
         /// <inheritdoc/>
-        public override string ToString() => new String(Character, 1);
+        public override string ToString() => new(Character, 1);
 
         /// <summary>
-        /// Parses <see cref="BitArray"/> into a two dimensional array of rows and bytes. If the length of the
-        /// rows in <see cref="BitArray"/> are not wholly divisible by 8 then the LSB(s) of the last byte on
-        /// each row will be zero.
+        /// Parses <see cref="BitArray"/> into a two dimensional array of rows and bytes.
+        /// If the length of the rows in <see cref="BitArray"/> are not wholly divisible
+        /// by 8 then the LSB(s) of the last byte on each row will be zero.
         /// </summary>
         /// <returns>A two dimensional array of bytes in each row.</returns>
         /// <exception cref="InvalidOperationException">
@@ -46,7 +46,7 @@ namespace McduDotNet
         /// </exception>
         public byte[,] GetBytes()
         {
-            byte[,] result = null;
+            byte[,]? result = null;
 
             if(BitArray?.Length > 0) {
                 var bitLength = BitArray[0].Length;

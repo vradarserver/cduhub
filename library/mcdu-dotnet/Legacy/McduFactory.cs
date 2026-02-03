@@ -12,6 +12,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+#pragma warning disable IDE0130     // Namespace does not match folder structure
+#pragma warning disable 0612, 0618  // Type or member is obsolete
+
 namespace McduDotNet
 {
     /// <summary>
@@ -34,17 +37,18 @@ namespace McduDotNet
         }
 
         /// <summary>
-        /// Creates an initialised connection to an MCDU. If the product ID is not specified then the first MCDU
-        /// found on the system is used. If the requested MCDU cannot be found (or there are no MCDUs to default to)
-        /// then null is returned.
+        /// Creates an initialised connection to an MCDU. If the product ID is not
+        /// specified then the first MCDU found on the system is used. If the requested
+        /// MCDU cannot be found (or there are no MCDUs to default to) then null is
+        /// returned.
         /// </summary>
         /// <param name="productId"></param>
         /// <returns></returns>
-        public static IMcdu ConnectLocal(ProductId? productId = null)
+        public static IMcdu? ConnectLocal(ProductId? productId = null)
         {
-            IMcdu result = null;
+            IMcdu? result = null;
 
-            DeviceIdentifier deviceId = null;
+            DeviceIdentifier? deviceId = null;
             if(productId == null) {
                 deviceId = CduFactory.FindLocalDevices().FirstOrDefault();
             } else {

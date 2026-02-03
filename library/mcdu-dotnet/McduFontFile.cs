@@ -29,7 +29,7 @@ namespace McduDotNet
         /// The name of the font.
         /// </summary>
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
 
         [DataMember]
         public int GlyphWidth { get; set; }

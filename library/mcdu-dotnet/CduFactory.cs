@@ -23,9 +23,6 @@ namespace McduDotNet
     /// </summary>
     public static class CduFactory
     {
-        //          ARE YOU HERE LOOKING FOR THE LIST OF ALL KNOWN DEVICE IDENTIFIERS?
-        //                       They've moved to SupportedDevices.cs
-
         /// <summary>
         /// Returns a device identifier corresponding to the vendor and product IDs passed
         /// across, or null if the vendor and product ID do not correspond with a CDU that
@@ -34,7 +31,7 @@ namespace McduDotNet
         /// <param name="vendorId"></param>
         /// <param name="productId"></param>
         /// <returns></returns>
-        public static DeviceIdentifier GetDeviceIdentifierForUsbIdentifiers(
+        public static DeviceIdentifier? GetDeviceIdentifierForUsbIdentifiers(
             int vendorId,
             int productId
         )
@@ -91,14 +88,14 @@ namespace McduDotNet
         /// <paramref name="deviceId"/> is not supplied. Defaults to null.
         /// </param>
         /// <returns></returns>
-        public static ICdu ConnectLocal(
-            DeviceIdentifier deviceId = null,
+        public static ICdu? ConnectLocal(
+            DeviceIdentifier? deviceId = null,
             Device? device = null,
             DeviceUser? deviceUser = null,
             DeviceType? deviceType = null
         )
         {
-            ICdu result = null;
+            ICdu? result = null;
 
             if(deviceId == null) {
                 deviceId = FindLocalDevices()

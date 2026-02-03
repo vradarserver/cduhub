@@ -44,11 +44,12 @@ namespace McduDotNet
             RegexOptions.IgnoreCase | RegexOptions.Compiled
         );
 
-        public static (string text, CompositorStringStyleChange[] styleChanges) Parse(string text)
+        public static (string text, CompositorStringStyleChange[] styleChanges) Parse(string? text)
         {
+            text ??= "";
             var textBuffer = new StringBuilder();
             var styleChanges = new List<CompositorStringStyleChange>();
-            var matches = _EmbeddedStyleRegex.Matches(text ?? "");
+            var matches = _EmbeddedStyleRegex.Matches(text);
 
             var textStart = 0;
             void extractText(int toIndex)

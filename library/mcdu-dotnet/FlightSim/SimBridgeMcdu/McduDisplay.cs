@@ -16,9 +16,9 @@ namespace McduDotNet.FlightSim.SimBridgeMcdu
     public class McduDisplay
     {
         [DataMember]
-        public McduContent Left { get; } = new McduContent();
+        public McduContent Left { get; } = new();
 
         [DataMember]
-        public McduContent Right { get; } = new McduContent();
+        public McduContent Right { get; } = new();
     }
 }

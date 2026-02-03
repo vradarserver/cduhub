@@ -21,7 +21,7 @@ namespace McduDotNet.WinWing.Mcdu
     {
         protected override byte CommandPrefix => 0x32;
 
-        private static readonly Dictionary<Led, byte> _LedIndicatorCodeMap = new Dictionary<Led, byte>() {
+        private static readonly Dictionary<Led, byte> _LedIndicatorCodeMap = new() {
             { Led.Fail, 0x08 },
             { Led.Fm, 0x09 },
             { Led.Mcdu, 0x0a },

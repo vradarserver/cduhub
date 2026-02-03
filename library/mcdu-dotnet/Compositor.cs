@@ -10,14 +10,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace McduDotNet
 {
     public class Compositor
     {
-        private Screen _Screen;
+        private readonly Screen _Screen;
         private bool _ShowLowercaseInSmallUppercase = true;
 
         public Compositor(Screen screen)
@@ -352,12 +350,12 @@ namespace McduDotNet
         public Compositor Write(object obj) => WriteRaw(obj?.ToString() ?? "");
 
         public Compositor WrapText(
-            string text,
+            string? text,
             int maxLines = 2,
             bool clearLines = false
         )
         {
-            return Lines(text?.WrapAtWhitespace(Metrics.Columns), 0, maxLines, clearLines);
+            return Lines((text ?? "").WrapAtWhitespace(Metrics.Columns), 0, maxLines, clearLines);
         }
 
         public Compositor Lines(
@@ -393,7 +391,7 @@ namespace McduDotNet
             var restoreColour = _Screen.Colour;
 
             var styleChangeIdx = -1;
-            CompositorStringStyleChange nextStyleChange;
+            CompositorStringStyleChange? nextStyleChange;
             void selectNextStyleChange()
             {
                 nextStyleChange = ++styleChangeIdx < cstring.StyleChanges.Length

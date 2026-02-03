@@ -24,16 +24,16 @@ namespace McduDotNet
         /// <summary>
         /// The keyboard backlight auto-brightness settings.
         /// </summary>
-        public KeyboardAutoBrightnessSettings KeyboardBacklight { get; } = new KeyboardAutoBrightnessSettings();
+        public KeyboardAutoBrightnessSettings KeyboardBacklight { get; } = new();
 
         /// <summary>
         /// The display backlight auto-brightness settings.
         /// </summary>
-        public DisplayAutoBrightnessSettings DisplayBacklight { get; } = new DisplayAutoBrightnessSettings();
+        public DisplayAutoBrightnessSettings DisplayBacklight { get; } = new();
 
         /// <summary>
         /// The LED auto-intensity settings.
         /// </summary>
-        public LedAutoIntensitySettings LedIntensity { get; } = new LedAutoIntensitySettings();
+        public LedAutoIntensitySettings LedIntensity { get; } = new();
     }
 }

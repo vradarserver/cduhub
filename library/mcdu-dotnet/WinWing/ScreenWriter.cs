@@ -20,14 +20,14 @@ namespace McduDotNet.WinWing
     /// </summary>
     class ScreenWriter
     {
-        private UsbWriter _UsbWriter;
-        private DisplayBuffer _DisplayBuffer;
+        private DisplayBuffer? _DisplayBuffer;
+        private readonly UsbWriter _UsbWriter;
         private readonly int _ProcessingPauseMilliseconds = 40;
         private readonly byte[] _DisplayPacket = new byte[64];
         private readonly char[] _DisplayCharacterBuffer = new char[1];
         private int _DisplayPacketOffset = 0;
 
-        public Action<DisplayChangingEventArgs> UpdatingDeviceCallback { get; set; }
+        public Action<DisplayChangingEventArgs>? UpdatingDeviceCallback { get; set; }
 
         public ScreenWriter(UsbWriter usbWriter)
         {

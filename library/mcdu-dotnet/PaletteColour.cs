@@ -77,12 +77,12 @@ namespace McduDotNet
             return result;
         }
 
-        public static bool TryParse(string rgba, out PaletteColour result)
+        public static bool TryParse(string? rgba, out PaletteColour result)
         {
-            var parsed = rgba?.Length > 0;
+            var parsed = false;
             result = new PaletteColour();
 
-            if(parsed) {
+            if(rgba != null) {
                 var normalised = new StringBuilder();
                 for(var i = 0;i < rgba.Length;++i) {
                     var ch = rgba[i];
