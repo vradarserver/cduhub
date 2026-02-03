@@ -83,6 +83,7 @@ namespace McduDotNet
             result = new PaletteColour();
 
             if(rgba != null) {
+                parsed = true;
                 var normalised = new StringBuilder();
                 for(var i = 0;i < rgba.Length;++i) {
                     var ch = rgba[i];
