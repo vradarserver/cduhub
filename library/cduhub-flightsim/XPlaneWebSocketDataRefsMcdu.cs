@@ -31,18 +31,18 @@ namespace Cduhub.FlightSim
     {
         protected class KeyCommand
         {
-            public string Command { get; set; }
+            public string Command { get; set; } = "";
 
             public bool Pressed { get; set; }
         }
 
         protected const int _McduLines = 14;      // <-- should be same as Metrics but just to ensure internal consistency...
-        protected Dictionary<string, DatarefInfoModel> _DatarefsByName = null;
-        protected Dictionary<long, DatarefInfoModel> _DatarefsById = null;
-        protected Dictionary<string, CommandInfoModel> _CommandsByName = null;
-        protected Dictionary<long, CommandInfoModel> _CommandsById = null;
-        protected readonly object _QueueLock = new object();
-        protected readonly Queue<KeyCommand> _SendCommandQueue = new Queue<KeyCommand>();
+        protected Dictionary<string, DatarefInfoModel>? _DatarefsByName = null;
+        protected Dictionary<long, DatarefInfoModel>? _DatarefsById = null;
+        protected Dictionary<string, CommandInfoModel>? _CommandsByName = null;
+        protected Dictionary<long, CommandInfoModel>? _CommandsById = null;
+        protected readonly object _QueueLock = new();
+        protected readonly Queue<KeyCommand> _SendCommandQueue = new();
 
         protected int _RequestId;
 
@@ -53,10 +53,10 @@ namespace Cduhub.FlightSim
         public override string AircraftName => "Generic";
 
         /// <inheritdoc/>
-        public override SimulatorMcduBuffer PilotBuffer { get; } = new SimulatorMcduBuffer();
+        public override SimulatorMcduBuffer PilotBuffer { get; } = new();
 
         /// <inheritdoc/>
-        public override SimulatorMcduBuffer FirstOfficerBuffer { get; } = new SimulatorMcduBuffer();
+        public override SimulatorMcduBuffer FirstOfficerBuffer { get; } = new();
 
         /// <summary>
         /// Gets or sets the address of the machine running X-Plane.
@@ -71,7 +71,7 @@ namespace Cduhub.FlightSim
         public HttpClient HttpClient { get; }
 
         /// <inheritdoc/>
-        protected override Uri WebSocketUri => new Uri($"ws://{Host}:{Port}/api/v2");
+        protected override Uri WebSocketUri => new($"ws://{Host}:{Port}/api/v2");
 
         /// <summary>
         /// Creates a new object.
@@ -137,12 +137,14 @@ namespace Cduhub.FlightSim
             var uri = new Uri($"http://{Host}:{Port}/api/v2/datarefs");
             var json = await HttpClient.GetStringAsync(uri);
             var deserialised = JsonConvert.DeserializeObject<KnownDatarefsModel>(json);
-            foreach(var dataref in deserialised.Data) {
-                if(!datarefsByName.ContainsKey(dataref.Name)) {
-                    datarefsByName.Add(dataref.Name, dataref);
-                }
-                if(!datarefsById.ContainsKey(dataref.Id)) {
-                    datarefsById.Add(dataref.Id, dataref);
+            if(deserialised != null) {
+                foreach(var dataref in deserialised.Data) {
+                    if(!datarefsByName.ContainsKey(dataref.Name)) {
+                        datarefsByName.Add(dataref.Name, dataref);
+                    }
+                    if(!datarefsById.ContainsKey(dataref.Id)) {
+                        datarefsById.Add(dataref.Id, dataref);
+                    }
                 }
             }
             _DatarefsByName = datarefsByName;
@@ -157,12 +159,14 @@ namespace Cduhub.FlightSim
             var uri = new Uri($"http://{Host}:{Port}/api/v2/Commands");
             var json = await HttpClient.GetStringAsync(uri);
             var deserialised = JsonConvert.DeserializeObject<KnownCommandsModel>(json);
-            foreach(var command in deserialised.Data) {
-                if(!commandsByName.ContainsKey(command.Name)) {
-                    commandsByName.Add(command.Name, command);
-                }
-                if(!commandsById.ContainsKey(command.Id)) {
-                    commandsById.Add(command.Id, command);
+            if(deserialised != null) {
+                foreach(var command in deserialised.Data) {
+                    if(!commandsByName.ContainsKey(command.Name)) {
+                        commandsByName.Add(command.Name, command);
+                    }
+                    if(!commandsById.ContainsKey(command.Id)) {
+                        commandsById.Add(command.Id, command);
+                    }
                 }
             }
             _CommandsByName = commandsByName;
@@ -176,7 +180,7 @@ namespace Cduhub.FlightSim
             }
 
             while(!cancellationToken.IsCancellationRequested) {
-                KeyCommand command = null;
+                KeyCommand? command = null;
                 lock(_QueueLock) {
                     if(_SendCommandQueue.Count > 0) {
                         command = _SendCommandQueue.Dequeue();

@@ -20,21 +20,21 @@ namespace Cduhub.FlightSim.XPlaneWebSocketModels
         public int RequestId { get; set; }
 
         [DataMember(Name = "type")]
-        public string Type { get; set; }
+        public string? Type { get; set; }
     }
 
     [DataContract]
     public class DatarefSubscribeValuesModel : RequestModel
     {
         [DataMember(Name = "params")]
-        public SubscribeParamsModel Params { get; } = new SubscribeParamsModel();
+        public SubscribeParamsModel Params { get; } = new();
     }
 
     [DataContract]
     public class SubscribeParamsModel
     {
         [DataMember(Name = "datarefs")]
-        public List<DatarefSubscribeModel> Datarefs { get; } = new List<DatarefSubscribeModel>();
+        public List<DatarefSubscribeModel> Datarefs { get; } = new();
     }
 
     [DataContract]
@@ -44,10 +44,10 @@ namespace Cduhub.FlightSim.XPlaneWebSocketModels
         public long Id { get; set; }
 
         [DataMember(Name = "name", EmitDefaultValue = false)]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
 
         [DataMember(Name = "index", EmitDefaultValue = false)]
-        public string Index { get; set; }
+        public string? Index { get; set; }
 
         public override string ToString() => $"{Id}: {Name}";
     }
@@ -56,24 +56,24 @@ namespace Cduhub.FlightSim.XPlaneWebSocketModels
     public class UpdateMessageModel
     {
         [DataMember(Name = "type")]
-        public string Type { get; set; }
+        public string? Type { get; set; }
 
         [DataMember(Name = "data")]
-        public Dictionary<string, dynamic> Data { get; set; } = new Dictionary<string, dynamic>();
+        public Dictionary<string, dynamic> Data { get; set; } = new();
     }
 
     [DataContract]
     public class CommandsRequestModel : RequestModel
     {
         [DataMember(Name = "params")]
-        public CommandParametersModel Params { get; } = new CommandParametersModel();
+        public CommandParametersModel Params { get; } = new();
     }
 
     [DataContract]
     public class CommandParametersModel
     {
         [DataMember(Name = "commands")]
-        public List<CommandActiveModel> Commands { get; } = new List<CommandActiveModel>();
+        public List<CommandActiveModel> Commands { get; } = new();
     }
 
     [DataContract]

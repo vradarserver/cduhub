@@ -17,7 +17,7 @@ namespace Cduhub.FlightSim.XPlaneRestModels
     public class KnownDatarefsModel
     {
         [DataMember]
-        public List<DatarefInfoModel> Data { get; set; } = new List<DatarefInfoModel>();
+        public List<DatarefInfoModel> Data { get; set; } = new();
     }
 
     [DataContract]
@@ -30,26 +30,26 @@ namespace Cduhub.FlightSim.XPlaneRestModels
         public bool IsWritable { get; set; }
 
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
 
         [DataMember(Name = "value_type")]
-        public string ValueType { get; set; }
+        public string? ValueType { get; set; }
 
-        public override string ToString() => Name;
+        public override string ToString() => Name ?? "";
     }
 
     [DataContract]
     public class DatarefValueModel
     {
         [DataMember(Name = "data")]
-        public string Data { get; set; }
+        public string? Data { get; set; }
     }
 
     [DataContract]
     public class KnownCommandsModel
     {
         [DataMember]
-        public List<CommandInfoModel> Data { get; set; } = new List<CommandInfoModel>();
+        public List<CommandInfoModel> Data { get; set; } = new();
     }
 
     [DataContract]
@@ -59,10 +59,10 @@ namespace Cduhub.FlightSim.XPlaneRestModels
         public long Id { get; set; }
 
         [DataMember]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [DataMember]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
     }
 
     [DataContract]

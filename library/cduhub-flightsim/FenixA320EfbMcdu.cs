@@ -24,10 +24,10 @@ namespace Cduhub.FlightSim
     /// </summary>
     public class FenixA320EfbMcdu : SimulatedMcdus, IDisposable
     {
-        private GraphQLHttpClient _GraphQLClient;
-        private IObservable<GraphQLResponse<dynamic>> _PushSubscriptionStream;
-        private IDisposable _PushSubscription;
-        private IDisposable _ConnectionStateSubscription;
+        private GraphQLHttpClient? _GraphQLClient;
+        private IObservable<GraphQLResponse<dynamic>>? _PushSubscriptionStream;
+        private IDisposable? _PushSubscription;
+        private IDisposable? _ConnectionStateSubscription;
 
         /// <inheritdoc/>
         public override string FlightSimulatorName => FlightSimulatorNames.MSFS2020_2024;
@@ -39,10 +39,10 @@ namespace Cduhub.FlightSim
         public override DeviceType TargetDeviceType => DeviceType.AirbusA320Mcdu;
 
         /// <inheritdoc/>
-        public override SimulatorMcduBuffer PilotBuffer { get; } = new SimulatorMcduBuffer();
+        public override SimulatorMcduBuffer PilotBuffer { get; } = new();
 
         /// <inheritdoc/>
-        public override SimulatorMcduBuffer FirstOfficerBuffer { get; } = new SimulatorMcduBuffer();
+        public override SimulatorMcduBuffer FirstOfficerBuffer { get; } = new();
 
         /// <summary>
         /// The address of the machine running the Fenix A320 simulation.
@@ -234,8 +234,8 @@ namespace Cduhub.FlightSim
                 var name = dataRefs.name?.ToString();
                 var value = dataRefs.value?.ToString();
 
-                Screen updateScreen = null;
-                Leds updateLeds = null;
+                Screen? updateScreen = null;
+                Leds? updateLeds = null;
                 switch(name) {
                     case FenixA320GraphQL.GraphQLMcdu1DisplayName:      updateScreen = PilotBuffer.Screen; break;
                     case FenixA320GraphQL.GraphQLMcdu2DisplayName:      updateScreen = FirstOfficerBuffer.Screen; break;

@@ -25,11 +25,11 @@ namespace Cduhub.FlightSim
     /// </summary>
     public class XPlaneUdp : IDisposable
     {
-        private object _UdpClientLock = new object();
-        private UdpClient _UdpClient;
-        private IPEndPoint _XPlaneSendEndpoint;
+        private readonly object _UdpClientLock = new();
+        private UdpClient? _UdpClient;
+        private IPEndPoint? _XPlaneSendEndpoint;
         private DateTime _IdleReceiveTimeoutFromUtc;
-        private readonly List<XPlaneDataRefSubscription> _Subscriptions = new List<XPlaneDataRefSubscription>();
+        private readonly List<XPlaneDataRefSubscription> _Subscriptions = new();
 
         /// <summary>
         /// Gets or sets the address of the machine running X-Plane.
@@ -96,17 +96,17 @@ namespace Cduhub.FlightSim
         /// <summary>
         /// Called when an RREF or RREFO packet is received.
         /// </summary>
-        public Action<XPlaneDataRefValue[]> DataRefUpdatesReceived { get; set; }
+        public Action<XPlaneDataRefValue[]>? DataRefUpdatesReceived { get; set; }
 
         /// <summary>
         /// Called when all subscriptions that contribute to a frame event have been received and processed.
         /// </summary>
-        public Action FrameReceived { get; set; }
+        public Action? FrameReceived { get; set; }
 
         /// <summary>
         /// Raised when <see cref="ConnectionState"/> changes.
         /// </summary>
-        public event EventHandler ConnectionStateChanged;
+        public event EventHandler? ConnectionStateChanged;
 
         /// <summary>
         /// Raises <see cref="ConnectionStateChanged"/>.
@@ -116,7 +116,7 @@ namespace Cduhub.FlightSim
         /// <summary>
         /// Raised when a packet has been received, regardless of whether we could parse it.
         /// </summary>
-        public event EventHandler PacketReceived;
+        public event EventHandler? PacketReceived;
 
         /// <summary>
         /// Raises <see cref="PacketReceived"/>.
@@ -182,7 +182,7 @@ namespace Cduhub.FlightSim
         /// <param name="tag"></param>
         /// <param name="includeInFrameEvent"></param>
         /// <exception cref="InvalidOperationException"></exception>
-        public void AddSubscription(string dataRef, object tag = null, bool includeInFrameEvent = false)
+        public void AddSubscription(string dataRef, object? tag = null, bool includeInFrameEvent = false)
         {
             if(ConnectionState == ConnectionState.Connected) {
                 throw new InvalidOperationException(
@@ -254,7 +254,7 @@ namespace Cduhub.FlightSim
 
         private void SendSubscriptions(
             UdpClient client,
-            IPEndPoint xplaneEndpoint,
+            IPEndPoint? xplaneEndpoint,
             XPlaneDataRefSubscription[] subscriptions,
             bool enable
         )
@@ -385,7 +385,7 @@ namespace Cduhub.FlightSim
             }
         }
 
-        private static XPlaneDataRefSubscription GetSubscription(XPlaneDataRefSubscription[] subscriptions, int index)
+        private static XPlaneDataRefSubscription? GetSubscription(XPlaneDataRefSubscription[] subscriptions, int index)
         {
             var result = index >= 0 && index < subscriptions.Length
                 ? subscriptions[index]

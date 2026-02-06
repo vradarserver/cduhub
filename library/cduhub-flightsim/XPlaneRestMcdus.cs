@@ -22,20 +22,21 @@ using Newtonsoft.Json;
 namespace Cduhub.FlightSim
 {
     /// <summary>
-    /// Another day, another attempt at getting sensible communication with XPlane. This would not be as sensible
-    /// as WebSockets, but ClientWebSocket or X-Plane aborts after 100 seconds (no problems with SimBridge, so I
-    /// suspect something about X-Plane's WebSocket server triggers a 100 second abort issue in .NET/Windows) but
+    /// Another day, another attempt at getting sensible communication with XPlane. This
+    /// would not be as sensible as WebSockets, but ClientWebSocket or X-Plane aborts
+    /// after 100 seconds (no problems with SimBridge, so I suspect something about
+    /// X-Plane's WebSocket server triggers a 100 second abort issue in .NET/Windows) but
     /// it is a lot more sensible than subscribing to 3200+ datarefs over UDP.
     /// </summary>
     public abstract class XPlaneRestMcdus : SimulatedMcdus, IDisposable
     {
-        private CancellationTokenSource _DownloadBaseDataCancellationTokenSource;
-        private Task _DownloadBaseDataTask;
-        protected Dictionary<string, DatarefInfoModel> _DatarefsByName = null;
-        protected Dictionary<long, DatarefInfoModel> _DatarefsById = null;
-        protected Dictionary<string, CommandInfoModel> _CommandsByName = null;
-        protected Dictionary<long, CommandInfoModel> _CommandsById = null;
-        protected System.Timers.Timer _RefreshDisplayTimer = new System.Timers.Timer(100) {
+        private CancellationTokenSource? _DownloadBaseDataCancellationTokenSource;
+        private Task? _DownloadBaseDataTask;
+        protected Dictionary<string, DatarefInfoModel>? _DatarefsByName = null;
+        protected Dictionary<long, DatarefInfoModel>? _DatarefsById = null;
+        protected Dictionary<string, CommandInfoModel>? _CommandsByName = null;
+        protected Dictionary<long, CommandInfoModel>? _CommandsById = null;
+        protected System.Timers.Timer? _RefreshDisplayTimer = new(100) {
             AutoReset = false,
             Enabled = false,
         };
@@ -132,13 +133,13 @@ namespace Cduhub.FlightSim
 
             if(downloadTask != null) {
                 try {
-                    cts.Cancel();
+                    cts?.Cancel();
                 } catch {}
                 try {
                     Task.WaitAll(new Task[] { downloadTask }, 5000);
                 } catch {}
                 try {
-                    cts.Dispose();
+                    cts?.Dispose();
                 } catch {}
             }
 
@@ -173,12 +174,14 @@ namespace Cduhub.FlightSim
             var datarefsById = new Dictionary<long, DatarefInfoModel>();
 
             var datarefs = await GetJson<KnownDatarefsModel>(client, "datarefs", cancellationToken);
-            foreach(var dataref in datarefs.Data) {
-                if(!datarefsByName.ContainsKey(dataref.Name)) {
-                    datarefsByName.Add(dataref.Name, dataref);
-                }
-                if(!datarefsById.ContainsKey(dataref.Id)) {
-                    datarefsById.Add(dataref.Id, dataref);
+            if(datarefs != null) {
+                foreach(var dataref in datarefs.Data) {
+                    if(!datarefsByName.ContainsKey(dataref.Name)) {
+                        datarefsByName.Add(dataref.Name, dataref);
+                    }
+                    if(!datarefsById.ContainsKey(dataref.Id)) {
+                        datarefsById.Add(dataref.Id, dataref);
+                    }
                 }
             }
             _DatarefsByName = datarefsByName;
@@ -191,21 +194,23 @@ namespace Cduhub.FlightSim
             var commandsById = new Dictionary<long, CommandInfoModel>();
 
             var commands = await GetJson<KnownCommandsModel>(client, "Commands", cancellationToken);
-            foreach(var command in commands.Data) {
-                if(!commandsByName.ContainsKey(command.Name)) {
-                    commandsByName.Add(command.Name, command);
-                }
-                if(!commandsById.ContainsKey(command.Id)) {
-                    commandsById.Add(command.Id, command);
+            if(commands != null) {
+                foreach(var command in commands.Data) {
+                    if(!commandsByName.ContainsKey(command.Name)) {
+                        commandsByName.Add(command.Name, command);
+                    }
+                    if(!commandsById.ContainsKey(command.Id)) {
+                        commandsById.Add(command.Id, command);
+                    }
                 }
             }
             _CommandsByName = commandsByName;
             _CommandsById = commandsById;
         }
 
-        protected Uri BuildUri(string path) => new Uri($"http://{Host}:{Port}/api/v2/{path}");
+        protected Uri BuildUri(string path) => new($"http://{Host}:{Port}/api/v2/{path}");
 
-        protected async Task<string> GetString(HttpClient client, string path, CancellationToken cancellationToken)
+        protected async Task<string?> GetString(HttpClient client, string path, CancellationToken cancellationToken)
         {
             var uri = BuildUri(path);
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
@@ -219,17 +224,17 @@ namespace Cduhub.FlightSim
             return result;
         }
 
-        protected async Task<T> GetJson<T>(HttpClient client, string path, CancellationToken cancellationToken)
+        protected async Task<T?> GetJson<T>(HttpClient client, string path, CancellationToken cancellationToken)
         {
             var json = await GetString(client, path, cancellationToken);
             return !String.IsNullOrEmpty(json) && !cancellationToken.IsCancellationRequested
-                ? JsonConvert.DeserializeObject<T>(json)
+                ? JsonConvert.DeserializeObject<T>(json!)   // <-- why does vs2022 think json can be null here?
                 : default;
         }
 
-        protected async Task<string> GetDataRefValue(string dataRefName, CancellationToken cancellationToken)
+        protected async Task<string?> GetDataRefValue(string dataRefName, CancellationToken cancellationToken)
         {
-            string result = null;
+            string? result = null;
 
             var datarefs = _DatarefsByName;
             if(datarefs?.TryGetValue(dataRefName, out var info) ?? false) {
@@ -240,7 +245,7 @@ namespace Cduhub.FlightSim
             return result;
         }
 
-        protected string GetDataRef(string dataRefName)
+        protected string? GetDataRef(string dataRefName)
         {
             var result = Task.Run(() => GetDataRefValue(dataRefName, CancellationToken.None)).Result;
             RecordMessageReceivedFromSimulator();

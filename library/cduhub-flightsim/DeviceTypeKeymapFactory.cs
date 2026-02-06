@@ -16,8 +16,8 @@ namespace Cduhub.FlightSim
 {
     public static class DeviceTypeKeymapFactory
     {
-        private readonly static object _SyncLock = new object();
-        private readonly static List<DeviceTypeKeymap> _DeviceKeymaps = new List<DeviceTypeKeymap>();
+        private readonly static object _SyncLock = new();
+        private readonly static List<DeviceTypeKeymap> _DeviceKeymaps = new();
 
         static DeviceTypeKeymapFactory() => RegisterPredefinedKeymaps();
 
@@ -99,7 +99,7 @@ namespace Cduhub.FlightSim
             return result;
         }
 
-        private static DeviceTypeKeymap FindKeymapForDeviceTypes(DeviceType typeA, DeviceType typeB)
+        private static DeviceTypeKeymap? FindKeymapForDeviceTypes(DeviceType typeA, DeviceType typeB)
         {
             var idx = FindIndexForDeviceTypes(typeA, typeB);
             return idx == -1

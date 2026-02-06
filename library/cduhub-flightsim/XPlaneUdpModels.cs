@@ -14,13 +14,13 @@ namespace Cduhub.FlightSim.XPlaneUdpModels
     {
         public string DataRef { get; }
 
-        public object Tag { get; }
+        public object? Tag { get; }
 
         public bool IncludeInFrameEvent { get; }
 
         public bool IsInCurrentFrame { get; set; }
 
-        public XPlaneDataRefSubscription(string dataRef, object tag, bool includeInFrameEvent)
+        public XPlaneDataRefSubscription(string dataRef, object? tag, bool includeInFrameEvent)
         {
             DataRef = dataRef;
             Tag = tag;

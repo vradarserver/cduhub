@@ -19,11 +19,11 @@ namespace Cduhub.FlightSim
 {
     public class ToLissUdpMcdu : SimulatedMcdus, IDisposable
     {
-        private XPlaneUdp _XPlaneUdp = new XPlaneUdp();
-        private ToLissScreenBuffer _PilotTolissBuffer = new ToLissScreenBuffer();
-        private ToLissScreenBuffer _FirstOfficerToLissBuffer = new ToLissScreenBuffer();
-        private CancellationTokenSource _XPlaneUdpCancellationTokenSource;
-        private Task _XPlaneUdpTask;
+        private XPlaneUdp _XPlaneUdp = new();
+        private ToLissScreenBuffer _PilotTolissBuffer = new();
+        private ToLissScreenBuffer _FirstOfficerToLissBuffer = new();
+        private CancellationTokenSource? _XPlaneUdpCancellationTokenSource;
+        private Task? _XPlaneUdpTask;
 
         /// <inheritdoc/>
         public override string FlightSimulatorName => FlightSimulatorNames.XPlane;
@@ -52,9 +52,9 @@ namespace Cduhub.FlightSim
             set => _XPlaneUdp.Port = value;
         }
 
-        public override SimulatorMcduBuffer PilotBuffer { get; } = new SimulatorMcduBuffer();
+        public override SimulatorMcduBuffer PilotBuffer { get; } = new();
 
-        public override SimulatorMcduBuffer FirstOfficerBuffer { get; } = new SimulatorMcduBuffer();
+        public override SimulatorMcduBuffer FirstOfficerBuffer { get; } = new();
 
         public ToLissUdpMcdu(DeviceUser deviceUser, Screen masterScreen, Leds masterLeds) : base(deviceUser, masterScreen, masterLeds)
         {
@@ -104,7 +104,9 @@ namespace Cduhub.FlightSim
             if(cts != null) {
                 try {
                     cts.Cancel();
-                    Task.WaitAll(new Task[] { task }, 5000);
+                    if(task != null) {
+                        Task.WaitAll(new Task[] { task }, 5000);
+                    }
                 } catch {
                 }
                 try {
@@ -143,7 +145,7 @@ namespace Cduhub.FlightSim
         {
             public RowType RowType;
             public byte McduNum;
-            public string Style;
+            public string? Style;
             public byte RowNumber;
             public byte CellNumber;
 
@@ -151,14 +153,14 @@ namespace Cduhub.FlightSim
             {
             }
 
-            public SubscriptionTag(RowType rowType, byte mcduNum, string style)
+            public SubscriptionTag(RowType rowType, byte mcduNum, string? style)
             {
                 RowType = rowType;
                 McduNum = mcduNum;
                 Style = style;
             }
 
-            public SubscriptionTag(RowType rowType, byte mcduNum, string style, byte rowNumber) : this(rowType, mcduNum, style)
+            public SubscriptionTag(RowType rowType, byte mcduNum, string? style, byte rowNumber) : this(rowType, mcduNum, style)
             {
                 RowNumber = rowNumber;
             }
@@ -227,34 +229,36 @@ namespace Cduhub.FlightSim
         private void DataRefUpdatesReceived(XPlaneDataRefValue[] dataRefValues)
         {
             foreach(var dataRefValue in dataRefValues) {
-                var tag = (SubscriptionTag)dataRefValue.Subscription.Tag;
-                var value = dataRefValue.Value;
-                var tolissBuffer = tag.McduNum == 1
-                    ? _PilotTolissBuffer
-                    : _FirstOfficerToLissBuffer;
+                var tag = dataRefValue.Subscription.Tag as SubscriptionTag;
+                if(tag != null) {
+                    var value = dataRefValue.Value;
+                    var tolissBuffer = tag.McduNum == 1
+                        ? _PilotTolissBuffer
+                        : _FirstOfficerToLissBuffer;
 
-                switch(tag.RowType) {
-                    case RowType.Title:
-                        tolissBuffer.SetTitleCell(tag.Style, tag.CellNumber, (char)value);
-                        break;
-                    case RowType.STitle:
-                        tolissBuffer.SetSTitleCell(tag.Style, tag.CellNumber, (char)value);
-                        break;
-                    case RowType.Scratchpad:
-                        tolissBuffer.SetScratchPadCell(tag.Style, tag.CellNumber, (char)value);
-                        break;
-                    case RowType.Label:
-                        tolissBuffer.SetLabelCell(tag.RowNumber, tag.Style, tag.CellNumber, (char)value);
-                        break;
-                    case RowType.Cont:
-                        tolissBuffer.SetContCell(tag.RowNumber, tag.Style, tag.CellNumber, (char)value);
-                        break;
-                    case RowType.SCont:
-                        tolissBuffer.SetSContCell(tag.RowNumber, tag.Style, tag.CellNumber, (char)value);
-                        break;
-                    case RowType.VertSlew:
-                        tolissBuffer.SetVertSlewKeys((long)value);
-                        break;
+                    switch(tag.RowType) {
+                        case RowType.Title:
+                            tolissBuffer.SetTitleCell(tag.Style, tag.CellNumber, (char)value);
+                            break;
+                        case RowType.STitle:
+                            tolissBuffer.SetSTitleCell(tag.Style, tag.CellNumber, (char)value);
+                            break;
+                        case RowType.Scratchpad:
+                            tolissBuffer.SetScratchPadCell(tag.Style, tag.CellNumber, (char)value);
+                            break;
+                        case RowType.Label:
+                            tolissBuffer.SetLabelCell(tag.RowNumber, tag.Style, tag.CellNumber, (char)value);
+                            break;
+                        case RowType.Cont:
+                            tolissBuffer.SetContCell(tag.RowNumber, tag.Style, tag.CellNumber, (char)value);
+                            break;
+                        case RowType.SCont:
+                            tolissBuffer.SetSContCell(tag.RowNumber, tag.Style, tag.CellNumber, (char)value);
+                            break;
+                        case RowType.VertSlew:
+                            tolissBuffer.SetVertSlewKeys((long)value);
+                            break;
+                    }
                 }
             }
         }

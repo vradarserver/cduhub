@@ -24,9 +24,9 @@ namespace Cduhub.FlightSim
     /// </summary>
     public abstract class SimulatedMcdusOverWebSocket : SimulatedMcdus, IDisposable
     {
-        protected CancellationTokenSource _WebSocketCancelationTokenSource;
-        protected Task _WebSocketTask;
-        protected readonly SemaphoreSlim _SendMessageSemaphore = new SemaphoreSlim(1, 1);
+        protected CancellationTokenSource? _WebSocketCancelationTokenSource;
+        protected Task? _WebSocketTask;
+        protected readonly SemaphoreSlim _SendMessageSemaphore = new(1, 1);
 
         /// <summary>
         /// Gets the URL of the web socket to connect to.
@@ -129,7 +129,7 @@ namespace Cduhub.FlightSim
             return Task.CompletedTask;
         }
 
-        protected async virtual Task PollConnectionStateLoop(ClientWebSocket client, CancellationToken cancellationToken)
+        protected async virtual Task PollConnectionStateLoop(ClientWebSocket? client, CancellationToken cancellationToken)
         {
             while(client != null && !cancellationToken.IsCancellationRequested) {
                 try {

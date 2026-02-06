@@ -41,7 +41,7 @@ namespace McduDotNet.FlightSim
             public StringBuilder Style_Lg = new();
             public StringBuilder Style_Lw = new();
 
-            public StringBuilder? SelectBufferForStyleCode(string style)
+            public StringBuilder? SelectBufferForStyleCode(string? style)
             {
                 switch(style) {
                     case "w":   return Style_w;
@@ -76,7 +76,7 @@ namespace McduDotNet.FlightSim
         /// </summary>
         /// <param name="style"></param>
         /// <param name="value"></param>
-        public void SetTitle(string style, string value)
+        public void SetTitle(string? style, string? value)
         {
             SetText(style, value, 0, Variant.Normal);
         }
@@ -87,7 +87,7 @@ namespace McduDotNet.FlightSim
         /// <param name="style"></param>
         /// <param name="cellIdx"></param>
         /// <param name="ch"></param>
-        public void SetTitleCell(string style, int cellIdx, char ch)
+        public void SetTitleCell(string? style, int cellIdx, char ch)
         {
             SetCell(style, ch, 0, cellIdx, Variant.Normal);
         }
@@ -97,7 +97,7 @@ namespace McduDotNet.FlightSim
         /// </summary>
         /// <param name="style"></param>
         /// <param name="value"></param>
-        public void SetSTitle(string style, string value)
+        public void SetSTitle(string? style, string? value)
         {
             SetText(style, value, 0, Variant.Small);
         }
@@ -108,7 +108,7 @@ namespace McduDotNet.FlightSim
         /// <param name="style"></param>
         /// <param name="cellIdx"></param>
         /// <param name="ch"></param>
-        public void SetSTitleCell(string style, int cellIdx, char ch)
+        public void SetSTitleCell(string? style, int cellIdx, char ch)
         {
             SetCell(style, ch, 0, cellIdx, Variant.Small);
         }
@@ -118,7 +118,7 @@ namespace McduDotNet.FlightSim
         /// </summary>
         /// <param name="style"></param>
         /// <param name="value"></param>
-        public void SetScratchPad(string style, string value)
+        public void SetScratchPad(string? style, string? value)
         {
             SetText(style, value, _Rows.Length - 1, Variant.Normal);
         }
@@ -129,7 +129,7 @@ namespace McduDotNet.FlightSim
         /// <param name="style"></param>
         /// <param name="cellIdx"></param>
         /// <param name="ch"></param>
-        public void SetScratchPadCell(string style, int cellIdx, char ch)
+        public void SetScratchPadCell(string? style, int cellIdx, char ch)
         {
             SetCell(style, ch, _Rows.Length - 1, cellIdx, Variant.Normal);
         }
@@ -140,7 +140,7 @@ namespace McduDotNet.FlightSim
         /// <param name="labelNumber"></param>
         /// <param name="style"></param>
         /// <param name="value"></param>
-        public void SetLabel(int labelNumber, string style, string value)
+        public void SetLabel(int labelNumber, string? style, string? value)
         {
             var rowNumber = 1 + ((labelNumber - 1) * 2);
             SetText(style, value, rowNumber, Variant.Normal);
@@ -153,7 +153,7 @@ namespace McduDotNet.FlightSim
         /// <param name="style"></param>
         /// <param name="cellIdx"></param>
         /// <param name="ch"></param>
-        public void SetLabelCell(int labelNumber, string style, int cellIdx, char ch)
+        public void SetLabelCell(int labelNumber, string? style, int cellIdx, char ch)
         {
             var rowNumber = 1 + ((labelNumber - 1) * 2);
             SetCell(style, ch, rowNumber, cellIdx, Variant.Normal);
@@ -165,7 +165,7 @@ namespace McduDotNet.FlightSim
         /// <param name="contNumber"></param>
         /// <param name="style"></param>
         /// <param name="value"></param>
-        public void SetCont(int contNumber, string style, string value)
+        public void SetCont(int contNumber, string? style, string value)
         {
             var rowNumber = 2 + ((contNumber - 1) * 2);
             SetText(style, value, rowNumber, Variant.Normal);
@@ -178,7 +178,7 @@ namespace McduDotNet.FlightSim
         /// <param name="style"></param>
         /// <param name="cellIdx"></param>
         /// <param name="ch"></param>
-        public void SetContCell(int contNumber, string style, int cellIdx, char ch)
+        public void SetContCell(int contNumber, string? style, int cellIdx, char ch)
         {
             var rowNumber = 2 + ((contNumber - 1) * 2);
             SetCell(style, ch, rowNumber, cellIdx, Variant.Normal);
@@ -190,7 +190,7 @@ namespace McduDotNet.FlightSim
         /// <param name="scontNumber"></param>
         /// <param name="style"></param>
         /// <param name="value"></param>
-        public void SetSCont(int scontNumber, string style, string value)
+        public void SetSCont(int scontNumber, string? style, string? value)
         {
             var rowNumber = 2 + ((scontNumber - 1) * 2);
             SetText(style, value, rowNumber, Variant.Small);
@@ -203,7 +203,7 @@ namespace McduDotNet.FlightSim
         /// <param name="style"></param>
         /// <param name="cellIdx"></param>
         /// <param name="ch"></param>
-        public void SetSContCell(int scontNumber, string style, int cellIdx, char ch)
+        public void SetSContCell(int scontNumber, string? style, int cellIdx, char ch)
         {
             var rowNumber = 2 + ((scontNumber - 1) * 2);
             SetCell(style, ch, rowNumber, cellIdx, Variant.Small);
@@ -230,7 +230,7 @@ namespace McduDotNet.FlightSim
             return result;
         }
 
-        private void SetText(string style, string value, int rowNumber, Variant rowVariant)
+        private void SetText(string? style, string? value, int rowNumber, Variant rowVariant)
         {
             if(value != null) {
                 var bytes = Convert.FromBase64String(value);
@@ -246,7 +246,7 @@ namespace McduDotNet.FlightSim
             }
         }
 
-        private void SetCell(string style, char ch, int rowNumber, int columnNumber, Variant rowVariant)
+        private void SetCell(string? style, char ch, int rowNumber, int columnNumber, Variant rowVariant)
         {
             if(columnNumber >= 0 && columnNumber < Metrics.Columns) {
                 var styles = GetRowStylesForRowNumber(rowNumber, rowVariant);

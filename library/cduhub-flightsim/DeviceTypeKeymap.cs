@@ -18,7 +18,7 @@ namespace Cduhub.FlightSim
         /// <summary>
         /// A pre-defined keymap that has no entries.
         /// </summary>
-        public static readonly DeviceTypeKeymap Empty = new DeviceTypeKeymap(
+        public static readonly DeviceTypeKeymap Empty = new(
             DeviceType.NotSpecified, DeviceType.NotSpecified, new (Key,Key)[] { }
         );
 
@@ -26,14 +26,14 @@ namespace Cduhub.FlightSim
 
         public DeviceType SecondDeviceType { get; }
 
-        private readonly Dictionary<Key, Key> _FirstToSecondKeymap = new Dictionary<Key, Key>();
+        private readonly Dictionary<Key, Key> _FirstToSecondKeymap = new();
         /// <summary>
         /// A lookup table of key mappings when the key was pressed on a device of type
         /// <see cref="FirstDeviceType"/>.
         /// </summary>
         public IReadOnlyDictionary<Key, Key> FirstToSecondKeymap => _FirstToSecondKeymap;
 
-        private readonly Dictionary<Key, Key> _SecondToFirstKeymap = new Dictionary<Key, Key>();
+        private readonly Dictionary<Key, Key> _SecondToFirstKeymap = new();
         /// <summary>
         /// A lookup table of key mappings when the key was pressed on a device of type
         /// <see cref="SecondDeviceType"/>.
@@ -48,9 +48,9 @@ namespace Cduhub.FlightSim
         {
             FirstDeviceType = firstDeviceType;
             SecondDeviceType = secondDeviceType;
-            foreach(var entry in keyMap) {
-                _FirstToSecondKeymap[entry.From] = entry.To;
-                _SecondToFirstKeymap[entry.To] = entry.From;
+            foreach(var (from, to) in keyMap) {
+                _FirstToSecondKeymap[from] = to;
+                _SecondToFirstKeymap[to] = from;
             }
         }
 

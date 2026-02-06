@@ -19,7 +19,7 @@ namespace McduDotNet.FlightSim.SimBridgeMcdu
     /// </summary>
     public static class XPlaneGenericDataRef
     {
-        public static void ParseMime64DisplayLineIntoRow(Screen screen, string displayLine, int rowNumber)
+        public static void ParseMime64DisplayLineIntoRow(Screen screen, string? displayLine, int rowNumber)
         {
             if(!String.IsNullOrEmpty(displayLine)) {
                 var lineBytes = Convert.FromBase64String(displayLine);
@@ -27,7 +27,7 @@ namespace McduDotNet.FlightSim.SimBridgeMcdu
             }
         }
 
-        public static void ParseDisplayLineBytesIntoRow(Screen screen, byte[] lineBytes, int rowNumber)
+        public static void ParseDisplayLineBytesIntoRow(Screen screen, byte[]? lineBytes, int rowNumber)
         {
             if(screen != null && lineBytes?.Length > 0 && rowNumber >= 0 && rowNumber < screen.Rows.Length) {
                 var row = screen.Rows[rowNumber];
@@ -49,7 +49,7 @@ namespace McduDotNet.FlightSim.SimBridgeMcdu
             }
         }
 
-        public static void ParseMime64StyleLineIntoRow(Screen screen, string styleLine, int rowNumber)
+        public static void ParseMime64StyleLineIntoRow(Screen screen, string? styleLine, int rowNumber)
         {
             if(!String.IsNullOrEmpty(styleLine)) {
                 var styleBytes = Convert.FromBase64String(styleLine);
@@ -57,7 +57,7 @@ namespace McduDotNet.FlightSim.SimBridgeMcdu
             }
         }
 
-        public static void ParseStyleLineBytesIntoRow(Screen screen, byte[] styleBytes, int rowNumber)
+        public static void ParseStyleLineBytesIntoRow(Screen screen, byte[]? styleBytes, int rowNumber)
         {
             if(screen != null && styleBytes?.Length > 0 && rowNumber >= 0 && rowNumber < screen.Rows.Length) {
                 var row = screen.Rows[rowNumber];

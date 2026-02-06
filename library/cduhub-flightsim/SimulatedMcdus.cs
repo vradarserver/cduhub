@@ -42,11 +42,10 @@ namespace Cduhub.FlightSim
         {
             get {
                 switch(SelectedBufferDeviceUser) {
-                    case DeviceUser.Captain:         return PilotBuffer;
                     case DeviceUser.FirstOfficer:    return FirstOfficerBuffer;
                     case DeviceUser.Observer:        return ObserverBuffer;
+                    default:                         return PilotBuffer;
                 }
-                return null;
             }
         }
 
@@ -62,22 +61,22 @@ namespace Cduhub.FlightSim
         public DateTime LastMessageTimeUtc { get; private set; }
 
         /// <inheritdoc/>
-        public event EventHandler ConnectionStateChanged;
+        public event EventHandler? ConnectionStateChanged;
 
         protected virtual void OnConnectionStateChanged() => ConnectionStateChanged?.Invoke(this, EventArgs.Empty);
 
         /// <inheritdoc/>
-        public event EventHandler DisplayRefreshRequired;
+        public event EventHandler? DisplayRefreshRequired;
 
         protected virtual void OnDisplayRefreshRequired() => DisplayRefreshRequired?.Invoke(this, EventArgs.Empty);
 
         /// <inheritdoc/>
-        public event EventHandler LedsRefreshRequired;
+        public event EventHandler? LedsRefreshRequired;
 
         protected virtual void OnLedsRefreshRequired() => LedsRefreshRequired?.Invoke(this, EventArgs.Empty);
 
         /// <inheritdoc/>
-        public event EventHandler MessageReceived;
+        public event EventHandler? MessageReceived;
 
         protected virtual void OnMessageReceived() => MessageReceived?.Invoke(this, EventArgs.Empty);
 

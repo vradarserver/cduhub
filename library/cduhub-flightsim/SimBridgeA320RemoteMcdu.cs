@@ -23,8 +23,8 @@ namespace Cduhub.FlightSim
 {
     public class SimBridgeA320RemoteMcdu : SimulatedMcdusOverWebSocket
     {
-        private readonly object _QueueLock = new object();
-        private readonly Queue<string> _SendEventQueue = new Queue<string>();
+        private readonly object _QueueLock = new();
+        private readonly Queue<string> _SendEventQueue = new();
 
         /// <inheritdoc/>
         public override string FlightSimulatorName => FlightSimulatorNames.MSFS2020_2024;
@@ -36,10 +36,10 @@ namespace Cduhub.FlightSim
         public override DeviceType TargetDeviceType => DeviceType.AirbusA320Mcdu;
 
         /// <inheritdoc/>
-        public override SimulatorMcduBuffer PilotBuffer { get; } = new SimulatorMcduBuffer();
+        public override SimulatorMcduBuffer PilotBuffer { get; } = new();
 
         /// <inheritdoc/>
-        public override SimulatorMcduBuffer FirstOfficerBuffer { get; } = new SimulatorMcduBuffer();
+        public override SimulatorMcduBuffer FirstOfficerBuffer { get; } = new();
 
         /// <summary>
         /// The address of the machine running SimBridge.
@@ -52,7 +52,7 @@ namespace Cduhub.FlightSim
         public int Port { get; set; } = 8380;
 
         /// <inheritdoc/>
-        protected override Uri WebSocketUri => new Uri($"ws://{Host}:{Port}/interfaces/v1/mcdu");
+        protected override Uri WebSocketUri => new($"ws://{Host}:{Port}/interfaces/v1/mcdu");
 
         /// <summary>
         /// Creates a new object.
@@ -100,7 +100,7 @@ namespace Cduhub.FlightSim
             }
 
             while(client.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested) {
-                string eventCode = null;
+                string? eventCode = null;
                 lock(_QueueLock) {
                     if(_SendEventQueue.Count > 0) {
                         eventCode = _SendEventQueue.Dequeue();
@@ -142,18 +142,20 @@ namespace Cduhub.FlightSim
         {
             var json = message.Substring("update:".Length);
             var mcduDisplay = JsonConvert.DeserializeObject<McduDisplay>(json);
-            SimBridgeWebSocket.ParseSimBridgeUpdateMcduToScreenAndLeds(
-                mcduDisplay.Left,
-                PilotBuffer.Screen,
-                PilotBuffer.Leds
-            );
-            SimBridgeWebSocket.ParseSimBridgeUpdateMcduToScreenAndLeds(
-                mcduDisplay.Right,
-                FirstOfficerBuffer.Screen,
-                FirstOfficerBuffer.Leds
-            );
-            RefreshSelectedScreen();
-            RefreshSelectedLeds();
+            if(mcduDisplay != null) {
+                SimBridgeWebSocket.ParseSimBridgeUpdateMcduToScreenAndLeds(
+                    mcduDisplay.Left,
+                    PilotBuffer.Screen,
+                    PilotBuffer.Leds
+                );
+                SimBridgeWebSocket.ParseSimBridgeUpdateMcduToScreenAndLeds(
+                    mcduDisplay.Right,
+                    FirstOfficerBuffer.Screen,
+                    FirstOfficerBuffer.Leds
+                );
+                RefreshSelectedScreen();
+                RefreshSelectedLeds();
+            }
         }
     }
 }
