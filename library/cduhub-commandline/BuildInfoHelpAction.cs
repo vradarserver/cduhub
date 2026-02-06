@@ -19,10 +19,10 @@ namespace Cduhub.CommandLine
 {
     class BuildInfoHelpAction : SynchronousCommandLineAction
     {
-        private InformationalVersion _Version;
-        private HelpAction _PreviousHelpAction;
+        private readonly InformationalVersion _Version;
+        private readonly HelpAction? _PreviousHelpAction;
 
-        public BuildInfoHelpAction(HelpAction previousHelpAction)
+        public BuildInfoHelpAction(HelpAction? previousHelpAction)
         {
             _Version = InformationalVersion.FromAssembly(
                 Assembly.GetEntryAssembly()
@@ -33,7 +33,7 @@ namespace Cduhub.CommandLine
         public override int Invoke(ParseResult parseResult)
         {
             EmitBuildAndCopyrightNotice();
-            return _PreviousHelpAction.Invoke(parseResult);
+            return _PreviousHelpAction?.Invoke(parseResult) ?? 0;
         }
 
         public void EmitBuildAndCopyrightNotice()

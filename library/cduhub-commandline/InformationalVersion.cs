@@ -35,6 +35,8 @@ namespace Cduhub.CommandLine
     /// </remarks>
     public class InformationalVersion : IComparable<InformationalVersion>
     {
+        public static readonly InformationalVersion Empty = new();
+
         static Regex _ParseRegex = new Regex(
             @"(?<major>\d+).(?<minor>\d+).(?<patch>\d+)(-(?<revisionType>alpha|beta)-(?<revision>\d+))?(\+(?<commitHash>.+))?",
             RegexOptions.Compiled | RegexOptions.IgnoreCase
@@ -182,7 +184,7 @@ namespace Cduhub.CommandLine
         /// <param name="versionTag"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
-        public static InformationalVersion Parse(string versionTag)
+        public static InformationalVersion Parse(string? versionTag)
         {
             if(!TryParse(versionTag, out var result)) {
                 throw new ArgumentOutOfRangeException($"{versionTag} cannot be parsed into an {nameof(InformationalVersion)}");
@@ -196,11 +198,12 @@ namespace Cduhub.CommandLine
         /// <param name="versionTag"></param>
         /// <param name="version"></param>
         /// <returns></returns>
-        public static bool TryParse(string versionTag, out InformationalVersion version)
+        public static bool TryParse(string? versionTag, out InformationalVersion version)
         {
-            version = default;      // <-- VS2022 cannot figure out that there's no path where version is not assigned, it needs this to compile
+            versionTag ??= "";
+            version = Empty;
 
-            var match = _ParseRegex.Match(versionTag ?? "");
+            var match = _ParseRegex.Match(versionTag);
             var result = match.Success;
 
             if(result) {
@@ -234,10 +237,6 @@ namespace Cduhub.CommandLine
                 }
             }
 
-            if(!result) {
-                version = new InformationalVersion();
-            }
-
             return result;
         }
 
@@ -246,7 +245,7 @@ namespace Cduhub.CommandLine
         /// </summary>
         /// <param name="assembly"></param>
         /// <returns></returns>
-        public static InformationalVersion FromAssembly(Assembly assembly)
+        public static InformationalVersion FromAssembly(Assembly? assembly)
         {
             InformationalVersion.TryParse(
                 assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion,

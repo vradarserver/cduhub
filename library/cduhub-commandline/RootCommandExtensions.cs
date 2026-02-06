@@ -49,7 +49,7 @@ namespace Cduhub.CommandLine
         {
             var defaultHelpOptions = rootCommand.FindOptionsOfType<HelpOption>();
             foreach(var help in defaultHelpOptions) {
-                help.Action = new BuildInfoHelpAction((HelpAction)help.Action);
+                help.Action = new BuildInfoHelpAction(help.Action as HelpAction);
             }
             return rootCommand;
         }
