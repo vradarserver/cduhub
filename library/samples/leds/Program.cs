@@ -18,67 +18,71 @@ namespace Leds
         {
             var deviceId = SelectDevice();
             using(var cdu = CduFactory.ConnectLocal(deviceId)) {
-                Console.WriteLine($"Using {cdu.DeviceId}");
+                if(cdu == null) {
+                    Console.WriteLine("No device connected");
+                } else {
+                    Console.WriteLine($"Using {cdu.DeviceId}");
 
-                var supportedLeds = cdu.SupportedLeds
-                    .OrderBy(led => led.Describe())
-                    .ToArray();
-                var leftLeds = new List<Led>();
-                var rightLeds = new List<Led>();
+                    var supportedLeds = cdu.SupportedLeds
+                        .OrderBy(led => led.Describe())
+                        .ToArray();
+                    var leftLeds = new List<Led>();
+                    var rightLeds = new List<Led>();
 
-                for(var idx = 0;idx < supportedLeds.Length;++idx) {
-                    var led = supportedLeds[idx];
-                    var list = idx < 6 ? leftLeds : rightLeds;
-                    list.Add(led);
-                }
-
-                cdu.Output
-                    .Small()
-                    .Grey()
-                    .RightLabel(5, "BRIGHT -5%<")
-                    .RightLabel(6, "BRIGHT +5%<");
-
-                for(var idx = 0;idx < leftLeds.Count;++idx) {
-                    cdu.Output.LeftLabel(idx + 1, $">{leftLeds[idx].Describe()}");
-                }
-                for(var idx = 0;idx < rightLeds.Count;++idx) {
-                    cdu.Output.RightLabel(idx + 1, $">{rightLeds[idx].Describe()}");
-                }
-
-                cdu.RefreshDisplay();
-
-                cdu.KeyDown += (_, args) => {
-                    var lsNumber = args.Key.ToLineSelectNumber();
-                    if(lsNumber.Number != -1) {
-                        var list = lsNumber.IsLeft ? leftLeds : rightLeds;
-                        var idx = lsNumber.Number - 1;
-                        if(idx < list.Count) {
-                            var led = list[idx];
-                            cdu.Leds.SetLed(
-                                led,
-                                !cdu.Leds.GetLed(led)
-                            );
-                        }
-
-                        if(!lsNumber.IsLeft) {
-                            switch(lsNumber.Number) {
-                                case 5: cdu.LedBrightnessPercent = Math.Max(0, cdu.LedBrightnessPercent - 5); break;
-                                case 6: cdu.LedBrightnessPercent = Math.Min(100, cdu.LedBrightnessPercent + 5); break;
-                            }
-                        }
-
-                        cdu.RefreshLeds();
+                    for(var idx = 0;idx < supportedLeds.Length;++idx) {
+                        var led = supportedLeds[idx];
+                        var list = idx < 6 ? leftLeds : rightLeds;
+                        list.Add(led);
                     }
-                };
 
-                Console.WriteLine($"Press Q to quit");
-                while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q);
+                    cdu.Output
+                        .Small()
+                        .Grey()
+                        .RightLabel(5, "BRIGHT -5%<")
+                        .RightLabel(6, "BRIGHT +5%<");
 
-                cdu.Cleanup();
+                    for(var idx = 0;idx < leftLeds.Count;++idx) {
+                        cdu.Output.LeftLabel(idx + 1, $">{leftLeds[idx].Describe()}");
+                    }
+                    for(var idx = 0;idx < rightLeds.Count;++idx) {
+                        cdu.Output.RightLabel(idx + 1, $">{rightLeds[idx].Describe()}");
+                    }
+
+                    cdu.RefreshDisplay();
+
+                    cdu.KeyDown += (_, args) => {
+                        var lsNumber = args.Key.ToLineSelectNumber();
+                        if(lsNumber.Number != -1) {
+                            var list = lsNumber.IsLeft ? leftLeds : rightLeds;
+                            var idx = lsNumber.Number - 1;
+                            if(idx < list.Count) {
+                                var led = list[idx];
+                                cdu.Leds.SetLed(
+                                    led,
+                                    !cdu.Leds.GetLed(led)
+                                );
+                            }
+
+                            if(!lsNumber.IsLeft) {
+                                switch(lsNumber.Number) {
+                                    case 5: cdu.LedBrightnessPercent = Math.Max(0, cdu.LedBrightnessPercent - 5); break;
+                                    case 6: cdu.LedBrightnessPercent = Math.Min(100, cdu.LedBrightnessPercent + 5); break;
+                                }
+                            }
+
+                            cdu.RefreshLeds();
+                        }
+                    };
+
+                    Console.WriteLine($"Press Q to quit");
+                    while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q);
+
+                    cdu.Cleanup();
+                }
             }
         }
 
-        static DeviceIdentifier SelectDevice()
+        static DeviceIdentifier? SelectDevice()
         {
             var identifiers = CduFactory
                 .FindLocalDevices()

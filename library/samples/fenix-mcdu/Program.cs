@@ -18,8 +18,8 @@ namespace FenixMcdu
 {
     class Program
     {
-        private static ICdu _Mcdu;
-        private static GraphQLHttpClient _FenixEfbGraphQLClient;
+        private static ICdu? _Mcdu;
+        private static GraphQLHttpClient? _FenixEfbGraphQLClient;
         private static DeviceUser _DeviceUser;
         private static Screen _CaptainScreen = new();
         private static Screen _FirstOfficerScreen = new();
@@ -27,30 +27,34 @@ namespace FenixMcdu
         static void Main(string[] _)
         {
             using(var mcdu = CduFactory.ConnectLocal()) {
-                Console.WriteLine($"Using {mcdu.DeviceId}");
-                _Mcdu = mcdu;
-                _DeviceUser = mcdu.DeviceId.DeviceUser;
+                if(mcdu == null) {
+                    Console.WriteLine("No device connected");
+                } else {
+                    Console.WriteLine($"Using {mcdu.DeviceId}");
+                    _Mcdu = mcdu;
+                    _DeviceUser = mcdu.DeviceId.DeviceUser;
 
-                var endpointHostAndPort = "localhost:8083";
-                var endpointUri = new Uri($"ws://{endpointHostAndPort}/graphql");
+                    var endpointHostAndPort = "localhost:8083";
+                    var endpointUri = new Uri($"ws://{endpointHostAndPort}/graphql");
 
-                Console.WriteLine($"Opening connection to Fenix EFB at {endpointHostAndPort}");
-                var graphQLOptions = new GraphQLHttpClientOptions() {
-                    EndPoint = endpointUri,
-                    UseWebSocketForQueriesAndMutations = true
-                };
+                    Console.WriteLine($"Opening connection to Fenix EFB at {endpointHostAndPort}");
+                    var graphQLOptions = new GraphQLHttpClientOptions() {
+                        EndPoint = endpointUri,
+                        UseWebSocketForQueriesAndMutations = true
+                    };
 
-                using(var graphQLClient = new GraphQLHttpClient(graphQLOptions, new NewtonsoftJsonSerializer())) {
-                    _FenixEfbGraphQLClient = graphQLClient;
-                    SetupFenixDisplayChangeEvents(mcdu, graphQLClient);
-                    mcdu.KeyDown += Mcdu_KeyEvent;
-                    mcdu.KeyUp   += Mcdu_KeyEvent;
+                    using(var graphQLClient = new GraphQLHttpClient(graphQLOptions, new NewtonsoftJsonSerializer())) {
+                        _FenixEfbGraphQLClient = graphQLClient;
+                        SetupFenixDisplayChangeEvents(mcdu, graphQLClient);
+                        mcdu.KeyDown += Mcdu_KeyEvent;
+                        mcdu.KeyUp   += Mcdu_KeyEvent;
 
-                    Console.WriteLine($"Press Q to quit");
-                    while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q);
+                        Console.WriteLine($"Press Q to quit");
+                        while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q);
+                    }
+
+                    mcdu.Cleanup();
                 }
-
-                mcdu.Cleanup();
             }
         }
 
@@ -83,7 +87,7 @@ namespace FenixMcdu
                 var dataRefs = result.Data?.dataRefs;
                 if(dataRefs != null) {
                     var name = dataRefs.name?.ToString();
-                    Screen screen = null;
+                    Screen? screen = null;
                     var isVisible = false;
                     switch(name) {
                         case FenixA320GraphQL.GraphQLMcdu1DisplayName:
@@ -151,7 +155,7 @@ namespace FenixMcdu
             }
         }
 
-        private static void Mcdu_KeyEvent(object sender, KeyEventArgs args)
+        private static void Mcdu_KeyEvent(object? _, KeyEventArgs args)
         {
             if(args.Key != Key.Blank1) {
                 SendKeyToFenix(args.Key, args.Pressed);

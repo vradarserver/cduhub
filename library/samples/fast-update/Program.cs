@@ -53,31 +53,35 @@ namespace FastUpdate
 
             var deviceId = SelectDevice();
             using(var cdu = CduFactory.ConnectLocal(deviceId)) {
-                Console.WriteLine($"Using {cdu.DeviceId}");
+                if(cdu == null) {
+                    Console.WriteLine("No device connected");
+                } else {
+                    Console.WriteLine($"Using {cdu.DeviceId}");
 
-                Console.WriteLine($"Press Q to quit");
-                while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
-                    var now = DateTime.Now;
+                    Console.WriteLine($"Press Q to quit");
+                    while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
+                        var now = DateTime.Now;
 
-                    var screen = cdu.Screen;
-                    for(var rowIdx = 0;rowIdx < screen.Rows.Length;++rowIdx) {
-                        var row = screen.Rows[rowIdx];
-                        for(var cellIdx = 0;cellIdx < row.Cells.Length;++cellIdx) {
-                            var cell = row.Cells[cellIdx];
-                            cell.Character = nextCharacter();
-                            cell.Colour = nextColour();
-                            cell.Small = small;
-                            small = !small;
+                        var screen = cdu.Screen;
+                        for(var rowIdx = 0;rowIdx < screen.Rows.Length;++rowIdx) {
+                            var row = screen.Rows[rowIdx];
+                            for(var cellIdx = 0;cellIdx < row.Cells.Length;++cellIdx) {
+                                var cell = row.Cells[cellIdx];
+                                cell.Character = nextCharacter();
+                                cell.Colour = nextColour();
+                                cell.Small = small;
+                                small = !small;
+                            }
                         }
+                        cdu.RefreshDisplay();
                     }
-                    cdu.RefreshDisplay();
-                }
 
-                cdu.Cleanup();
+                    cdu.Cleanup();
+                }
             }
         }
 
-        static DeviceIdentifier SelectDevice()
+        static DeviceIdentifier? SelectDevice()
         {
             var identifiers = CduFactory
                 .FindLocalDevices()

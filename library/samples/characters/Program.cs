@@ -55,107 +55,111 @@ namespace Characters
         }
 
         private static void ShowAsciiCharacterSet(
-            FileInfo fontFileInfo,
+            FileInfo? fontFileInfo,
             int xOffset,
             int yOffset,
             bool useFullWidth
         )
         {
             using(var cdu = CduFactory.ConnectLocal()) {
-                Console.WriteLine($"Using {cdu.DeviceId}");
-                Console.WriteLine($"Setting X and Y offsets to {xOffset} / {yOffset}");
-                cdu.XOffset = xOffset;
-                cdu.YOffset = yOffset;
+                if(cdu == null) {
+                    Console.WriteLine("No device connected");
+                } else {
+                    Console.WriteLine($"Using {cdu.DeviceId}");
+                    Console.WriteLine($"Setting X and Y offsets to {xOffset} / {yOffset}");
+                    cdu.XOffset = xOffset;
+                    cdu.YOffset = yOffset;
 
-                var fontFile = LoadFont(fontFileInfo);
-                void uploadFont()
-                {
-                    if(fontFile != null) {
-                        Console.WriteLine("Uploading font");
-                        cdu.UseFont(fontFile, useFullWidth);
+                    var fontFile = LoadFont(fontFileInfo);
+                    void uploadFont()
+                    {
+                        if(fontFile != null) {
+                            Console.WriteLine("Uploading font");
+                            cdu.UseFont(fontFile, useFullWidth);
+                        }
                     }
-                }
 
-                void reloadFont()
-                {
-                    fontFile = LoadFont(fontFileInfo);
+                    void reloadFont()
+                    {
+                        fontFile = LoadFont(fontFileInfo);
+                        uploadFont();
+                    }
+                    void toggleWidth()
+                    {
+                        useFullWidth = !useFullWidth;
+                        reloadFont();
+                    }
+
+                    cdu.KeyDown += (_, args) => {
+                        switch(args.Key) {
+                            case Key.Init:
+                            case Key.InitRef:
+                                reloadFont();
+                                break;
+                            case Key.Data:
+                            case Key.Altn:
+                                toggleWidth();
+                                break;
+                        }
+                    };
+
+                    void showCharacters()
+                    {
+                        cdu.Output
+                            .Clear()
+                            .UseLowercaseFont()
+                            .WriteLine("  0123456789ABCDEF UDLR")
+                            .WriteLine(" 2<grey> !\"#$%&'()*+,-./ ↑↓←→")
+                            .WriteLine("<yellow>><white>3<grey>0123456789:;<=>? ▲▼◀▶<yellow><")
+                            .WriteLine(" 4<grey>@ABCDEFGHIJKLMNO ☐°Δ⬡")
+                            .WriteLine("<yellow>><white>5<grey>PQRSTUVWXYZ[\\]^_ █□■ <yellow><")
+                            .WriteLine(" 6<grey>`abcdefghijklmno")
+                            .WriteLine("<yellow>><white>7<grey>pqrstuvwxyz{|}~      <yellow><")
+                            .Newline()
+                            .Small()
+                            .WriteLine("<large><yellow>><white><small>2<grey> !\"#$%&'()*+,-./ ↑↓←→<large><yellow><")
+                            .WriteLine(" 3<grey>0123456789:;<=>? ▲▼◀▶")
+                            .WriteLine("<large><yellow>><white><small>4<grey>@ABCDEFGHIJKLMNO ☐°Δ⬡<large><yellow><")
+                            .WriteLine(" 5<grey>PQRSTUVWXYZ[\\]^_ █□■")
+                            .WriteLine("<large><yellow>><white><small>6<grey>`abcdefghijklmno      <large><yellow><")
+                            .WriteLine(" 7<grey>pqrstuvwxyz{|}~")
+                        ;
+                        cdu.RefreshDisplay();
+                    }
+
                     uploadFont();
-                }
-                void toggleWidth()
-                {
-                    useFullWidth = !useFullWidth;
-                    reloadFont();
-                }
-
-                cdu.KeyDown += (_, args) => {
-                    switch(args.Key) {
-                        case Key.Init:
-                        case Key.InitRef:
-                            reloadFont();
-                            break;
-                        case Key.Data:
-                        case Key.Altn:
-                            toggleWidth();
-                            break;
+                    showCharacters();
+                    if(fontFile != null) {
+                        Console.WriteLine($"R / [INIT] to reload font :: W / [DATA or ALTN] to toggle width");
                     }
-                };
+                    Console.WriteLine($"Press Q to quit");
 
-                void showCharacters()
-                {
-                    cdu.Output
-                        .Clear()
-                        .UseLowercaseFont()
-                        .WriteLine("  0123456789ABCDEF UDLR")
-                        .WriteLine(" 2<grey> !\"#$%&'()*+,-./ ↑↓←→")
-                        .WriteLine("<yellow>><white>3<grey>0123456789:;<=>? ▲▼◀▶<yellow><")
-                        .WriteLine(" 4<grey>@ABCDEFGHIJKLMNO ☐°Δ⬡")
-                        .WriteLine("<yellow>><white>5<grey>PQRSTUVWXYZ[\\]^_ █□■ <yellow><")
-                        .WriteLine(" 6<grey>`abcdefghijklmno")
-                        .WriteLine("<yellow>><white>7<grey>pqrstuvwxyz{|}~      <yellow><")
-                        .Newline()
-                        .Small()
-                        .WriteLine("<large><yellow>><white><small>2<grey> !\"#$%&'()*+,-./ ↑↓←→<large><yellow><")
-                        .WriteLine(" 3<grey>0123456789:;<=>? ▲▼◀▶")
-                        .WriteLine("<large><yellow>><white><small>4<grey>@ABCDEFGHIJKLMNO ☐°Δ⬡<large><yellow><")
-                        .WriteLine(" 5<grey>PQRSTUVWXYZ[\\]^_ █□■")
-                        .WriteLine("<large><yellow>><white><small>6<grey>`abcdefghijklmno      <large><yellow><")
-                        .WriteLine(" 7<grey>pqrstuvwxyz{|}~")
-                    ;
-                    cdu.RefreshDisplay();
-                }
-
-                uploadFont();
-                showCharacters();
-                if(fontFile != null) {
-                    Console.WriteLine($"R / [INIT] to reload font :: W / [DATA or ALTN] to toggle width");
-                }
-                Console.WriteLine($"Press Q to quit");
-
-                var keepWaiting = true;
-                while(keepWaiting) {
-                    var key = !Console.KeyAvailable
-                        ? default
-                        : Console.ReadKey(intercept: true).Key;
-                    switch(key) {
-                        case ConsoleKey.Q:
-                            keepWaiting = false;
-                            break;
-                        case ConsoleKey.R:
-                            reloadFont();
-                            break;
-                        case ConsoleKey.W:
-                            toggleWidth();
-                            break;
+                    var keepWaiting = true;
+                    while(keepWaiting) {
+                        var key = !Console.KeyAvailable
+                            ? default
+                            : Console.ReadKey(intercept: true).Key;
+                        switch(key) {
+                            case ConsoleKey.Q:
+                                keepWaiting = false;
+                                break;
+                            case ConsoleKey.R:
+                                reloadFont();
+                                break;
+                            case ConsoleKey.W:
+                                toggleWidth();
+                                break;
+                        }
                     }
-                }
 
-                cdu.Cleanup();
+                    cdu.Cleanup();
+                }
             }
         }
 
-        private static McduFontFile LoadFont(FileInfo fileInfo)
+        private static McduFontFile? LoadFont(FileInfo? fileInfo)
         {
-            McduFontFile result = null;
+            McduFontFile? result = null;
 
             if(fileInfo != null) {
                 if(!fileInfo.Exists) {

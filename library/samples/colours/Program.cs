@@ -17,7 +17,7 @@ namespace Colours
 {
     class Program
     {
-        static Colour[] _Colours = [
+        static readonly Colour[] _Colours = [
             Colour.Gray,
             Colour.White,
             Colour.Amber,
@@ -66,25 +66,29 @@ namespace Colours
         }
 
         static void ShowColours(
-            FileInfo fontFileInfo,
+            FileInfo? fontFileInfo,
             bool useFullWidth
         )
         {
             using(var cdu = CduFactory.ConnectLocal()) {
-                Console.WriteLine($"Using {cdu.DeviceId}");
-                cdu.KeyDown += Cdu_KeyDown;
+                if(cdu == null) {
+                    Console.WriteLine("No device connected");
+                } else {
+                    Console.WriteLine($"Using {cdu.DeviceId}");
+                    cdu.KeyDown += Cdu_KeyDown;
 
-                var font = LoadFont(fontFileInfo);
-                if(font != null) {
-                    cdu.UseFont(font, useFullWidth);
+                    var font = LoadFont(fontFileInfo);
+                    if(font != null) {
+                        cdu.UseFont(font, useFullWidth);
+                    }
+
+                    DrawScreen(cdu);
+
+                    Console.WriteLine($"Press Q to quit");
+                    while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q);
+
+                    cdu.Cleanup();
                 }
-
-                DrawScreen(cdu);
-
-                Console.WriteLine($"Press Q to quit");
-                while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q);
-
-                cdu.Cleanup();
             }
         }
 
@@ -133,9 +137,12 @@ namespace Colours
                 .LeftToRight().Newline();
         }
 
-        static void Cdu_KeyDown(object sender, KeyEventArgs args)
+        static void Cdu_KeyDown(object? sender, KeyEventArgs args)
         {
-            var cdu = (ICdu)sender;
+            var cdu = sender as ICdu;
+            if(cdu == null) {
+                return;
+            }
 
             void scrollBackwards(int offset)
             {
@@ -185,9 +192,9 @@ namespace Colours
             }
         }
 
-        private static McduFontFile LoadFont(FileInfo fileInfo)
+        private static McduFontFile? LoadFont(FileInfo? fileInfo)
         {
-            McduFontFile result = null;
+            McduFontFile? result = null;
 
             if(fileInfo != null) {
                 if(!fileInfo.Exists) {

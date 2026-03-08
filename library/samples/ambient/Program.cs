@@ -18,30 +18,34 @@ namespace Ambient
         {
             var deviceId = SelectDevice();
             using(var cdu = CduFactory.ConnectLocal(deviceId)) {
-                Console.WriteLine($"Using {cdu.DeviceId}");
-                cdu.Leds.TurnAllOn(true);
-                cdu.RefreshLeds();
+                if(cdu == null) {
+                    Console.WriteLine("No device detected");
+                } else {
+                    Console.WriteLine($"Using {cdu.DeviceId}");
+                    cdu.Leds.TurnAllOn(true);
+                    cdu.RefreshLeds();
 
-                ShowASplashOfColour(cdu);
+                    ShowASplashOfColour(cdu);
 
-                cdu.AutoBrightness.Enabled = true;
-                cdu.ApplyAutoBrightness();
+                    cdu.AutoBrightness.Enabled = true;
+                    cdu.ApplyAutoBrightness();
 
-                cdu.LeftAmbientLightChanged += (_,_) => RefreshDisplay(cdu);
-                cdu.RightAmbientLightChanged += (_,_) => RefreshDisplay(cdu);
-                cdu.AmbientLightChanged += (_,_) => RefreshDisplay(cdu);
-                RefreshDisplay(cdu);
+                    cdu.LeftAmbientLightChanged += (_,_) => RefreshDisplay(cdu);
+                    cdu.RightAmbientLightChanged += (_,_) => RefreshDisplay(cdu);
+                    cdu.AmbientLightChanged += (_,_) => RefreshDisplay(cdu);
+                    RefreshDisplay(cdu);
 
-                Console.WriteLine($"Press Q to quit");
-                while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
-                    ;
+                    Console.WriteLine($"Press Q to quit");
+                    while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
+                        ;
+                    }
+
+                    cdu.Cleanup();
                 }
-
-                cdu.Cleanup();
             }
         }
 
-        static DeviceIdentifier SelectDevice()
+        static DeviceIdentifier? SelectDevice()
         {
             var identifiers = CduFactory
                 .FindLocalDevices()

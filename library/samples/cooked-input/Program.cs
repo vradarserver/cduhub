@@ -18,25 +18,29 @@ namespace CookedInput
         {
             var deviceId = SelectDevice();
             using(var cdu = CduFactory.ConnectLocal(deviceId)) {
-                Console.WriteLine($"Using {cdu.DeviceId}");
-                cdu.Output.Centred("Press buttons");
-                cdu.RefreshDisplay();
+                if(cdu == null) {
+                    Console.WriteLine("No device connected");
+                } else {
+                    Console.WriteLine($"Using {cdu.DeviceId}");
+                    cdu.Output.Centred("Press buttons");
+                    cdu.RefreshDisplay();
 
-                cdu.KeyDown += (_, args) => {
-                    ShowKeyEvent(cdu, "Dn", args);
-                };
-                cdu.KeyUp += (_, args) => {
-                    ShowKeyEvent(cdu, "Up", args);
-                };
+                    cdu.KeyDown += (_, args) => {
+                        ShowKeyEvent(cdu, "Dn", args);
+                    };
+                    cdu.KeyUp += (_, args) => {
+                        ShowKeyEvent(cdu, "Up", args);
+                    };
 
-                Console.WriteLine($"Press Q to quit");
-                while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q);
+                    Console.WriteLine($"Press Q to quit");
+                    while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q);
 
-                cdu.Cleanup();
+                    cdu.Cleanup();
+                }
             }
         }
 
-        static DeviceIdentifier SelectDevice()
+        static DeviceIdentifier? SelectDevice()
         {
             var identifiers = CduFactory
                 .FindLocalDevices()

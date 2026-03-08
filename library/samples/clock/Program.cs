@@ -18,28 +18,32 @@ namespace Clock
         {
             var deviceId = SelectDevice();
             using(var cdu = CduFactory.ConnectLocal(deviceId)) {
-                Console.WriteLine($"Using {cdu.DeviceId}");
+                if(cdu == null) {
+                    Console.WriteLine("No device connected");
+                } else {
+                    Console.WriteLine($"Using {cdu.DeviceId}");
 
-                Console.WriteLine($"Press Q to quit");
-                while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
-                    var now = DateTime.Now;
+                    Console.WriteLine($"Press Q to quit");
+                    while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
+                        var now = DateTime.Now;
 
-                    cdu.Output
-                        .Clear()
-                        .MiddleLine().CentreFor("00:00:00")
-                        .White().Write(now.Hour, "00").Yellow().Write(':')
-                        .White().Write(now.Minute, "00").Yellow().Write(':')
-                        .White().Write(now.Second, "00");
-                    cdu.RefreshDisplay();
+                        cdu.Output
+                            .Clear()
+                            .MiddleLine().CentreFor("00:00:00")
+                            .White().Write(now.Hour, "00").Yellow().Write(':')
+                            .White().Write(now.Minute, "00").Yellow().Write(':')
+                            .White().Write(now.Second, "00");
+                        cdu.RefreshDisplay();
 
-                    Thread.Sleep(100);
+                        Thread.Sleep(100);
+                    }
+
+                    cdu.Cleanup();
                 }
-
-                cdu.Cleanup();
             }
         }
 
-        static DeviceIdentifier SelectDevice()
+        static DeviceIdentifier? SelectDevice()
         {
             var identifiers = CduFactory
                 .FindLocalDevices()
