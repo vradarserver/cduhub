@@ -22,7 +22,7 @@ namespace Cduhub.Plugin
 
         public string Label { get; set; }
 
-        public Func<Hub, Page> CreatePageCallback { get; set; }
+        public Func<Hub, Page>? CreatePageCallback { get; set; }
 
         public RegisteredPlugin(Guid id)
         {

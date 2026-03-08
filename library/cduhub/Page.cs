@@ -28,7 +28,7 @@ namespace Cduhub
 
         public virtual Palette Palette => _Hub.DefaultPalette;
 
-        public virtual FontReference PageFont => _Hub.DefaultFontReference;
+        public virtual FontReference? PageFont => _Hub.DefaultFontReference;
 
         public virtual CommonKey? MenuKey { get; }
 
@@ -40,12 +40,12 @@ namespace Cduhub
 
         public virtual bool DisableParentKey { get; }
 
-        public virtual Func<Type> LeftArrowCallback { get; }
+        public virtual Func<Type>? LeftArrowCallback { get; }
 
-        public virtual Func<Type> RightArrowCallback { get; }
+        public virtual Func<Type>? RightArrowCallback { get; }
 
-        private Scratchpad _Scratchpad;
-        public Scratchpad Scratchpad
+        private Scratchpad? _Scratchpad;
+        public Scratchpad? Scratchpad
         {
             get => _Scratchpad;
             set {
@@ -163,8 +163,8 @@ namespace Cduhub
 
         protected virtual void ShowConnectionState(Cduhub.FlightSim.ConnectionState? state)
         {
-            string stateText = null;
-            bool showQuitKey = true;
+            string? stateText = null;
+            var showQuitKey = true;
             switch(state ?? FlightSim.ConnectionState.Disconnected) {
                 case FlightSim.ConnectionState.Connecting:      stateText = "CONNECTING"; break;
                 case FlightSim.ConnectionState.Disconnected:    stateText = "WAITING"; break;
@@ -202,9 +202,12 @@ namespace Cduhub
             );
         }
 
-        protected virtual bool CreateAndSelectPageForArrows(CommonKey commonKey, bool replaceCurrentInHistory = true)
+        protected virtual bool CreateAndSelectPageForArrows(
+            CommonKey commonKey,
+            bool replaceCurrentInHistory = true
+        )
         {
-            Type type = null;
+            Type? type = null;
             switch(commonKey) {
                 case CommonKey.LeftArrowOrPrevPage:
                     type = LeftArrowCallback?.Invoke();
@@ -221,14 +224,14 @@ namespace Cduhub
             return type != null;
         }
 
-        protected virtual void HookScratchpad(Scratchpad scratchpad)
+        protected virtual void HookScratchpad(Scratchpad? scratchpad)
         {
             if(scratchpad != null) {
                 scratchpad.RefreshRowDisplay += Scratchpad_RefreshRowDisplay;
             }
         }
 
-        protected virtual void UnhookScratchpad(Scratchpad scratchpad)
+        protected virtual void UnhookScratchpad(Scratchpad? scratchpad)
         {
             if(scratchpad != null) {
                 scratchpad.RefreshRowDisplay -= Scratchpad_RefreshRowDisplay;

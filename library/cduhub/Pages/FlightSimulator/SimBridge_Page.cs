@@ -16,7 +16,7 @@ namespace Cduhub.Pages.FlightSimulator
 {
     class SimBridge_Page : CommonFlightSimPage
     {
-        private SimBridgeA320RemoteMcdu _SimBridgeA320;
+        private SimBridgeA320RemoteMcdu? _SimBridgeA320;
 
         public override DeviceType SimulatorDeviceType => DeviceType.AirbusA320Mcdu;
 
@@ -33,7 +33,7 @@ namespace Cduhub.Pages.FlightSimulator
             Disconnect();
 
             var settings = ConfigStorage.Load<SimBridgeEfbSettings>();
-            var mcdu = new SimBridgeA320RemoteMcdu(_Hub.ConnectedDevice.DeviceUser, Screen, Leds) {
+            var mcdu = new SimBridgeA320RemoteMcdu(_Hub.ConnectedDevice?.DeviceUser ?? DeviceUser.Captain, Screen, Leds) {
                 Host = settings.Host,
                 Port = settings.Port,
             };

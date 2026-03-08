@@ -18,7 +18,7 @@ namespace Cduhub.Pages.FlightSimulator
 
         public override bool DisableInitKey => true;
 
-        public override FontReference PageFont => null;
+        public override FontReference? PageFont => null;
 
         public Passthru_Page(Hub hub) : base(hub)
         {

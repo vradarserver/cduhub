@@ -17,12 +17,14 @@ namespace Cduhub.Pages.Init
 
         public AutoBrightnessKeyboardInit_Page(Hub hub) : base(hub)
         {
-            SetupEditor(() => _Settings.AutoBrightness.KeyboardBacklight);
+            SetupEditor(() => _Settings?.AutoBrightness.KeyboardBacklight);
         }
 
         protected override void ApplyDefaults(BrightnessSettings defaults)
         {
-            _Settings.AutoBrightness.KeyboardBacklight = defaults.AutoBrightness.KeyboardBacklight;
+            if(_Settings != null) {
+                _Settings.AutoBrightness.KeyboardBacklight = defaults.AutoBrightness.KeyboardBacklight;
+            }
         }
     }
 }

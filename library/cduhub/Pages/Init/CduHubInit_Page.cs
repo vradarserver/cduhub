@@ -19,40 +19,40 @@ namespace Cduhub.Pages.Init
         public CduHubInit_Page(Hub hub) : base(hub)
         {
             LeftOption("X-OFFSET",
-                () => _Settings.DisplayOffset.XPixels.ToString(),
+                () => _Settings?.DisplayOffset.XPixels.ToString() ?? "",
                 () => _Form.IntegerFromScratchpad(Scratchpad,
-                        v => _Settings.DisplayOffset.XPixels = v,
+                        v => _Settings.WhenNotNull(nn => nn.DisplayOffset.XPixels = v),
                         min: -150, max: 150
                       )
             );
             RightOption("Y-OFFSET",
-                () => _Settings.DisplayOffset.YPixels.ToString(),
+                () => _Settings?.DisplayOffset.YPixels.ToString() ?? "",
                 () => _Form.IntegerFromScratchpad(Scratchpad,
-                        v => _Settings.DisplayOffset.YPixels = v,
+                        v => _Settings.WhenNotNull(nn => nn.DisplayOffset.YPixels = v),
                         min: -150, max: 150
                       )
             );
             LeftOption("LOCAL",
-                () => _Form.OnOff(_Settings.Plugin.InProcessEnabled),
-                () => _Settings.Plugin.InProcessEnabled = !_Settings.Plugin.InProcessEnabled
+                () => _Form.OnOff(_Settings?.Plugin.InProcessEnabled ?? false),
+                () => _Settings.WhenNotNull(nn => nn.Plugin.InProcessEnabled = !nn.Plugin.InProcessEnabled)
             );
             RightOption("NETWORK",
-                () => _Form.OnOff(_Settings.Plugin.OutOfProcessEnabled),
-                () => _Settings.Plugin.OutOfProcessEnabled = !_Settings.Plugin.OutOfProcessEnabled
+                () => _Form.OnOff(_Settings?.Plugin.OutOfProcessEnabled ?? false),
+                () => _Settings.WhenNotNull(nn => nn.Plugin.OutOfProcessEnabled = !nn.Plugin.OutOfProcessEnabled)
             );
             LeftOption("FONT",
-                () => _Settings.Font.FontName,
+                () => _Settings?.Font.FontName ?? "",
                 () => _Form.CycleFontNames(
-                        _Settings.Font.FontName,
-                        v => _Settings.Font.FontName = v,
+                        _Settings?.Font.FontName ?? "",
+                        v => _Settings.WhenNotNull(nn => nn.Font.FontName = v),
                         includeDefaultFontName: true
                     )
             );
             LeftOption("PALETTE",
-                () => _Settings.PaletteName,
+                () => _Settings?.PaletteName ?? "",
                 () => _Form.CyclePaletteNames(
-                        _Settings.PaletteName,
-                        v => _Settings.PaletteName = v,
+                        _Settings?.PaletteName ?? "",
+                        v => _Settings.WhenNotNull(nn => nn.PaletteName = v),
                         includeDefaultPaletteName: true
                     )
             );

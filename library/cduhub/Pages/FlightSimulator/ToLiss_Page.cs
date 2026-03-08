@@ -16,7 +16,7 @@ namespace Cduhub.Pages.FlightSimulator
 {
     class ToLiss_Page : CommonFlightSimPage
     {
-        private ToLissUdpMcdu _ToLissMcdu;
+        private ToLissUdpMcdu? _ToLissMcdu;
 
         public override DeviceType SimulatorDeviceType => DeviceType.AirbusA320Mcdu;
 
@@ -33,7 +33,7 @@ namespace Cduhub.Pages.FlightSimulator
             Disconnect();
 
             var settings = ConfigStorage.Load<ToLissUdpSettings>();
-            var mcdu = new ToLissUdpMcdu(_Hub.ConnectedDevice.DeviceUser, Screen, Leds) {
+            var mcdu = new ToLissUdpMcdu(_Hub.ConnectedDevice?.DeviceUser ?? DeviceUser.Captain, Screen, Leds) {
                 Host = settings.Host,
                 Port = settings.Port,
             };

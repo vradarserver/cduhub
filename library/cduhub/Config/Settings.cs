@@ -38,7 +38,7 @@ namespace Cduhub.Config
         /// JSON. On return <see cref="SettingsVersion"/> will be set to current.
         /// </summary>
         /// <param name="json"></param>
-        public virtual void UpgradeSettings(string json)
+        public virtual void UpgradeSettings(string? json)
         {
         }
 

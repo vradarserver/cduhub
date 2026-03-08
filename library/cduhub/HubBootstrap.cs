@@ -35,12 +35,12 @@ namespace Cduhub
             }
         }
 
-        private static Assembly CurrentDomain_AssemblyResolve(
+        private static Assembly? CurrentDomain_AssemblyResolve(
             object sender,
             ResolveEventArgs args
         )
         {
-            Assembly result = null;
+            Assembly? result = null;
 
             var assemblyName = new AssemblyName(args.Name);
             var searchSpec = $"{assemblyName.Name}.*";

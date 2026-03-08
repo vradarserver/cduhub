@@ -26,13 +26,13 @@ namespace Cduhub.Pages
     {
         private const string _Url = "https://aviationweather.gov/api/data/metar?ids={0}&format=raw&taf=true";
 
-        private MetarSettings _Settings;
+        private MetarSettings? _Settings;
         private FormHelper _Form;
-        private Timer _Timer = null;
+        private Timer? _Timer = null;
         private DateTime _LastDownloadUtc;
         private DateTime _BackoffThreshold;
-        private string _Metar;
-        private string[] _Taf;
+        private string? _Metar;
+        private string[]? _Taf;
         private bool _OutputIsReport = false;
         private Colour _OutputColour = Colour.White;
         private IReadOnlyList<string> _OutputLines = Array.Empty<string>();
@@ -71,6 +71,8 @@ namespace Cduhub.Pages
 
         private void DrawOptions()
         {
+            if(_Settings == null) return;
+
             OverlayTime(suppressRefresh: true);
             Output
                 .Large().White()
@@ -104,6 +106,8 @@ namespace Cduhub.Pages
 
         public override void OnCommonKeyDown(CommonKey key)
         {
+            if(_Settings == null) return;
+
             switch(key) {
                 case CommonKey.LineSelectLeft1:
                     CopyScratchpadToStationCode();
@@ -143,6 +147,8 @@ namespace Cduhub.Pages
 
         private void CopyScratchpadToStationCode()
         {
+            if(_Settings == null || Scratchpad == null) return;
+
             var text = Scratchpad.Text.Trim().ToUpper();
             if(!Validate.IsValidForAirportIcao(text)) {
                 Scratchpad.ShowFormatError();
@@ -156,6 +162,8 @@ namespace Cduhub.Pages
 
         private void CopyScratchpadToRefreshMinutes()
         {
+            if(_Settings == null || Scratchpad == null) return;
+
             if(!_Form.IntegerValue(Scratchpad.Text, v => _Settings.RefreshMinutes = v, min: 0, max: 60 * 24)) {
                 Scratchpad.ShowFormatError();
             } else {
@@ -165,6 +173,8 @@ namespace Cduhub.Pages
 
         private void DownloadReport()
         {
+            if(_Settings == null) return;
+
             _LastDownloadUtc = DateTime.UtcNow;
 
             var stationCode = _Settings.StationCode;
@@ -212,6 +222,8 @@ namespace Cduhub.Pages
 
         private void ShowReports()
         {
+            if(_Settings == null) return;
+
             _OutputIsReport = true;
 
             var output = new StringBuilder();

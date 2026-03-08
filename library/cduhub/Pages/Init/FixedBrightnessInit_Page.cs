@@ -27,23 +27,23 @@ namespace Cduhub.Pages.Init
             Leds.TurnAllOn(true);
 
             LeftOption("DISPLAY",
-                () => $"{_Settings.FixedBrightness.DisplayBacklightPercent}%",
+                () => $"{_Settings?.FixedBrightness.DisplayBacklightPercent}%",
                 () => _Form.IntegerFromScratchpad(Scratchpad,
-                    v => _Settings.FixedBrightness.DisplayBacklightPercent = Math.Max(5, v),
+                    v => _Settings.WhenNotNull(nn => nn.FixedBrightness.DisplayBacklightPercent = Math.Max(5, v)),
                     min: 0, max: 100
                 )
             );
             RightOption("LED",
-                () => $"{_Settings.FixedBrightness.LedIntensityPercent}%",
+                () => $"{_Settings?.FixedBrightness.LedIntensityPercent}%",
                 () => _Form.IntegerFromScratchpad(Scratchpad,
-                    v => _Settings.FixedBrightness.LedIntensityPercent = Math.Max(5, v),
+                    v => _Settings.WhenNotNull(nn => nn.FixedBrightness.LedIntensityPercent = Math.Max(5, v)),
                     min: 0, max: 100
                 )
             );
             LeftOption("KEYBOARD",
-                () => $"{_Settings.FixedBrightness.KeyboardBacklightPercent}%",
+                () => $"{_Settings?.FixedBrightness.KeyboardBacklightPercent}%",
                 () => _Form.IntegerFromScratchpad(Scratchpad,
-                    v => _Settings.FixedBrightness.KeyboardBacklightPercent = v,
+                    v => _Settings.WhenNotNull(nn => nn.FixedBrightness.KeyboardBacklightPercent = v),
                     min: 0, max: 100
                 )
             );
@@ -53,7 +53,9 @@ namespace Cduhub.Pages.Init
 
         protected override void ApplyDefaults(BrightnessSettings defaults)
         {
-            _Settings.FixedBrightness = defaults.FixedBrightness;
+            if(_Settings != null) {
+                _Settings.FixedBrightness = defaults.FixedBrightness;
+            }
         }
 
         protected override void AddToPage()

@@ -20,17 +20,17 @@ namespace Cduhub.Pages.Init
     {
         protected class OptionConfig
         {
-            public string Label { get; set; }
+            public string Label { get; set; } = "";
 
-            public Func<string> Format { get; set; }
+            public Func<string> Format { get; set; } = () => "";
 
-            public Action Parse { get; set; }
+            public Action Parse { get; set; } = () => {;};
         }
 
-        protected TSettings _Settings;
+        protected TSettings? _Settings;
         protected readonly FormHelper _Form;
-        protected readonly List<OptionConfig> _LeftOptions = new List<OptionConfig>();
-        protected readonly List<OptionConfig> _RightOptions = new List<OptionConfig>();
+        protected readonly List<OptionConfig> _LeftOptions = new();
+        protected readonly List<OptionConfig> _RightOptions = new();
 
         protected abstract string Title { get; }
 

@@ -25,20 +25,20 @@ namespace Cduhub
     public class Hub : IDisposable
     {
         private bool _ShuttingDown;
-        private ICdu _Cdu;
-        private Page _SelectedPage;
-        private Page _RootPage;
+        private ICdu? _Cdu;
+        private Page? _SelectedPage;
+        private Page? _RootPage;
         private int _ConnectingCount;
-        private System.Timers.Timer _ReconnectTimer;
+        private System.Timers.Timer? _ReconnectTimer;
         private bool _WaitingForConnect = true;
-        private Stack<Page> _PageHistory = new Stack<Page>();
-        private readonly object _PageLock = new object();
-        private Dictionary<Type, Page> _PageTypeMap = new Dictionary<Type, Page>();
-        private Dictionary<Guid, Page> _PluginPages = new Dictionary<Guid, Page>();
-        private McduFontFile _CurrentFont;
+        private Stack<Page> _PageHistory = new();
+        private readonly object _PageLock = new();
+        private readonly Dictionary<Type, Page> _PageTypeMap = new();
+        private readonly Dictionary<Guid, Page> _PluginPages = new();
+        private McduFontFile? _CurrentFont;
         private bool? _IsCurrentFontFullWidth;
-        private CduhubSettings _Settings;
-        private BrightnessSettings _BrightnessSettings;
+        private CduhubSettings? _Settings;
+        private BrightnessSettings? _BrightnessSettings;
 
         /// <summary>
         /// Gets or sets a value indicating whether the hub should perpetually try to reconnect to the MCDU if
@@ -49,7 +49,7 @@ namespace Cduhub
         /// <summary>
         /// The connected device or null if no device is connected.
         /// </summary>
-        public DeviceIdentifier ConnectedDevice => _Cdu?.DeviceId;
+        public DeviceIdentifier? ConnectedDevice => _Cdu?.DeviceId;
 
         /// <summary>
         /// The default font reference. This is user configurable.
@@ -57,7 +57,7 @@ namespace Cduhub
         public FontReference DefaultFontReference
         {
             get {
-                return _Settings.Font ?? new FontReference();
+                return _Settings?.Font ?? new FontReference();
             }
         }
 
@@ -67,7 +67,7 @@ namespace Cduhub
         public Palette DefaultPalette
         {
             get {
-                return Palettes.LoadByConfigName(_Settings.PaletteName);
+                return Palettes.LoadByConfigName(_Settings?.PaletteName);
             }
         }
 
@@ -107,11 +107,11 @@ namespace Cduhub
 
         public string InitKeyName => InitKey.Describe(_Cdu);
 
-        public DisplayBuffer CurrentDisplayBuffer { get; private set; }
+        public DisplayBuffer? CurrentDisplayBuffer { get; private set; }
 
-        public DisplayPalette CurrentDisplayPalette { get; private set; }
+        public DisplayPalette? CurrentDisplayPalette { get; private set; }
 
-        public DisplayFont CurrentDisplayFont { get; private set; }
+        public DisplayFont? CurrentDisplayFont { get; private set; }
 
         public int CurrentXOffset { get; private set; }
 
@@ -120,7 +120,7 @@ namespace Cduhub
         /// <summary>
         /// Raised when the hub wants the parent application to close.
         /// </summary>
-        public event EventHandler CloseApplication;
+        public event EventHandler? CloseApplication;
 
         /// <summary>
         /// Raises <see cref="CloseApplication"/>.
@@ -133,7 +133,7 @@ namespace Cduhub
         /// <summary>
         /// Raised when <see cref="ConnectedDevice"/> changes.
         /// </summary>
-        public event EventHandler ConnectedDeviceChanged;
+        public event EventHandler? ConnectedDeviceChanged;
 
         /// <summary>
         /// Raises <see cref="ConnectedDeviceChanged"/>.
@@ -146,7 +146,7 @@ namespace Cduhub
         /// <summary>
         /// Raised when the CDU updates its display.
         /// </summary>
-        public event EventHandler<DisplayChangingEventArgs> DisplayChanging;
+        public event EventHandler<DisplayChangingEventArgs>? DisplayChanging;
 
         /// <summary>
         /// Raises <see cref="DisplayChanging"/>.
@@ -157,7 +157,7 @@ namespace Cduhub
         /// <summary>
         /// Raised when the CDU updates the font on the device.
         /// </summary>
-        public event EventHandler<FontChangingEventArgs> FontChanging;
+        public event EventHandler<FontChangingEventArgs>? FontChanging;
 
         /// <summary>
         /// Raises <see cref="FontChanging"/>.
@@ -168,7 +168,7 @@ namespace Cduhub
         /// <summary>
         /// Raised when the CDU updates the palette on the device.
         /// </summary>
-        public event EventHandler<PaletteChangingEventArgs> PaletteChanging;
+        public event EventHandler<PaletteChangingEventArgs>? PaletteChanging;
 
         /// <summary>
         /// Raises <see cref="PaletteChanging"/>.
@@ -199,7 +199,7 @@ namespace Cduhub
 
             var timer = _ReconnectTimer;
             _ReconnectTimer = null;
-            timer.Dispose();
+            timer?.Dispose();
 
             var settings = _Settings;
             if(_Cdu != null) {
@@ -346,13 +346,13 @@ namespace Cduhub
             }
         }
 
-        public void SelectPage(Page page, bool replaceCurrentInHistory = false)
+        public void SelectPage(Page? page, bool replaceCurrentInHistory = false)
         {
             if(page != _SelectedPage) {
                 DeselectPage(_SelectedPage);
                 _SelectedPage = page;
 
-                if(page != null) {
+                if(_SelectedPage != null && page != null) {
                     RefreshPalette(page);
                     UploadFont(page.PageFont);
                     page.PreparePage();
@@ -368,7 +368,7 @@ namespace Cduhub
             }
         }
 
-        private void UploadFont(FontReference pageFont)
+        private void UploadFont(FontReference? pageFont)
         {
             if(pageFont == null) {
                 _CurrentFont = null;
@@ -378,13 +378,15 @@ namespace Cduhub
                 if(font != _CurrentFont || _IsCurrentFontFullWidth != pageFont.UseFullWidth) {
                     _CurrentFont = font;
                     _IsCurrentFontFullWidth = pageFont.UseFullWidth;
-                    _Cdu.Screen.Clear();
-                    _Cdu.UseFont(_CurrentFont, _IsCurrentFontFullWidth.Value, skipDuplicateCheck: false);
+                    if(_Cdu != null) {
+                        _Cdu.Screen.Clear();
+                        _Cdu.UseFont(_CurrentFont, _IsCurrentFontFullWidth.Value, skipDuplicateCheck: false);
+                    }
                 }
             }
         }
 
-        private void DeselectPage(Page page)
+        private void DeselectPage(Page? page)
         {
             page?.OnSelected(false);
         }
@@ -409,7 +411,7 @@ namespace Cduhub
 
         public void RefreshDisplay(Page page)
         {
-            if(page == _SelectedPage) {
+            if(page == _SelectedPage && _Cdu != null) {
                 _Cdu.Screen.CopyFrom(page.Screen);
                 _Cdu.RefreshDisplay();
             }
@@ -417,7 +419,7 @@ namespace Cduhub
 
         public void RefreshLeds(Page page)
         {
-            if(page == _SelectedPage) {
+            if(page == _SelectedPage && _Cdu != null) {
                 _Cdu.Leds.CopyFrom(page.Leds);
                 _Cdu.RefreshLeds();
             }
@@ -425,7 +427,7 @@ namespace Cduhub
 
         public void RefreshPalette(Page page, bool forceRefresh = false)
         {
-            if(page == _SelectedPage) {
+            if(page == _SelectedPage && _Cdu != null) {
                 _Cdu.Palette.CopyFrom(page.Palette);
                 _Cdu.RefreshPalette(skipDuplicateCheck: forceRefresh);
             }
@@ -482,12 +484,12 @@ namespace Cduhub
             SelectPage(page);
         }
 
-        public void ShowPageForPlugin(RegisteredPlugin plugin)
+        public void ShowPageForPlugin(RegisteredPlugin? plugin)
         {
             if(plugin != null) {
                 lock(_PageLock) {
                     if(!_PluginPages.TryGetValue(plugin.Id, out var page)) {
-                        page = plugin.CreatePageCallback.Invoke(this);
+                        page = plugin.CreatePageCallback?.Invoke(this);
                         if(page != null) {
                             _PluginPages.Add(plugin.Id, page);
                         }
@@ -535,7 +537,9 @@ namespace Cduhub
 
         private void Cdu_AmbientLightChanged(object sender, EventArgs e)
         {
-            _SelectedPage?.OnAmbientLightChanged(_Cdu.AmbientLightPercent);
+            if(_Cdu != null) {
+                _SelectedPage?.OnAmbientLightChanged(_Cdu.AmbientLightPercent);
+            }
         }
 
         private void Cdu_KeyDown(object sender, McduDotNet.KeyEventArgs e)

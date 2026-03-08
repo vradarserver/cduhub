@@ -16,7 +16,7 @@ namespace Cduhub.Pages.FlightSimulator
 {
     class XPlane_Page : CommonFlightSimPage
     {
-        private XPlaneGenericMcdu _XPlaneMcdu;
+        private XPlaneGenericMcdu? _XPlaneMcdu;
 
         public override DeviceType SimulatorDeviceType => DeviceType.NotSpecified;
 
@@ -35,7 +35,7 @@ namespace Cduhub.Pages.FlightSimulator
             var settings = ConfigStorage.Load<XPlane12RestSettings>();
             var mcdu = new XPlaneGenericMcdu(
                 CommonHttpClient.HttpClient,
-                _Hub.ConnectedDevice.DeviceUser,
+                _Hub.ConnectedDevice?.DeviceUser ?? DeviceUser.Captain,
                 Screen,
                 Leds
             ) {

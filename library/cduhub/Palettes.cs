@@ -31,7 +31,7 @@ namespace Cduhub
         private static readonly object _SyncLock = new object();
         private static Dictionary<string, Palette> _CustomPaletteMap = new Dictionary<string, Palette>(StringComparer.InvariantCultureIgnoreCase);
 
-        public static Exception LoadSettingsException { get; }
+        public static Exception? LoadSettingsException { get; }
 
         public static Palette DefaultPalette => FenixA320Palette;
 
@@ -59,12 +59,12 @@ namespace Cduhub
             _XPlane12A330Palette = ParsePalette(CduHubResources.xplane_12_a330_palette_json);
         }
 
-        public static Palette ParsePalette(byte[] jsonBytes, Encoding encoding = null)
+        public static Palette ParsePalette(byte[] jsonBytes, Encoding? encoding = null)
         {
             encoding = encoding ?? Encoding.UTF8;
             var json = encoding.GetString(jsonBytes);
             var customPalette = JsonConvert.DeserializeObject<CustomPalette>(json);
-            return customPalette?.ToPalette();
+            return customPalette?.ToPalette() ?? DefaultPalette;
         }
 
         public static Palette LoadBuiltInPalette(BuiltInPalette builtInPalette)
@@ -78,9 +78,9 @@ namespace Cduhub
             }
         }
 
-        public static Palette LoadByConfigName(string configName)
+        public static Palette LoadByConfigName(string? configName)
         {
-            Palette result = null;
+            Palette? result = null;
 
             configName = (configName ?? "").Trim();
 

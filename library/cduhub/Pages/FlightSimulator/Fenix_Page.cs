@@ -16,7 +16,7 @@ namespace Cduhub.Pages.FlightSimulator
 {
     class Fenix_Page : CommonFlightSimPage
     {
-        private FenixA320EfbMcdu _FenixA320;
+        private FenixA320EfbMcdu? _FenixA320;
 
         public override DeviceType SimulatorDeviceType => DeviceType.AirbusA320Mcdu;
 
@@ -33,7 +33,7 @@ namespace Cduhub.Pages.FlightSimulator
             Disconnect();
 
             var settings = ConfigStorage.Load<FenixEfbSettings>();
-            var mcdu = new FenixA320EfbMcdu(_Hub.ConnectedDevice.DeviceUser, Screen, Leds) {
+            var mcdu = new FenixA320EfbMcdu(_Hub.ConnectedDevice?.DeviceUser ?? DeviceUser.Captain, Screen, Leds) {
                 Host = settings.Host,
                 Port = settings.Port,
             };

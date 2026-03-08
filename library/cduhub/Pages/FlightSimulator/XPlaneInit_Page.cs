@@ -15,7 +15,7 @@ namespace Cduhub.Pages.FlightSimulator
 {
     class XPlaneInit_Page : Page
     {
-        private XPlane12RestSettings _Settings;
+        private XPlane12RestSettings? _Settings;
         private readonly FormHelper _Form;
 
         public XPlaneInit_Page(Hub hub) : base(hub)
@@ -41,6 +41,8 @@ namespace Cduhub.Pages.FlightSimulator
 
         private void DrawPage()
         {
+            if(_Settings == null) return;
+
             Output
                 .Clear()
                 .Centred("<green>X-PLANE12 REST CONFIG")
@@ -67,6 +69,8 @@ namespace Cduhub.Pages.FlightSimulator
 
         public override void OnCommonKeyDown(CommonKey commonKey)
         {
+            if(_Settings == null) return;
+
             switch(commonKey) {
                 case CommonKey.LineSelectLeft1:
                     CopyScratchpadToHost();
@@ -94,6 +98,8 @@ namespace Cduhub.Pages.FlightSimulator
 
         private void ResetToDefaults()
         {
+            if(_Settings == null) return;
+
             var defaults = new XPlane12RestSettings();
             _Settings.Host = defaults.Host;
             _Settings.Port = defaults.Port;
@@ -104,6 +110,8 @@ namespace Cduhub.Pages.FlightSimulator
 
         private void CopyScratchpadToHost()
         {
+            if(_Settings == null || Scratchpad == null) return;
+
             var text = Scratchpad.Text;
             if(!Validate.IsValidForHttpEndPoint(host: text)) {
                 Scratchpad.ShowFormatError();
@@ -116,6 +124,8 @@ namespace Cduhub.Pages.FlightSimulator
 
         private void CopyScratchpadToPort()
         {
+            if(_Settings == null || Scratchpad == null) return;
+
             var text = Scratchpad.Text;
 
             if(!int.TryParse(text, out var port) || !Validate.IsValidForHttpEndPoint(port: port)) {

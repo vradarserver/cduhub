@@ -1,4 +1,4 @@
-﻿// Copyright © 2025 onwards, Andrew Whewell
+﻿// Copyright © 2026 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -9,39 +9,22 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using Cduhub.Config;
 
-namespace Cduhub.Pages.Init
+namespace Cduhub
 {
-    public class BrightnessInit_Page : CommonSettingsPage<BrightnessSettings>
+    static class ObjectExtensions
     {
-        private const bool _DefaultAutoBrightness = true;
-
-        protected override string Title => "BRIGHTNESS CONFIG";
-
-        protected override bool ApplySettingsImmediately => true;
-
-        public override Func<Type> RightArrowCallback => () => _Settings?.UseAutoBrightness ?? _DefaultAutoBrightness
-            ? typeof(AutoBrightnessDisplayInit_Page)
-            : typeof(FixedBrightnessInit_Page);
-
-        public BrightnessInit_Page(Hub hub) : base(hub)
+        /// <summary>
+        /// Calls action if neither object nor action are null. This can be removed if
+        /// we ever upgrade to lang ver 10.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="obj"></param>
+        /// <param name="action"></param>
+        public static void WhenNotNull<T>(this T? obj, Action<T>? action) where T: class
         {
-            LeftOption("AUTO-BRIGHTNESS",
-                () => _Form.OnOff(_Settings?.UseAutoBrightness ?? _DefaultAutoBrightness),
-                () => _Form.ToggleBool(
-                    _Settings?.UseAutoBrightness ?? _DefaultAutoBrightness,
-                    v => _Settings.WhenNotNull(nn => nn.UseAutoBrightness = v)
-                )
-            );
-        }
-
-        protected override void ApplySettings() => _Hub.ReloadBrightness();
-
-        protected override void ApplyDefaults(BrightnessSettings defaults)
-        {
-            if(_Settings != null) {
-                _Settings.UseAutoBrightness = defaults.UseAutoBrightness;
+            if(obj != null && action != null) {
+                action(obj);
             }
         }
     }

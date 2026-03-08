@@ -15,7 +15,7 @@ namespace Cduhub.Pages.FlightSimulator
 {
     class SimBridgeInit_Page : Page
     {
-        private SimBridgeEfbSettings _Settings;
+        private SimBridgeEfbSettings? _Settings;
         private readonly FormHelper _Form;
 
         public SimBridgeInit_Page(Hub hub) : base(hub)
@@ -41,6 +41,8 @@ namespace Cduhub.Pages.FlightSimulator
 
         private void DrawPage()
         {
+            if(_Settings == null) return;
+
             Output
                 .Clear()
                 .Centred("<green>SIMBRIDGE EFB CONFIG")
@@ -67,6 +69,8 @@ namespace Cduhub.Pages.FlightSimulator
 
         public override void OnCommonKeyDown(CommonKey commonKey)
         {
+            if(_Settings == null) return;
+
             switch(commonKey) {
                 case CommonKey.LineSelectLeft1:
                     CopyScratchpadToHost();
@@ -94,6 +98,8 @@ namespace Cduhub.Pages.FlightSimulator
 
         private void ResetToDefaults()
         {
+            if(_Settings == null) return;
+
             var defaults = new SimBridgeEfbSettings();
             _Settings.Host = defaults.Host;
             _Settings.Port = defaults.Port;
@@ -104,6 +110,8 @@ namespace Cduhub.Pages.FlightSimulator
 
         private void CopyScratchpadToHost()
         {
+            if(_Settings == null || Scratchpad == null) return;
+
             var text = Scratchpad.Text;
             if(!Validate.IsValidForWebSocketUri(host: text)) {
                 Scratchpad.ShowFormatError();
@@ -116,6 +124,8 @@ namespace Cduhub.Pages.FlightSimulator
 
         private void CopyScratchpadToPort()
         {
+            if(_Settings == null || Scratchpad == null) return;
+
             var text = Scratchpad.Text;
 
             if(!int.TryParse(text, out var port) || !Validate.IsValidForWebSocketUri(port: port)) {

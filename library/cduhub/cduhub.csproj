@@ -12,6 +12,8 @@
         <RepositoryUrl>https://github.com/vradarserver/cduhub</RepositoryUrl>
         <PackageTags>cduhub</PackageTags>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <Nullable>enable</Nullable>
+        <LangVersion>9.0</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

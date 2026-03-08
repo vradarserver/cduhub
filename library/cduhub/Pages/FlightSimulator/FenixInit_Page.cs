@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System;
 using Cduhub.Config;
 using McduDotNet;
 
@@ -15,7 +16,7 @@ namespace Cduhub.Pages.FlightSimulator
 {
     class FenixInit_Page : Page
     {
-        private FenixEfbSettings _Settings;
+        private FenixEfbSettings? _Settings;
         private readonly FormHelper _Form;
 
         public FenixInit_Page(Hub hub) : base(hub)
@@ -41,6 +42,8 @@ namespace Cduhub.Pages.FlightSimulator
 
         private void DrawPage()
         {
+            if(_Settings == null) return;
+
             Output
                 .Clear()
                 .Centred("<green>FENIX EFB CONFIG")
@@ -67,6 +70,8 @@ namespace Cduhub.Pages.FlightSimulator
 
         public override void OnCommonKeyDown(CommonKey commonKey)
         {
+            if(_Settings == null) return;
+
             switch(commonKey) {
                 case CommonKey.LineSelectLeft1:
                     CopyScratchpadToHost();
@@ -94,6 +99,8 @@ namespace Cduhub.Pages.FlightSimulator
 
         private void ResetToDefaults()
         {
+            if(_Settings == null) return;
+
             var defaults = new FenixEfbSettings();
             _Settings.Host = defaults.Host;
             _Settings.Port = defaults.Port;
@@ -104,6 +111,8 @@ namespace Cduhub.Pages.FlightSimulator
 
         private void CopyScratchpadToHost()
         {
+            if(_Settings == null || Scratchpad == null) return;
+
             var text = Scratchpad.Text;
             if(!Validate.IsValidForWebSocketUri(host: text)) {
                 Scratchpad.ShowFormatError();
@@ -116,6 +125,8 @@ namespace Cduhub.Pages.FlightSimulator
 
         private void CopyScratchpadToPort()
         {
+            if(_Settings == null || Scratchpad == null) return;
+
             var text = Scratchpad.Text;
 
             if(!int.TryParse(text, out var port) || !Validate.IsValidForWebSocketUri(port: port)) {

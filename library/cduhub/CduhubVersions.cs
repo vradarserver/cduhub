@@ -17,7 +17,7 @@ namespace Cduhub
     {
         public static InformationalVersion LibraryVersion { get; }
 
-        public static UpdateInfo UpdateInfo => GithubUpdateChecker
+        public static UpdateInfo? UpdateInfo => GithubUpdateChecker
             .DefaultInstance
             .UpdateInfo;
 

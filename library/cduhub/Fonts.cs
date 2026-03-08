@@ -32,7 +32,7 @@ namespace Cduhub
         private static readonly object _SyncLock = new object();
         private static Dictionary<string, McduFontFile> _CustomFontMap = new Dictionary<string, McduFontFile>(StringComparer.InvariantCultureIgnoreCase);
 
-        public static Exception LoadSettingsException { get; }
+        public static Exception? LoadSettingsException { get; }
 
         public static McduFontFile DefaultFont => B612Font;
 
@@ -60,11 +60,11 @@ namespace Cduhub
             _EgaFont = LoadFont(CduHubResources.ega_font_21x31_json);
         }
 
-        public static McduFontFile LoadFont(byte[] jsonBytes, Encoding encoding = null)
+        public static McduFontFile LoadFont(byte[] jsonBytes, Encoding? encoding = null)
         {
-            encoding = encoding ?? Encoding.UTF8;
+            encoding ??= Encoding.UTF8;
             var json = encoding.GetString(jsonBytes);
-            return JsonConvert.DeserializeObject<McduFontFile>(json);
+            return JsonConvert.DeserializeObject<McduFontFile>(json) ?? new();
         }
 
         public static McduFontFile LoadBuiltInFont(BuiltInFont builtInFont)
@@ -78,9 +78,9 @@ namespace Cduhub
             }
         }
 
-        public static McduFontFile LoadFontByConfigName(string configName)
+        public static McduFontFile LoadFontByConfigName(string? configName)
         {
-            McduFontFile result = null;
+            McduFontFile? result = null;
 
             configName = (configName ?? "").Trim();
 
@@ -141,6 +141,7 @@ namespace Cduhub
                     } catch(Exception) {
                         // TODO: Add logging
                     }
+                    result ??= DefaultFont;
                     _CustomFontMap.Add(configName, result);
                 }
 

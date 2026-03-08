@@ -16,9 +16,9 @@ namespace Cduhub.Plugin.Remote
 {
     class RemotePluginLoader
     {
-        public string LoadPluginFromFolder(string pluginFolder)
+        public string? LoadPluginFromFolder(string pluginFolder)
         {
-            string errorMessage = null;
+            string? errorMessage = null;
 
             var manifest = LoadManifestFromFolder(pluginFolder);
             if(manifest == null) {
@@ -32,9 +32,9 @@ namespace Cduhub.Plugin.Remote
             return errorMessage;
         }
 
-        private RemoteManifest LoadManifestFromFolder(string pluginFolder)
+        private RemoteManifest? LoadManifestFromFolder(string pluginFolder)
         {
-            RemoteManifest result = null;
+            RemoteManifest? result = null;
 
             var fileName = Path.Combine(pluginFolder, PluginPaths.RemoteManifestFilename);
             if(File.Exists(fileName)) {

@@ -22,9 +22,9 @@ namespace Cduhub.Config
         {
             public bool Enable { get; set; }
 
-            public string SettingsName { get; set; }
+            public string SettingsName { get; set; } = "";
 
-            public string FontFileName { get; set; }
+            public string FontFileName { get; set; } = "";
 
             public string NormalisedSettingsName()
             {

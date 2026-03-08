@@ -18,7 +18,7 @@ namespace Cduhub
     /// </summary>
     public static class WorkingFolder
     {
-        private static string _Folder;
+        private static string? _Folder;
         /// <summary>
         /// Gets the working folder. If the folder does not exist then it is created.
         /// </summary>

@@ -27,12 +27,14 @@ namespace Cduhub.Pages.Init
 
         public AutoBrightnessDisplayInit_Page(Hub hub) : base(hub)
         {
-            SetupEditor(() => _Settings.AutoBrightness.DisplayBacklight);
+            SetupEditor(() => _Settings?.AutoBrightness.DisplayBacklight);
         }
 
         protected override void ApplyDefaults(BrightnessSettings defaults)
         {
-            _Settings.AutoBrightness.DisplayBacklight = defaults.AutoBrightness.DisplayBacklight;
+            if(_Settings != null) {
+                _Settings.AutoBrightness.DisplayBacklight = defaults.AutoBrightness.DisplayBacklight;
+            }
         }
     }
 }

@@ -26,24 +26,24 @@ namespace Cduhub
         class GithubApiReleaseInfoSubset
         {
             [DataMember(Name = "html_url")]
-            public string HtmlUrl { get; set; }
+            public string HtmlUrl { get; set; } = "";
 
             [DataMember(Name = "name")]
-            public string Name { get; set; }
+            public string Name { get; set; } = "";
 
             [DataMember(Name = "tag_name")]
-            public string TagName { get; set; }
+            public string TagName { get; set; } = "";
         }
 
-        private Timer _Timer = new Timer();
-        private HttpClient _HttpClient;
+        private Timer? _Timer;
+        private HttpClient? _HttpClient;
 
         public const string LatestReleaseUrl = "https://api.github.com/repos/VRadarServer/cduhub/releases/latest";
 
         public static readonly GithubUpdateChecker DefaultInstance;
 
-        private UpdateInfo _UpdateInfo;
-        public UpdateInfo UpdateInfo
+        private UpdateInfo? _UpdateInfo;
+        public UpdateInfo? UpdateInfo
         {
             get => _UpdateInfo;
             set {
@@ -54,7 +54,7 @@ namespace Cduhub
             }
         }
 
-        public event EventHandler UpdateInfoChanged;
+        public event EventHandler? UpdateInfoChanged;
 
         protected virtual void OnUpdateInfoChanged()
         {
@@ -111,25 +111,27 @@ namespace Cduhub
             var successfulDownload = false;
 
             var client = _HttpClient;
-            try {
-                var request = new HttpRequestMessage(HttpMethod.Get, LatestReleaseUrl);
-                request.Headers.Accept.Add(
-                    new MediaTypeWithQualityHeaderValue("application/vnd.github+json")
-                );
-                request.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
-                request.Headers.UserAgent.ParseAdd($"CDUHub-{Assembly.GetExecutingAssembly().GetName().Version}");
+            if(client != null) {
+                try {
+                    var request = new HttpRequestMessage(HttpMethod.Get, LatestReleaseUrl);
+                    request.Headers.Accept.Add(
+                        new MediaTypeWithQualityHeaderValue("application/vnd.github+json")
+                    );
+                    request.Headers.Add("X-GitHub-Api-Version", "2022-11-28");
+                    request.Headers.UserAgent.ParseAdd($"CDUHub-{Assembly.GetExecutingAssembly().GetName().Version}");
 
-                var response = await client.SendAsync(request);
-                if(response.IsSuccessStatusCode) {
-                    var jsonText = await response.Content.ReadAsStringAsync();
-                    var latestRelease = JsonConvert.DeserializeObject<GithubApiReleaseInfoSubset>(jsonText);
-                    successfulDownload = true;
+                    var response = await client.SendAsync(request);
+                    if(response.IsSuccessStatusCode) {
+                        var jsonText = await response.Content.ReadAsStringAsync();
+                        var latestRelease = JsonConvert.DeserializeObject<GithubApiReleaseInfoSubset>(jsonText);
+                        successfulDownload = true;
 
-                    ProcessDownload(latestRelease);
+                        ProcessDownload(latestRelease);
+                    }
+                } catch {
+                    // TODO: Add logging
+                    ;
                 }
-            } catch {
-                // TODO: Add logging
-                ;
             }
 
             var timer = _Timer;
@@ -145,7 +147,7 @@ namespace Cduhub
             }
         }
 
-        private void ProcessDownload(GithubApiReleaseInfoSubset githubRelease)
+        private void ProcessDownload(GithubApiReleaseInfoSubset? githubRelease)
         {
             if(githubRelease != null) {
                 if(!InformationalVersion.TryParse(githubRelease.TagName, out var version)) {

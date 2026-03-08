@@ -25,57 +25,57 @@ namespace Cduhub.Pages.Init
         {
         }
 
-        protected void SetupEditor(Func<BrightnessSettings.AscendingAutoBrightnessSettings> getSettings)
+        protected void SetupEditor(Func<BrightnessSettings.AscendingAutoBrightnessSettings?> getSettings)
         {
             SetupIntensityEditor(getSettings);
             LeftOption("LOW",
-                () => $"{getSettings().LowIntensityBelowAmbientPercent}%",
+                () => $"{getSettings()?.LowIntensityBelowAmbientPercent}%",
                 () => _Form.IntegerFromScratchpad(Scratchpad,
-                    v => getSettings().LowIntensityBelowAmbientPercent = v,
+                    v => getSettings().WhenNotNull(nn => nn.LowIntensityBelowAmbientPercent = v),
                     min: 0, max: 100
             ));
             RightOption("HIGH",
-                () => $"{getSettings().HighIntensityAboveAmbientPercent}%",
+                () => $"{getSettings()?.HighIntensityAboveAmbientPercent}%",
                 () => _Form.IntegerFromScratchpad(Scratchpad,
-                    v => getSettings().HighIntensityAboveAmbientPercent = v,
+                    v => getSettings().WhenNotNull(nn => nn.HighIntensityAboveAmbientPercent = v),
                     min: 0, max: 100
             ));
             SetupGammaEditor(getSettings);
         }
 
-        protected void SetupEditor(Func<BrightnessSettings.DescendingAutoBrightnessSettings> getSettings)
+        protected void SetupEditor(Func<BrightnessSettings.DescendingAutoBrightnessSettings?> getSettings)
         {
             SetupIntensityEditor(getSettings, highFirst: true);
             LeftOption("HIGH",
-                () => $"{getSettings().HighIntensityBelowAmbientPercent}%",
+                () => $"{getSettings()?.HighIntensityBelowAmbientPercent}%",
                 () => _Form.IntegerFromScratchpad(Scratchpad,
-                    v => getSettings().HighIntensityBelowAmbientPercent = v,
+                    v => getSettings().WhenNotNull(nn => nn.HighIntensityBelowAmbientPercent = v),
                     min: 0, max: 100
             ));
             RightOption("LOW",
-                () => $"{getSettings().LowIntensityAboveAmbientPercent}%",
+                () => $"{getSettings()?.LowIntensityAboveAmbientPercent}%",
                 () => _Form.IntegerFromScratchpad(Scratchpad,
-                    v => getSettings().LowIntensityAboveAmbientPercent = v,
+                    v => getSettings().WhenNotNull(nn => nn.LowIntensityAboveAmbientPercent = v),
                     min: 0, max: 100
             ));
             SetupGammaEditor(getSettings);
         }
 
         private void SetupIntensityEditor(
-            Func<BrightnessSettings.CommonAutoBrightnessSettings> getSettings,
+            Func<BrightnessSettings.CommonAutoBrightnessSettings?> getSettings,
             bool highFirst = false
         )
         {
             var low = LeftOption("LOW",
-                () => $"{getSettings().LowestIntensityPercent}%",
+                () => $"{getSettings()?.LowestIntensityPercent}%",
                 () => _Form.IntegerFromScratchpad(Scratchpad,
-                    v => getSettings().LowestIntensityPercent = v,
+                    v => getSettings().WhenNotNull(nn => nn.LowestIntensityPercent = v),
                     min: 0, max: 100
             ));
             var high = RightOption("HIGH",
-                () => $"{getSettings().HighestIntensityPercent}%",
+                () => $"{getSettings()?.HighestIntensityPercent}%",
                 () => _Form.IntegerFromScratchpad(Scratchpad,
-                    v => getSettings().HighestIntensityPercent = v,
+                    v => getSettings().WhenNotNull(nn => nn.HighestIntensityPercent = v),
                     min: 0, max: 100
             ));
 
@@ -88,12 +88,12 @@ namespace Cduhub.Pages.Init
             }
         }
 
-        private void SetupGammaEditor(Func<BrightnessSettings.CommonAutoBrightnessSettings> getSettings)
+        private void SetupGammaEditor(Func<BrightnessSettings.CommonAutoBrightnessSettings?> getSettings)
         {
             LeftOption("GAMMA",
-                () => $"{getSettings().ScaleGamma:N1}",
+                () => $"{getSettings()?.ScaleGamma:N1}",
                 () => _Form.DoubleFromScratchpad(Scratchpad,
-                    v => getSettings().ScaleGamma = v,
+                    v => getSettings().WhenNotNull(nn => nn.ScaleGamma = v),
                     min: 0.1, max: 20.0
             ));
         }

@@ -16,9 +16,9 @@ namespace Cduhub.Plugin.InProcess
     public class InProcessManifest
     {
         [DataMember]
-        public string FileName { get; set; }
+        public string FileName { get; set; } = "";
 
         [DataMember]
-        public string MinimumHubVersion { get; set; }
+        public string MinimumHubVersion { get; set; } = "";
     }
 }

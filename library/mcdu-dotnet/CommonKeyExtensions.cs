@@ -14,7 +14,7 @@ namespace McduDotNet
 {
     public static class CommonKeyExtensions
     {
-        public static Key ToKey(this CommonKey commonKey, ICdu cdu)
+        public static Key ToKey(this CommonKey commonKey, ICdu? cdu)
         {
             if(commonKey < CommonKey.DeviceSpecific) {
                 return (Key)commonKey;
@@ -41,7 +41,7 @@ namespace McduDotNet
             }
         }
 
-        public static string Describe(this CommonKey commonKey, ICdu cdu)
+        public static string Describe(this CommonKey commonKey, ICdu? cdu)
         {
             return ToKey(commonKey, cdu).Describe();
         }

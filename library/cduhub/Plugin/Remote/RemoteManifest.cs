@@ -23,7 +23,7 @@ namespace Cduhub.Plugin.Remote
         public EntryPointPage EntryPoint { get; set; } = EntryPointPage.Root;
 
         [DataMember]
-        public string Label { get; set; }
+        public string Label { get; set; } = "";
 
         [DataMember]
         public int DisplayOrder { get; set; }

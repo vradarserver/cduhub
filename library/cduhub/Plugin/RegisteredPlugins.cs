@@ -32,7 +32,7 @@ namespace Cduhub.Plugin
         /// <summary>
         /// Raised whenever a plugin is registered or deregistered.
         /// </summary>
-        public static event EventHandler RegisteredPluginsChanged;
+        public static event EventHandler? RegisteredPluginsChanged;
 
         private static void OnRegisteredPluginsChanged() => RegisteredPluginsChanged?.Invoke(null, EventArgs.Empty);
 

@@ -26,7 +26,7 @@ namespace Cduhub
         /// <summary>
         /// Raised when a flight simulator is added or removed from the set of connected flight simulators.
         /// </summary>
-        public static event EventHandler ConnectedFlightSimulatorsChanged;
+        public static event EventHandler? ConnectedFlightSimulatorsChanged;
 
         /// <summary>
         /// Raises <see cref="ConnectedFlightSimulatorsChanged"/>.
@@ -36,7 +36,7 @@ namespace Cduhub
         /// <summary>
         /// Raised when one of the connected flight simulators raises an event.
         /// </summary>
-        public static event EventHandler FlightSimulatorStateChanged;
+        public static event EventHandler? FlightSimulatorStateChanged;
 
         /// <summary>
         /// Raises <see cref="FlightSimulatorStateChanged"/>.
@@ -48,10 +48,10 @@ namespace Cduhub
         /// </summary>
         /// <param name="mcdu"></param>
         /// <returns>True if the MCDU was added.</returns>
-        public static bool AddFlightSimulatorMcdu(IFlightSimulatorMcdu mcdu)
+        public static bool AddFlightSimulatorMcdu(IFlightSimulatorMcdu? mcdu)
         {
-            var result = mcdu != null;
-            if(result) {
+            var result = false;
+            if(mcdu != null) {
                 lock(_WriteLock) {
                     if(result = !_FlightSimulatorMcdus.Contains(mcdu)) {
                         var newList = new IFlightSimulatorMcdu[_FlightSimulatorMcdus.Length + 1];
@@ -76,10 +76,10 @@ namespace Cduhub
         /// </summary>
         /// <param name="mcdu"></param>
         /// <returns>True if the MCDU was removed from the collection.</returns>
-        public static bool RemoveFlightSimulatorMcdu(IFlightSimulatorMcdu mcdu)
+        public static bool RemoveFlightSimulatorMcdu(IFlightSimulatorMcdu? mcdu)
         {
-            var result = mcdu != null;
-            if(result) {
+            var result = false;
+            if(mcdu != null) {
                 lock(_WriteLock) {
                     if(result = _FlightSimulatorMcdus.Contains(mcdu)) {
                         var newList = new IFlightSimulatorMcdu[_FlightSimulatorMcdus.Length - 1];

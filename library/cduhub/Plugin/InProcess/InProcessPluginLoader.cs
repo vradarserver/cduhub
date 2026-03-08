@@ -19,14 +19,14 @@ namespace Cduhub.Plugin.InProcess
 {
     class InProcessPluginLoader
     {
-        private readonly object _SyncLock = new object();
+        private readonly object _SyncLock = new();
 
-        private readonly List<string> _LoadedAssemblies = new List<string>();
+        private readonly List<string> _LoadedAssemblies = new();
 
-        public string LoadPluginFromFolder(string pluginFolder)
+        public string? LoadPluginFromFolder(string? pluginFolder)
         {
             lock(_SyncLock) {
-                string errorMessage = null;
+                string? errorMessage = null;
 
                 var manifest = LoadManifestFromFolder(pluginFolder);
                 if(manifest == null) {
@@ -37,7 +37,7 @@ namespace Cduhub.Plugin.InProcess
                     );
                     if(!File.Exists(dllFileName)) {
                         errorMessage = $"No file called {dllFileName}";
-                    } else if(dllFileName.Length <= pluginFolder.Length) {
+                    } else if(dllFileName.Length <= pluginFolder!.Length) {
                         errorMessage = "Plugin DLL not in plugin folder";
                     } else if(dllFileName[pluginFolder.Length] != Path.DirectorySeparatorChar
                             && dllFileName[pluginFolder.Length] != Path.AltDirectorySeparatorChar
@@ -60,14 +60,16 @@ namespace Cduhub.Plugin.InProcess
             }
         }
 
-        private InProcessManifest LoadManifestFromFolder(string pluginFolder)
+        private InProcessManifest? LoadManifestFromFolder(string? pluginFolder)
         {
-            InProcessManifest result = null;
+            InProcessManifest? result = null;
 
-            var fileName = Path.Combine(pluginFolder, PluginPaths.InProcessManifestFileName);
-            if(File.Exists(fileName)) {
-                var json = File.ReadAllText(fileName);
-                result = JsonConvert.DeserializeObject<InProcessManifest>(json);
+            if(!String.IsNullOrWhiteSpace(pluginFolder)) {
+                var fileName = Path.Combine(pluginFolder, PluginPaths.InProcessManifestFileName);
+                if(File.Exists(fileName)) {
+                    var json = File.ReadAllText(fileName);
+                    result = JsonConvert.DeserializeObject<InProcessManifest>(json);
+                }
             }
 
             return result;

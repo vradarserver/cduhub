@@ -17,7 +17,7 @@ namespace Cduhub.Config
     public class CustomPalette
     {
         [DataMember]
-        public string SettingsName { get; set; }
+        public string SettingsName { get; set; } = "";
 
         [DataMember]
         public bool Enable { get; set; }

@@ -56,7 +56,7 @@ namespace Cduhub
         {
             var result = new T();
 
-            string json = null;
+            string? json = null;
             var fileName = BuildFileName(result.GetName());
             if(File.Exists(fileName)) {
                 json = File.ReadAllText(fileName);
@@ -69,7 +69,7 @@ namespace Cduhub
             return result;
         }
 
-        private static void Upgrade<T>(T settings, string sourceJson)
+        private static void Upgrade<T>(T settings, string? sourceJson)
             where T: Settings, new()
         {
             var needsUpgrade = settings.SettingsVersion < settings.GetCurrentVersion();
@@ -87,7 +87,7 @@ namespace Cduhub
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
-        public static void Save<T>(T obj)
+        public static void Save<T>(T? obj)
             where T: Settings, new()
         {
             if(obj != null) {

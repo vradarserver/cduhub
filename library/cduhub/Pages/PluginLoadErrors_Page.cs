@@ -20,7 +20,7 @@ namespace Cduhub.Pages
     class PluginLoadErrors_Page : Page
     {
         private int _ErrorIndex;
-        private IReadOnlyList<(string PluginFolder, string[] Error)> _Errors;
+        private IReadOnlyList<(string PluginFolder, string[] Error)>? _Errors;
 
         public PluginLoadErrors_Page(Hub hub) : base(hub)
         {
@@ -36,6 +36,8 @@ namespace Cduhub.Pages
 
         private void DrawPage()
         {
+            if(_Errors == null) return;
+
             _ErrorIndex = _Errors.Count == 0
                 ? -1
                 : Math.Max(0, Math.Min(_ErrorIndex, _Errors.Count - 1));

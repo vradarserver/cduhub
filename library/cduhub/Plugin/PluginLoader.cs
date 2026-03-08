@@ -66,10 +66,10 @@ namespace Cduhub.Plugin
                 var loadCounts = 0;
 
                 try {
-                    void addError(string err)
+                    void addError(string? err)
                     {
                         if(!String.IsNullOrEmpty(err)) {
-                            errors.Add(err);
+                            errors.Add(err!);
                         }
                     }
                     if(HasInProcessManifest(pluginFullPath)) {

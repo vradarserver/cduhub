@@ -16,7 +16,7 @@ namespace Cduhub
 {
     public class FormHelper
     {
-        private Action _DrawPageAction;
+        private readonly Action _DrawPageAction;
 
         public FormHelper(Action drawPageAction)
         {
@@ -50,18 +50,22 @@ namespace Cduhub
         }
 
         public bool IntegerFromScratchpad(
-            Scratchpad scratchpad,
+            Scratchpad? scratchpad,
             Action<int> setValue,
             int min = int.MinValue,
             int max = int.MaxValue
         )
         {
-            var result = IntegerValue(scratchpad.Text, setValue, min, max);
-            if(!result) {
-                scratchpad.ShowFormatError();
-            } else {
-                scratchpad.Clear();
+            var result = false;
+            if(scratchpad != null) {
+                result = IntegerValue(scratchpad.Text, setValue, min, max);
+                if(!result) {
+                    scratchpad.ShowFormatError();
+                } else {
+                    scratchpad.Clear();
+                }
             }
+
             return result;
         }
 
@@ -82,18 +86,22 @@ namespace Cduhub
         }
 
         public bool DoubleFromScratchpad(
-            Scratchpad scratchpad,
+            Scratchpad? scratchpad,
             Action<double> setValue,
             double min = double.MinValue,
             double max = double.MaxValue
         )
         {
-            var result = DoubleValue(scratchpad.Text, setValue, min, max);
-            if(!result) {
-                scratchpad.ShowFormatError();
-            } else {
-                scratchpad.Clear();
+            var result = false;
+            if(scratchpad != null) {
+                result = DoubleValue(scratchpad.Text, setValue, min, max);
+                if(!result) {
+                    scratchpad.ShowFormatError();
+                } else {
+                    scratchpad.Clear();
+                }
             }
+
             return result;
         }
 
@@ -161,8 +169,8 @@ namespace Cduhub
         public void CycleEnum<T>(
             T currentValue,
             Action<T> setValue,
-            Func<T, bool> filterValues = null,
-            Func<T, string> formatValue = null
+            Func<T, bool>? filterValues = null,
+            Func<T, string>? formatValue = null
         ) where T: struct, System.Enum
         {
             var allValues = Enum

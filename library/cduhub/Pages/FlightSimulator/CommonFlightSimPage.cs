@@ -21,7 +21,7 @@ namespace Cduhub.Pages.FlightSimulator
 
         public override bool DisableInitKey => true;
 
-        private DeviceTypeKeymap _Keymap;
+        private DeviceTypeKeymap? _Keymap;
         private DeviceType _CduDeviceType;
         protected DeviceTypeKeymap Keymap
         {
@@ -31,7 +31,7 @@ namespace Cduhub.Pages.FlightSimulator
                     _CduDeviceType = cduDeviceType;
                     _Keymap = DeviceTypeKeymapFactory.FindFor(_CduDeviceType, SimulatorDeviceType);
                 }
-                return _Keymap;
+                return _Keymap ?? DeviceTypeKeymap.Empty;
             }
         }
 

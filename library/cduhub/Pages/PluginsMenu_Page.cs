@@ -10,7 +10,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Cduhub.Plugin;
 using McduDotNet;
 
@@ -91,7 +90,7 @@ namespace Cduhub.Pages
 
         public override void OnCommonKeyDown(CommonKey commonKey)
         {
-            RegisteredPlugin plugin = null;
+            RegisteredPlugin? plugin = null;
             var leftIdx = LeftLineSelectIndex(commonKey);
             var rightIdx = RightLineSelectIndex(commonKey);
 

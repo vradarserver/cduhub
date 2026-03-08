@@ -50,7 +50,7 @@ namespace Cduhub
 
         public bool IsLowerCase { get; set; }
 
-        public event EventHandler RefreshRowDisplay;
+        public event EventHandler? RefreshRowDisplay;
 
         protected virtual void OnRefreshRowDisplay()
         {
@@ -115,16 +115,17 @@ namespace Cduhub
             }
         }
 
-        public virtual void ShowErrorMessage(string message) => ShowMessage(message, Colour.Amber);
+        public virtual void ShowErrorMessage(string? message) => ShowMessage(message, Colour.Amber);
 
-        public virtual void ShowInformativeMessage(string message) => ShowMessage(message, Colour.Cyan);
+        public virtual void ShowInformativeMessage(string? message) => ShowMessage(message, Colour.Cyan);
 
         public virtual void ShowFormatError() => ShowErrorMessage(" FORMAT ERROR");
 
-        public virtual void ShowMessage(string message, Colour colour)
+        public virtual void ShowMessage(string? message, Colour colour)
         {
             _MessageRow.Clear();
-            var messageLength = Math.Min((message ?? "").Length, _MessageRow.Cells.Length);
+            message ??= "";
+            var messageLength = Math.Min(message.Length, _MessageRow.Cells.Length);
             for(var idx = 0;idx < messageLength;++idx) {
                 var cell = _MessageRow.Cells[idx];
                 cell.Colour = colour;
@@ -220,7 +221,7 @@ namespace Cduhub
             _Column = Math.Min(_Column + 1, _DataEntryRow.Cells.Length - 1);
         }
 
-        public string GetDataEntryText(bool trimmed = true)
+        public virtual string GetDataEntryText(bool trimmed = true)
         {
             var buffer = new StringBuilder();
             foreach(var cell in _DataEntryRow.Cells) {
