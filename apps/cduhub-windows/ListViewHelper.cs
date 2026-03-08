@@ -57,7 +57,7 @@ namespace Cduhub.WindowsGui
         /// Gets the optional callback used to extract an ID from an attached value. This will be null if ID
         /// handling is not required or supported for the attached value type.
         /// </summary>
-        public Func<TAttachedValue, TOptionalID> ExtractID { get; }
+        public Func<TAttachedValue, TOptionalID>? ExtractID { get; }
 
         /// <summary>
         /// Gets the optional callback used to decide on an font style for an attached value.
@@ -67,7 +67,7 @@ namespace Cduhub.WindowsGui
         /// <summary>
         /// Gets the optional callback used to determine colours for an attached value.
         /// </summary>
-        public Func<TAttachedValue, (Color Background, Color Foreground)> GetColours { get; }
+        public Func<TAttachedValue, (Color Background, Color Foreground)>? GetColours { get; }
 
         /// <summary>
         /// Gets a value indicating that the attached value for a ListViewItem is its Text property rather
@@ -143,7 +143,7 @@ namespace Cduhub.WindowsGui
         /// <summary>
         /// Mirrors the list view's ItemChecked event but can be suppressed when changing check states.
         /// </summary>
-        public event EventHandler<ItemCheckedEventArgs> ItemChecked;
+        public event EventHandler<ItemCheckedEventArgs>? ItemChecked;
 
         /// <summary>
         /// Raises <see cref="ItemChecked"/>.
@@ -155,7 +155,7 @@ namespace Cduhub.WindowsGui
         /// Raised when one or more items are checked by <see cref="ToggleChecked"/> or <see
         /// cref="CheckAll"/>.
         /// </summary>
-        public event EventHandler ManyItemsChecked;
+        public event EventHandler? ManyItemsChecked;
 
         /// <summary>
         /// Raises <see cref="ManyItemsChecked"/>.
@@ -178,11 +178,11 @@ namespace Cduhub.WindowsGui
         public ListViewHelper(
             ListView control,
             Func<TAttachedValue, IEnumerable<string>> extractColumnText,
-            Func<TAttachedValue, TAttachedValue, bool> areAttachedValuesEqual = null,
+            Func<TAttachedValue, TAttachedValue, bool>? areAttachedValuesEqual = null,
             bool attachedValueIsItemText = false,
-            Func<TAttachedValue, TOptionalID> extractID = null,
-            Func<TAttachedValue, FontStyle> getFontStyle = null,
-            Func<TAttachedValue, (Color Background, Color Foreground)> getColours = null,
+            Func<TAttachedValue, TOptionalID>? extractID = null,
+            Func<TAttachedValue, FontStyle>? getFontStyle = null,
+            Func<TAttachedValue, (Color Background, Color Foreground)>? getColours = null,
             bool autoResizeSingleColumnWidth = true,
             bool autoResizeToContent = false
         )
@@ -220,7 +220,7 @@ namespace Cduhub.WindowsGui
                 }
 
                 if(ListView.CheckBoxes) {
-                    CheckedAttachedValues = checkedValues;
+                    CheckedAttachedValues = checkedValues!; // set can accept null, get never returns null
                 }
                 SelectedAttachedValues = selectedValues;
 
@@ -255,19 +255,12 @@ namespace Cduhub.WindowsGui
                 var pinnedValues = sortedValues?.ToArray() ?? new TAttachedValue[0];
                 for(var i = 0;i < pinnedValues.Length;++i) {
                     var lvi = ListView.Items.Count > i ? ListView.Items[i] : null;
-                    var addListViewItem = lvi == null;
-                    if(addListViewItem) {
-                        //lvi = new ListViewItem();     <-- this works but there is something messed up in ListView, if I later add the LVI it can crash with a bad index in SetItemState when calling Add()
-                        //                              <-- note that SetItemState is internal to the listview, we don't pass the index when we call Add(). It's like the standalone LVI can't be added.
+                    if(lvi == null) {
                         lvi = ListView.Items.Add("");
                     }
 
                     var value = pinnedValues[i];
                     FormatListViewItemFromValue(lvi, value);
-
-                    //if(addListViewItem) {             <-- see notes above, we can't reliably add standalone LVIs. They *occasionally* trigger a weird exception - I was seeing it in a single column
-                    //    ListView.Items.Add(lvi);      <-- listview with checkboxes switched on.
-                    //}
 
                     var selectItem = selectedValues.Any(r => AreAttachedValuesEqual(r, value));
                     if(lvi.Selected != selectItem) {
@@ -296,9 +289,9 @@ namespace Cduhub.WindowsGui
         /// </summary>
         /// <param name="attachedValue"></param>
         /// <returns></returns>
-        public ListViewItem FindListViewItemForAttachedValue(TAttachedValue attachedValue)
+        public ListViewItem? FindListViewItemForAttachedValue(TAttachedValue? attachedValue)
         {
-            ListViewItem result = null;
+            ListViewItem? result = null;
 
             if(attachedValue != null) {
                 result = ListView
@@ -315,7 +308,7 @@ namespace Cduhub.WindowsGui
         /// </summary>
         /// <param name="lvi"></param>
         /// <returns></returns>
-        public TAttachedValue GetAttachedValueFromListViewItem(ListViewItem lvi)
+        public TAttachedValue? GetAttachedValueFromListViewItem(ListViewItem? lvi)
         {
             return lvi == null ? default(TAttachedValue) : GetAttachedValue(lvi) as TAttachedValue;
         }
@@ -325,7 +318,7 @@ namespace Cduhub.WindowsGui
         /// </summary>
         /// <param name="lvi"></param>
         /// <returns></returns>
-        public TOptionalID GetAttachedValueIDFromListViewItem(ListViewItem lvi)
+        public TOptionalID? GetAttachedValueIDFromListViewItem(ListViewItem? lvi)
         {
             return lvi == null ? default(TOptionalID) : GetAttachedValueIDs((IEnumerable<ListViewItem>)(new ListViewItem[] { lvi })).FirstOrDefault();
         }
@@ -334,7 +327,7 @@ namespace Cduhub.WindowsGui
         /// Scrolls to the first ListView item that has the first attached value passed across.
         /// </summary>
         /// <param name="attachedValues"></param>
-        public void ScrollToFirst(IEnumerable<TAttachedValue> attachedValues)
+        public void ScrollToFirst(IEnumerable<TAttachedValue>? attachedValues)
         {
             var lvi = FindListViewItemForAttachedValue(attachedValues?.FirstOrDefault());
             if(lvi != null) {
@@ -444,7 +437,7 @@ namespace Cduhub.WindowsGui
         /// False if ManyItemsChecked is to be raised if any item's checked state changes.
         /// </param>
         /// <returns>True if any item's checked state changed.</returns>
-        public bool ConditionallyCheckAttachedValueIDs(Func<TOptionalID, bool> checkFunc, bool suppressItemChecked = false, bool suppressManyItemsChecked = false)
+        public bool ConditionallyCheckAttachedValueIDs(Func<TOptionalID?, bool> checkFunc, bool suppressItemChecked = false, bool suppressManyItemsChecked = false)
         {
             return MassCheckChanges(lvi =>
                 {
@@ -561,11 +554,11 @@ namespace Cduhub.WindowsGui
             return AttachedValueIsItemText ? lvi.Text : lvi.Tag;
         }
 
-        private TAttachedValue[] GetAttachedValues(IEnumerable<ListViewItem> subsetItems)
+        private TAttachedValue[] GetAttachedValues(IEnumerable<ListViewItem>? subsetItems)
         {
             return (subsetItems ?? new ListViewItem[0])
                 .Select(r => GetAttachedValue(r) as TAttachedValue)
-                .Where(r => r != null)
+                .OfType<TAttachedValue>()
                 .ToArray();
         }
 
@@ -578,7 +571,7 @@ namespace Cduhub.WindowsGui
 
         private TOptionalID[] GetAttachedValueIDs(ICollection untyped) => GetAttachedValueIDs(untyped.OfType<ListViewItem>());
 
-        private void SetAttachedValues(IEnumerable<ListViewItem> subsetItems, IEnumerable<TAttachedValue> subsetValues, Action<ListViewItem, TAttachedValue, bool> setCallback)
+        private void SetAttachedValues(IEnumerable<ListViewItem> subsetItems, IEnumerable<TAttachedValue> subsetValues, Action<ListViewItem, TAttachedValue?, bool> setCallback)
         {
             var valuesInSubset = subsetValues?.ToArray() ?? new TAttachedValue[0];
 
@@ -589,19 +582,19 @@ namespace Cduhub.WindowsGui
             }
         }
 
-        private void SetAttachedValues(ICollection untyped, IEnumerable<TAttachedValue> subsetValues, Action<ListViewItem, TAttachedValue, bool> setCallback) => SetAttachedValues(untyped.OfType<ListViewItem>(), subsetValues, setCallback);
+        private void SetAttachedValues(ICollection untyped, IEnumerable<TAttachedValue> subsetValues, Action<ListViewItem, TAttachedValue?, bool> setCallback) => SetAttachedValues(untyped.OfType<ListViewItem>(), subsetValues, setCallback);
 
-        private void SetAttachedValueIDs(IEnumerable<ListViewItem> subsetItems, IEnumerable<TOptionalID> subsetValueIDs, Action<ListViewItem, TAttachedValue, bool> setCallback)
+        private void SetAttachedValueIDs(IEnumerable<ListViewItem> subsetItems, IEnumerable<TOptionalID>? subsetValueIDs, Action<ListViewItem, TAttachedValue?, bool> setCallback)
         {
             SetAttachedValues(subsetItems, FindAttachedValuesForIDs(subsetValueIDs), setCallback);
         }
 
-        private void SetAttachedValueIDs(ICollection untyped, IEnumerable<TOptionalID> subsetValueIDs, Action<ListViewItem, TAttachedValue, bool> setCallback)
+        private void SetAttachedValueIDs(ICollection untyped, IEnumerable<TOptionalID>? subsetValueIDs, Action<ListViewItem, TAttachedValue?, bool> setCallback)
         {
             SetAttachedValueIDs(untyped.OfType<ListViewItem>(), subsetValueIDs, setCallback);
         }
 
-        private List<TAttachedValue> FindAttachedValuesForIDs(IEnumerable<TOptionalID> ids)
+        private List<TAttachedValue> FindAttachedValuesForIDs(IEnumerable<TOptionalID>? ids)
         {
             var result = new List<TAttachedValue>();
 

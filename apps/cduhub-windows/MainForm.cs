@@ -25,7 +25,7 @@ namespace Cduhub.WindowsGui
         private int _ConnectedFlightSimulatorsChanged = 0;
         private bool _HubShutdownRequired = true;
 
-        public Hub Hub => Program.Hub;
+        public Hub Hub => Program.Hub!;
 
         public string StateText
         {

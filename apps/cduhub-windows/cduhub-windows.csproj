@@ -7,6 +7,7 @@
         <RootNamespace>Cduhub.WindowsGui</RootNamespace>
         <UseWindowsForms>true</UseWindowsForms>
         <ApplicationIcon>app.ico</ApplicationIcon>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>

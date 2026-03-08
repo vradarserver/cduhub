@@ -35,10 +35,13 @@ namespace Cduhub.WindowsGui
         private void LinkLabel_OpenReleaseUrl_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             try {
-                Process.Start(new ProcessStartInfo() {
-                    UseShellExecute = true,
-                    FileName = CduhubVersions.UpdateInfo.ReleaseUrl,
-                });
+                var url = CduhubVersions.UpdateInfo?.ReleaseUrl;
+                if(!String.IsNullOrWhiteSpace(url)) {
+                    Process.Start(new ProcessStartInfo() {
+                        UseShellExecute = true,
+                        FileName = url,
+                    });
+                }
             } catch {
                 ;
             }

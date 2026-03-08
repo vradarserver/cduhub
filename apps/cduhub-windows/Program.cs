@@ -26,7 +26,7 @@ namespace Cduhub.WindowsGui
     {
         private const string _SingleInstanceMutexName = @"Global\CduHub-SGEZ8Z2CM8UA";
 
-        public static Hub Hub { get; private set; }
+        public static Hub? Hub { get; private set; }
 
         /// <summary>
         /// The main entry point for the application.
@@ -93,7 +93,7 @@ namespace Cduhub.WindowsGui
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             // Don't translate, I don't want to hide errors if the translation throws exceptions
-            Exception ex = e.ExceptionObject as Exception;
+            var ex = e.ExceptionObject as Exception;
             if(ex != null) {
                 ShowException(ex);
             } else {
@@ -127,9 +127,9 @@ namespace Cduhub.WindowsGui
         /// <param name="exception"></param>
         /// <param name="newLine"></param>
         /// <returns></returns>
-        public static string ExceptionMultiLine(Exception exception, string newLine = null)
+        public static string ExceptionMultiLine(Exception exception, string? newLine = null)
         {
-            if(newLine == null) newLine = Environment.NewLine;
+            newLine ??= Environment.NewLine;
             var result = "";
 
             if(exception != null) {

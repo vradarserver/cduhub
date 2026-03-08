@@ -31,7 +31,7 @@ namespace Cduhub.WindowsGui
         /// <summary>
         /// A bitmap that's the same dimensions as the device's screen.
         /// </summary>
-        private Bitmap _PixelBuffer = new(_FallbackPixelBufferPixelWidth, _FallbackPixelBufferPixelHeight, _PixelFormat);
+        private Bitmap? _PixelBuffer = new(_FallbackPixelBufferPixelWidth, _FallbackPixelBufferPixelHeight, _PixelFormat);
 
         /// <summary>
         /// The bitmap that is shown in the picture box.
@@ -41,39 +41,39 @@ namespace Cduhub.WindowsGui
         /// <summary>
         /// The colours associated with each display colour index.
         /// </summary>
-        private Color[] _Colours;
+        private Color[]? _Colours;
 
         /// <summary>
         /// Exactly the same colours as per <see cref="_Colours"/> except in brush form.
         /// </summary>
-        private Brush[] _ColourBrushes;
+        private Brush[]? _ColourBrushes;
 
         /// <summary>
         /// The font used for large font output when <see cref="CurrentFont"/> is null.
         /// </summary>
-        private readonly Font _FallbackLargeFont = new Font(FontFamily.GenericMonospace, 20);
+        private readonly Font _FallbackLargeFont = new(FontFamily.GenericMonospace, 20);
 
         /// <summary>
         /// The font used for small font output when <see cref="CurrentFont"/> is null.
         /// </summary>
-        private readonly Font _FallbackSmallFont = new Font(FontFamily.GenericMonospace, 16);
+        private readonly Font _FallbackSmallFont = new(FontFamily.GenericMonospace, 16);
 
         /// <summary>
         /// The brush used when no palettes have been established.
         /// </summary>
-        private readonly SolidBrush _FallbackColourBrush = new SolidBrush(Color.White);
+        private readonly SolidBrush _FallbackColourBrush = new(Color.White);
 
         private const int _FallbackFontPixelWidth = 23;
 
         private const int _FallbackFontPixelHeight = 31;
 
-        private DisplayColour _FallbackDisplayColour = new DisplayColour() { PackedValue = 0xffffffff, };
+        private DisplayColour _FallbackDisplayColour = new() { PackedValue = 0xffffffff, };
 
-        private DisplayBuffer _DisplayBuffer;
+        private DisplayBuffer? _DisplayBuffer;
 
-        private DisplayFont _DisplayFont;
+        private DisplayFont? _DisplayFont;
 
-        private DisplayPalette _DisplayPalette;
+        private DisplayPalette? _DisplayPalette;
 
         private int _XOffset = 5;
 
@@ -103,7 +103,7 @@ namespace Cduhub.WindowsGui
         /// Copies the content of the display buffer into the control.
         /// </summary>
         /// <param name="displayBuffer"></param>
-        public void CopyFromDisplayBuffer(DisplayBuffer displayBuffer)
+        public void CopyFromDisplayBuffer(DisplayBuffer? displayBuffer)
         {
             if(InvokeRequired) {
                 BeginInvoke(new MethodInvoker(() => CopyFromDisplayBuffer(displayBuffer)));
@@ -120,7 +120,7 @@ namespace Cduhub.WindowsGui
         /// <param name="displayFont"></param>
         /// <param name="xOffset"></param>
         /// <param name="yOffset"></param>
-        public void CopyFromDisplayFont(DisplayFont displayFont, int xOffset = int.MinValue, int yOffset = int.MinValue)
+        public void CopyFromDisplayFont(DisplayFont? displayFont, int xOffset = int.MinValue, int yOffset = int.MinValue)
         {
             if(InvokeRequired) {
                 BeginInvoke(new MethodInvoker(() => CopyFromDisplayFont(displayFont, xOffset, yOffset)));
@@ -146,7 +146,7 @@ namespace Cduhub.WindowsGui
         /// Copies the palette into the control.
         /// </summary>
         /// <param name="displayPalette"></param>
-        public void CopyFromDisplayPalette(DisplayPalette displayPalette)
+        public void CopyFromDisplayPalette(DisplayPalette? displayPalette)
         {
             if(InvokeRequired) {
                 BeginInvoke(new MethodInvoker(() => CopyFromDisplayPalette(displayPalette)));
@@ -205,7 +205,7 @@ namespace Cduhub.WindowsGui
             }
         }
 
-        private void CreatePixelBuffer(DisplayBuffer displayBuffer, DisplayFont displayFont)
+        private void CreatePixelBuffer(DisplayBuffer? displayBuffer, DisplayFont? displayFont)
         {
             var width = displayBuffer == null || displayFont == null
                 ? _FallbackFontPixelWidth
@@ -236,7 +236,7 @@ namespace Cduhub.WindowsGui
             }
         }
 
-        private StringBuilder _FallbackFontDrawTextBuffer;
+        private StringBuilder? _FallbackFontDrawTextBuffer;
 
         private void DrawCharacterUsingFallbackFontAt(
             Graphics graphics,
@@ -267,21 +267,24 @@ namespace Cduhub.WindowsGui
         private void DrawCharactersWithDisplayFont(DisplayFont displayFont, DisplayBuffer displayBuffer)
         {
             unsafe {
-                var bitmapData = _PixelBuffer.LockBits(
-                    new Rectangle(0, 0, _PixelBuffer.Width, _PixelBuffer.Height),
-                    ImageLockMode.ReadWrite,
-                    _PixelBuffer.PixelFormat
-                );
-                try {
-                    for(var rowIdx = 0;rowIdx < displayBuffer.CountRows;++rowIdx) {
-                        for(var cellIdx = 0;cellIdx < displayBuffer.CountCells;++cellIdx) {
-                            var ch = displayBuffer.Characters[rowIdx, cellIdx];
-                            var fontAndColour = displayBuffer.FontsAndColours[rowIdx, cellIdx];
-                            DrawCharacterUsingDisplayFontAt(bitmapData, displayFont, rowIdx, cellIdx, ch, fontAndColour);
+                var pixelBuffer = _PixelBuffer;
+                if(pixelBuffer != null) {
+                    var bitmapData = pixelBuffer.LockBits(
+                        new Rectangle(0, 0, pixelBuffer.Width, pixelBuffer.Height),
+                        ImageLockMode.ReadWrite,
+                        pixelBuffer.PixelFormat
+                    );
+                    try {
+                        for(var rowIdx = 0;rowIdx < displayBuffer.CountRows;++rowIdx) {
+                            for(var cellIdx = 0;cellIdx < displayBuffer.CountCells;++cellIdx) {
+                                var ch = displayBuffer.Characters[rowIdx, cellIdx];
+                                var fontAndColour = displayBuffer.FontsAndColours[rowIdx, cellIdx];
+                                DrawCharacterUsingDisplayFontAt(bitmapData, displayFont, rowIdx, cellIdx, ch, fontAndColour);
+                            }
                         }
+                    } finally {
+                        pixelBuffer.UnlockBits(bitmapData);
                     }
-                } finally {
-                    _PixelBuffer.UnlockBits(bitmapData);
                 }
             }
         }
