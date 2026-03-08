@@ -21,7 +21,7 @@ namespace Cduhub.CommandLineInterface
         {
             var result = true;
 
-            Hub hub = null;
+            Hub? hub = null;
             var cancelSource = new CancellationTokenSource();
             var hasBeenConnected = false;
 
@@ -128,10 +128,12 @@ namespace Cduhub.CommandLineInterface
             flightSim.ConnectionStateChanged -= FlightSimState_ConnectionStateChanged;
         }
 
-        private void FlightSimState_ConnectionStateChanged(object sender, EventArgs _)
+        private void FlightSimState_ConnectionStateChanged(object? sender, EventArgs _)
         {
             var flightSim = sender as IFlightSimulatorMcdu;
-            OutputTimestamped($"{DescribeFlightSim(flightSim)} {(flightSim.ConnectionState.ToString().ToLower())}");
+            if(flightSim != null) {
+                OutputTimestamped($"{DescribeFlightSim(flightSim)} {(flightSim.ConnectionState.ToString().ToLower())}");
+            }
         }
     }
 }
