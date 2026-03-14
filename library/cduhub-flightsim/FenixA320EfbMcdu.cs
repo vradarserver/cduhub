@@ -101,7 +101,7 @@ namespace Cduhub.FlightSim
         {
             var client = _GraphQLClient;
             if(client != null) {
-                var key = FenixA320GraphQL.GraphQLKeyName(mcduKey, SelectedBufferDeviceUser);
+                var key = FenixA320GraphQL.GraphQLKeyName(mcduKey, SelectedBufferEquipmentLocation);
                 if(key != "") {
                     var request = new GraphQLRequest() {
                         Query = $@"

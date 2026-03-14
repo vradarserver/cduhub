@@ -36,15 +36,15 @@ namespace Cduhub.FlightSim
 
         public virtual bool IsObserverMcduPresent => false;
 
-        public DeviceUser SelectedBufferDeviceUser { get; set; } = DeviceUser.Captain;
+        public EquipmentLocation SelectedBufferEquipmentLocation { get; set; } = EquipmentLocation.Captain;
 
         public SimulatorMcduBuffer SelectedBuffer
         {
             get {
-                switch(SelectedBufferDeviceUser) {
-                    case DeviceUser.FirstOfficer:    return FirstOfficerBuffer;
-                    case DeviceUser.Observer:        return ObserverBuffer;
-                    default:                         return PilotBuffer;
+                switch(SelectedBufferEquipmentLocation) {
+                    case EquipmentLocation.FirstOfficer:    return FirstOfficerBuffer;
+                    case EquipmentLocation.Observer:        return ObserverBuffer;
+                    default:                                return PilotBuffer;
                 }
             }
         }
@@ -83,14 +83,14 @@ namespace Cduhub.FlightSim
         /// <summary>
         /// Creates a new object.
         /// </summary>
-        /// <param name="deviceUser"></param>
+        /// <param name="equipmentLocation"></param>
         /// <param name="masterScreen"></param>
         /// <param name="masterLeds"></param>
-        public SimulatedMcdus(DeviceUser deviceUser, Screen masterScreen, Leds masterLeds)
+        public SimulatedMcdus(EquipmentLocation equipmentLocation, Screen masterScreen, Leds masterLeds)
         {
-            SelectedBufferDeviceUser = deviceUser == DeviceUser.NotApplicable
-                ? DeviceUser.Captain
-                : deviceUser;
+            SelectedBufferEquipmentLocation = equipmentLocation == EquipmentLocation.NotApplicable
+                ? EquipmentLocation.Captain
+                : equipmentLocation;
             MasterScreen = masterScreen;
             MasterLeds = masterLeds;
         }
@@ -98,17 +98,17 @@ namespace Cduhub.FlightSim
         /// <inheritdoc/>
         public void AdvanceSelectedBufferProductId()
         {
-            switch(SelectedBufferDeviceUser) {
-                case DeviceUser.Captain:
-                    SelectedBufferDeviceUser = DeviceUser.FirstOfficer;
+            switch(SelectedBufferEquipmentLocation) {
+                case EquipmentLocation.Captain:
+                    SelectedBufferEquipmentLocation = EquipmentLocation.FirstOfficer;
                     break;
-                case DeviceUser.FirstOfficer:
-                    SelectedBufferDeviceUser = IsObserverMcduPresent
-                        ? DeviceUser.Observer
-                        : DeviceUser.Captain;
+                case EquipmentLocation.FirstOfficer:
+                    SelectedBufferEquipmentLocation = IsObserverMcduPresent
+                        ? EquipmentLocation.Observer
+                        : EquipmentLocation.Captain;
                     break;
-                case DeviceUser.Observer:
-                    SelectedBufferDeviceUser = DeviceUser.Captain;
+                case EquipmentLocation.Observer:
+                    SelectedBufferEquipmentLocation = EquipmentLocation.Captain;
                     break;
             }
             RefreshSelectedScreen();

@@ -1,4 +1,4 @@
-﻿// Copyright © 2025 onwards, Andrew Whewell
+﻿// Copyright © 2026 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -11,23 +11,52 @@
 namespace McduDotNet
 {
     /// <summary>
-    /// An enumeration of all of the USB CDU devices that the library can interact with.
+    /// A device identifier.
     /// </summary>
-    public enum Device
+    public readonly struct UsbDeviceId
     {
         /// <summary>
-        /// A WinWing Airbus MCDU.
+        /// Gets the USB Vendor ID returned by the device.
         /// </summary>
-        WinWingMcdu,
+        public ushort VendorId { get; }
 
         /// <summary>
-        /// A WinWing Boeing 777 PFP-7.
+        /// Gets the USB Product ID returned by the device.
         /// </summary>
-        WinWingPfp7,
+        public ushort ProductId { get; }
+
+        /// <inheritdoc/>
+        public static bool operator==(UsbDeviceId lhs, UsbDeviceId rhs)
+        {
+            return lhs.VendorId == rhs.VendorId
+                && lhs.ProductId == rhs.ProductId;
+        }
+
+        /// <inheritdoc/>
+        public static bool operator!=(UsbDeviceId lhs, UsbDeviceId rhs) => !(lhs == rhs);
 
         /// <summary>
-        /// A WinWing Boeing 737 PFP-3N. I do not have one of these so it might not work!
+        /// Creates a new object.
         /// </summary>
-        WinWingPfp3N,
+        /// <param name="vendorId"></param>
+        /// <param name="productId"></param>
+        public UsbDeviceId(ushort vendorId, ushort productId)
+        {
+            VendorId = vendorId;
+            ProductId = productId;
+        }
+
+        /// <inheritdoc/>
+        public override readonly bool Equals(object obj)
+        {
+            var result = false;
+            if(obj is UsbDeviceId rhs) {
+                result = this == rhs;
+            }
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public override readonly int GetHashCode() => ((int)VendorId << 16) | ProductId;
     }
 }

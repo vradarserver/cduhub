@@ -20,9 +20,7 @@ namespace McduDotNet.WinWing
     /// <summary>
     /// Code that all WinWing panels have in common.
     /// </summary>
-#pragma warning disable CS0618 // Stop it moaning about IMcdu being flagged as obsolete
-    abstract class CommonWinWingPanel : IDisposable, ICdu, IMcdu
-#pragma warning restore CS0618
+    abstract class CommonWinWingPanel : IDisposable, ICdu
     {
         protected abstract byte CommandPrefix { get; }
         // One of the differences between panels seems to be that the first byte of the
@@ -50,11 +48,14 @@ namespace McduDotNet.WinWing
         private CancellationTokenSource? _InputLoopCancellationTokenSource;
         private Task? _InputLoopTask;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+        private DeviceIdentifier _DeviceId;
+#pragma warning restore CS0618 // Type or member is obsolete
         /// <inheritdoc/>
-        public DeviceIdentifier DeviceId { get; }
+        [Obsolete("Use UsbDevice")]
+        public DeviceIdentifier DeviceId => _DeviceId;
 
-        /// <inheritdoc/>
-        public ProductId ProductId => DeviceId.GetLegacyProductId();
+        public UsbDevice UsbDevice { get; }
 
         /// <inheritdoc/>
         public Screen Screen { get; }
@@ -209,11 +210,15 @@ namespace McduDotNet.WinWing
 
         protected virtual void OnDisconnected() => Disconnected?.Invoke(this, EventArgs.Empty);
 
-        public CommonWinWingPanel(HidDevice hidDevice, DeviceIdentifier deviceId)
+        public CommonWinWingPanel(HidDevice hidDevice, UsbDevice usbDevice)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
+            _DeviceId = new(usbDevice);
+#pragma warning restore CS0618 // Type or member is obsolete
+
             CP = $"{CommandPrefix:x2}bb";
             _HidDevice = hidDevice;
-            DeviceId = deviceId;
+            UsbDevice = usbDevice;
             Leds = new();
             SupportedLeds = LedIndicatorCodeMap.Select(r => r.Key).ToArray();
             Screen = new();

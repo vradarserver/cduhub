@@ -19,10 +19,15 @@ namespace McduDotNet
     /// </summary>
     public interface ICdu : IDisposable
     {
-        /// <summary>
-        /// The USB and library identifiers for the device.
-        /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
+        [Obsolete("Use UsbDevice")]
         DeviceIdentifier DeviceId { get; }
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        /// <summary>
+        /// Gets the USB ID and various bits of information that can be inferred from it.
+        /// </summary>
+        UsbDevice UsbDevice { get; }
 
         /// <summary>
         /// The CDU screen buffer. Changes to the screen buffer are not sent to the device

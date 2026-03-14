@@ -9,34 +9,18 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using System.Collections.Generic;
-using HidSharp;
 
-namespace McduDotNet.WinWing.Pfp3N
+namespace McduDotNet
 {
-    /// <summary>
-    /// Implements <see cref="ICdu"/> for a WinWing PFP-3N.
-    /// </summary>
-    class Pfp3NDevice : CommonWinWingPanel
+    [Obsolete("Retired in V2, use EquipmentType and AircraftFamily")]
+    public enum DeviceType
     {
-        protected override byte CommandPrefix => 0x31;
+        NotSpecified,
 
-        private static readonly Dictionary<Led, byte> _LedIndicatorCodeMap = new() {
-            { Led.Dspy, 0x03 },
-            { Led.Fail, 0x04 },
-            { Led.Msg, 0x05 },
-            { Led.Ofst, 0x06 },
-            { Led.Exec, 0x07 },
-        };
-        protected override Dictionary<Led, byte> LedIndicatorCodeMap => _LedIndicatorCodeMap;
+        AirbusA320Mcdu,
 
-        protected override Func<Key, (int Flag, int Offset)> KeyToFlagOffsetCallback => KeyboardMap.InputReport01FlagAndOffset;
+        Boeing777Pfp,
 
-        public Pfp3NDevice(HidDevice hidDevice, UsbDevice usbDevice) : base(hidDevice, usbDevice)
-        {
-        }
-
-        /// <inheritdoc/>
-        ~Pfp3NDevice() => Dispose(false);
+        Boeing737NGPfp,
     }
 }

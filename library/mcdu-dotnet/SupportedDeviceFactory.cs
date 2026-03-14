@@ -1,4 +1,4 @@
-﻿// Copyright © 2025 onwards, Andrew Whewell
+﻿// Copyright © 2026 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -8,32 +8,45 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System;
+using HidSharp;
+
 namespace McduDotNet
 {
     /// <summary>
-    /// An enumeration of the different locations of a device in aircraft that contain
-    /// more than one instance.
+    /// Creates instances of interfaces from USB devices.
     /// </summary>
-    public enum DeviceUser
+    static class SupportedDeviceFactory
     {
-        /// <summary>
-        /// The manufacturer does not support setting per-location USB identifiers.
-        /// </summary>
-        NotApplicable,
+        public static ICdu CreateCdu(HidDevice hidDevice, UsbDevice usbDevice)
+        {
+            var id = usbDevice.Id;
 
-        /// <summary>
-        /// The device has been flagged as in use by the left-hand seat.
-        /// </summary>
-        Captain,
+            WinWing.CommonWinWingPanel? result = null;
 
-        /// <summary>
-        /// The device has been flagged as in use by the right-hand seat.
-        /// </summary>
-        FirstOfficer,
+            if(   id == SupportedDevices.WinWingMcduCaptain.Id
+               || id == SupportedDevices.WinWingMcduFirstOfficer.Id
+               || id == SupportedDevices.WinWingMcduObserver.Id
+            ) {
+                result = new WinWing.Mcdu.McduDevice(hidDevice, usbDevice);
+            } else if(id == SupportedDevices.WinWingPfp3NCaptain.Id
+                   || id == SupportedDevices.WinWingPfp3NFirstOfficer.Id
+                   || id == SupportedDevices.WinWingPfp3NObserver.Id
+            ) {
+                result = new WinWing.Pfp3N.Pfp3NDevice(hidDevice, usbDevice);
+            } else if(id == SupportedDevices.WinWingPfp7Captain.Id
+                   || id == SupportedDevices.WinWingPfp7FirstOfficer.Id
+                   || id == SupportedDevices.WinWingPfp7Observer.Id
+            ) {
+                result = new WinWing.Pfp7.Pfp7Device(hidDevice, usbDevice);
+            }
 
-        /// <summary>
-        /// The device has been flagged as in use by the observer / engineer / jump seat.
-        /// </summary>
-        Observer,
+            if(result == null) {
+                throw new InvalidOperationException($"{usbDevice} does not represent a CDU device");
+            }
+
+            result.Initialise();
+            return result;
+        }
     }
 }

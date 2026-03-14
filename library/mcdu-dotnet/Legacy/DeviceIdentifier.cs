@@ -16,64 +16,64 @@ namespace McduDotNet
     /// <summary>
     /// Identifies a USB CDU device.
     /// </summary>
+    [Obsolete("Retired in V2, use UsbDevice and DeviceFactory")]
     public class DeviceIdentifier
     {
-        /// <summary>
-        /// Gets the USB Vendor ID returned by the device.
-        /// </summary>
-        public int UsbVendorId { get; }
+        public UsbDevice UsbDevice { get; }
 
-        /// <summary>
-        /// Gets the USB Product ID returned by the device.
-        /// </summary>
-        public int UsbProductId { get; }
+        public int UsbVendorId => UsbDevice.Id.VendorId;
 
-        /// <summary>
-        /// Gets the MCDU.NET device that corresponds to this vendor and product ID.
-        /// </summary>
-        public Device Device { get; }
+        public int UsbProductId => UsbDevice.Id.ProductId;
 
-        /// <summary>
-        /// Gets the MCDU.NET device position (pilot, co-pilot etc.) that corresponds to
-        /// this vendor and product ID.
-        /// </summary>
-        public DeviceUser DeviceUser { get; }
-
-        /// <summary>
-        /// Gets the broad category of device (Airbus A320 MCDU, Boeing 777 PFP) that this
-        /// device replicates.
-        /// </summary>
-        public DeviceType DeviceType { get; }
-
-        /// <summary>
-        /// Gets a terse description of the device represented by this identifier.
-        /// </summary>
-        public string Description { get; }
-
-        /// <summary>
-        /// Creates a new object.
-        /// </summary>
-        /// <param name="description"></param>
-        /// <param name="vendorId"></param>
-        /// <param name="productId"></param>
-        /// <param name="device"></param>
-        /// <param name="deviceUser"></param>
-        /// <param name="deviceType"></param>
-        public DeviceIdentifier(
-            string description,
-            int vendorId,
-            int productId,
-            Device device,
-            DeviceUser deviceUser,
-            DeviceType deviceType
-        )
+        public Device Device
         {
-            Description = description;
-            UsbVendorId = vendorId;
-            UsbProductId = productId;
-            Device = device;
-            DeviceUser = deviceUser;
-            DeviceType = deviceType;
+            get {
+                switch(UsbDevice.EquipmentType) {
+                    case EquipmentType.Cdu:
+                        switch(UsbDevice.AircraftFamily) {
+                            case AircraftFamily.A32x:   return Device.WinWingMcdu;
+                            case AircraftFamily.B737:   return Device.WinWingPfp3N;
+                            case AircraftFamily.B777:   return Device.WinWingPfp7;
+                        }
+                        break;
+                }
+                return (Device)-1;
+            }
+        }
+
+        public DeviceUser DeviceUser
+        {
+            get {
+                switch(UsbDevice.EquipmentLocation) {
+                    case EquipmentLocation.Captain:         return DeviceUser.Captain;
+                    case EquipmentLocation.FirstOfficer:    return DeviceUser.FirstOfficer;
+                    case EquipmentLocation.Observer:        return DeviceUser.Observer;
+                }
+                return DeviceUser.NotApplicable;
+            }
+        }
+
+        public DeviceType DeviceType
+        {
+            get {
+                switch(UsbDevice.EquipmentType) {
+                    case EquipmentType.Cdu:
+                        switch(UsbDevice.AircraftFamily) {
+                            case AircraftFamily.A32x:   return DeviceType.AirbusA320Mcdu;
+                            case AircraftFamily.B737:   return DeviceType.Boeing737NGPfp;
+                            case AircraftFamily.B777:   return DeviceType.Boeing777Pfp;
+                        }
+                        break;
+                }
+                return DeviceType.NotSpecified;
+            }
+        }
+
+        public string Description => UsbDevice.Description;
+
+        public DeviceIdentifier(UsbDevice usbDevice)
+        {
+            UsbDevice = usbDevice;
         }
 
         /// <inheritdoc/>
@@ -107,18 +107,5 @@ namespace McduDotNet
 
         /// <inheritdoc/>
         public override int GetHashCode() => UsbProductId.GetHashCode();
-
-        /// <summary>
-        /// For backwards compatibility.
-        /// </summary>
-        /// <returns></returns>
-        internal ProductId GetLegacyProductId()
-        {
-            switch(DeviceUser) {
-                case DeviceUser.FirstOfficer:   return ProductId.FirstOfficer;
-                case DeviceUser.Observer:       return ProductId.Observer;
-                default:                        return ProductId.Captain;
-            }
-        }
     }
 }

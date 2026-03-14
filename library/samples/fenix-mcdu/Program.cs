@@ -37,7 +37,7 @@ namespace FenixMcdu
                     var endpointHostAndPort = "localhost:8083";
                     var endpointUri = new Uri($"ws://{endpointHostAndPort}/graphql");
 
-                    Console.WriteLine($"Opening connection to Fenix EFB at {endpointHostAndPort}");
+                    Console.WriteLine($"Opening connection to Fenix EFB at {endpointUri}");
                     var graphQLOptions = new GraphQLHttpClientOptions() {
                         EndPoint = endpointUri,
                         UseWebSocketForQueriesAndMutations = true

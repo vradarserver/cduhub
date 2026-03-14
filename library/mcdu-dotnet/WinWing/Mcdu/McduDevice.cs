@@ -40,8 +40,8 @@ namespace McduDotNet.WinWing.Mcdu
         /// Creates a new object.
         /// </summary>
         /// <param name="hidDevice"></param>
-        /// <param name="deviceId"></param>
-        public McduDevice(HidDevice hidDevice, DeviceIdentifier deviceId) : base(hidDevice, deviceId)
+        /// <param name="usbDevice"></param>
+        public McduDevice(HidDevice hidDevice, UsbDevice usbDevice) : base(hidDevice, usbDevice)
         {
         }
 

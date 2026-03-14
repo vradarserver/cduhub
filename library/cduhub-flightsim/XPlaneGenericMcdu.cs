@@ -41,7 +41,7 @@ namespace Cduhub.FlightSim
             if(pressed) {
                 var keyCode = key.ToXPlaneCommand();
                 if(keyCode != "" && IsConnected) {
-                    var fms = SelectedBufferDeviceUser == DeviceUser.Captain
+                    var fms = SelectedBufferEquipmentLocation == DeviceUser.Captain
                         ? "FMS"
                         : "FMS2";
                     var command = $"sim/{fms}/{keyCode}";

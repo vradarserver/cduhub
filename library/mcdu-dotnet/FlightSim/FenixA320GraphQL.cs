@@ -42,11 +42,11 @@ namespace McduDotNet.FlightSim
         /// <summary>
         /// Converts from a <see cref="DeviceUser"/> to a Fenix display / CDU number.
         /// </summary>
-        /// <param name="deviceUser"></param>
+        /// <param name="location"></param>
         /// <returns></returns>
-        public static int DeviceUserToFenixMcduNumber(DeviceUser deviceUser)
+        public static int EquipmentLocationToFenixMcduNumber(EquipmentLocation location)
         {
-            return deviceUser == DeviceUser.Captain ? 1 : 2;
+            return location == EquipmentLocation.Captain ? 1 : 2;
         }
 
         /// <summary>
@@ -147,16 +147,16 @@ namespace McduDotNet.FlightSim
         }
 
         /// <summary>
-        /// Builds Fenix's _CDU???_KEY_??? code for GraphQL messages from an MCDU key enum and an MCDU product
-        /// ID.
+        /// Builds Fenix's _CDU???_KEY_??? code for GraphQL messages from an MCDU key enum
+        /// and an MCDU product ID.
         /// </summary>
         /// <param name="key"></param>
         /// <param name="deviceUser"></param>
         /// <returns></returns>
-        public static string GraphQLKeyName(Key key, DeviceUser deviceUser)
+        public static string GraphQLKeyName(Key key, EquipmentLocation location)
         {
             var cduKey = key.ToFenixEfbMcduKeyName();
-            var cduNum = DeviceUserToFenixMcduNumber(deviceUser);
+            var cduNum = EquipmentLocationToFenixMcduNumber(location);
 
             return cduKey == ""
                 ? ""

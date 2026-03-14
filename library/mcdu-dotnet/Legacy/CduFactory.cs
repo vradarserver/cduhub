@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using HidSharp;
@@ -21,6 +22,7 @@ namespace McduDotNet
     /// Finds USB devices and creates instances of <see cref="ICdu"/> implementations
     /// for them.
     /// </summary>
+    [Obsolete("Retired in V2, use DeviceFactory")]
     public static class CduFactory
     {
         /// <summary>
@@ -38,10 +40,12 @@ namespace McduDotNet
         {
             return SupportedDevices
                 .AllSupportedDevices
-                .FirstOrDefault(deviceIdentifier =>
-                       deviceIdentifier.UsbVendorId == vendorId
-                    && deviceIdentifier.UsbProductId == productId
-                );
+                .Where(usbDevice =>
+                       usbDevice.Id.VendorId == vendorId
+                    && usbDevice.Id.ProductId == productId
+                )
+                .Select(usbDevice => new DeviceIdentifier(usbDevice))
+                .FirstOrDefault();
         }
 
         /// <summary>
@@ -121,17 +125,17 @@ namespace McduDotNet
                 if(hidDevice != null) {
                     switch(deviceId.Device) {
                         case Device.WinWingMcdu:
-                            var mcdu = new McduDevice(hidDevice, deviceId);
+                            var mcdu = new McduDevice(hidDevice, deviceId.UsbDevice);
                             mcdu.Initialise();
                             result = mcdu;
                             break;
                         case Device.WinWingPfp3N:
-                            var pfp3N = new Pfp3NDevice(hidDevice, deviceId);
+                            var pfp3N = new Pfp3NDevice(hidDevice, deviceId.UsbDevice);
                             pfp3N.Initialise();
                             result = pfp3N;
                             break;
                         case Device.WinWingPfp7:
-                            var pfp7 = new Pfp7Device(hidDevice, deviceId);
+                            var pfp7 = new Pfp7Device(hidDevice, deviceId.UsbDevice);
                             pfp7.Initialise();
                             result = pfp7;
                             break;

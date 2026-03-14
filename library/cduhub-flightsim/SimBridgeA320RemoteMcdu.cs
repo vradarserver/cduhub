@@ -78,7 +78,7 @@ namespace Cduhub.FlightSim
         {
             var keyCode = key.ToSimBridgeRemoteMcduKeyName();
             if(pressed && keyCode != "" && IsConnected) {
-                var leftRight = SelectedBufferDeviceUser == DeviceUser.Captain
+                var leftRight = SelectedBufferEquipmentLocation == DeviceUser.Captain
                     ? "left"
                     : "right";
                 var eventCode = $"event:{leftRight}:{keyCode}";
