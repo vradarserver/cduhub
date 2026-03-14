@@ -109,38 +109,38 @@ namespace McduDotNet.FlightSim
             screen.Goto(screen.Line + 1, 0);
         }
 
-        public static void ParseGraphQLIndicatorValueToLeds(string indicatorName, string indicatorValue, Leds leds)
+        public static void ParseGraphQLIndicatorValueToLeds(string? indicatorName, string? indicatorValue, CduLamps? lamps)
         {
-            if(indicatorValue != null && leds != null) {
+            if(indicatorValue != null && lamps != null) {
                 var on = indicatorValue != "0";
                 switch(indicatorName) {
                     case GraphQLMcdu1LedFailName:
                     case GraphQLMcdu2LedFailName:
-                        leds.Fail = on;
+                        lamps.Fail = on;
                         break;
                     case GraphQLMcdu1LedFmName:
                     case GraphQLMcdu2LedFmName:
-                        leds.Fm = on;
+                        lamps.Fm = on;
                         break;
                     case GraphQLMcdu1LedFm1Name:
                     case GraphQLMcdu2LedFm1Name:
-                        leds.Fm1 = on;
+                        lamps.Fm1 = on;
                         break;
                     case GraphQLMcdu1LedFm2Name:
                     case GraphQLMcdu2LedFm2Name:
-                        leds.Fm2 = on;
+                        lamps.Fm2 = on;
                         break;
                     case GraphQLMcdu1LedIndName:
                     case GraphQLMcdu2LedIndName:
-                        leds.Ind = on;
+                        lamps.Ind = on;
                         break;
                     case GraphQLMcdu1LedMcduMenuName:
                     case GraphQLMcdu2LedMcduMenuName:
-                        leds.Mcdu = leds.Menu = on;
+                        lamps.Mcdu = lamps.Menu = on;
                         break;
                     case GraphQLMcdu1LedRdyName:
                     case GraphQLMcdu2LedRdyName:
-                        leds.Rdy = on;
+                        lamps.Rdy = on;
                         break;
                 }
             }

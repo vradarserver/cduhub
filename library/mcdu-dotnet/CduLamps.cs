@@ -13,9 +13,9 @@ using System;
 namespace McduDotNet
 {
     /// <summary>
-    /// Describes the state of the LEDs.
+    /// Describes the state of the LED lamps on a CDU device.
     /// </summary>
-    public class Leds
+    public class CduLamps
     {
         /// <summary>
         /// Gets or sets the lit state of the FAIL LED. Supported on all panels.
@@ -108,7 +108,7 @@ namespace McduDotNet
         public override bool Equals(object obj)
         {
             var result = Object.ReferenceEquals(this, obj);
-            if(!result && obj is Leds other) {
+            if(!result && obj is CduLamps other) {
                 result = Dspy == other.Dspy
                       && Exec == other.Exec
                       && Fail == other.Fail
@@ -133,47 +133,47 @@ namespace McduDotNet
             return Fail.GetHashCode();
         }
 
-        public bool GetLed(Led led)
+        public bool GetLamp(CduLamp lamp)
         {
-            switch(led) {
-                case Led.Dspy:  return Dspy;
-                case Led.Exec:  return Exec;
-                case Led.Fail:  return Fail;
-                case Led.Fm:    return Fm;
-                case Led.Fm1:   return Fm1;
-                case Led.Fm2:   return Fm2;
-                case Led.Ind:   return Ind;
-                case Led.Line:  return Line;
-                case Led.Mcdu:  return Mcdu;
-                case Led.Menu:  return Menu;
-                case Led.Msg:   return Msg;
-                case Led.Ofst:  return Ofst;
-                case Led.Rdy:   return Rdy;
-                default:        throw new NotImplementedException();
+            switch(lamp) {
+                case CduLamp.Dspy:  return Dspy;
+                case CduLamp.Exec:  return Exec;
+                case CduLamp.Fail:  return Fail;
+                case CduLamp.Fm:    return Fm;
+                case CduLamp.Fm1:   return Fm1;
+                case CduLamp.Fm2:   return Fm2;
+                case CduLamp.Ind:   return Ind;
+                case CduLamp.Line:  return Line;
+                case CduLamp.Mcdu:  return Mcdu;
+                case CduLamp.Menu:  return Menu;
+                case CduLamp.Msg:   return Msg;
+                case CduLamp.Ofst:  return Ofst;
+                case CduLamp.Rdy:   return Rdy;
+                default:            throw new NotImplementedException();
             }
         }
 
-        public void SetLed(Led led, bool on)
+        public void SetLamp(CduLamp lamp, bool on)
         {
-            switch(led) {
-                case Led.Dspy:  Dspy = on; break;
-                case Led.Exec:  Exec = on; break;
-                case Led.Fail:  Fail = on; break;
-                case Led.Fm:    Fm = on; break;
-                case Led.Fm1:   Fm1 = on; break;
-                case Led.Fm2:   Fm2 = on; break;
-                case Led.Ind:   Ind = on; break;
-                case Led.Line:  Line = on; break;
-                case Led.Mcdu:  Mcdu = on; break;
-                case Led.Menu:  Menu = on; break;
-                case Led.Msg:   Msg = on; break;
-                case Led.Ofst:  Ofst = on; break;
-                case Led.Rdy:   Rdy = on; break;
-                default:        throw new NotImplementedException();
+            switch(lamp) {
+                case CduLamp.Dspy:  Dspy = on; break;
+                case CduLamp.Exec:  Exec = on; break;
+                case CduLamp.Fail:  Fail = on; break;
+                case CduLamp.Fm:    Fm = on; break;
+                case CduLamp.Fm1:   Fm1 = on; break;
+                case CduLamp.Fm2:   Fm2 = on; break;
+                case CduLamp.Ind:   Ind = on; break;
+                case CduLamp.Line:  Line = on; break;
+                case CduLamp.Mcdu:  Mcdu = on; break;
+                case CduLamp.Menu:  Menu = on; break;
+                case CduLamp.Msg:   Msg = on; break;
+                case CduLamp.Ofst:  Ofst = on; break;
+                case CduLamp.Rdy:   Rdy = on; break;
+                default:            throw new NotImplementedException();
             }
         }
 
-        public void CopyFrom(Leds other)
+        public void CopyFrom(CduLamps other)
         {
             if(other == null) {
                 throw new ArgumentNullException(nameof(other));
@@ -193,6 +193,6 @@ namespace McduDotNet
             Rdy = other.Rdy;
         }
 
-        public void CopyTo(Leds other) => other?.CopyFrom(this);
+        public void CopyTo(CduLamps other) => other?.CopyFrom(this);
     }
 }

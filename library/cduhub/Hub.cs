@@ -211,7 +211,7 @@ namespace Cduhub
             _Cdu?.Cleanup(
                 backlightBrightnessPercent: settings?.Cleanup.BacklightBrightnessPercentOnExit ?? 0,
                 displayBrightnessPercent:   settings?.Cleanup.DisplayBrightnessPercentOnExit ?? 0,
-                ledBrightnessPercent:       settings?.Cleanup.DisplayBrightnessPercentOnExit ?? 0
+                lampBrightnessPercent:       settings?.Cleanup.DisplayBrightnessPercentOnExit ?? 0
             );
             _Cdu?.Dispose();
             _Cdu = null;

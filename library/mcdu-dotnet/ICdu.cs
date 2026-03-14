@@ -19,11 +19,6 @@ namespace McduDotNet
     /// </summary>
     public interface ICdu : IDisposable
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        [Obsolete("Use UsbDevice")]
-        DeviceIdentifier DeviceId { get; }
-#pragma warning restore CS0618 // Type or member is obsolete
-
         /// <summary>
         /// Gets the USB ID and various bits of information that can be inferred from it.
         /// </summary>
@@ -37,9 +32,9 @@ namespace McduDotNet
 
         /// <summary>
         /// The CDU LED light buffer. Changes to the LED lights are not sent to the device
-        /// until <see cref="RefreshLeds"/> is called.
+        /// until <see cref="RefreshLamps"/> is called.
         /// </summary>
-        Leds Leds { get; }
+        CduLamps Lamps { get; }
 
         /// <summary>
         /// The CDU LED palette buffer. Changes to the palette buffer are not sent to the
@@ -51,7 +46,7 @@ namespace McduDotNet
         /// Returns a read-only collection of LEDs that the device supports. Reads and
         /// writes of unsupported LEDs are silently ignored.
         /// </summary>
-        IReadOnlyList<Led> SupportedLeds { get; }
+        IReadOnlyList<CduLamp> SupportedLamps { get; }
 
         /// <summary>
         /// Returns a read-only collection of keys that the device supports.
@@ -194,14 +189,14 @@ namespace McduDotNet
         void RefreshDisplay(bool skipDuplicateCheck = false);
 
         /// <summary>
-        /// Copies the content of <see cref="Leds"/> to the unit.
+        /// Copies the content of <see cref="Lamps"/> to the unit.
         /// </summary>
         /// <param name="skipDuplicateCheck">
         /// The LEDs are normally not refreshed if the library has not detected a change
-        /// to the <see cref="Leds"/> buffer content since the last call. Setting this
+        /// to the <see cref="Lamps"/> buffer content since the last call. Setting this
         /// parameter to true skips that test.
         /// </param>
-        void RefreshLeds(bool skipDuplicateCheck = false);
+        void RefreshLamps(bool skipDuplicateCheck = false);
 
         /// <summary>
         /// Copies the content of <see cref="Palette"/> to the device.
@@ -254,11 +249,11 @@ namespace McduDotNet
         /// </summary>
         /// <param name="backlightBrightnessPercent">Defaults to 0.</param>
         /// <param name="displayBrightnessPercent">Defaults to 0.</param>
-        /// <param name="ledBrightnessPercent">Defaults to 0.</param>
+        /// <param name="lampBrightnessPercent">Defaults to 0.</param>
         void Cleanup(
             int backlightBrightnessPercent = 0,
             int displayBrightnessPercent = 0,
-            int ledBrightnessPercent = 0
+            int lampBrightnessPercent = 0
         );
 
         /// <summary>
@@ -269,10 +264,33 @@ namespace McduDotNet
         bool IsKeySupported(Key key);
 
         /// <summary>
-        /// True if the device supports the LED passed across.
+        /// True if the device supports the lamp passed across.
         /// </summary>
-        /// <param name="led"></param>
+        /// <param name="lamp"></param>
         /// <returns></returns>
+        bool IsLampSupported(CduLamp lamp);
+
+        #region Obsolete stuff
+
+#pragma warning disable CS0618 // Type or member is obsolete
+
+        [Obsolete("Use UsbDevice")]
+        DeviceIdentifier DeviceId { get; }
+
+        [Obsolete("Use Lamps instead")]
+        Leds Leds { get; }
+
+        [Obsolete("Use the IsLampSupported version instead")]
         bool IsLedSupported(Led led);
+
+        [Obsolete("Use SupportedLamps instead")]
+        IReadOnlyList<Led> SupportedLeds { get; }
+
+        [Obsolete("Use RefreshLamps instead")]
+        void RefreshLeds(bool skipDuplicateCheck = false);
+
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        #endregion
     }
 }

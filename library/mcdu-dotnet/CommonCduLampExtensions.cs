@@ -12,29 +12,32 @@ using System;
 
 namespace McduDotNet
 {
-    public static class CommonLedExtensions
+    public static class CommonCduLampExtensions
     {
-        public static Led ToLed(this CommonLed commonLed, ICdu cdu)
+        public static CduLamp ToLamp(this CommonCduLamp commonLamp, ICdu cdu)
         {
-            if(commonLed < CommonLed.DeviceSpecific) {
-                return (Led)commonLed;
-            } else if(commonLed == CommonLed.DeviceSpecific || cdu == null) {
-                return (Led)(-1);
-            } else {
-                (Led Choice1, Led Choice2) choices;
-                switch(commonLed) {
-                    case CommonLed.LineOrExec: choices = (Led.Line, Led.Exec); break;
-                    default:                   throw new NotImplementedException();
-                }
-                return cdu.IsLedSupported(choices.Choice1) ? choices.Choice1
-                    : cdu.IsLedSupported(choices.Choice2) ? choices.Choice2
-                    : (Led)(-1);
+            if(commonLamp < CommonCduLamp.DeviceSpecific) {
+                return (CduLamp)commonLamp;
+            } else if(commonLamp == CommonCduLamp.DeviceSpecific || cdu == null) {
+                return (CduLamp)(-1);
             }
+
+            (CduLamp Choice1, CduLamp Choice2) choices;
+            switch(commonLamp) {
+                case CommonCduLamp.LineOrExec:
+                    choices = (CduLamp.Line, CduLamp.Exec);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+            return cdu.IsLampSupported(choices.Choice1) ? choices.Choice1
+                :  cdu.IsLampSupported(choices.Choice2) ? choices.Choice2
+                :  (CduLamp)(-1);
         }
 
-        public static string Describe(this CommonLed commonLed, ICdu cdu)
+        public static string Describe(this CommonCduLamp commonLamp, ICdu cdu)
         {
-            return ToLed(commonLed, cdu).Describe();
+            return ToLamp(commonLamp, cdu).Describe();
         }
     }
 }

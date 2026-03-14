@@ -27,27 +27,27 @@ namespace McduDotNet.FlightSim
             Centre,
         }
 
-        public static void ParseSimBridgeUpdateMcduToScreenAndLeds(
-            McduContent mcdu,
-            Screen screen,
-            Leds leds
+        public static void ParseSimBridgeUpdateMcduToScreenAndLamps(
+            McduContent? mcdu,
+            Screen? screen,
+            CduLamps? lamps
         )
         {
-            UpdateLeds(mcdu, leds);
+            UpdateLamps(mcdu, lamps);
             UpdateScreen(mcdu, screen);
         }
 
-        private static void UpdateLeds(McduContent mcdu, Leds leds)
+        private static void UpdateLamps(McduContent? mcdu, CduLamps? lamps)
         {
-            if(mcdu?.Annunciators != null && leds != null) {
-                leds.Line = mcdu.Annunciators.Blank;
-                leds.Fail = mcdu.Annunciators.Fail;
-                leds.Fm1 = mcdu.Annunciators.Fm1;
-                leds.Fm2 = mcdu.Annunciators.Fm2;
-                leds.Fm = mcdu.Annunciators.Fmgc;
-                leds.Ind = mcdu.Annunciators.Ind;
-                leds.Mcdu = leds.Menu = mcdu.Annunciators.McduMenu;
-                leds.Rdy = mcdu.Annunciators.Rdy;
+            if(mcdu?.Annunciators != null && lamps != null) {
+                lamps.Line = mcdu.Annunciators.Blank;
+                lamps.Fail = mcdu.Annunciators.Fail;
+                lamps.Fm1 = mcdu.Annunciators.Fm1;
+                lamps.Fm2 = mcdu.Annunciators.Fm2;
+                lamps.Fm = mcdu.Annunciators.Fmgc;
+                lamps.Ind = mcdu.Annunciators.Ind;
+                lamps.Mcdu = lamps.Menu = mcdu.Annunciators.McduMenu;
+                lamps.Rdy = mcdu.Annunciators.Rdy;
 
                 // This line dates back to when the Leds object had the LED brightness
                 // on it. This has now moved to the IMcdu interface, and it is intended

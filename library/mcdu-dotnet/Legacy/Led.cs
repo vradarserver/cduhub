@@ -9,43 +9,24 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using System.Collections.Generic;
-using HidSharp;
 
-namespace McduDotNet.WinWing.Mcdu
+namespace McduDotNet
 {
-    /// <summary>
-    /// The implementation of <see cref="IMcdu"/> for the WinWing MCDU.
-    /// </summary>
-    class McduDevice : CommonWinWingPanel
+    [Obsolete("Use CduLamp instead")]
+    public enum Led
     {
-        protected override byte CommandPrefix => 0x32;
-
-        private static readonly Dictionary<CduLamp, byte> _LampIndicatorCodeMap = new() {
-            { CduLamp.Fail, 0x08 },
-            { CduLamp.Fm, 0x09 },
-            { CduLamp.Mcdu, 0x0a },
-            { CduLamp.Menu, 0x0b },
-            { CduLamp.Fm1, 0x0c },
-            { CduLamp.Ind, 0x0d },
-            { CduLamp.Rdy, 0x0e },
-            { CduLamp.Line, 0x0f },
-            { CduLamp.Fm2, 0x10 },
-        };
-        protected override Dictionary<CduLamp, byte> LampIndicatorCodeMap => _LampIndicatorCodeMap;
-
-        protected override Func<Key, (int Flag, int Offset)> KeyToFlagOffsetCallback => KeyboardMap.InputReport01FlagAndOffset;
-
-        /// <summary>
-        /// Creates a new object.
-        /// </summary>
-        /// <param name="hidDevice"></param>
-        /// <param name="usbDevice"></param>
-        public McduDevice(HidDevice hidDevice, UsbDevice usbDevice) : base(hidDevice, usbDevice)
-        {
-        }
-
-        /// <inheritdoc/>
-        ~McduDevice() => Dispose(false);
+        Dspy =  CduLamp.Dspy,
+        Exec =  CduLamp.Exec,
+        Fail =  CduLamp.Fail,
+        Fm =    CduLamp.Fm,
+        Fm1 =   CduLamp.Fm1,
+        Fm2 =   CduLamp.Fm2,
+        Ind =   CduLamp.Ind,
+        Line =  CduLamp.Line,
+        Mcdu =  CduLamp.Mcdu,
+        Menu =  CduLamp.Menu,
+        Msg =   CduLamp.Msg,
+        Ofst =  CduLamp.Ofst,
+        Rdy =   CduLamp.Rdy,
     }
 }

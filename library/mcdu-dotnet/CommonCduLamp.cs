@@ -11,11 +11,11 @@
 namespace McduDotNet
 {
     /// <summary>
-    /// The LEDs that appear on all CDU devices. This is a short list.
+    /// The LED lamps that appear on all CDU devices. This is a short list.
     /// </summary>
-    public enum CommonLed
+    public enum CommonCduLamp
     {
-        Fail = Led.Fail,
+        Fail = CduLamp.Fail,
 
         DeviceSpecific = 100,
 

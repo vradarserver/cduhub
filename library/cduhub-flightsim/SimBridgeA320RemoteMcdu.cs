@@ -143,12 +143,12 @@ namespace Cduhub.FlightSim
             var json = message.Substring("update:".Length);
             var mcduDisplay = JsonConvert.DeserializeObject<McduDisplay>(json);
             if(mcduDisplay != null) {
-                SimBridgeWebSocket.ParseSimBridgeUpdateMcduToScreenAndLeds(
+                SimBridgeWebSocket.ParseSimBridgeUpdateMcduToScreenAndLamps(
                     mcduDisplay.Left,
                     PilotBuffer.Screen,
                     PilotBuffer.Leds
                 );
-                SimBridgeWebSocket.ParseSimBridgeUpdateMcduToScreenAndLeds(
+                SimBridgeWebSocket.ParseSimBridgeUpdateMcduToScreenAndLamps(
                     mcduDisplay.Right,
                     FirstOfficerBuffer.Screen,
                     FirstOfficerBuffer.Leds

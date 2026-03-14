@@ -8,39 +8,21 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System;
+
 namespace McduDotNet
 {
-    public static class LedExtensions
+    [Obsolete("Use CommonCduLampExtensions instead")]
+    public static class CommonLedExtensions
     {
-        public static string Describe(this Led led)
+        public static Led ToLed(this CommonLed commonLed, ICdu cdu)
         {
-            switch(led) {
-                case Led.Dspy:  return "DSPY";
-                case Led.Exec:  return "EXEC";
-                case Led.Fail:  return "FAIL";
-                case Led.Fm:    return "FM";
-                case Led.Fm1:   return "FM1";
-                case Led.Fm2:   return "FM2";
-                case Led.Ind:   return "IND";
-                case Led.Line:  return "LINE";
-                case Led.Mcdu:  return "MCDU";
-                case Led.Menu:  return "MENU";
-                case Led.Msg:   return "MSG";
-                case Led.Ofst:  return "OFST";
-                case Led.Rdy:   return "RDY";
-                case (Led)(-1): return "N/A";
-                default:        return "";
-            }
+            return (Led)CommonCduLampExtensions.ToLamp((CommonCduLamp)commonLed, cdu);
         }
 
-        public static CommonLed ToCommonLed(this Led led)
+        public static string Describe(this CommonLed commonLed, ICdu cdu)
         {
-            switch(led) {
-                case Led.Fail:  return CommonLed.Fail;
-                case Led.Line:
-                case Led.Exec:  return CommonLed.LineOrExec;
-                default:        return CommonLed.DeviceSpecific;
-            }
+            return ToLed(commonLed, cdu).Describe();
         }
     }
 }

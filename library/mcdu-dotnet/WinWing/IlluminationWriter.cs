@@ -18,87 +18,89 @@ namespace McduDotNet.WinWing
     class IlluminationWriter
     {
         private readonly UsbWriter _UsbWriter;
-        private readonly Dictionary<Led, byte> _LedIndicatorMap;
-        private Leds? _PreviousLeds;
+        private readonly Dictionary<CduLamp, byte> _LampIndicatorMap;
+        private CduLamps? _PreviousLamps;
 
         /// <summary>
         /// The 02 report that controls LED on/off and display brightnesses.
         /// </summary>
-        private readonly byte[] _LedOrBrightnessPacket = new byte[] {
+        private readonly byte[] _IlluminationPacket = new byte[] {
             0x02, 0x32, 0xbb, 0x00, 0x00, 0x03, 0x49,   // <-- 0x32 replaced with command prefix in ctor
             0x00, 0x00,                                 // <-- these two change during Send LED calls
             0x00, 0x00, 0x00, 0x00, 0x00
         };
-        private const int _LedOrBrightnessPacketIndicatorOffset = 7;
+        private const int _IlluminationPacketTypeIndicatorOffset = 7;
 
         private const byte _SetKeyboardBacklight =  0x00;
         private const byte _SetDisplayBrightness =  0x01;
-        private const byte _SetLedBrightness =      0x02;
+        private const byte _SetLampBrightness =     0x02;
 
         public IlluminationWriter(
             UsbWriter usbWriter,
             byte commandPrefix,
-            Dictionary<Led, byte> ledIndicatorMap
+            Dictionary<CduLamp, byte> ledIndicatorMap
         )
         {
-            _LedOrBrightnessPacket[1] = commandPrefix;
+            _IlluminationPacket[1] = commandPrefix;
             _UsbWriter = usbWriter;
-            _LedIndicatorMap = ledIndicatorMap;
+            _LampIndicatorMap = ledIndicatorMap;
         }
 
         /// <summary>
-        /// Sets the keyboard backlight illumination as a percentage from 0 (off) to 100 (fully on).
+        /// Sets the keyboard backlight illumination as a percentage from 0 (off) to 100
+        /// (fully on).
         /// </summary>
         /// <param name="percent"></param>
         public void SendBacklightPercent(int percent)
         {
             var byteValue = Percent.ToByte(percent);
-            SendLedOrBrightnessPacket(_SetKeyboardBacklight, byteValue);
+            SendIlluminationSettingPacket(_SetKeyboardBacklight, byteValue);
         }
 
         /// <summary>
-        /// Sets the display backlight illumination as a percentage from 0 (off) to 100 (fully on).
+        /// Sets the display backlight illumination as a percentage from 0 (off) to 100
+        /// (fully on).
         /// </summary>
         /// <param name="percent"></param>
         public void SendDisplayBrightnessPercent(int percent)
         {
             var byteValue = Percent.ToByte(percent);
-            SendLedOrBrightnessPacket(_SetDisplayBrightness, byteValue);
+            SendIlluminationSettingPacket(_SetDisplayBrightness, byteValue);
         }
 
         /// <summary>
-        /// Sets the LED brightness as a percentage from 0 (off) to 100 (fully on).
+        /// Sets the LED lamp brightness as a percentage from 0 (off) to 100 (fully on).
         /// </summary>
         /// <param name="percent"></param>
-        public void SendLedBrightnessPercent(int percent)
+        public void SendLampBrightnessPercent(int percent)
         {
             var byteValue = Percent.ToByte(percent);
-            SendLedOrBrightnessPacket(_SetLedBrightness, byteValue);
+            SendIlluminationSettingPacket(_SetLampBrightness, byteValue);
         }
 
         /// <summary>
-        /// Copies an <see cref="Leds"/> buffer to the device.
+        /// Copies an <see cref="CduLamps"/> buffer to the device.
         /// </summary>
-        /// <param name="leds"></param>
+        /// <param name="lamps"></param>
         /// <param name="skipDuplicateCheck"></param>
-        public void ApplyLeds(Leds leds, bool skipDuplicateCheck)
+        public void ApplyCduLamps(CduLamps lamps, bool skipDuplicateCheck)
         {
             _UsbWriter.LockForOutput(() => {
-                if(skipDuplicateCheck || !(_PreviousLeds?.Equals(leds) ?? false)) {
-                    foreach(var kvp in _LedIndicatorMap) {
+                if(skipDuplicateCheck || !(_PreviousLamps?.Equals(lamps) ?? false)) {
+                    foreach(var kvp in _LampIndicatorMap) {
                         var led = kvp.Key;
                         var indicatorCode = kvp.Value;
                         SendLight(
-                            _PreviousLeds?.GetLed(led),
-                            leds.GetLed(led),
+                            _PreviousLamps?.GetLamp(led),
+                            lamps.GetLamp(led),
                             indicatorCode
                         );
                     }
 
-                    if(_PreviousLeds == null) {
-                        _PreviousLeds = new Leds();
+                    if(_PreviousLamps == null) {
+                        _PreviousLamps = new CduLamps();
                     }
-                    _PreviousLeds.CopyFrom(leds);
+                    _PreviousLamps.CopyFrom(lamps);
                 }
             });
         }
@@ -106,7 +108,7 @@ namespace McduDotNet.WinWing
         private void SendLight(bool? previous, bool current, byte indicatorCode)
         {
             if(previous != current) {
-                SendLedOrBrightnessPacket(indicatorCode, current ? (byte)1 : (byte)0);
+                SendIlluminationSettingPacket(indicatorCode, current ? (byte)1 : (byte)0);
             }
         }
 
@@ -115,13 +117,13 @@ namespace McduDotNet.WinWing
         /// </summary>
         /// <param name="indicatorCode"></param>
         /// <param name="value"></param>
-        private void SendLedOrBrightnessPacket(byte indicatorCode, byte value)
+        private void SendIlluminationSettingPacket(byte indicatorCode, byte value)
         {
             _UsbWriter.LockForOutput(() => {
-                var offset = _LedOrBrightnessPacketIndicatorOffset;
-                _LedOrBrightnessPacket[offset] = indicatorCode;
-                _LedOrBrightnessPacket[offset + 1] = value;
-                _UsbWriter.SendPacket(_LedOrBrightnessPacket);
+                var offset = _IlluminationPacketTypeIndicatorOffset;
+                _IlluminationPacket[offset] = indicatorCode;
+                _IlluminationPacket[offset + 1] = value;
+                _UsbWriter.SendPacket(_IlluminationPacket);
             });
         }
     }

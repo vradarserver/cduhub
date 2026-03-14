@@ -31,7 +31,7 @@ namespace McduDotNet.WinWing
         // written as hex strings. Hence why the name is particularly terse.
         protected string CP { get; }
 
-        protected abstract Dictionary<Led, byte> LedIndicatorCodeMap { get; }
+        protected abstract Dictionary<CduLamp, byte> LampIndicatorCodeMap { get; }
 
         protected abstract Func<Key, (int Flag, int Offset)> KeyToFlagOffsetCallback { get; }
 
@@ -48,23 +48,16 @@ namespace McduDotNet.WinWing
         private CancellationTokenSource? _InputLoopCancellationTokenSource;
         private Task? _InputLoopTask;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        private DeviceIdentifier _DeviceId;
-#pragma warning restore CS0618 // Type or member is obsolete
-        /// <inheritdoc/>
-        [Obsolete("Use UsbDevice")]
-        public DeviceIdentifier DeviceId => _DeviceId;
-
         public UsbDevice UsbDevice { get; }
 
         /// <inheritdoc/>
         public Screen Screen { get; }
 
         /// <inheritdoc/>
-        public Leds Leds { get; }
+        public CduLamps Lamps { get; }
 
         /// <inheritdoc/>
-        public IReadOnlyList<Led> SupportedLeds { get; }
+        public IReadOnlyList<CduLamp> SupportedLamps { get; }
 
         /// <inheritdoc/>
         public IReadOnlyList<Key> SupportedKeys { get; }
@@ -117,7 +110,7 @@ namespace McduDotNet.WinWing
                 var normalised = Percent.Clamp(value);
                 if(normalised != LedBrightnessPercent) {
                     _LedBrightnessPercent = normalised;
-                    _IlluminationWriter?.SendLedBrightnessPercent(_LedBrightnessPercent);
+                    _IlluminationWriter?.SendLampBrightnessPercent(_LedBrightnessPercent);
                 }
             }
         }
@@ -212,15 +205,11 @@ namespace McduDotNet.WinWing
 
         public CommonWinWingPanel(HidDevice hidDevice, UsbDevice usbDevice)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            _DeviceId = new(usbDevice);
-#pragma warning restore CS0618 // Type or member is obsolete
-
             CP = $"{CommandPrefix:x2}bb";
             _HidDevice = hidDevice;
             UsbDevice = usbDevice;
-            Leds = new();
-            SupportedLeds = LedIndicatorCodeMap.Select(r => r.Key).ToArray();
+            Lamps = new();
+            SupportedLamps = LampIndicatorCodeMap.Select(r => r.Key).ToArray();
             Screen = new();
             Output = new(Screen);
             Palette = new();
@@ -230,6 +219,15 @@ namespace McduDotNet.WinWing
                 .OfType<Key>()
                 .Where(key => IsKeySupported(key))
                 .ToArray();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            _DeviceId = new(usbDevice);
+            _Leds = new(Lamps);
+            SupportedLeds = SupportedLamps
+                .Where(lamp => Enum.IsDefined(typeof(Led), (Led)lamp))
+                .OfType<Led>()
+                .ToArray();
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <inheritdoc/>
@@ -291,7 +289,7 @@ namespace McduDotNet.WinWing
             _IlluminationWriter = new IlluminationWriter(
                 _UsbWriter,
                 CommandPrefix,
-                LedIndicatorCodeMap
+                LampIndicatorCodeMap
             );
             _FontWriter = new FontWriter(_UsbWriter) {
                 UpdatingDeviceCallback = args => OnFontChanging(args),
@@ -308,7 +306,7 @@ namespace McduDotNet.WinWing
             PanelSpecificInitialisation();
 
             InitialiseBasicFontsAndColours();
-            RefreshLeds();
+            RefreshLamps();
             RefreshBrightnesses();
         }
 
@@ -393,7 +391,7 @@ namespace McduDotNet.WinWing
         {
             _IlluminationWriter?.SendBacklightPercent(BacklightBrightnessPercent);
             _IlluminationWriter?.SendDisplayBrightnessPercent(DisplayBrightnessPercent);
-            _IlluminationWriter?.SendLedBrightnessPercent(LedBrightnessPercent);
+            _IlluminationWriter?.SendLampBrightnessPercent(LedBrightnessPercent);
         }
 
         /// <inheritdoc/>
@@ -413,9 +411,9 @@ namespace McduDotNet.WinWing
         }
 
         /// <inheritdoc/>
-        public void RefreshLeds(bool skipDuplicateCheck = false)
+        public void RefreshLamps(bool skipDuplicateCheck = false)
         {
-            _IlluminationWriter?.ApplyLeds(Leds, skipDuplicateCheck);
+            _IlluminationWriter?.ApplyCduLamps(Lamps, skipDuplicateCheck);
         }
 
         /// <inheritdoc/>
@@ -481,23 +479,23 @@ namespace McduDotNet.WinWing
         )
         {
             Screen.Clear();
-            Leds.TurnAllOn(false);
-            _IlluminationWriter?.SendLedBrightnessPercent(ledBrightnessPercent);
+            Lamps.TurnAllOn(false);
+            _IlluminationWriter?.SendLampBrightnessPercent(ledBrightnessPercent);
             _IlluminationWriter?.SendDisplayBrightnessPercent(displayBrightnessPercent);
             _IlluminationWriter?.SendBacklightPercent(backlightBrightnessPercent);
             RefreshDisplay();
-            RefreshLeds();
+            RefreshLamps();
         }
 
         /// <inheritdoc/>
         public bool IsKeySupported(Key key) => KeyToFlagOffsetCallback(key).Flag != 0;
 
         /// <summary>
-        /// True if the device supports the LED passed across.
+        /// True if the device supports the LED lamp passed across.
         /// </summary>
-        /// <param name="led"></param>
+        /// <param name="lamp"></param>
         /// <returns></returns>
-        public bool IsLedSupported(Led led) => LedIndicatorCodeMap.ContainsKey(led);
+        public bool IsLampSupported(CduLamp lamp) => LampIndicatorCodeMap.ContainsKey(lamp);
 
         protected void HidSharpDeviceList_Changed(object sender, DeviceListChangedEventArgs e)
         {
@@ -510,5 +508,33 @@ namespace McduDotNet.WinWing
                 OnDisconnected();
             }
         }
+
+        #region Obsolete members retained for short term backwards compatability
+
+#pragma warning disable CS0618 // Type or member is obsolete
+
+        private DeviceIdentifier _DeviceId;
+        [Obsolete("Use UsbDevice")]
+        public DeviceIdentifier DeviceId => _DeviceId;
+
+        private Leds _Leds;
+        [Obsolete("Use Lamps")]
+        public Leds Leds => _Leds;
+
+        [Obsolete("Use SupportedLamps")]
+        public IReadOnlyList<Led> SupportedLeds { get; }
+
+        [Obsolete("Use RefreshLamps")]
+        public void RefreshLeds(bool skipDuplicateCheck = false)
+        {
+            RefreshLamps(skipDuplicateCheck);
+        }
+
+        [Obsolete("Use IsLampSupported")]
+        public bool IsLedSupported(Led led) => IsLampSupported((CduLamp)led);
+
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        #endregion
     }
 }
