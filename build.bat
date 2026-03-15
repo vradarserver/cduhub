@@ -29,6 +29,7 @@ set RUNARGS=
     if "%1"=="restore"       set BADARG=OK & set TARGET=RESTORE
 
     if "%1"=="ambient"       set BADARG=OK & set TARGET=SAMAMBI
+    if "%1"=="cdulamps"      set BADARG=OK & set TARGET=SAMCLAMPS
     if "%1"=="characters"    set BADARG=OK & set TARGET=SAMCHAR
     if "%1"=="clock"         set BADARG=OK & set TARGET=SAMCLOCK
     if "%1"=="colours"       set BADARG=OK & set TARGET=SAMCOLS
@@ -36,7 +37,6 @@ set RUNARGS=
     if "%1"=="fast-update"   set BADARG=OK & set TARGET=SAMFSTUP
     if "%1"=="fenix-mcdu"    set BADARG=OK & set TARGET=SAMFENIX
     if "%1"=="inproc-plugin" set BADARG=OK & set TARGET=SAMINPP
-    if "%1"=="leds"          set BADARG=OK & set TARGET=SAMLEDS
 
     if "%1"=="convert-font"  set BADARG=OK & set TARGET=COFONT
     if "%1"=="extract-font"  set BADARG=OK & set TARGET=EXFONT
@@ -62,13 +62,13 @@ set RUNARGS=
     if "%TARGET%"=="RESTORE"    goto :RESTORE
     if "%TARGET%"=="SAMAMBI"    goto :SAMAMBI
     if "%TARGET%"=="SAMCHAR"    goto :SAMCHAR
+    if "%TARGET%"=="SAMCLAMPS"  goto :SAMCLAMPS
     if "%TARGET%"=="SAMCLOCK"   goto :SAMCLOCK
     if "%TARGET%"=="SAMCOLS"    goto :SAMCOLS
     if "%TARGET%"=="SAMCOOKI"   goto :SAMCOOKI
     if "%TARGET%"=="SAMFENIX"   goto :SAMFENIX
     if "%TARGET%"=="SAMFSTUP"   goto :SAMFSTUP
     if "%TARGET%"=="SAMINPP"    goto :SAMINPP
-    if "%TARGET%"=="SAMLEDS"    goto :SAMLEDS
     if "%TARGET%"=="SLN"        goto :SLN
     if "%TARGET%"=="WINDOWS"    goto :WINDOWS
     if "%TARGET%"=="WINSETUP"   goto :WINSETUP
@@ -86,6 +86,7 @@ echo convert-font  Convert font resources to MCDU-DOTNET font files
 echo extract-font  Build the extract-font utility
 echo.
 echo ambient       Build the ambient mcdu-dotnet sample
+echo cdulamps      Build the cdulamps mcdu-dotnet sample
 echo characters    Build the characters mcdu-dotnet sample
 echo clock         Build the clock mcdu-dotnet sample
 echo colours       Build the colours mcdu-dotnet sample
@@ -93,7 +94,6 @@ echo cooked-input  Build the cooked-input mcdu-dotnet sample
 echo fast-update   Build the fast-update mcdu-dotnet sample
 echo fenix-mcdu    Build the fenix-mcdu mcdu-dotnet sample
 echo inproc-plugin Build the in-process plugin sample
-echo leds          Build the leds mcdu-dotnet sample
 echo.
 echo -debug        Use Debug configuration (default)
 echo -nobuild      Skip the build phase
@@ -181,6 +181,11 @@ rem ## Build targets
     call :DOTNET
     goto :EOF
 
+:SAMCLAMPS
+    set  "PROJ=%BATDIR%library\samples\cdulamps\cdulamps.csproj"
+    call :DOTNET
+    goto :EOF
+
 :SAMCLOCK
     set  "PROJ=%BATDIR%library\samples\clock\clock.csproj"
     call :DOTNET
@@ -210,11 +215,6 @@ rem ## Build targets
     set  "PROJ=%BATDIR%library\samples\inprocess-plugin\inprocess-plugin.csproj"
     set  "PUBDIR=%LOCALAPPDATA%\cduhub\Plugins\InProcessSample"
     call :DNPUBNORUN
-    goto :EOF
-
-:SAMLEDS
-    set  "PROJ=%BATDIR%library\samples\leds\leds.csproj"
-    call :DOTNET
     goto :EOF
 
 :WINDOWS
