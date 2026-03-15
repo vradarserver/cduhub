@@ -53,21 +53,7 @@ namespace McduDotNet
             }
         }
 
-        public DeviceType DeviceType
-        {
-            get {
-                switch(UsbDevice.EquipmentType) {
-                    case EquipmentType.Cdu:
-                        switch(UsbDevice.AircraftFamily) {
-                            case AircraftFamily.A32x:   return DeviceType.AirbusA320Mcdu;
-                            case AircraftFamily.B737:   return DeviceType.Boeing737NGPfp;
-                            case AircraftFamily.B777:   return DeviceType.Boeing777Pfp;
-                        }
-                        break;
-                }
-                return DeviceType.NotSpecified;
-            }
-        }
+        public DeviceType DeviceType => UsbDevice.DeviceType;
 
         public string Description => UsbDevice.Description;
 

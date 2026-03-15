@@ -109,7 +109,13 @@ namespace McduDotNet.FlightSim
             screen.Goto(screen.Line + 1, 0);
         }
 
-        public static void ParseGraphQLIndicatorValueToLeds(string? indicatorName, string? indicatorValue, CduLamps? lamps)
+        [Obsolete("Use ParseGraphQLIndicatorValueToLamps")]
+        public static void ParseGraphQLIndicatorValueToLeds(string? indicatorName, string? indicatorValue, Leds? leds)
+        {
+            ParseGraphQLIndicatorValueToLamps(indicatorName, indicatorValue, leds?.CduLamps);
+        }
+
+        public static void ParseGraphQLIndicatorValueToLamps(string? indicatorName, string? indicatorValue, CduLamps? lamps)
         {
             if(indicatorValue != null && lamps != null) {
                 var on = indicatorValue != "0";

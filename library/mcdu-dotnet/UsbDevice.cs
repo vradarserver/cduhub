@@ -27,6 +27,8 @@ namespace McduDotNet
 
         public EquipmentLocation EquipmentLocation { get; }
 
+        public DeviceType DeviceType { get; }
+
         public string Description { get; }
 
         /// <inheritdoc/>
@@ -67,6 +69,8 @@ namespace McduDotNet
             EquipmentType =         equipmentType;
             EquipmentLocation =     equipmentLocation;
             Description =           description;
+
+            DeviceType = EquipmentType.ToDeviceType(AircraftFamily);
         }
 
         /// <inheritdoc/>
