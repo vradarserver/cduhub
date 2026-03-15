@@ -101,16 +101,16 @@ namespace McduDotNet.WinWing
             }
         }
 
-        private int _LedBrightnessPercent = 100;
+        private int _LampBrightnessPercent = 100;
         /// <inheritdoc/>
-        public int LedBrightnessPercent
+        public int LampBrightnessPercent
         {
-            get => _LedBrightnessPercent;
+            get => _LampBrightnessPercent;
             set {
                 var normalised = Percent.Clamp(value);
-                if(normalised != LedBrightnessPercent) {
-                    _LedBrightnessPercent = normalised;
-                    _IlluminationWriter?.SendLampBrightnessPercent(_LedBrightnessPercent);
+                if(normalised != LampBrightnessPercent) {
+                    _LampBrightnessPercent = normalised;
+                    _IlluminationWriter?.SendLampBrightnessPercent(_LampBrightnessPercent);
                 }
             }
         }
@@ -391,7 +391,7 @@ namespace McduDotNet.WinWing
         {
             _IlluminationWriter?.SendBacklightPercent(BacklightBrightnessPercent);
             _IlluminationWriter?.SendDisplayBrightnessPercent(DisplayBrightnessPercent);
-            _IlluminationWriter?.SendLampBrightnessPercent(LedBrightnessPercent);
+            _IlluminationWriter?.SendLampBrightnessPercent(LampBrightnessPercent);
         }
 
         /// <inheritdoc/>
@@ -404,7 +404,7 @@ namespace McduDotNet.WinWing
                 DisplayBrightnessPercent = AutoBrightness
                     .DisplayBacklight
                     .BrightnessForAmbientPercent(AmbientLightPercent);
-                LedBrightnessPercent = AutoBrightness
+                LampBrightnessPercent = AutoBrightness
                     .LedIntensity
                     .IntensityForAmbientPercent(AmbientLightPercent);
             }
@@ -523,6 +523,13 @@ namespace McduDotNet.WinWing
 
         [Obsolete("Use SupportedLamps")]
         public IReadOnlyList<Led> SupportedLeds { get; }
+
+        [Obsolete("Use LampBrightnessPercent")]
+        public int LedBrightnessPercent
+        {
+            get => LampBrightnessPercent;
+            set => LampBrightnessPercent = value;
+        }
 
         [Obsolete("Use RefreshLamps")]
         public void RefreshLeds(bool skipDuplicateCheck = false)

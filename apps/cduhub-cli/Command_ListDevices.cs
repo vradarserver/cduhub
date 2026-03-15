@@ -24,7 +24,7 @@ namespace Cduhub.CommandLineInterface
             var hidDevices =
                 DeviceList.Local.GetHidDevices()
                 .Where(dev => !FilterToWinWing
-                           || dev.VendorID == SupportedDevices.WinWingMcduCaptainDevice.UsbVendorId
+                           || dev.VendorID == SupportedDevices.WinWingMcduCaptain.Id.VendorId
                 )
                 .OrderBy(dev => dev.VendorID)
                 .ThenBy(dev => dev.ProductID)

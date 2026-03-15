@@ -66,10 +66,11 @@ namespace McduDotNet
         int BacklightBrightnessPercent { get; set; }
 
         /// <summary>
-        /// Gets and sets the LED intensity as a percentage between 0 and 100. Changes to
-        /// this value are immediately sent to the device, but see <see cref="RefreshBrightnesses"/>.
+        /// Gets and sets the LED lamp intensity as a percentage between 0 and 100.
+        /// Changes to this value are immediately sent to the device, but see <see
+        /// cref="RefreshBrightnesses"/>.
         /// </summary>
-        int LedBrightnessPercent { get; set; }
+        int LampBrightnessPercent { get; set; }
 
         /// <summary>
         /// Gets and sets the offset of the left edge of the screen text.
@@ -288,6 +289,9 @@ namespace McduDotNet
 
         [Obsolete("Use RefreshLamps instead")]
         void RefreshLeds(bool skipDuplicateCheck = false);
+
+        [Obsolete("Use LampBrightnessPercent instead")]
+        int LedBrightnessPercent { get; set; }
 
 #pragma warning restore CS0618 // Type or member is obsolete
 

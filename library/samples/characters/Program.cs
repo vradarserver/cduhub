@@ -61,11 +61,11 @@ namespace Characters
             bool useFullWidth
         )
         {
-            using(var cdu = CduFactory.ConnectLocal()) {
+            using(var cdu = DeviceFactory.ConnectLocalCdu()) {
                 if(cdu == null) {
                     Console.WriteLine("No device connected");
                 } else {
-                    Console.WriteLine($"Using {cdu.DeviceId}");
+                    Console.WriteLine($"Using {cdu.UsbDevice}");
                     Console.WriteLine($"Setting X and Y offsets to {xOffset} / {yOffset}");
                     cdu.XOffset = xOffset;
                     cdu.YOffset = yOffset;

@@ -10,7 +10,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading;
 using Cduhub.Config;
 using Cduhub.Pages;
@@ -49,7 +48,7 @@ namespace Cduhub
         /// <summary>
         /// The connected device or null if no device is connected.
         /// </summary>
-        public DeviceIdentifier? ConnectedDevice => _Cdu?.DeviceId;
+        public UsbDevice? ConnectedDevice => _Cdu?.UsbDevice;
 
         /// <summary>
         /// The default font reference. This is user configurable.
@@ -82,9 +81,9 @@ namespace Cduhub
         public int DisplayBrightnessPercent => _Cdu?.DisplayBrightnessPercent ?? 0;
 
         /// <summary>
-        /// The CDU's current LED intensity percent value.
+        /// The CDU's current LED lamp intensity percent value.
         /// </summary>
-        public int LedBrightnessPercent => _Cdu?.LedBrightnessPercent ?? 0;
+        public int LedBrightnessPercent => _Cdu?.LampBrightnessPercent ?? 0;
 
         /// <summary>
         /// The CDU's current keyboard backlight brightness percent value.
@@ -239,7 +238,7 @@ namespace Cduhub
             if(_SelectedPage != null) {
                 UploadFont(_SelectedPage.PageFont);
                 RefreshPalette(_SelectedPage, forceRefresh: true);
-                RefreshLeds(_SelectedPage);
+                RefreshLamps(_SelectedPage);
                 _Cdu?.RefreshBrightnesses();
             }
         }
@@ -277,7 +276,7 @@ namespace Cduhub
         {
             if(_Cdu == null && Interlocked.Exchange(ref _ConnectingCount, 1) == 0) {
                 try {
-                    _Cdu = CduFactory.ConnectLocal();
+                    _Cdu = DeviceFactory.ConnectLocalCdu();
                     if(_Cdu != null) {
                         ApplySettingsToDevice();
 
@@ -361,7 +360,7 @@ namespace Cduhub
                     }
                     _PageHistory.Push(page);
                     RefreshDisplay(page);
-                    RefreshLeds(page);
+                    RefreshLamps(page);
                     _Cdu?.RefreshBrightnesses();
                     _SelectedPage.OnSelected(true);
                 }
@@ -417,11 +416,11 @@ namespace Cduhub
             }
         }
 
-        public void RefreshLeds(Page page)
+        public void RefreshLamps(Page page)
         {
             if(page == _SelectedPage && _Cdu != null) {
-                _Cdu.Leds.CopyFrom(page.Leds);
-                _Cdu.RefreshLeds();
+                _Cdu.Lamps.CopyFrom(page.Lamps);
+                _Cdu.RefreshLamps();
             }
         }
 

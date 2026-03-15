@@ -76,7 +76,7 @@ namespace Cduhub.Config
                 if(!UseAutoBrightness) {
                     cdu.BacklightBrightnessPercent = FixedBrightness.KeyboardBacklightPercent;
                     cdu.DisplayBrightnessPercent = FixedBrightness.DisplayBacklightPercent;
-                    cdu.LedBrightnessPercent = FixedBrightness.LedIntensityPercent;
+                    cdu.LampBrightnessPercent = FixedBrightness.LedIntensityPercent;
                 }
             }
         }

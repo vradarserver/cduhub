@@ -26,7 +26,7 @@ namespace Cduhub.FlightSim
 
         public Screen MasterScreen { get; }
 
-        public Leds MasterLeds { get; }
+        public CduLamps MasterLamps { get; }
 
         public abstract SimulatorMcduBuffer PilotBuffer { get; }
 
@@ -85,14 +85,15 @@ namespace Cduhub.FlightSim
         /// </summary>
         /// <param name="equipmentLocation"></param>
         /// <param name="masterScreen"></param>
-        /// <param name="masterLeds"></param>
-        public SimulatedMcdus(EquipmentLocation equipmentLocation, Screen masterScreen, Leds masterLeds)
+        /// <param name="masterLamps"></param>
+        public SimulatedMcdus(EquipmentLocation equipmentLocation, Screen masterScreen, CduLamps masterLamps)
+
         {
             SelectedBufferEquipmentLocation = equipmentLocation == EquipmentLocation.NotApplicable
                 ? EquipmentLocation.Captain
                 : equipmentLocation;
             MasterScreen = masterScreen;
-            MasterLeds = masterLeds;
+            MasterLamps = masterLamps;
         }
 
         /// <inheritdoc/>
@@ -112,7 +113,7 @@ namespace Cduhub.FlightSim
                     break;
             }
             RefreshSelectedScreen();
-            RefreshSelectedLeds();
+            RefreshSelectedLamps();
         }
 
         public void RefreshSelectedScreen()
@@ -121,9 +122,9 @@ namespace Cduhub.FlightSim
             OnDisplayRefreshRequired();
         }
 
-        public void RefreshSelectedLeds()
+        public void RefreshSelectedLamps()
         {
-            MasterLeds.CopyFrom(SelectedBuffer.Leds);
+            MasterLamps.CopyFrom(SelectedBuffer.Lamps);
             OnLedsRefreshRequired();
         }
 

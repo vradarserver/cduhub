@@ -28,7 +28,7 @@ namespace Cduhub.Pages.Init
         public AutoBrightnessLedInit_Page(Hub hub) : base(hub)
         {
             SetupEditor(() => _Settings?.AutoBrightness.LedIntensity);
-            Leds.TurnAllOn(true);
+            Lamps.TurnAllOn(true);
         }
 
         protected override void ApplyDefaults(BrightnessSettings defaults)

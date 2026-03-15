@@ -33,7 +33,11 @@ namespace Cduhub.Pages.FlightSimulator
             Disconnect();
 
             var settings = ConfigStorage.Load<SimBridgeEfbSettings>();
-            var mcdu = new SimBridgeA320RemoteMcdu(_Hub.ConnectedDevice?.DeviceUser ?? DeviceUser.Captain, Screen, Leds) {
+            var mcdu = new SimBridgeA320RemoteMcdu(
+                _Hub.ConnectedDevice?.EquipmentLocation ?? EquipmentLocation.Captain,
+                Screen,
+                Lamps
+            ) {
                 Host = settings.Host,
                 Port = settings.Port,
             };
@@ -76,7 +80,7 @@ namespace Cduhub.Pages.FlightSimulator
 
         private void SimBridgeA320_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
 
-        private void SimBridgeA320_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLeds();
+        private void SimBridgeA320_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLamps();
 
         private void SimBridgeA320_ConnectionStateChanged(object sender, System.EventArgs e)
         {

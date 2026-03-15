@@ -31,7 +31,8 @@ namespace Cduhub.FlightSim
         /// <inheritdoc/>
         public override DeviceType TargetDeviceType => DeviceType.NotSpecified;
 
-        public XPlaneGenericMcdu(HttpClient httpClient, DeviceUser deviceUser, Screen masterScreen, Leds masterLeds) : base(httpClient, deviceUser, masterScreen, masterLeds)
+        public XPlaneGenericMcdu(HttpClient httpClient, EquipmentLocation equipmentLocation, Screen masterScreen, CduLamps masterLamps)
+            : base(httpClient, equipmentLocation, masterScreen, masterLamps)
         {
         }
 
@@ -41,7 +42,7 @@ namespace Cduhub.FlightSim
             if(pressed) {
                 var keyCode = key.ToXPlaneCommand();
                 if(keyCode != "" && IsConnected) {
-                    var fms = SelectedBufferEquipmentLocation == DeviceUser.Captain
+                    var fms = SelectedBufferEquipmentLocation == EquipmentLocation.Captain
                         ? "FMS"
                         : "FMS2";
                     var command = $"sim/{fms}/{keyCode}";

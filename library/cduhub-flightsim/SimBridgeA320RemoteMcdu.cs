@@ -60,7 +60,8 @@ namespace Cduhub.FlightSim
         /// <param name="deviceuser"></param>
         /// <param name="masterScreen"></param>
         /// <param name="masterLeds"></param>
-        public SimBridgeA320RemoteMcdu(DeviceUser deviceUser, Screen masterScreen, Leds masterLeds) : base(deviceUser, masterScreen, masterLeds)
+        public SimBridgeA320RemoteMcdu(EquipmentLocation equipmentLocation, Screen masterScreen, CduLamps masterLamps)
+            : base(equipmentLocation, masterScreen, masterLamps)
         {
         }
 
@@ -78,7 +79,7 @@ namespace Cduhub.FlightSim
         {
             var keyCode = key.ToSimBridgeRemoteMcduKeyName();
             if(pressed && keyCode != "" && IsConnected) {
-                var leftRight = SelectedBufferEquipmentLocation == DeviceUser.Captain
+                var leftRight = SelectedBufferEquipmentLocation == EquipmentLocation.Captain
                     ? "left"
                     : "right";
                 var eventCode = $"event:{leftRight}:{keyCode}";
@@ -146,15 +147,15 @@ namespace Cduhub.FlightSim
                 SimBridgeWebSocket.ParseSimBridgeUpdateMcduToScreenAndLamps(
                     mcduDisplay.Left,
                     PilotBuffer.Screen,
-                    PilotBuffer.Leds
+                    PilotBuffer.Lamps
                 );
                 SimBridgeWebSocket.ParseSimBridgeUpdateMcduToScreenAndLamps(
                     mcduDisplay.Right,
                     FirstOfficerBuffer.Screen,
-                    FirstOfficerBuffer.Leds
+                    FirstOfficerBuffer.Lamps
                 );
                 RefreshSelectedScreen();
-                RefreshSelectedLeds();
+                RefreshSelectedLamps();
             }
         }
     }

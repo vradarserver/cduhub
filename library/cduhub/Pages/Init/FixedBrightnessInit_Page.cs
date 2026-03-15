@@ -24,7 +24,7 @@ namespace Cduhub.Pages.Init
 
         public FixedBrightnessInit_Page(Hub hub) : base(hub)
         {
-            Leds.TurnAllOn(true);
+            Lamps.TurnAllOn(true);
 
             LeftOption("DISPLAY",
                 () => $"{_Settings?.FixedBrightness.DisplayBacklightPercent}%",

@@ -77,10 +77,11 @@ namespace Cduhub.FlightSim
         /// Creates a new object.
         /// </summary>
         /// <param name="httpClient"></param>
-        /// <param name="deviceUser"></param>
+        /// <param name="equipmentLocation"></param>
         /// <param name="masterScreen"></param>
-        /// <param name="masterLeds"></param>
-        public XPlaneWebSocketDataRefsMcdu(HttpClient httpClient, DeviceUser deviceUser, Screen masterScreen, Leds masterLeds) : base(deviceUser, masterScreen, masterLeds)
+        /// <param name="masterLamps"></param>
+        public XPlaneWebSocketDataRefsMcdu(HttpClient httpClient, EquipmentLocation equipmentLocation, Screen masterScreen, CduLamps masterLamps)
+            : base(equipmentLocation, masterScreen, masterLamps)
         {
             HttpClient = httpClient;
         }

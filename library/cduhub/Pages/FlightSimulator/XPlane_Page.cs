@@ -35,9 +35,9 @@ namespace Cduhub.Pages.FlightSimulator
             var settings = ConfigStorage.Load<XPlane12RestSettings>();
             var mcdu = new XPlaneGenericMcdu(
                 CommonHttpClient.HttpClient,
-                _Hub.ConnectedDevice?.DeviceUser ?? DeviceUser.Captain,
+                _Hub.ConnectedDevice?.EquipmentLocation ?? EquipmentLocation.Captain,
                 Screen,
-                Leds
+                Lamps
             ) {
                 Host = settings.Host,
                 Port = settings.Port,
@@ -88,7 +88,7 @@ namespace Cduhub.Pages.FlightSimulator
 
         private void XPlaneMcdu_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
 
-        private void XPlaneMcdu_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLeds();
+        private void XPlaneMcdu_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLamps();
 
         private void XPlaneMcdu_ConnectionStateChanged(object sender, System.EventArgs e)
         {

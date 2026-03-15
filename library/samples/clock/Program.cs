@@ -16,12 +16,12 @@ namespace Clock
     {
         static void Main(string[] _)
         {
-            var deviceId = SelectDevice();
-            using(var cdu = CduFactory.ConnectLocal(deviceId)) {
+            var usbDevice = SelectDevice();
+            using(var cdu = DeviceFactory.ConnectLocalCdu(usbDevice)) {
                 if(cdu == null) {
                     Console.WriteLine("No device connected");
                 } else {
-                    Console.WriteLine($"Using {cdu.DeviceId}");
+                    Console.WriteLine($"Using {cdu.UsbDevice}");
 
                     Console.WriteLine($"Press Q to quit");
                     while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
@@ -43,25 +43,25 @@ namespace Clock
             }
         }
 
-        static DeviceIdentifier? SelectDevice()
+        static UsbDevice? SelectDevice()
         {
-            var identifiers = CduFactory
+            var usbDevices = DeviceFactory
                 .FindLocalDevices()
-                .OrderBy(r => r.UsbVendorId)
-                .ThenBy(r => r.UsbProductId)
+                .OrderBy(r => r.Id.VendorId)
+                .ThenBy(r => r.Id.ProductId)
                 .ToArray();
-            var result = identifiers.FirstOrDefault();
-            if(identifiers.Length > 1) {
+            var result = usbDevices.FirstOrDefault();
+            if(usbDevices.Length > 1) {
                 Console.WriteLine("Select device:");
-                for(var idx = 0;idx < identifiers.Length;++idx) {
-                    Console.WriteLine($"{idx + 1}: {identifiers[idx]}");
+                for(var idx = 0;idx < usbDevices.Length;++idx) {
+                    Console.WriteLine($"{idx + 1}: {usbDevices[idx]}");
                 }
                 do {
                     result = null;
                     Console.Write("? ");
                     var number = Console.ReadLine();
-                    if(int.TryParse(number, out var idx) && idx > 0 && idx <= identifiers.Length) {
-                        result = identifiers[idx - 1];
+                    if(int.TryParse(number, out var idx) && idx > 0 && idx <= usbDevices.Length) {
+                        result = usbDevices[idx - 1];
                     }
                 } while(result == null);
             }

@@ -16,12 +16,12 @@ namespace Cduhub.FlightSim
     {
         public Screen Screen { get; }
 
-        public Leds Leds { get; }
+        public CduLamps Lamps { get; }
 
         public SimulatorMcduBuffer()
         {
             Screen = new Screen();
-            Leds = new Leds();
+            Lamps = new CduLamps();
         }
     }
 }

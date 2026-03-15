@@ -24,7 +24,7 @@ namespace Cduhub
 
         public Compositor Output { get; }
 
-        public Leds Leds { get; }
+        public CduLamps Lamps { get; }
 
         public virtual Palette Palette => _Hub.DefaultPalette;
 
@@ -60,14 +60,14 @@ namespace Cduhub
         public Page(Hub hub)
         {
             _Hub = hub;
-            Leds = new Leds();
+            Lamps = new CduLamps();
             Screen = new Screen();
             Output = new Compositor(Screen);
         }
 
         public virtual void RefreshDisplay() => _Hub.RefreshDisplay(this);
 
-        public virtual void RefreshLeds() => _Hub.RefreshLeds(this);
+        public virtual void RefreshLamps() => _Hub.RefreshLamps(this);
 
         public void PreparePage()
         {

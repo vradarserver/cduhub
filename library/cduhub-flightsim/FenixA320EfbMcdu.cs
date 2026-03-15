@@ -57,10 +57,11 @@ namespace Cduhub.FlightSim
         /// <summary>
         /// Creates a new object.
         /// </summary>
-        /// <param name="deviceUser"></param>
+        /// <param name="equipmentLocation"></param>
         /// <param name="masterScreen"></param>
-        /// <param name="masterLeds"></param>
-        public FenixA320EfbMcdu(DeviceUser deviceUser, Screen masterScreen, Leds masterLeds) : base(deviceUser, masterScreen, masterLeds)
+        /// <param name="masterLamps"></param>
+        public FenixA320EfbMcdu(EquipmentLocation equipmentLocation, Screen masterScreen, CduLamps masterLamps)
+            : base(equipmentLocation, masterScreen, masterLamps)
         {
         }
 
@@ -235,26 +236,26 @@ namespace Cduhub.FlightSim
                 var value = dataRefs.value?.ToString();
 
                 Screen? updateScreen = null;
-                Leds? updateLeds = null;
+                CduLamps? updateLamps = null;
                 switch(name) {
                     case FenixA320GraphQL.GraphQLMcdu1DisplayName:      updateScreen = PilotBuffer.Screen; break;
                     case FenixA320GraphQL.GraphQLMcdu2DisplayName:      updateScreen = FirstOfficerBuffer.Screen; break;
 
-                    case FenixA320GraphQL.GraphQLMcdu1LedFailName:      updateLeds = PilotBuffer.Leds; break;
-                    case FenixA320GraphQL.GraphQLMcdu1LedFmName:        updateLeds = PilotBuffer.Leds; break;
-                    case FenixA320GraphQL.GraphQLMcdu1LedFm1Name:       updateLeds = PilotBuffer.Leds; break;
-                    case FenixA320GraphQL.GraphQLMcdu1LedFm2Name:       updateLeds = PilotBuffer.Leds; break;
-                    case FenixA320GraphQL.GraphQLMcdu1LedIndName:       updateLeds = PilotBuffer.Leds; break;
-                    case FenixA320GraphQL.GraphQLMcdu1LedMcduMenuName:  updateLeds = PilotBuffer.Leds; break;
-                    case FenixA320GraphQL.GraphQLMcdu1LedRdyName:       updateLeds = PilotBuffer.Leds; break;
+                    case FenixA320GraphQL.GraphQLMcdu1LedFailName:      updateLamps = PilotBuffer.Lamps; break;
+                    case FenixA320GraphQL.GraphQLMcdu1LedFmName:        updateLamps = PilotBuffer.Lamps; break;
+                    case FenixA320GraphQL.GraphQLMcdu1LedFm1Name:       updateLamps = PilotBuffer.Lamps; break;
+                    case FenixA320GraphQL.GraphQLMcdu1LedFm2Name:       updateLamps = PilotBuffer.Lamps; break;
+                    case FenixA320GraphQL.GraphQLMcdu1LedIndName:       updateLamps = PilotBuffer.Lamps; break;
+                    case FenixA320GraphQL.GraphQLMcdu1LedMcduMenuName:  updateLamps = PilotBuffer.Lamps; break;
+                    case FenixA320GraphQL.GraphQLMcdu1LedRdyName:       updateLamps = PilotBuffer.Lamps; break;
 
-                    case FenixA320GraphQL.GraphQLMcdu2LedFailName:      updateLeds = FirstOfficerBuffer.Leds; break;
-                    case FenixA320GraphQL.GraphQLMcdu2LedFmName:        updateLeds = FirstOfficerBuffer.Leds; break;
-                    case FenixA320GraphQL.GraphQLMcdu2LedFm1Name:       updateLeds = FirstOfficerBuffer.Leds; break;
-                    case FenixA320GraphQL.GraphQLMcdu2LedFm2Name:       updateLeds = FirstOfficerBuffer.Leds; break;
-                    case FenixA320GraphQL.GraphQLMcdu2LedIndName:       updateLeds = FirstOfficerBuffer.Leds; break;
-                    case FenixA320GraphQL.GraphQLMcdu2LedMcduMenuName:  updateLeds = FirstOfficerBuffer.Leds; break;
-                    case FenixA320GraphQL.GraphQLMcdu2LedRdyName:       updateLeds = FirstOfficerBuffer.Leds; break;
+                    case FenixA320GraphQL.GraphQLMcdu2LedFailName:      updateLamps = FirstOfficerBuffer.Lamps; break;
+                    case FenixA320GraphQL.GraphQLMcdu2LedFmName:        updateLamps = FirstOfficerBuffer.Lamps; break;
+                    case FenixA320GraphQL.GraphQLMcdu2LedFm1Name:       updateLamps = FirstOfficerBuffer.Lamps; break;
+                    case FenixA320GraphQL.GraphQLMcdu2LedFm2Name:       updateLamps = FirstOfficerBuffer.Lamps; break;
+                    case FenixA320GraphQL.GraphQLMcdu2LedIndName:       updateLamps = FirstOfficerBuffer.Lamps; break;
+                    case FenixA320GraphQL.GraphQLMcdu2LedMcduMenuName:  updateLamps = FirstOfficerBuffer.Lamps; break;
+                    case FenixA320GraphQL.GraphQLMcdu2LedRdyName:       updateLamps = FirstOfficerBuffer.Lamps; break;
                 }
 
                 if(updateScreen != null) {
@@ -263,10 +264,10 @@ namespace Cduhub.FlightSim
                         RefreshSelectedScreen();
                     }
                 }
-                if(updateLeds != null) {
-                    FenixA320GraphQL.ParseGraphQLIndicatorValueToLeds(name, value, updateLeds);
-                    if(updateLeds == SelectedBuffer.Leds) {
-                        RefreshSelectedLeds();
+                if(updateLamps != null) {
+                    FenixA320GraphQL.ParseGraphQLIndicatorValueToLamps(name, value, updateLamps);
+                    if(updateLamps == SelectedBuffer.Lamps) {
+                        RefreshSelectedLamps();
                     }
                 }
             }

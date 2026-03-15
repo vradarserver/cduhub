@@ -44,14 +44,14 @@ namespace Cduhub.Pages
                 .LeftLabel(6, $">ABOUT{updateAvailable}")
                 .RightLabel(1, "FLIGHT SIMS<")
                 .RightLabel(6, "<red>QUIT<");
-            Leds.Mcdu = Leds.Menu = true;
+            Lamps.Mcdu = Lamps.Menu = true;
 
             if(RegisteredPlugins.EntryPointHasPlugins(EntryPointPage.Root)) {
                 Output.RightLabel(2, "PLUGINS<");
             }
 
             RefreshDisplay();
-            RefreshLeds();
+            RefreshLamps();
         }
 
         private void HookServices()

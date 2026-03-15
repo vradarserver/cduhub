@@ -33,7 +33,11 @@ namespace Cduhub.Pages.FlightSimulator
             Disconnect();
 
             var settings = ConfigStorage.Load<ToLissUdpSettings>();
-            var mcdu = new ToLissUdpMcdu(_Hub.ConnectedDevice?.DeviceUser ?? DeviceUser.Captain, Screen, Leds) {
+            var mcdu = new ToLissUdpMcdu(
+                _Hub.ConnectedDevice?.EquipmentLocation ?? EquipmentLocation.Captain,
+                Screen,
+                Lamps
+            ) {
                 Host = settings.Host,
                 Port = settings.Port,
             };
@@ -83,7 +87,7 @@ namespace Cduhub.Pages.FlightSimulator
 
         private void ToLissMcdu_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
 
-        private void ToLissMcdu_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLeds();
+        private void ToLissMcdu_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLamps();
 
         private void ToLissMcdu_ConnectionStateChanged(object sender, System.EventArgs e)
         {

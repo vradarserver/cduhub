@@ -70,11 +70,11 @@ namespace Colours
             bool useFullWidth
         )
         {
-            using(var cdu = CduFactory.ConnectLocal()) {
+            using(var cdu = DeviceFactory.ConnectLocalCdu()) {
                 if(cdu == null) {
                     Console.WriteLine("No device connected");
                 } else {
-                    Console.WriteLine($"Using {cdu.DeviceId}");
+                    Console.WriteLine($"Using {cdu.UsbDevice}");
                     cdu.KeyDown += Cdu_KeyDown;
 
                     var font = LoadFont(fontFileInfo);
@@ -139,8 +139,7 @@ namespace Colours
 
         static void Cdu_KeyDown(object? sender, KeyEventArgs args)
         {
-            var cdu = sender as ICdu;
-            if(cdu == null) {
+            if(sender is not ICdu cdu) {
                 return;
             }
 
