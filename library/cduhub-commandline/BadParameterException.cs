@@ -9,20 +9,22 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.CommandLine;
 
-namespace McduDotNet
+namespace Cduhub.CommandLine
 {
-    [Flags]
-    public enum EquipmentType
+    [Serializable]
+    public class BadParameterException : Exception
     {
-        Unknown =   0x00000000,
+        public Command? Command { get; }
 
-        Cdu =       0x00000001,
+        public BadParameterException() { }
 
-        LeftEfis =  0x00000002,
+        public BadParameterException(Command command, string message) : this(command, message, null) { }
 
-        RightEfis = 0x00000004,
-
-        Fgcp =      0x00000008,
+        public BadParameterException(Command command, string message, Exception? inner) : base(message, inner)
+        {
+            Command = command;
+        }
     }
 }

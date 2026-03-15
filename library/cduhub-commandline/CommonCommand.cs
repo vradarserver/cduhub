@@ -10,19 +10,10 @@
 
 using System;
 
-namespace McduDotNet
+namespace Cduhub.CommandLine
 {
-    [Flags]
-    public enum EquipmentType
+    public class CommonCommand
     {
-        Unknown =   0x00000000,
-
-        Cdu =       0x00000001,
-
-        LeftEfis =  0x00000002,
-
-        RightEfis = 0x00000004,
-
-        Fgcp =      0x00000008,
+        public static string Timestamp => $"[{DateTime.Now:HH:mm:ss.fff}]";
     }
 }

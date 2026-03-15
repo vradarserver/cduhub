@@ -263,6 +263,9 @@ namespace McduDotNet.WinWing
             }
         }
 
+        /// <inheritdoc/>
+        public override string ToString() => UsbDevice.ToString();
+
         public void Initialise()
         {
             var maxOutputReportLength = _HidDevice.GetMaxOutputReportLength();

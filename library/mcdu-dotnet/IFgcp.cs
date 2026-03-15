@@ -12,17 +12,14 @@ using System;
 
 namespace McduDotNet
 {
-    [Flags]
-    public enum EquipmentType
+    /// <summary>
+    /// The interface for FCU / MCP devices.
+    /// </summary>
+    public interface IFgcp : IDisposable
     {
-        Unknown =   0x00000000,
-
-        Cdu =       0x00000001,
-
-        LeftEfis =  0x00000002,
-
-        RightEfis = 0x00000004,
-
-        Fgcp =      0x00000008,
+        /// <summary>
+        /// The USB device that this object is listening to, and sending commands to.
+        /// </summary>
+        UsbDevice UsbDevice { get; }
     }
 }

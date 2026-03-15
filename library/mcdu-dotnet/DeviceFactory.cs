@@ -8,10 +8,8 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using HidSharp;
 
 namespace McduDotNet
@@ -80,6 +78,15 @@ namespace McduDotNet
             return result;
         }
 
+        /// <summary>
+        /// Returns an object that can control a CDU device connected to the local system,
+        /// or null if no such device exists.
+        /// </summary>
+        /// <param name="usbDevice"></param>
+        /// <param name="aircraftFamily"></param>
+        /// <param name="aircraftManufacturer"></param>
+        /// <param name="equipmentLocation"></param>
+        /// <returns></returns>
         public static ICdu? ConnectLocalCdu(
             UsbDevice? usbDevice = null,
             AircraftFamily? aircraftFamily = null,
@@ -89,9 +96,67 @@ namespace McduDotNet
         {
             ICdu? result = null;
 
+            usbDevice = FindUsbDeviceCandidate(
+                EquipmentType.Cdu,
+                usbDevice,
+                aircraftFamily,
+                aircraftManufacturer,
+                equipmentLocation
+            );
+            var hidDevice = OpenHidDevice(usbDevice);
+
+            if(hidDevice != null && usbDevice != null) {
+                result = SupportedDeviceFactory.CreateCdu(hidDevice, usbDevice);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Returns an object that can control an FGCP device (I.E. an Airbus FCU or a
+        /// Boeing MCP) connected to the local system, or null if no such device exists.
+        /// </summary>
+        /// <param name="usbDevice"></param>
+        /// <param name="aircraftFamily"></param>
+        /// <param name="aircraftManufacturer"></param>
+        /// <param name="equipmentLocation"></param>
+        /// <returns></returns>
+        public static IFgcp? ConnectLocalFgcp(
+            UsbDevice? usbDevice = null,
+            AircraftFamily? aircraftFamily = null,
+            AircraftManufacturer? aircraftManufacturer = null,
+            EquipmentLocation? equipmentLocation = null
+        )
+        {
+            IFgcp? result = null;
+
+            usbDevice = FindUsbDeviceCandidate(
+                EquipmentType.Fgcp,
+                usbDevice,
+                aircraftFamily,
+                aircraftManufacturer,
+                equipmentLocation
+            );
+            var hidDevice = OpenHidDevice(usbDevice);
+
+            if(hidDevice != null && usbDevice != null) {
+                result = SupportedDeviceFactory.CreateFgcp(hidDevice, usbDevice);
+            }
+
+            return result;
+        }
+
+        private static UsbDevice? FindUsbDeviceCandidate(
+            EquipmentType equipmentType,
+            UsbDevice? usbDevice = null,
+            AircraftFamily? aircraftFamily = null,
+            AircraftManufacturer? aircraftManufacturer = null,
+            EquipmentLocation? equipmentLocation = null
+        )
+        {
             usbDevice = FindLocalDevices()
                 .Where(candidate =>
-                        candidate.EquipmentType == EquipmentType.Cdu
+                        (candidate.EquipmentType & equipmentType) != 0
                     && (usbDevice == null || candidate == usbDevice)
                     && (aircraftFamily == null || candidate.AircraftFamily == aircraftFamily)
                     && (aircraftManufacturer == null || candidate.AircraftManufacturer == aircraftManufacturer)
@@ -102,17 +167,21 @@ namespace McduDotNet
                 .ThenBy(candidate => candidate.Id.ProductId)
                 .FirstOrDefault();
 
+            return usbDevice;
+        }
+
+        private static HidDevice? OpenHidDevice(UsbDevice? usbDevice)
+        {
+            HidDevice? result = null;
+
             if(usbDevice != null) {
-                var hidDevice = DeviceList
+                result = DeviceList
                     .Local
                     .GetHidDevices(
                         vendorID: usbDevice.Id.VendorId,
                         productID: usbDevice.Id.ProductId
                     )
                     .FirstOrDefault();
-                if(hidDevice != null) {
-                    result = SupportedDeviceFactory.CreateCdu(hidDevice, usbDevice);
-                }
             }
 
             return result;

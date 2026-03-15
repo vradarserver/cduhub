@@ -9,20 +9,47 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.Collections;
+using System.CommandLine;
 
-namespace McduDotNet
+namespace Cduhub.CommandLine
 {
-    [Flags]
-    public enum EquipmentType
+    public class CommonProgram
     {
-        Unknown =   0x00000000,
+        public static bool Worked { get; set; }
 
-        Cdu =       0x00000001,
+        public static void InvokeCommandLineParser(ParseResult parseResult, ref int errorCode)
+        {
+            parseResult.InvocationConfiguration.EnableDefaultExceptionHandler = false;
+            Worked = true;
+            errorCode = parseResult.Invoke();
+            if(!Worked) {
+                errorCode = 1;
+            }
+        }
 
-        LeftEfis =  0x00000002,
-
-        RightEfis = 0x00000004,
-
-        Fgcp =      0x00000008,
+        public static void ShowException(Exception ex, ref int errorCode)
+        {
+            if(ex is BadParameterException badParameter) {
+                Console.WriteLine(badParameter.Message ?? "");
+                errorCode = 1;
+            } else {
+                Console.WriteLine("Caught exception");
+                Ansi.WriteLine(Ansi.RedBold, ex.ToString());
+                if(ex.Data.Count > 0) {
+                    Console.WriteLine();
+                    Console.WriteLine($"Exception.Data dictionary content:");
+                    foreach(DictionaryEntry kvp in ex.Data) {
+                        Ansi.WriteLine(
+                            Ansi.WhiteBold,
+                            $"[{kvp.Key?.ToString() ?? "null"}]",
+                            Ansi.Regular,
+                            $" = {kvp.Value?.ToString() ?? "null"}"
+                        );
+                    }
+                }
+                errorCode = 2;
+            }
+        }
     }
 }

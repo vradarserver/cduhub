@@ -9,6 +9,7 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -37,8 +38,8 @@ namespace Cduhub.CommandLine
     {
         public static readonly InformationalVersion Empty = new();
 
-        static Regex _ParseRegex = new Regex(
-            @"(?<major>\d+).(?<minor>\d+).(?<patch>\d+)(-(?<revisionType>alpha|beta)-(?<revision>\d+))?(\+(?<commitHash>.+))?",
+        static readonly Regex _ParseRegex = new Regex(
+            @"(?<major>\d+).(?<minor>\d+).(?<patch>\d+)([-|\.]?(?<revisionType>[a-zA-Z]+))?([-||.]?(?<revision>\d+))?([^+]*\+(?<commitHash>.+))?",
             RegexOptions.Compiled | RegexOptions.IgnoreCase
         );
 
@@ -49,7 +50,12 @@ namespace Cduhub.CommandLine
         public string VersionTag { get; } = "";
 
         /// <summary>
-        /// The type of release parsed from <see cref="VersionTag"/>.
+        /// The release type as extracted from the tag.
+        /// </summary>
+        public string ReleaseTypeText { get; } = "";
+
+        /// <summary>
+        /// The type of release parsed from <see cref="ReleaseTypeText"/>.
         /// </summary>
         public ReleaseType ReleaseType { get; }
 
@@ -90,6 +96,7 @@ namespace Cduhub.CommandLine
         /// Creates a new object.
         /// </summary>
         /// <param name="versionTag"></param>
+        /// 
         /// <param name="releaseType"></param>
         /// <param name="major"></param>
         /// <param name="minor"></param>
@@ -98,6 +105,7 @@ namespace Cduhub.CommandLine
         /// <param name="commitHash"></param>
         public InformationalVersion(
             string versionTag,
+            string releaseTypeText,
             ReleaseType releaseType,
             int major,
             int minor,
@@ -107,6 +115,7 @@ namespace Cduhub.CommandLine
         ) : this()
         {
             VersionTag = versionTag;
+            ReleaseTypeText = releaseTypeText;
             ReleaseType = releaseType;
             Major = major;
             Minor = minor;
@@ -121,25 +130,24 @@ namespace Cduhub.CommandLine
             : $"{Major}.{Minor}.{Patch}-{(ReleaseType == ReleaseType.Alpha ? "alpha" : "beta")}-{Revision}";
 
         /// <inheritdoc/>
-        public int CompareTo(InformationalVersion other)
+        public int CompareTo(InformationalVersion? other)
         {
-            if(other == null) {
-                throw new ArgumentNullException(nameof(other));
-            }
+            var result = 1;
+            if(other != null) {
+                result = Major - other.Major;
 
-            var result = Major - other.Major;
-
-            if(result == 0) {
-                result = Minor - other.Minor;
-            }
-            if(result == 0) {
-                result = Patch - other.Patch;
-            }
-            if(result == 0) {
-                result = (int)ReleaseType - (int)other.ReleaseType;
-            }
-            if(result == 0) {
-                result = Revision - other.Revision;
+                if(result == 0) {
+                    result = Minor - other.Minor;
+                }
+                if(result == 0) {
+                    result = Patch - other.Patch;
+                }
+                if(result == 0) {
+                    result = String.Compare(ReleaseTypeText, other.ReleaseTypeText);
+                }
+                if(result == 0) {
+                    result = Revision - other.Revision;
+                }
             }
 
             return result;
@@ -189,7 +197,7 @@ namespace Cduhub.CommandLine
             if(!TryParse(versionTag, out var result)) {
                 throw new ArgumentOutOfRangeException($"{versionTag} cannot be parsed into an {nameof(InformationalVersion)}");
             }
-            return result;
+            return result!;
         }
 
         /// <summary>
@@ -198,34 +206,36 @@ namespace Cduhub.CommandLine
         /// <param name="versionTag"></param>
         /// <param name="version"></param>
         /// <returns></returns>
-        public static bool TryParse(string? versionTag, out InformationalVersion version)
+        public static bool TryParse(string? versionTag, out InformationalVersion? version)
         {
-            versionTag ??= "";
-            version = Empty;
+            version = default;      // <-- VS2022 cannot figure out that there's no path where version is not assigned, it needs this to compile
 
+            versionTag ??= "";
             var match = _ParseRegex.Match(versionTag);
             var result = match.Success;
 
             if(result) {
                 int major, minor = 0, patch = 0, revision = 0;
 
-                result = int.TryParse(match.Groups["major"].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out major)
-                      && int.TryParse(match.Groups["minor"].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out minor)
-                      && int.TryParse(match.Groups["patch"].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out patch);
+                result = int.TryParse(match.Groups["major"].Value, NumberStyles.None, CultureInfo.InvariantCulture, out major)
+                      && int.TryParse(match.Groups["minor"].Value, NumberStyles.None, CultureInfo.InvariantCulture, out minor)
+                      && int.TryParse(match.Groups["patch"].Value, NumberStyles.None, CultureInfo.InvariantCulture, out patch);
                 var revisionType = "";
                 if(result && match.Groups["revisionType"].Success) {
-                    revisionType = match.Groups["revisionType"].Value.ToLower();
-                    result = match.Groups["revision"].Success;
-                    result = result && int.TryParse(match.Groups["revision"].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out revision);
+                    revisionType = match.Groups["revisionType"].Value;
+                }
+                if(match.Groups["revision"].Success) {
+                    result = result && int.TryParse(match.Groups["revision"].Value, NumberStyles.None, CultureInfo.InvariantCulture, out revision);
                 }
                 var commitHash = match.Groups["commitHash"].Value;
 
                 if(result) {
-                    version = new InformationalVersion(
+                    version = new(
                         versionTag,
-                        revisionType == "alpha"
+                        revisionType,
+                        revisionType.ToLower() == "alpha"
                             ? ReleaseType.Alpha
-                            : revisionType == "beta"
+                            : revisionType.ToLower() == "beta"
                                 ? ReleaseType.Beta
                                 : ReleaseType.Stable,
                         major,
@@ -237,20 +247,36 @@ namespace Cduhub.CommandLine
                 }
             }
 
+            if(!result) {
+                version = new();
+            }
+
             return result;
         }
 
-        /// <summary>
-        /// Returns the version information from an assembly.
-        /// </summary>
-        /// <param name="assembly"></param>
-        /// <returns></returns>
-        public static InformationalVersion FromAssembly(Assembly? assembly)
+        public static InformationalVersion FromAssembly(Assembly assembly)
         {
             InformationalVersion.TryParse(
                 assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion,
                 out var result
             );
+
+            return result ?? new();
+        }
+
+        public static IDictionary<Assembly, InformationalVersion> FromAllLoadedAssemblies()
+        {
+            var result = new Dictionary<Assembly, InformationalVersion>();
+
+            foreach(var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+                InformationalVersion version;
+                try {
+                    version = FromAssembly(assembly);
+                } catch {
+                    version = new();
+                }
+                result.Add(assembly, version);
+            }
 
             return result;
         }

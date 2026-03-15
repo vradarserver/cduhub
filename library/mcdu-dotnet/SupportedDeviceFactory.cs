@@ -18,6 +18,16 @@ namespace McduDotNet
     /// </summary>
     static class SupportedDeviceFactory
     {
+        /// <summary>
+        /// Creates an instance of an object that implements <see cref="ICdu"/> for the
+        /// HID and USB devices passed across.
+        /// </summary>
+        /// <param name="hidDevice"></param>
+        /// <param name="usbDevice"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if <paramref name="usbDevice"/> does not represent a supported device.
+        /// </exception>
         public static ICdu CreateCdu(HidDevice hidDevice, UsbDevice usbDevice)
         {
             var id = usbDevice.Id;
@@ -42,10 +52,44 @@ namespace McduDotNet
             }
 
             if(result == null) {
-                throw new InvalidOperationException($"{usbDevice} does not represent a CDU device");
+                throw new InvalidOperationException($"{usbDevice} does not represent a supported CDU device");
             }
 
             result.Initialise();
+
+            return result;
+        }
+
+        /// <summary>
+        /// Creates an instance of an object that implements <see cref="IFgcp"/> for the
+        /// HID and USB devices passed across.
+        /// </summary>
+        /// <param name="hidDevice"></param>
+        /// <param name="usbDevice"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if <paramref name="usbDevice"/> does not represent a supported device.
+        /// </exception>
+        public static IFgcp CreateFgcp(HidDevice device, UsbDevice usbDevice)
+        {
+            var id = usbDevice.Id;
+
+            WinWing.FcuAndEfis.FcuDevice? result = null;
+
+            if(   id == SupportedDevices.WinWingFcu.Id
+               || id == SupportedDevices.WinWingFcuBothEfis.Id
+               || id == SupportedDevices.WinWingFcuLeftEfis.Id
+               || id == SupportedDevices.WinWingFcuRightEfis.Id
+            ) {
+                result = new WinWing.FcuAndEfis.FcuDevice(device, usbDevice);
+            }
+
+            if(result == null) {
+                throw new InvalidOperationException($"{usbDevice} does not represent a supported FGCP device");
+            }
+
+            result.Initialise();
+
             return result;
         }
     }

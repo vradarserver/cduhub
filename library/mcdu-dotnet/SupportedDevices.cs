@@ -81,19 +81,19 @@ namespace McduDotNet
         );
 
         public static readonly UsbDevice WinWingFcu = new(
-            new(0x4098, 0xBB10), AircraftManufacturer.Airbus, AircraftFamily.A32x, EquipmentType.Fcu, EquipmentLocation.NotApplicable, "Winwing FCU"
+            new(0x4098, 0xBB10), AircraftManufacturer.Airbus, AircraftFamily.A32x, EquipmentType.Fgcp, EquipmentLocation.NotApplicable, "Winwing FCU"
         );
 
         public static readonly UsbDevice WinWingFcuLeftEfis = new(
-            new(0x4098, 0xBC1D), AircraftManufacturer.Airbus, AircraftFamily.A32x, EquipmentType.Fcu | EquipmentType.LeftEfis, EquipmentLocation.NotApplicable, "Winwing FCU + Left EFIS"
+            new(0x4098, 0xBC1D), AircraftManufacturer.Airbus, AircraftFamily.A32x, EquipmentType.Fgcp | EquipmentType.LeftEfis, EquipmentLocation.NotApplicable, "Winwing FCU + Left EFIS"
         );
 
         public static readonly UsbDevice WinWingFcuRightEfis = new(
-            new(0x4098, 0xBC1E), AircraftManufacturer.Airbus, AircraftFamily.A32x, EquipmentType.Fcu | EquipmentType.RightEfis, EquipmentLocation.NotApplicable, "Winwing FCU + Right EFIS"
+            new(0x4098, 0xBC1E), AircraftManufacturer.Airbus, AircraftFamily.A32x, EquipmentType.Fgcp | EquipmentType.RightEfis, EquipmentLocation.NotApplicable, "Winwing FCU + Right EFIS"
         );
 
         public static readonly UsbDevice WinWingFcuBothEfis = new(
-            new(0x4098, 0xBA01), AircraftManufacturer.Airbus, AircraftFamily.A32x, EquipmentType.Fcu | EquipmentType.LeftEfis | EquipmentType.RightEfis, EquipmentLocation.NotApplicable, "Winwing FCU + Both EFIS"
+            new(0x4098, 0xBA01), AircraftManufacturer.Airbus, AircraftFamily.A32x, EquipmentType.Fgcp | EquipmentType.LeftEfis | EquipmentType.RightEfis, EquipmentLocation.NotApplicable, "Winwing FCU + Both EFIS"
         );
 
         private static readonly UsbDevice[] _AllSupportedDevices = new UsbDevice[] {

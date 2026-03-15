@@ -8,21 +8,27 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
+using Cduhub.CommandLine;
+using McduDotNet;
 
-namespace McduDotNet
+namespace FgcpTest
 {
-    [Flags]
-    public enum EquipmentType
+    class Command_Connect : CommonCommand
     {
-        Unknown =   0x00000000,
+        public bool Run()
+        {
+            var result = false;
 
-        Cdu =       0x00000001,
+            using(var fgcp = DeviceFactory.ConnectLocalFgcp()) {
+                if(fgcp == null) {
+                    Console.WriteLine("Could not find an FGCP device to connect to");
+                } else {
+                    result = true;
+                    Console.WriteLine($"Connected to {fgcp}");
+                }
+            }
 
-        LeftEfis =  0x00000002,
-
-        RightEfis = 0x00000004,
-
-        Fgcp =      0x00000008,
+            return result;
+        }
     }
 }

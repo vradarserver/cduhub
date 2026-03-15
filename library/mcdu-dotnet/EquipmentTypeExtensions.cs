@@ -31,7 +31,7 @@ namespace McduDotNet
                 }
             }
 
-            if((equipmentTypeFlags & EquipmentType.Fcu) != 0) {
+            if((equipmentTypeFlags & EquipmentType.Fgcp) != 0) {
                 switch(aircraftFamily) {
                     case AircraftFamily.A32x:
                         var hasLeft =  (equipmentTypeFlags & EquipmentType.LeftEfis) != 0;

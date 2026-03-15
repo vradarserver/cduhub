@@ -8,21 +8,37 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
+using System.CommandLine;
+using Cduhub.CommandLine;
 
-namespace McduDotNet
+namespace FgcpTest
 {
-    [Flags]
-    public enum EquipmentType
+    static class Commands
     {
-        Unknown =   0x00000000,
+        static Commands()
+        {
+            Root.EnforceInHouseStandards();
 
-        Cdu =       0x00000001,
+            Connect.SetAction(parse => {
+                var command = new Command_Connect();
+                Program.Worked = command.Run();
+            });
 
-        LeftEfis =  0x00000002,
+            ShowDevices.SetAction(parse => {
+                var command = new Command_ShowDevices();
+                Program.Worked = command.Run();
+            });
+        }
 
-        RightEfis = 0x00000004,
+        public static Command Connect = new("connect", "Test connection to a local FGCP device") {
+        };
 
-        Fgcp =      0x00000008,
+        public static Command ShowDevices = new("show-devices", "Show USB devices") {
+        };
+
+        public static RootCommand Root = new("Tests interactions with an FGCP (I.E. an FCU or MCP) device.") {
+            Commands.ShowDevices,
+            Commands.Connect,
+        };
     }
 }

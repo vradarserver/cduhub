@@ -36,6 +36,7 @@ set RUNARGS=
     if "%1"=="cooked-input"  set BADARG=OK & set TARGET=SAMCOOKI
     if "%1"=="fast-update"   set BADARG=OK & set TARGET=SAMFSTUP
     if "%1"=="fenix-mcdu"    set BADARG=OK & set TARGET=SAMFENIX
+    if "%1"=="fgcp-test"     set BADARG=OK & set TARGET=SAMFGCPT
     if "%1"=="inproc-plugin" set BADARG=OK & set TARGET=SAMINPP
 
     if "%1"=="convert-font"  set BADARG=OK & set TARGET=COFONT
@@ -67,6 +68,7 @@ set RUNARGS=
     if "%TARGET%"=="SAMCOLS"    goto :SAMCOLS
     if "%TARGET%"=="SAMCOOKI"   goto :SAMCOOKI
     if "%TARGET%"=="SAMFENIX"   goto :SAMFENIX
+    if "%TARGET%"=="SAMFGCPT"   goto :SAMFGCPT
     if "%TARGET%"=="SAMFSTUP"   goto :SAMFSTUP
     if "%TARGET%"=="SAMINPP"    goto :SAMINPP
     if "%TARGET%"=="SLN"        goto :SLN
@@ -93,6 +95,7 @@ echo colours       Build the colours mcdu-dotnet sample
 echo cooked-input  Build the cooked-input mcdu-dotnet sample
 echo fast-update   Build the fast-update mcdu-dotnet sample
 echo fenix-mcdu    Build the fenix-mcdu mcdu-dotnet sample
+echo fgcp-test     Build the fgcp-test mcdu-dotnet sample
 echo inproc-plugin Build the in-process plugin sample
 echo.
 echo -debug        Use Debug configuration (default)
@@ -203,6 +206,11 @@ rem ## Build targets
 
 :SAMFENIX
     set  "PROJ=%BATDIR%library\samples\fenix-mcdu\fenix-mcdu.csproj"
+    call :DOTNET
+    goto :EOF
+
+:SAMFGCPT
+    set  "PROJ=%BATDIR%library\samples\fgcp-test\fgcp-test.csproj"
     call :DOTNET
     goto :EOF
 
