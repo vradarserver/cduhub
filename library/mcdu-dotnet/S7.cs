@@ -8,46 +8,55 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.CommandLine;
-using Cduhub.CommandLine;
+using System;
 
-namespace FgcpTest
+namespace McduDotNet
 {
-    static class Commands
+    /// <summary>
+    /// Flags that identify each segment in a seven segment (+1 decimal point) digit
+    /// display.
+    /// </summary>
+    [Flags]
+    public enum S7 : byte
     {
-        static Commands()
-        {
-            Root.EnforceInHouseStandards();
+        /// <summary>
+        /// Top segment (a).
+        /// </summary>
+        TT = 0x01,
 
-            Connect.SetAction(parse => {
-                var command = new Command_Connect();
-                Program.Worked = command.Run();
-            });
+        /// <summary>
+        /// Top-right segment (b).
+        /// </summary>
+        TR = 0x02,
 
-            FcuBaro.SetAction(parse => {
-                var command = new Command_FcuBaro();
-                Program.Worked = command.Run();
-            });
+        /// <summary>
+        /// Bottom-right segment (c).
+        /// </summary>
+        BR = 0x04,
 
-            ShowDevices.SetAction(parse => {
-                var command = new Command_ShowDevices();
-                Program.Worked = command.Run();
-            });
-        }
+        /// <summary>
+        /// Bottom segment (d).
+        /// </summary>
+        BB = 0x08,
 
-        public static Command Connect = new("connect", "Test connection to a local FGCP device") {
-        };
+        /// <summary>
+        /// Bottom-left segment (e).
+        /// </summary>
+        BL = 0x10,
 
-        public static Command FcuBaro = new("fcu-baro", "Test the FCU baro segment display") {
-        };
+        /// <summary>
+        /// Top-left segment (f).
+        /// </summary>
+        TL = 0x20,
 
-        public static Command ShowDevices = new("show-devices", "Show USB devices") {
-        };
+        /// <summary>
+        /// Middle segment (g).
+        /// </summary>
+        MM = 0x40,
 
-        public static RootCommand Root = new("Tests interactions with an FGCP (I.E. an FCU or MCP) device.") {
-            Commands.ShowDevices,
-            Commands.Connect,
-            Commands.FcuBaro,
-        };
+        /// <summary>
+        /// Optional decimal point segment (h).
+        /// </summary>
+        DP = 0x80,
     }
 }

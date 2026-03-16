@@ -8,46 +8,50 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.CommandLine;
-using Cduhub.CommandLine;
+using System.Collections.Generic;
 
-namespace FgcpTest
+namespace McduDotNet
 {
-    static class Commands
+    /// <summary>
+    /// Extensions to the <see cref="S7"/> seven segment digit bitflags enum.
+    /// </summary>
+    public static class S7Extensions
     {
-        static Commands()
+        /// <summary>
+        /// Returns the value with the decimal point masked out.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static S7 Digit(this S7 value) => value & ~S7.DP;
+
+        /// <summary>
+        /// True if the value has the decimal point bit set.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static bool HasDecimal(this S7 value) => (value & S7.DP) != 0;
+
+        /// <summary>
+        /// Returns the character associated with the S7 value in the character set passed
+        /// across or null if no match could be found.
+        /// </summary>
+        /// <param name="characterSet"></param>
+        /// <returns></returns>
+        public static char? FindMatchingCharacter(this S7 value, IReadOnlyDictionary<char, S7>? characterSet)
         {
-            Root.EnforceInHouseStandards();
+            char? result = null;
 
-            Connect.SetAction(parse => {
-                var command = new Command_Connect();
-                Program.Worked = command.Run();
-            });
+            if(characterSet != null) {
+                var digit = value.Digit();
+                foreach(var kvp in characterSet) {
+                    if(kvp.Value == digit) {
+                        result = kvp.Key;
+                        break;
+                    }
+                }
+            }
 
-            FcuBaro.SetAction(parse => {
-                var command = new Command_FcuBaro();
-                Program.Worked = command.Run();
-            });
-
-            ShowDevices.SetAction(parse => {
-                var command = new Command_ShowDevices();
-                Program.Worked = command.Run();
-            });
+            return result;
         }
-
-        public static Command Connect = new("connect", "Test connection to a local FGCP device") {
-        };
-
-        public static Command FcuBaro = new("fcu-baro", "Test the FCU baro segment display") {
-        };
-
-        public static Command ShowDevices = new("show-devices", "Show USB devices") {
-        };
-
-        public static RootCommand Root = new("Tests interactions with an FGCP (I.E. an FCU or MCP) device.") {
-            Commands.ShowDevices,
-            Commands.Connect,
-            Commands.FcuBaro,
-        };
     }
 }

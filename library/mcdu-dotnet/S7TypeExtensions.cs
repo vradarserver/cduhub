@@ -8,46 +8,29 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.CommandLine;
-using Cduhub.CommandLine;
-
-namespace FgcpTest
+namespace McduDotNet
 {
-    static class Commands
+    public static class S7TypeExtensions
     {
-        static Commands()
-        {
-            Root.EnforceInHouseStandards();
+        /// <summary>
+        /// True if the <see cref="S7Type"/> contains a decimal somewhere.
+        /// </summary>
+        /// <param name="s7Type"></param>
+        /// <returns></returns>
+        public static bool ShowDecimal(this S7Type s7Type) => s7Type != S7Type.Digit;
 
-            Connect.SetAction(parse => {
-                var command = new Command_Connect();
-                Program.Worked = command.Run();
-            });
+        /// <summary>
+        /// True if the decimal place appears before the digit.
+        /// </summary>
+        /// <param name="s7Type"></param>
+        /// <returns></returns>
+        public static bool IsDecimalPrefix(this S7Type s7Type) => s7Type == S7Type.DigitLeftDecimal;
 
-            FcuBaro.SetAction(parse => {
-                var command = new Command_FcuBaro();
-                Program.Worked = command.Run();
-            });
-
-            ShowDevices.SetAction(parse => {
-                var command = new Command_ShowDevices();
-                Program.Worked = command.Run();
-            });
-        }
-
-        public static Command Connect = new("connect", "Test connection to a local FGCP device") {
-        };
-
-        public static Command FcuBaro = new("fcu-baro", "Test the FCU baro segment display") {
-        };
-
-        public static Command ShowDevices = new("show-devices", "Show USB devices") {
-        };
-
-        public static RootCommand Root = new("Tests interactions with an FGCP (I.E. an FCU or MCP) device.") {
-            Commands.ShowDevices,
-            Commands.Connect,
-            Commands.FcuBaro,
-        };
+        /// <summary>
+        /// True if the decimal place appears after the digit.
+        /// </summary>
+        /// <param name="s7Type"></param>
+        /// <returns></returns>
+        public static bool IsDecimalSuffix(this S7Type s7Type) => s7Type == S7Type.DigitRightDecimal;
     }
 }

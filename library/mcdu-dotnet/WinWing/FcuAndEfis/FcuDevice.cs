@@ -13,12 +13,29 @@ using HidSharp;
 
 namespace McduDotNet.WinWing.FcuAndEfis
 {
-    class FcuDevice : IFgcp
+    /// <summary>
+    /// The default implementation of <see cref="IFgcpFcu"/> and <see cref="IFgcp"/> for the
+    /// WinWing FCU and optional two EFIS devices.
+    /// </summary>
+    class FcuDevice : IFgcpFcu
     {
         protected HidDevice _HidDevice;
         protected HidStream? _HidStream;
 
+        /// <inheritdoc/>
         public UsbDevice UsbDevice { get; }
+
+        /// <inheritdoc/>
+        public bool IsLeftEfisPresent => (UsbDevice.EquipmentType & EquipmentType.LeftEfis) != 0;
+
+        /// <inheritdoc/>
+        public bool IsRightEfisPresent => (UsbDevice.EquipmentType & EquipmentType.RightEfis) != 0;
+
+        /// <inheritdoc/>
+        public FcuBaroLedSegments LeftBaroSegments { get; } = new();
+
+        /// <inheritdoc/>
+        public FcuBaroLedSegments RightBaroSegments { get; } = new();
 
         /// <summary>
         /// Creates a new object.

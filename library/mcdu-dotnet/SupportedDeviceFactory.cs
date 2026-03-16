@@ -92,5 +92,33 @@ namespace McduDotNet
 
             return result;
         }
+
+        public static AircraftManufacturer? ImplementationAircraftManufacturer(Type type)
+        {
+            AircraftManufacturer? result = null;
+
+            if(type is IFgcpFcu || type is ICduMcdu) {
+                result = AircraftManufacturer.Airbus;
+            } else if(type is ICduPfp3N || type is ICduPfp7) {
+                result = AircraftManufacturer.Boeing;
+            }
+
+            return result;
+        }
+
+        public static AircraftFamily? ImplementationAircraftFamily(Type type)
+        {
+            AircraftFamily? result = null;
+
+            if(type is IFgcpFcu || type is ICduMcdu) {
+                result = AircraftFamily.A32x;
+            } else if(type is ICduPfp3N) {
+                result = AircraftFamily.B737;
+            } else if(type is ICduPfp7) {
+                result = AircraftFamily.B777;
+            }
+
+            return result;
+        }
     }
 }

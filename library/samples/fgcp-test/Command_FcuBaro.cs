@@ -8,46 +8,32 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.CommandLine;
 using Cduhub.CommandLine;
+using McduDotNet;
 
 namespace FgcpTest
 {
-    static class Commands
+    class Command_FcuBaro : CommonCommand
     {
-        static Commands()
+        public bool Run()
         {
-            Root.EnforceInHouseStandards();
+            var result = true;
 
-            Connect.SetAction(parse => {
-                var command = new Command_Connect();
-                Program.Worked = command.Run();
-            });
+            using(var fcu = DeviceFactory.ConnectLocalFgcp<IFgcpFcu>()) {
+                if(fcu == null) {
+                    Console.WriteLine("No FCU device connected");
+                    result = false;
+                } else {
+                    Console.WriteLine($"Connected to {fcu}");
 
-            FcuBaro.SetAction(parse => {
-                var command = new Command_FcuBaro();
-                Program.Worked = command.Run();
-            });
+                    Console.WriteLine($"Press Q to quit");
+                    while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
+                        ;
+                    }
+                }
+            }
 
-            ShowDevices.SetAction(parse => {
-                var command = new Command_ShowDevices();
-                Program.Worked = command.Run();
-            });
+            return result;
         }
-
-        public static Command Connect = new("connect", "Test connection to a local FGCP device") {
-        };
-
-        public static Command FcuBaro = new("fcu-baro", "Test the FCU baro segment display") {
-        };
-
-        public static Command ShowDevices = new("show-devices", "Show USB devices") {
-        };
-
-        public static RootCommand Root = new("Tests interactions with an FGCP (I.E. an FCU or MCP) device.") {
-            Commands.ShowDevices,
-            Commands.Connect,
-            Commands.FcuBaro,
-        };
     }
 }

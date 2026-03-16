@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using HidSharp;
@@ -94,22 +95,41 @@ namespace McduDotNet
             EquipmentLocation? equipmentLocation = null
         )
         {
-            ICdu? result = null;
-
-            usbDevice = FindUsbDeviceCandidate(
+            return ConnectWorker<ICdu>(
                 EquipmentType.Cdu,
                 usbDevice,
                 aircraftFamily,
                 aircraftManufacturer,
-                equipmentLocation
+                equipmentLocation,
+                usbDeviceFilter: null,
+                createMethod: (hid, usb) => SupportedDeviceFactory.CreateCdu(hid, usb)
             );
-            var hidDevice = OpenHidDevice(usbDevice);
+        }
 
-            if(hidDevice != null && usbDevice != null) {
-                result = SupportedDeviceFactory.CreateCdu(hidDevice, usbDevice);
-            }
+        /// <summary>
+        /// Returns a specific type of CDU device.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="usbDevice"></param>
+        /// <param name="equipmentLocation"></param>
+        /// <returns></returns>
+        public static T? ConnectLocalCdu<T>(
+            UsbDevice? usbDevice = null,
+            EquipmentLocation? equipmentLocation = null
+        ) where T: class, ICdu
+        {
+            var family = SupportedDeviceFactory.ImplementationAircraftFamily(typeof(T));
+            var manufacturer = SupportedDeviceFactory.ImplementationAircraftManufacturer(typeof(T));
 
-            return result;
+            return ConnectWorker<T>(
+                EquipmentType.Cdu,
+                usbDevice,
+                family,
+                manufacturer,
+                equipmentLocation,
+                usbDeviceFilter: null,
+                createMethod: (hid, usb) => SupportedDeviceFactory.CreateCdu(hid, usb)
+            );
         }
 
         /// <summary>
@@ -128,19 +148,69 @@ namespace McduDotNet
             EquipmentLocation? equipmentLocation = null
         )
         {
-            IFgcp? result = null;
-
-            usbDevice = FindUsbDeviceCandidate(
+            return ConnectWorker<IFgcp>(
                 EquipmentType.Fgcp,
                 usbDevice,
                 aircraftFamily,
                 aircraftManufacturer,
-                equipmentLocation
+                equipmentLocation,
+                usbDeviceFilter: null,
+                createMethod: (hid, usb) => SupportedDeviceFactory.CreateFgcp(hid, usb)
+            );
+        }
+
+        /// <summary>
+        /// Returns a specific type of FGCP device.
+        /// </summary>
+        /// <param name="usbDevice"></param>
+        /// <param name="equipmentLocation"></param>
+        /// <returns></returns>
+        public static T? ConnectLocalFgcp<T>(
+            UsbDevice? usbDevice = null,
+            EquipmentLocation? equipmentLocation = null
+        ) where T: class, IFgcp
+        {
+            var family = SupportedDeviceFactory.ImplementationAircraftFamily(typeof(T));
+            var manufacturer = SupportedDeviceFactory.ImplementationAircraftManufacturer(typeof(T));
+
+            return ConnectWorker<T>(
+                EquipmentType.Fgcp,
+                usbDevice,
+                family,
+                manufacturer,
+                equipmentLocation,
+                usbDeviceFilter: null,
+                createMethod: (hid, usb) => SupportedDeviceFactory.CreateFgcp(hid, usb)
+            );
+        }
+
+        public static T? ConnectWorker<T>(
+            EquipmentType equipmentTypeFlags,
+            UsbDevice? usbDevice,
+            AircraftFamily? aircraftFamily,
+            AircraftManufacturer? aircraftManufacturer,
+            EquipmentLocation? equipmentLocation,
+            Func<UsbDevice, bool>? usbDeviceFilter,
+            Func<HidDevice, UsbDevice, object> createMethod
+        ) where T: class
+        {
+            T? result = null;
+
+            usbDevice = FindUsbDeviceCandidate(
+                equipmentTypeFlags,
+                usbDevice,
+                aircraftFamily,
+                aircraftManufacturer,
+                equipmentLocation,
+                usbDeviceFilter
             );
             var hidDevice = OpenHidDevice(usbDevice);
 
             if(hidDevice != null && usbDevice != null) {
-                result = SupportedDeviceFactory.CreateFgcp(hidDevice, usbDevice);
+                var objResult = createMethod(hidDevice, usbDevice)
+                    ?? throw new InvalidOperationException($"Could not create an object for {usbDevice}");
+                result = objResult as T
+                    ?? throw new InvalidOperationException($"{objResult.GetType().Name} is not an {typeof(T).Name}");
             }
 
             return result;
@@ -148,10 +218,11 @@ namespace McduDotNet
 
         private static UsbDevice? FindUsbDeviceCandidate(
             EquipmentType equipmentType,
-            UsbDevice? usbDevice = null,
-            AircraftFamily? aircraftFamily = null,
-            AircraftManufacturer? aircraftManufacturer = null,
-            EquipmentLocation? equipmentLocation = null
+            UsbDevice? usbDevice,
+            AircraftFamily? aircraftFamily,
+            AircraftManufacturer? aircraftManufacturer,
+            EquipmentLocation? equipmentLocation,
+            Func<UsbDevice, bool>? usbDeviceFilter
         )
         {
             usbDevice = FindLocalDevices()
@@ -161,6 +232,7 @@ namespace McduDotNet
                     && (aircraftFamily == null || candidate.AircraftFamily == aircraftFamily)
                     && (aircraftManufacturer == null || candidate.AircraftManufacturer == aircraftManufacturer)
                     && (equipmentLocation == null || candidate.EquipmentLocation == equipmentLocation)
+                    && (usbDeviceFilter == null || usbDeviceFilter(candidate))
                 )
                 // The order selected here is only to make it deterministic
                 .OrderBy(candidate => candidate.Id.VendorId)

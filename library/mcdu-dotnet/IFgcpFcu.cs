@@ -8,46 +8,31 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.CommandLine;
-using Cduhub.CommandLine;
-
-namespace FgcpTest
+namespace McduDotNet
 {
-    static class Commands
+    /// <summary>
+    /// The interface for the Airbus FCU variant of the <see cref="IFgcp"/> device.
+    /// </summary>
+    public interface IFgcpFcu : IFgcp
     {
-        static Commands()
-        {
-            Root.EnforceInHouseStandards();
+        /// <summary>
+        /// True if the left EFIS device is attached to the FCU.
+        /// </summary>
+        bool IsLeftEfisPresent { get; }
 
-            Connect.SetAction(parse => {
-                var command = new Command_Connect();
-                Program.Worked = command.Run();
-            });
+        /// <summary>
+        /// True if the right EFIS device is attached to the FCU.
+        /// </summary>
+        bool IsRightEfisPresent { get; }
 
-            FcuBaro.SetAction(parse => {
-                var command = new Command_FcuBaro();
-                Program.Worked = command.Run();
-            });
+        /// <summary>
+        /// The left EFIS barometer segments.
+        /// </summary>
+        FcuBaroLedSegments LeftBaroSegments { get; }
 
-            ShowDevices.SetAction(parse => {
-                var command = new Command_ShowDevices();
-                Program.Worked = command.Run();
-            });
-        }
-
-        public static Command Connect = new("connect", "Test connection to a local FGCP device") {
-        };
-
-        public static Command FcuBaro = new("fcu-baro", "Test the FCU baro segment display") {
-        };
-
-        public static Command ShowDevices = new("show-devices", "Show USB devices") {
-        };
-
-        public static RootCommand Root = new("Tests interactions with an FGCP (I.E. an FCU or MCP) device.") {
-            Commands.ShowDevices,
-            Commands.Connect,
-            Commands.FcuBaro,
-        };
+        /// <summary>
+        /// The right EFIS barometer segments.
+        /// </summary>
+        FcuBaroLedSegments RightBaroSegments { get; }
     }
 }

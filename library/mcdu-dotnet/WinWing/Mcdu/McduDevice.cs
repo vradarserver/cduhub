@@ -17,7 +17,7 @@ namespace McduDotNet.WinWing.Mcdu
     /// <summary>
     /// The implementation of <see cref="IMcdu"/> for the WinWing MCDU.
     /// </summary>
-    class McduDevice : CommonWinWingPanel
+    class McduDevice : CommonWinWingPanel, ICduMcdu
     {
         protected override byte CommandPrefix => 0x32;
 
