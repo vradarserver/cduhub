@@ -31,19 +31,26 @@ namespace McduDotNet.WinWing
 
         private readonly UsbWriter _UsbWriter;
         private readonly byte[] _EfisBuffer;
+
         private readonly bool _IsLeftEfisPresent;
         private readonly byte[] _LeftEfisPayload = new byte[_EfisPayloadLength];
         private byte[]? _LeftEfisPreviousPayload;
+
+        private readonly bool _IsRightEfisPresent;
+        private readonly byte[] _RightEfisPayload = new byte[_EfisPayloadLength];
+        private byte[]? _RightEfisPreviousPayload;
 
         private ushort _EfisSequence;
 
         public FcuSegmentDisplayWriter(
             UsbWriter usbWriter,
-            bool isLeftEfisPresent
+            bool isLeftEfisPresent,
+            bool isRightEfisPresent
         )
         {
             _UsbWriter = usbWriter;
             _IsLeftEfisPresent = isLeftEfisPresent;
+            _IsRightEfisPresent = isRightEfisPresent;
 
             _EfisBuffer = new byte[64];
             InitialiseBuffer(_EfisBuffer, new byte[] {
@@ -80,6 +87,16 @@ namespace McduDotNet.WinWing
                             ref _LeftEfisPreviousPayload
                         ) || skipDuplicateCheck) {
                             PrepareAndSendEfisBuffer(_LeftEfisId, _LeftEfisPayload);
+                        }
+                    }
+
+                    if(_IsRightEfisPresent && segmentedDisplays.RightBaro != null) {
+                        if(PrepareEfisBuffer(
+                            segmentedDisplays.RightBaro,
+                            _RightEfisPayload,
+                            ref _RightEfisPreviousPayload
+                        ) || skipDuplicateCheck) {
+                            PrepareAndSendEfisBuffer(_RightEfisId, _RightEfisPayload);
                         }
                     }
                 });

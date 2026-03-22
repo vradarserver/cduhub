@@ -92,7 +92,8 @@ namespace McduDotNet.WinWing.FcuAndEfis
 
             _SegmentedDisplayWriter = new FcuSegmentDisplayWriter(
                 _UsbWriter,
-                IsLeftEfisPresent
+                IsLeftEfisPresent,
+                IsRightEfisPresent
             ) {
                // UpdatingDeviceCallback = args => OnDisplayChanging(args),
             };

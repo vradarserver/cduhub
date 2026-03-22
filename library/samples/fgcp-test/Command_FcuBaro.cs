@@ -29,9 +29,14 @@ namespace FgcpTest
 
                     const int updateDelayMS = 1;
                     var nextTickUtc = DateTime.MinValue;
+
                     var leftValue = -1;
                     var leftDecimal = 0;
                     var leftWords = 0;
+
+                    var rightValue = 10000;
+                    var rightDecimal = 4;
+                    var rightWords = 3;
 
                     Console.WriteLine($"Press Q to quit");
                     while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
@@ -46,10 +51,18 @@ namespace FgcpTest
                                 }
                             }
 
-                            var leftText = FormatBaroValue(leftValue, leftDecimal);
-                            fcu.SegmentedDisplays.LeftBaro.BaroDigits.SetFrom(leftText);
-                            fcu.SegmentedDisplays.LeftBaro.Qfe = (leftWords & 0x01) != 0;
-                            fcu.SegmentedDisplays.LeftBaro.Qnh = (leftWords & 0x02) != 0;
+                            if(--rightValue == -1) {
+                                rightValue = 9999;
+                                if(--rightDecimal == -1) {
+                                    rightDecimal = 4;
+                                }
+                                if(--rightWords == -1) {
+                                    rightWords = 3;
+                                }
+                            }
+
+                            SetupBaro(fcu.SegmentedDisplays.LeftBaro, leftValue, leftDecimal, leftWords);
+                            SetupBaro(fcu.SegmentedDisplays.RightBaro, rightValue, rightDecimal, rightWords);
 
                             fcu.RefreshSegmentedDisplays();
 
@@ -60,6 +73,14 @@ namespace FgcpTest
             }
 
             return result;
+        }
+
+        private void SetupBaro(FcuBaroSegmentedDisplay baro, int number, int decimalIndex, int wordFlags)
+        {
+            var text = FormatBaroValue(number, decimalIndex);
+            baro.BaroDigits.SetFrom(text);
+            baro.Qfe = (wordFlags & 0x01) != 0;
+            baro.Qnh = (wordFlags & 0x02) != 0;
         }
 
         private static string FormatBaroValue(int number, int decimalIndex)
