@@ -31,6 +31,7 @@ namespace FgcpTest
                     var nextTickUtc = DateTime.MinValue;
                     var leftValue = -1;
                     var leftDecimal = 0;
+                    var leftWords = 0;
 
                     Console.WriteLine($"Press Q to quit");
                     while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
@@ -40,10 +41,15 @@ namespace FgcpTest
                                 if(++leftDecimal == 5) {
                                     leftDecimal = 0;
                                 }
+                                if(++leftWords == 4) {
+                                    leftWords = 0;
+                                }
                             }
 
                             var leftText = FormatBaroValue(leftValue, leftDecimal);
                             fcu.SegmentedDisplays.LeftBaro.BaroDigits.SetFrom(leftText);
+                            fcu.SegmentedDisplays.LeftBaro.Qfe = (leftWords & 0x01) != 0;
+                            fcu.SegmentedDisplays.LeftBaro.Qnh = (leftWords & 0x02) != 0;
 
                             fcu.RefreshSegmentedDisplays();
 
