@@ -10,17 +10,18 @@
 
 namespace McduDotNet
 {
-    public class FcuBaroLedSegments
+    public class FcuSpeedSegmentedDisplays
     {
-        public bool Qfe { get; set; }
+        public bool Speed { get; set; }
 
-        public bool Qnh { get; set; }
+        public bool Mach { get; set; }
 
-        public S7DigitCollection Digits { get; } = new S7DigitCollection(
-            S7Type.DigitRightDecimal,
-            S7Type.DigitRightDecimal,
-            S7Type.DigitRightDecimal,
-            S7Type.DigitRightDecimal
+        public bool Dot { get; set; }
+
+        public S7DigitCollection SpeedDigits { get; } = new(
+            S7Masks.DigitLeftDecimal,
+            S7Masks.DigitLeftDecimal,
+            S7Masks.DigitLeftDecimal
         );
     }
 }

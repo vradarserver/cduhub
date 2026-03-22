@@ -18,18 +18,29 @@ namespace McduDotNet
     public static class S7Extensions
     {
         /// <summary>
-        /// Returns the value with the decimal point masked out.
+        /// Returns the value with all of the non-digit segments masked out.
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static S7 Digit(this S7 value) => value & ~S7.DP;
+        public static S7 Digit(this S7 value) => value & ~S7Masks.Digit;
 
         /// <summary>
-        /// True if the value has the decimal point bit set.
+        /// True if all of the segments passed across are set. Will always return true if
+        /// <paramref name="segments"/> is zero.
         /// </summary>
         /// <param name="value"></param>
+        /// <param name="segments"></param>
         /// <returns></returns>
-        public static bool HasDecimal(this S7 value) => (value & S7.DP) != 0;
+        public static bool IsSet(this S7 value, S7 segments) => (value & segments) == segments;
+
+        /// <summary>
+        /// True if any of the segments passed across are set. Will never return true if
+        /// <paramref name="segments"/> is zero.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="segments"></param>
+        /// <returns></returns>
+        public static bool IsAnySet(this S7 value, S7 segments) => (value & segments) != 0;
 
         /// <summary>
         /// Returns the character associated with the S7 value in the character set passed

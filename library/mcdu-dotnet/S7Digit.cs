@@ -20,10 +20,10 @@ namespace McduDotNet
     public readonly struct S7Digit
     {
         /// <summary>
-        /// Whether the decimal point appears to the left or right of this digit, or
-        /// whether this digit has a decimal point at all.
+        /// A set of bit flags indicating which of the available segments within the
+        /// seven segment display are available.
         /// </summary>
-        public readonly S7Type Type { get; }
+        public readonly S7 Mask { get; }
 
         /// <summary>
         /// A set of bit flags describing which segments are lit.
@@ -31,19 +31,19 @@ namespace McduDotNet
         public readonly S7 Segments { get; }
 
         /// <summary>
-        /// True if the two digits have the same type and segments.
+        /// True if the two digits have the same mask and segments.
         /// </summary>
         /// <param name="lhs"></param>
         /// <param name="rhs"></param>
         /// <returns></returns>
         public static bool operator==(S7Digit lhs, S7Digit rhs)
         {
-            return lhs.Type == rhs.Type
+            return lhs.Mask == rhs.Mask
                 && lhs.Segments == rhs.Segments;
         }
 
         /// <summary>
-        /// True if the two digits do not have the same type and segments.
+        /// True if the two digits do not have the same mask and segments.
         /// </summary>
         /// <param name="lhs"></param>
         /// <param name="rhs"></param>
@@ -53,19 +53,19 @@ namespace McduDotNet
         /// <summary>
         /// Creates a new object.
         /// </summary>
-        /// <param name="type"></param>
+        /// <param name="mask"></param>
         /// <param name="segments"></param>
-        public S7Digit(S7Type type, S7 segments)
+        public S7Digit(S7 mask, S7 segments)
         {
-            Type = type;
-            Segments = segments;
+            Mask = mask;
+            Segments = segments & mask;
         }
 
         /// <summary>
         /// Creates a new object with no segments lit.
         /// </summary>
         /// <param name="type"></param>
-        public S7Digit(S7Type type) : this(type, (S7)0)
+        public S7Digit(S7 mask) : this(mask, (S7)0)
         {
         }
 
@@ -73,7 +73,7 @@ namespace McduDotNet
         /// Creates a new object.
         /// </summary>
         /// <param name="other"></param>
-        public S7Digit(S7Digit other) : this(other.Type, other.Segments)
+        public S7Digit(S7Digit other) : this(other.Mask, other.Segments)
         {
         }
 
@@ -88,7 +88,7 @@ namespace McduDotNet
         }
 
         /// <inheritdoc/>
-        public override int GetHashCode() => ((byte)Type << 8) | (byte)Segments;
+        public override int GetHashCode() => ((ushort)Mask << 16) | (ushort)Segments;
 
         /// <inheritdoc/>
         public override string ToString()
@@ -99,14 +99,21 @@ namespace McduDotNet
         }
 
         /// <summary>
-        /// If the <see cref="Segments"/> correspond with any character in <see cref="characterSet"/>
-        /// then the character is appended to <see cref="buffer"/>, otherwise the hex code for the
-        /// character is appended. The characters / hex is appended or prepended with a decimal place
-        /// if the type allows it and the decimal place is set.
+        /// Appends the character represented by this S7 digit to the buffer passed
+        /// across.
         /// </summary>
         /// <param name="characterSet"></param>
         /// <param name="buffer"></param>
-        public void AppendToBuffer(IReadOnlyDictionary<char, S7> characterSet, StringBuilder buffer)
+        /// <param name="fallbackTextFormat">
+        /// The text to use if the digit is not represented in the character set. Default
+        /// is a question mark. Supports limited sequences: "{X4}" is replaced with 4
+        /// digit S7 bitflag value.
+        /// </param>
+        public void AppendToBuffer(
+            IReadOnlyDictionary<char, S7> characterSet,
+            StringBuilder buffer,
+            string? fallbackTextFormat = "?"
+        )
         {
             if(characterSet == null) {
                 throw new ArgumentNullException(nameof(characterSet));
@@ -114,36 +121,65 @@ namespace McduDotNet
             if(buffer == null) {
                 throw new ArgumentNullException(nameof(buffer));
             }
-            var showDecimal = Type.ShowDecimal() && Segments.HasDecimal();
 
-            if(showDecimal && Type.IsDecimalPrefix()) {
+            if(Segments.IsSet(S7.DL)) {
                 buffer.Append('.');
             }
 
             var character = Segments.FindMatchingCharacter(characterSet);
             if(character != null) {
                 buffer.Append(character.Value);
-            } else {
-                buffer.Append('(');
-                buffer.Append("0x");
-                buffer.Append(Segments.Digit().ToString("X2"));
-                buffer.Append(')');
+            } else if(!String.IsNullOrEmpty(fallbackTextFormat)) {
+                var fallback = fallbackTextFormat!.Replace("{X4}", Segments.ToString("X4"));
+                buffer.Append(fallback);
             }
 
-            if(showDecimal && Type.IsDecimalSuffix()) {
+            if(Segments.IsSet(S7.DR)) {
                 buffer.Append('.');
             }
         }
 
         /// <summary>
-        /// Creates a new digit with the same type but different segments.
+        /// Returns a digit with the same mask but different segments.
         /// </summary>
         /// <param name="original"></param>
         /// <param name="newSegments"></param>
         /// <returns></returns>
-        public static S7Digit NewSegments(S7Digit original, S7 newSegments)
+        public S7Digit NewSegments(S7 newSegments)
         {
-            return new(original.Type, newSegments);
+            return (Mask & newSegments) == Segments
+                ? this
+                : new(Mask, newSegments);
+        }
+
+        /// <summary>
+        /// Returns a digit with the same mask but with the segments turned on.
+        /// </summary>
+        /// <param name="segments"></param>
+        /// <returns></returns>
+        public S7Digit SetSegments(S7 segments)
+        {
+            return NewSegments(Segments | segments);
+        }
+
+        /// <summary>
+        /// Returns a digit with the same mask but with the segments turned off.
+        /// </summary>
+        /// <param name="segments"></param>
+        /// <returns></returns>
+        public S7Digit ClearSegments(S7 segments)
+        {
+            return NewSegments(Segments & ~segments);
+        }
+
+        /// <summary>
+        /// Returns a digit with the same mask but with the segments toggled.
+        /// </summary>
+        /// <param name="segments"></param>
+        /// <returns></returns>
+        public S7Digit ToggleSegments(S7 segments)
+        {
+            return NewSegments(Segments ^ segments);
         }
     }
 }

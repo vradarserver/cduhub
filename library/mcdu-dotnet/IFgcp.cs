@@ -21,5 +21,12 @@ namespace McduDotNet
         /// The USB device that this object is listening to, and sending commands to.
         /// </summary>
         UsbDevice UsbDevice { get; }
+
+        /// <summary>
+        /// Update the device's segmented displays to match the content of the FGCP's
+        /// segmented display buffer.
+        /// </summary>
+        /// <param name="skipDuplicateCheck"></param>
+        void RefreshSegmentedDisplays(bool skipDuplicateCheck = false);
     }
 }

@@ -10,27 +10,32 @@
 
 namespace McduDotNet
 {
-    public static class S7TypeExtensions
+    public class FcuAltitudeSegmentedDisplay
     {
-        /// <summary>
-        /// True if the <see cref="S7Type"/> contains a decimal somewhere.
-        /// </summary>
-        /// <param name="s7Type"></param>
-        /// <returns></returns>
-        public static bool ShowDecimal(this S7Type s7Type) => s7Type != S7Type.Digit;
+        public bool Alt { get; set; }
 
-        /// <summary>
-        /// True if the decimal place appears before the digit.
-        /// </summary>
-        /// <param name="s7Type"></param>
-        /// <returns></returns>
-        public static bool IsDecimalPrefix(this S7Type s7Type) => s7Type == S7Type.DigitLeftDecimal;
+        public bool AltDot { get; set; }
 
-        /// <summary>
-        /// True if the decimal place appears after the digit.
-        /// </summary>
-        /// <param name="s7Type"></param>
-        /// <returns></returns>
-        public static bool IsDecimalSuffix(this S7Type s7Type) => s7Type == S7Type.DigitRightDecimal;
+        public bool LvlChGroupLeft { get; set; }
+
+        public bool LvlCh { get; set; }
+
+        public bool LvlChGroupRight { get; set; }
+
+        public S7DigitCollection AltitudeDigits { get; } = new(
+            S7Masks.Digit,
+            S7Masks.Digit,
+            S7Masks.Digit,
+            S7Masks.Digit,
+            S7Masks.Digit
+        );
+
+        public S7DigitCollection VerticalSpeedDigits { get; } = new(
+            S7Masks.Plus,
+            S7Masks.Digit,
+            S7Masks.DigitLeftDecimal,
+            S7Masks.Digit,
+            S7Masks.Digit
+        );
     }
 }

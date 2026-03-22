@@ -10,24 +10,20 @@
 
 namespace McduDotNet
 {
-    /// <summary>
-    /// The interface for the Airbus FCU variant of the <see cref="IFgcp"/> device.
-    /// </summary>
-    public interface IFgcpFcu : IFgcp
+    public class FcuHeadingSegmentedDisplay
     {
-        /// <summary>
-        /// True if the left EFIS device is attached to the FCU.
-        /// </summary>
-        bool IsLeftEfisPresent { get; }
+        public bool Heading { get; set; }
 
-        /// <summary>
-        /// True if the right EFIS device is attached to the FCU.
-        /// </summary>
-        bool IsRightEfisPresent { get; }
+        public bool Track { get; set; }
 
-        /// <summary>
-        /// The segmented displays.
-        /// </summary>
-        FcuSegmentedDisplays SegmentedDisplays { get; }
+        public bool Lateral { get; set; }
+
+        public bool Dot { get; set; }
+
+        public S7DigitCollection HeadingDigits { get; } = new(
+            S7Masks.DigitLeftDecimal,
+            S7Masks.DigitLeftDecimal,
+            S7Masks.DigitLeftDecimal
+        );
     }
 }

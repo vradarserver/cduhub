@@ -32,10 +32,7 @@ namespace McduDotNet.WinWing.FcuAndEfis
         public bool IsRightEfisPresent => (UsbDevice.EquipmentType & EquipmentType.RightEfis) != 0;
 
         /// <inheritdoc/>
-        public FcuBaroLedSegments LeftBaroSegments { get; } = new();
-
-        /// <inheritdoc/>
-        public FcuBaroLedSegments RightBaroSegments { get; } = new();
+        public FcuSegmentedDisplays SegmentedDisplays { get; } = new();
 
         /// <summary>
         /// Creates a new object.
@@ -85,6 +82,11 @@ namespace McduDotNet.WinWing.FcuAndEfis
             if(!_HidDevice.TryOpen(out _HidStream)) {
                 throw new McduException($"Could not open a stream to {_HidDevice}");
             }
+        }
+
+        /// <inheritdoc/>
+        public void RefreshSegmentedDisplays(bool skipDuplicateCheck = false)
+        {
         }
     }
 }

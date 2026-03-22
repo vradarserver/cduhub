@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Text;
 using Cduhub.CommandLine;
 using McduDotNet;
 
@@ -26,14 +27,47 @@ namespace FgcpTest
                 } else {
                     Console.WriteLine($"Connected to {fcu}");
 
+                    const int updateDelayMS = 1;
+                    var nextTickUtc = DateTime.MinValue;
+                    var leftValue = -1;
+                    var leftDecimal = 0;
+
                     Console.WriteLine($"Press Q to quit");
-                    while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
-                        ;
+                    while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
+                        if(DateTime.UtcNow >= nextTickUtc) {
+                            if(++leftValue == 10000) {
+                                leftValue = 0;
+                                if(++leftDecimal == 5) {
+                                    leftDecimal = 0;
+                                }
+                            }
+
+                            var leftText = FormatBaroValue(leftValue, leftDecimal);
+                            fcu.SegmentedDisplays.LeftBaro.BaroDigits.SetFrom(leftText);
+
+                            fcu.RefreshSegmentedDisplays();
+
+                            nextTickUtc = DateTime.UtcNow.AddMilliseconds(updateDelayMS);
+                        }
                     }
                 }
             }
 
             return result;
+        }
+
+        private static string FormatBaroValue(int number, int decimalIndex)
+        {
+            var buffer = new StringBuilder();
+            buffer.AppendFormat("{0:0000}", number);
+
+            if(decimalIndex == 4) {
+                buffer.Append('.');
+            } else if(decimalIndex > 0) {
+                buffer.Insert(decimalIndex, '.');
+            }
+
+            return buffer.ToString();
         }
     }
 }

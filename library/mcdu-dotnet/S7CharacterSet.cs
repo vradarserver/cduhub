@@ -42,10 +42,15 @@ namespace McduDotNet
         private static readonly Dictionary<char, S7> _Punctuation = new() {
             { ' ', (S7)0 },
             { '-', S7.MM },
+            { '+', S7.MM | S7.TC | S7.BC },
+            { '_', S7.BB },
+            { '=', S7.MM | S7.BB },
+            { '"', S7.TL | S7.TR },
+            { '\'', S7.TR },
         };
 
         /// <summary>
-        /// A set of punctuation characters (space and minus).
+        /// A set of punctuation characters.
         /// </summary>
         public static IReadOnlyDictionary<char, S7> Punctuation => _Punctuation;
 

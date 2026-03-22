@@ -56,12 +56,12 @@ namespace McduDotNet
         /// <summary>
         /// Creates a new object.
         /// </summary>
-        /// <param name="digitTypes"></param>
+        /// <param name="masks"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        public S7DigitCollection(params S7Type[]? digitTypes)
+        public S7DigitCollection(params S7[]? masks)
         {
-            _S7Digits = (digitTypes ?? Array.Empty<S7Type>())
-                .Select(type => new S7Digit(type))
+            _S7Digits = (masks ?? Array.Empty<S7>())
+                .Select(mask => new S7Digit(mask))
                 .ToArray();
         }
 
@@ -81,16 +81,26 @@ namespace McduDotNet
         }
 
         /// <inheritdoc/>
-        public override string ToString()
+        public override string ToString() => ToString("?");
+
+        /// <summary>
+        /// Converts the digits to a string.
+        /// </summary>
+        /// <param name="fallbackTextFormat">
+        /// Passed through to <see cref="S7Digit.ToString"/>.
+        /// </param>
+        /// <returns></returns>
+        public string ToString(string? fallbackTextFormat)
         {
             var buffer = new StringBuilder();
             var characterSet = S7CharacterSet.CharacterSet();
             foreach(var digit in _S7Digits) {
-                digit.AppendToBuffer(characterSet, buffer);
+                digit.AppendToBuffer(characterSet, buffer, fallbackTextFormat);
             }
 
             return buffer.ToString();
         }
+
 
         /// <inheritdoc/>
         public IEnumerator<S7Digit> GetEnumerator() => ((IEnumerable<S7Digit>)_S7Digits).GetEnumerator();
@@ -143,14 +153,92 @@ namespace McduDotNet
         /// Sets the segments of the digit at index <paramref name="index"/>.
         /// </summary>
         /// <param name="index"></param>
-        /// <param name="segments"></param>
+        /// <param name="segments">
+        /// The segments to try to set. The mask is applied to this value, so the segments
+        /// actually set might be different.
+        /// </param>
         /// <exception cref="ArgumentOutOfRangeException"></exception>
         public void SetAt(int index, S7 segments)
         {
             if(index < 0 || index >= _S7Digits.Length) {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
-            _S7Digits[index] = new S7Digit(_S7Digits[index].Type, segments);
+            var extant = _S7Digits[index];
+            var masked = extant.Mask & segments;
+            if(masked != extant.Segments) {
+                _S7Digits[index] = extant.NewSegments(masked);
+            }
+        }
+
+        /// <summary>
+        /// Switches off all segments in the display.
+        /// </summary>
+        public void ClearDisplay()
+        {
+            for(var idx = 0;idx < _S7Digits.Length;++idx) {
+                SetAt(idx, 0);
+            }
+        }
+
+        /// <summary>
+        /// Sets the digits using the character set returned by <see
+        /// cref="S7CharacterSet.CharacterSet"/>(). Unknown characters are ignored.
+        /// </summary>
+        /// <param name="text"></param>
+        public void SetFrom(string? text)
+        {
+            SetFrom(text, S7CharacterSet.CharacterSet());
+        }
+
+        /// <summary>
+        /// Sets the digits according to the text and character set passed across.
+        /// Unknown characters are ignored.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="characterSet"></param>
+        public void SetFrom(string? text, IReadOnlyDictionary<char, S7> characterSet)
+        {
+            text = text ?? "";
+            ClearDisplay();
+
+            if(_S7Digits.Length > 0) {
+                for(int textIdx = 0, s7Idx = 0;textIdx < text.Length && s7Idx <= _S7Digits.Length;++textIdx) {
+                    var ch = text[textIdx];
+                    switch(ch) {
+                        case '.':
+                            var setDecimalSegment = false;
+
+                            if(!setDecimalSegment && s7Idx < _S7Digits.Length) {
+                                var currentDigit = _S7Digits[s7Idx];
+                                if(currentDigit.Mask.IsSet(S7.DL)) {
+                                    setDecimalSegment = true;
+                                    _S7Digits[s7Idx] = currentDigit.SetSegments(S7.DL);
+                                }
+                            }
+                            if(!setDecimalSegment && s7Idx > 0) {
+                                var previousDigit = _S7Digits[s7Idx - 1];
+                                if(previousDigit.Mask.IsSet(S7.DR)) {
+                                    setDecimalSegment = true;
+                                    _S7Digits[s7Idx - 1] = previousDigit.SetSegments(S7.DR);
+                                }
+                            }
+
+                            break;
+                        default:
+                            if(characterSet.TryGetValue(ch, out var segments)) {
+                                if(s7Idx < _S7Digits.Length) {
+                                    _S7Digits[s7Idx] = _S7Digits[s7Idx].SetSegments(segments);
+                                }
+                                ++s7Idx;
+                            } else {
+                                if(ch == ' ') {
+                                    ++s7Idx;
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
         }
     }
 }

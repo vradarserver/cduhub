@@ -11,23 +11,40 @@
 namespace McduDotNet
 {
     /// <summary>
-    /// An enumeration of the different types of supported seven segment digit.
+    /// Common masks for <see cref="S7"/> digits.
     /// </summary>
-    public enum S7Type : byte
+    public static class S7Masks
     {
         /// <summary>
-        /// A 7-segment digit with no decimal point.
+        /// Masks out the seven digit segments in a seven-segment digit display.
         /// </summary>
-        Digit,
+        public const S7 Digit = S7.TT | S7.TR | S7.MM | S7.BR | S7.BB | S7.BL | S7.TL;
 
         /// <summary>
-        /// A 7-segment digit with a decimal point to the left.
+        /// Masks out the digit and leading decimal segments in a seven-segment digit display.
         /// </summary>
-        DigitLeftDecimal,
+        public const S7 DigitLeftDecimal = Digit | S7.DL;
 
         /// <summary>
-        /// A 7-segment digit with a decimal point to the right.
+        /// Masks out the digit and trailing decimal segments in a seven-segment digit display.
         /// </summary>
-        DigitRightDecimal,
+        public const S7 DigitRightDecimal = Digit | S7.DR;
+
+        /// <summary>
+        /// Masks out both decimal place segments in a seven-segment digit
+        /// display.
+        /// </summary>
+        public const S7 DecimalPoints = S7.DL | S7.DR;
+
+        /// <summary>
+        /// Masks out the vertical part of a PLUS symbol in a seven-segment digit display.
+        /// </summary>
+        public const S7 VerticalCentreBar = S7.TC | S7.BC;
+
+        /// <summary>
+        /// Masks out the vertical centre bar and the middle horizontal segments in a
+        /// seven-segment digit display.
+        /// </summary>
+        public const S7 Plus = VerticalCentreBar | S7.MM;
     }
 }

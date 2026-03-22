@@ -8,74 +8,13 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-
 namespace McduDotNet
 {
     /// <summary>
-    /// Flags that identify each segment in a seven segment digit display.
+    /// The interface that all buffers that describe the segmented displays for an FGCP
+    /// must implement.
     /// </summary>
-    /// <remarks>
-    /// As you might notice, there are more than seven segments. But the heart of the
-    /// thing has seven segments, everyone calls them seven segment LED displays, and I am
-    /// fond of Mass Effect.
-    /// </remarks>
-    [Flags]
-    public enum S7 : ushort
+    public interface ISegmentedDislays
     {
-        /// <summary>
-        /// Top segment (a).
-        /// </summary>
-        TT = 0x0001,
-
-        /// <summary>
-        /// Top-right segment (b).
-        /// </summary>
-        TR = 0x0002,
-
-        /// <summary>
-        /// Bottom-right segment (c).
-        /// </summary>
-        BR = 0x0004,
-
-        /// <summary>
-        /// Bottom segment (d).
-        /// </summary>
-        BB = 0x0008,
-
-        /// <summary>
-        /// Bottom-left segment (e).
-        /// </summary>
-        BL = 0x0010,
-
-        /// <summary>
-        /// Top-left segment (f).
-        /// </summary>
-        TL = 0x0020,
-
-        /// <summary>
-        /// Middle segment (g).
-        /// </summary>
-        MM = 0x0040,
-
-        /// <summary>
-        /// Optional decimal point to left of digit.
-        /// </summary>
-        DL = 0x0080,
-
-        /// <summary>
-        /// Optional decimal point to right of digit.
-        /// </summary>
-        DR = 0x0100,
-
-        /// <summary>
-        /// Optional vertical line in centre of top half.
-        /// </summary>
-        TC = 0x0200,
-
-        /// <summary>
-        /// Optional vertical line in centre of bottom half.
-        /// </summary>
-        BC = 0x0400,
     }
 }
