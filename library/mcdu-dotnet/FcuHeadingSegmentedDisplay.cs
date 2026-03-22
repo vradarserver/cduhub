@@ -12,11 +12,11 @@ namespace McduDotNet
 {
     public class FcuHeadingSegmentedDisplay
     {
-        public bool Heading { get; set; }
+        public bool Hdg { get; set; }
 
-        public bool Track { get; set; }
+        public bool Trk { get; set; }
 
-        public bool Lateral { get; set; }
+        public bool Lat { get; set; }
 
         public bool Dot { get; set; }
 
@@ -25,5 +25,14 @@ namespace McduDotNet
             S7Masks.DigitLeftDecimal,
             S7Masks.DigitLeftDecimal
         );
+
+        public void ClearDisplay()
+        {
+            Hdg = false;
+            Trk = false;
+            Lat = false;
+            Dot = false;
+            HeadingDigits.ClearDisplay();
+        }
     }
 }

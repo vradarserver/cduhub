@@ -12,7 +12,7 @@ namespace McduDotNet
 {
     public class FcuSpeedSegmentedDisplays
     {
-        public bool Speed { get; set; }
+        public bool Spd { get; set; }
 
         public bool Mach { get; set; }
 
@@ -23,5 +23,13 @@ namespace McduDotNet
             S7Masks.DigitLeftDecimal,
             S7Masks.DigitLeftDecimal
         );
+
+        public void ClearDisplay()
+        {
+            Spd = false;
+            Mach = false;
+            Dot = false;
+            SpeedDigits.ClearDisplay();
+        }
     }
 }

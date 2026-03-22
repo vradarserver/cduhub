@@ -20,12 +20,16 @@ namespace FgcpTest
             Root.EnforceInHouseStandards();
 
             Connect.SetAction(parse => {
-                var command = new Command_Connect();
+                var command = new Command_Connect() {
+                    SuppressCleanup = parse.GetValue(Options.SuppressCleanup),
+                };
                 Program.Worked = command.Run();
             });
 
             FcuBaro.SetAction(parse => {
-                var command = new Command_FcuBaro();
+                var command = new Command_FcuBaro() {
+                    SuppressCleanup = parse.GetValue(Options.SuppressCleanup),
+                };
                 Program.Worked = command.Run();
             });
 
@@ -36,9 +40,11 @@ namespace FgcpTest
         }
 
         public static Command Connect = new("connect", "Test connection to a local FGCP device") {
+            Options.SuppressCleanup,
         };
 
         public static Command FcuBaro = new("fcu-baro", "Test the FCU baro segment display") {
+            Options.SuppressCleanup,
         };
 
         public static Command ShowDevices = new("show-devices", "Show USB devices") {

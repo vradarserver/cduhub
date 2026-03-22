@@ -22,6 +22,10 @@ namespace McduDotNet
 
         public bool LvlChGroupRight { get; set; }
 
+        public bool VS { get; set; }
+
+        public bool Fpa { get; set; }
+
         public S7DigitCollection AltitudeDigits { get; } = new(
             S7Masks.Digit,
             S7Masks.Digit,
@@ -37,5 +41,19 @@ namespace McduDotNet
             S7Masks.Digit,
             S7Masks.Digit
         );
+
+        public void ClearDisplay()
+        {
+            Alt = false;
+            AltDot = false;
+            Fpa = false;
+            LvlCh = false;
+            LvlChGroupLeft = false;
+            LvlChGroupRight = false;
+            VS = false;
+
+            AltitudeDigits.ClearDisplay();
+            VerticalSpeedDigits.ClearDisplay();
+        }
     }
 }

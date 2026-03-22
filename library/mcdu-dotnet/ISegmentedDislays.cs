@@ -16,5 +16,9 @@ namespace McduDotNet
     /// </summary>
     public interface ISegmentedDislays
     {
+        /// <summary>
+        /// Empty all of the segmented displays.
+        /// </summary>
+        void ClearDisplays();
     }
 }

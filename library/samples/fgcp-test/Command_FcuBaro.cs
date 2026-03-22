@@ -16,6 +16,8 @@ namespace FgcpTest
 {
     class Command_FcuBaro : CommonCommand
     {
+        public bool SuppressCleanup { get; set; }
+
         public bool Run()
         {
             var result = true;
@@ -68,6 +70,10 @@ namespace FgcpTest
 
                             nextTickUtc = DateTime.UtcNow.AddMilliseconds(updateDelayMS);
                         }
+                    }
+
+                    if(!SuppressCleanup) {
+                        fcu.Cleanup();
                     }
                 }
             }

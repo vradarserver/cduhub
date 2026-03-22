@@ -97,6 +97,15 @@ namespace McduDotNet.WinWing.FcuAndEfis
             ) {
                // UpdatingDeviceCallback = args => OnDisplayChanging(args),
             };
+
+            RefreshSegmentedDisplays();
+        }
+
+        public void Cleanup()
+        {
+            SegmentedDisplays.ClearDisplays();
+
+            RefreshSegmentedDisplays();
         }
 
         /// <inheritdoc/>

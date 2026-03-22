@@ -15,6 +15,8 @@ namespace FgcpTest
 {
     class Command_Connect : CommonCommand
     {
+        public bool SuppressCleanup { get; set; }
+
         public bool Run()
         {
             var result = false;
@@ -25,6 +27,10 @@ namespace FgcpTest
                 } else {
                     result = true;
                     Console.WriteLine($"Connected to {fgcp}");
+
+                    if(!SuppressCleanup) {
+                        fgcp.Cleanup();
+                    }
                 }
             }
 

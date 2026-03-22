@@ -23,5 +23,16 @@ namespace McduDotNet
         public FcuModeSegmentedDisplay Mode { get; set; } = new();
 
         public FcuAltitudeSegmentedDisplay Altitude { get; set; } = new();
+
+        /// <inheritdoc/>
+        public void ClearDisplays()
+        {
+            Altitude.ClearDisplay();
+            Heading.ClearDisplay();
+            LeftBaro.ClearDisplay();
+            Mode.ClearDisplay();
+            RightBaro.ClearDisplay();
+            Speed.ClearDisplay();
+        }
     }
 }

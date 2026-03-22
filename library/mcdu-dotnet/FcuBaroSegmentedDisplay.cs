@@ -22,5 +22,12 @@ namespace McduDotNet
             S7Masks.DigitRightDecimal,
             S7Masks.DigitRightDecimal
         );
+
+        public void ClearDisplay()
+        {
+            Qfe = false;
+            Qnh = false;
+            BaroDigits.ClearDisplay();
+        }
     }
 }

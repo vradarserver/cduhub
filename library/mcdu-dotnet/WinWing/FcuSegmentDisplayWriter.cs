@@ -10,6 +10,7 @@
 
 using System;
 using System.Linq;
+using System.Threading;
 using McduDotNet.WinWing.FcuAndEfis;
 
 namespace McduDotNet.WinWing
@@ -25,12 +26,14 @@ namespace McduDotNet.WinWing
     class FcuSegmentDisplayWriter
     {
         private const int _EfisPayloadLength = 5;
+        private const int _NullContentSends = 1;
         private const ushort _LeftEfisId = 0x0DBF;
         private const ushort _RightEfisId = 0x0EBF;
         private const ushort _FcuId = 0x10BB;
 
         private readonly UsbWriter _UsbWriter;
         private readonly byte[] _EfisBuffer;
+        private readonly byte[] _NullContentBuffer;
 
         private readonly bool _IsLeftEfisPresent;
         private readonly byte[] _LeftEfisPayload = new byte[_EfisPayloadLength];
@@ -40,7 +43,7 @@ namespace McduDotNet.WinWing
         private readonly byte[] _RightEfisPayload = new byte[_EfisPayloadLength];
         private byte[]? _RightEfisPreviousPayload;
 
-        private ushort _EfisSequence;
+        private ushort _SequenceNumber;
 
         public FcuSegmentDisplayWriter(
             UsbWriter usbWriter,
@@ -51,6 +54,9 @@ namespace McduDotNet.WinWing
             _UsbWriter = usbWriter;
             _IsLeftEfisPresent = isLeftEfisPresent;
             _IsRightEfisPresent = isRightEfisPresent;
+
+            _NullContentBuffer = new byte[64];
+            InitialiseBuffer(_NullContentBuffer, new byte[] { 0xf0 });
 
             _EfisBuffer = new byte[64];
             InitialiseBuffer(_EfisBuffer, new byte[] {
@@ -105,16 +111,47 @@ namespace McduDotNet.WinWing
 
         private void PrepareAndSendEfisBuffer(ushort efisId, byte[] payload)
         {
-            ++_EfisSequence;
-            _EfisBuffer[1] = (byte)((_EfisSequence & 0xff00) >> 8);
-            _EfisBuffer[2] = (byte)(_EfisSequence & 0xff);
-            _EfisBuffer[4] = (byte)((efisId & 0xff00) >> 8);
-            _EfisBuffer[5] = (byte)(efisId & 0xff);
-            for(var payloadIdx = 0;payloadIdx < payload.Length;++payloadIdx) {
-                _EfisBuffer[0x19 + payloadIdx] = payload[payloadIdx];
-            }
+            SetBufferSequenceNumber(_EfisBuffer, ++_SequenceNumber);
+            SetBufferDeviceId(_EfisBuffer, efisId);
+            SetBufferPayload(_EfisBuffer, payload, 0x19);
 
             _UsbWriter.SendPacket(_EfisBuffer);
+
+            SendNullContent(_NullContentSends);
+        }
+
+        /// <summary>
+        /// Sends an empty F0 command to the device. Without this, and without any
+        /// sleeps, a rapid sequence of sends "backs up" on the device and further
+        /// commands can be lost. Seen both SimAppPro and Mobiflight send empty
+        /// packets to the device, wondering whether it's to prevent this situation?
+        /// </summary>
+        /// <param name="count"></param>
+        private void SendNullContent(int count)
+        {
+            for(var idx = 0;idx < count;++idx) {
+                SetBufferSequenceNumber(_NullContentBuffer, ++_SequenceNumber);
+                _UsbWriter.SendPacket(_NullContentBuffer);
+            }
+        }
+
+        private void SetBufferSequenceNumber(byte[] buffer, ushort sequenceNumber)
+        {
+            buffer[1] = (byte)((sequenceNumber & 0xff00) >> 8);
+            buffer[2] = (byte)(sequenceNumber & 0xff);
+        }
+
+        private void SetBufferDeviceId(byte[] buffer, ushort deviceId)
+        {
+            buffer[4] = (byte)((deviceId & 0xff00) >> 8);
+            buffer[5] = (byte)(deviceId & 0xff);
+        }
+
+        private void SetBufferPayload(byte[] buffer, byte[] payload, int offset)
+        {
+            for(var payloadIdx = 0;payloadIdx < payload.Length;++payloadIdx) {
+                buffer[offset + payloadIdx] = payload[payloadIdx];
+            }
         }
 
         private bool PrepareEfisBuffer(

@@ -28,5 +28,10 @@ namespace McduDotNet
         /// </summary>
         /// <param name="skipDuplicateCheck"></param>
         void RefreshSegmentedDisplays(bool skipDuplicateCheck = false);
+
+        /// <summary>
+        /// Resets the device back to a clean state.
+        /// </summary>
+        void Cleanup();
     }
 }

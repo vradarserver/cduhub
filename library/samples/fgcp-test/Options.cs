@@ -8,24 +8,15 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace McduDotNet
+using System.CommandLine;
+
+namespace FgcpTest
 {
-    public class FcuModeSegmentedDisplay
+    public static class Options
     {
-        public bool Hdg { get; set; }
-
-        public bool VS { get; set; }
-
-        public bool Trk { get; set; }
-
-        public bool Fpa { get; set; }
-
-        public void ClearDisplay()
-        {
-            Hdg = false;
-            VS = false;
-            Trk = false;
-            Fpa = false;
-        }
+        public static readonly Option<bool> SuppressCleanup = new("--no-cleanup", "-nc") {
+            Description = "Do not cleanup the device on exit",
+            DefaultValueFactory = _ => false
+        };
     }
 }
