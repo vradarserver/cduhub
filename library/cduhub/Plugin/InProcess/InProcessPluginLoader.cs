@@ -46,7 +46,7 @@ namespace Cduhub.Plugin.InProcess
                     } else if(!_LoadedAssemblies.Contains(dllFileName)) {
                         if(!InformationalVersion.TryParse(manifest.MinimumHubVersion, out var minHubVersion)) {
                             errorMessage = "Cannot parse minimum hub version";
-                        } else if(minHubVersion.CompareTo(CduhubVersions.LibraryVersion) > 0) {
+                        } else if(minHubVersion!.CompareTo(CduhubVersions.LibraryVersion) > 0) {
                             errorMessage = "Plugin needs later version of CDU Hub";
                         } else {
                             var assembly = Assembly.LoadFrom(dllFileName);
