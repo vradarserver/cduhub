@@ -21,6 +21,9 @@ namespace McduDotNet.WinWing.FcuAndEfis
     {
         protected HidDevice _HidDevice;
         protected HidStream? _HidStream;
+        protected UsbWriter? _UsbWriter;
+        protected FcuSegmentDisplayWriter? _SegmentedDisplayWriter;
+
 
         /// <inheritdoc/>
         public UsbDevice UsbDevice { get; }
@@ -55,6 +58,9 @@ namespace McduDotNet.WinWing.FcuAndEfis
         protected virtual void Dispose(bool disposing)
         {
             if(disposing) {
+                _UsbWriter = null;
+                _SegmentedDisplayWriter = null;
+
                 var hidStream = _HidStream;
                 _HidStream = null;
                 try {
@@ -82,11 +88,23 @@ namespace McduDotNet.WinWing.FcuAndEfis
             if(!_HidDevice.TryOpen(out _HidStream)) {
                 throw new McduException($"Could not open a stream to {_HidDevice}");
             }
+            _UsbWriter = new UsbWriter(_HidStream);
+
+            _SegmentedDisplayWriter = new FcuSegmentDisplayWriter(
+                _UsbWriter,
+                IsLeftEfisPresent
+            ) {
+               // UpdatingDeviceCallback = args => OnDisplayChanging(args),
+            };
         }
 
         /// <inheritdoc/>
         public void RefreshSegmentedDisplays(bool skipDuplicateCheck = false)
         {
+            _SegmentedDisplayWriter?.SendSegmentedDisplays(
+                SegmentedDisplays,
+                skipDuplicateCheck
+            );
         }
     }
 }
