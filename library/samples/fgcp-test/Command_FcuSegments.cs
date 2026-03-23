@@ -14,7 +14,7 @@ using McduDotNet;
 
 namespace FgcpTest
 {
-    class Command_FcuBaro : CommonCommand
+    class Command_FcuSegments : CommonCommand
     {
         public bool SuppressCleanup { get; set; }
 
@@ -40,6 +40,14 @@ namespace FgcpTest
                     var rightDecimal = 4;
                     var rightWords = 3;
 
+                    var headingValue = 1000;
+                    var headingDecimal = 3;
+                    var headingWords = 0x0f;
+
+                    var speedValue = -1;
+                    var speedDecimal = 0;
+                    var speedWords = 0;
+
                     Console.WriteLine($"Press Q to quit");
                     while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
                         if(DateTime.UtcNow >= nextTickUtc) {
@@ -63,8 +71,30 @@ namespace FgcpTest
                                 }
                             }
 
+                            if(++speedValue == 1000) {
+                                speedValue = 0;
+                                if(++speedDecimal == 4) {
+                                    speedDecimal = 0;
+                                }
+                                if(++speedWords == 8) {
+                                    speedWords = 0;
+                                }
+                            }
+
+                            if(--headingValue == -1) {
+                                headingValue = 999;
+                                if(--headingDecimal == -1) {
+                                    headingDecimal = 3;
+                                }
+                                if(--headingWords == -1) {
+                                    headingWords = 0x0f;
+                                }
+                            }
+
                             SetupBaro(fcu.SegmentedDisplays.LeftBaro, leftValue, leftDecimal, leftWords);
                             SetupBaro(fcu.SegmentedDisplays.RightBaro, rightValue, rightDecimal, rightWords);
+                            SetupSpeed(fcu.SegmentedDisplays.Speed, speedValue, speedDecimal, speedWords);
+                            SetupHeading(fcu.SegmentedDisplays.Heading, headingValue, headingDecimal, headingWords);
 
                             fcu.RefreshSegmentedDisplays();
 
@@ -83,21 +113,52 @@ namespace FgcpTest
 
         private void SetupBaro(FcuBaroSegmentedDisplay baro, int number, int decimalIndex, int wordFlags)
         {
-            var text = FormatBaroValue(number, decimalIndex);
+            var text = FormatRightDecimalNumber("{0:0000}", number, decimalIndex);
             baro.BaroDigits.SetFrom(text);
             baro.Qfe = (wordFlags & 0x01) != 0;
             baro.Qnh = (wordFlags & 0x02) != 0;
         }
 
-        private static string FormatBaroValue(int number, int decimalIndex)
+        private void SetupSpeed(FcuSpeedSegmentedDisplay speed, int number, int decimalIndex, int wordFlags)
+        {
+            var text = FormatLeftDecimalNumber("{0:000}", number, decimalIndex);
+            speed.SpeedDigits.SetFrom(text);
+            speed.Dot = (wordFlags & 0x01) != 0;
+            speed.Spd = (wordFlags & 0x02) != 0;
+            speed.Mach = (wordFlags & 0x04) != 0;
+        }
+
+        private void SetupHeading(FcuHeadingSegmentedDisplay heading, int number, int decimalIndex, int wordFlags)
+        {
+            var text = FormatLeftDecimalNumber("{0:000}", number, decimalIndex);
+            heading.HeadingDigits.SetFrom(text);
+            heading.Dot = (wordFlags & 0x01) != 0;
+            heading.Hdg = (wordFlags & 0x02) != 0;
+            heading.Trk = (wordFlags & 0x04) != 0;
+            heading.Lat = (wordFlags & 0x08) != 0;
+        }
+
+        private static string FormatRightDecimalNumber(string format, int number, int decimalIndex)
         {
             var buffer = new StringBuilder();
-            buffer.AppendFormat("{0:0000}", number);
+            buffer.AppendFormat(format, number);
 
-            if(decimalIndex == 4) {
+            if(decimalIndex == buffer.Length) {
                 buffer.Append('.');
             } else if(decimalIndex > 0) {
                 buffer.Insert(decimalIndex, '.');
+            }
+
+            return buffer.ToString();
+        }
+
+        private static string FormatLeftDecimalNumber(string format, int number, int decimalIndex)
+        {
+            var buffer = new StringBuilder();
+            buffer.AppendFormat(format, number);
+
+            if(decimalIndex > 0) {
+                buffer.Insert(decimalIndex - 1, '.');
             }
 
             return buffer.ToString();

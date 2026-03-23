@@ -17,7 +17,7 @@ namespace McduDotNet.WinWing.FcuAndEfis
     /// </summary>
     static class BaroDisplay
     {
-        // All of the EFIS digits are contained within a single byte, so we just need
+        // All of the barometer digits are contained within a single byte, so we just need
         // one bitmap and repeat it across four bytes.
         public static readonly IReadOnlyList<S7Bitmap> DigitBitmap = new S7Bitmap[] {
             new(S7.TL, 0, 0x01),

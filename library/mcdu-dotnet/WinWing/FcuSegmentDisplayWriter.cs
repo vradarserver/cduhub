@@ -25,6 +25,7 @@ namespace McduDotNet.WinWing
     /// </remarks>
     class FcuSegmentDisplayWriter
     {
+        private const int _FcuPayloadLength = 16;
         private const int _EfisPayloadLength = 5;
         private const int _NullContentSends = 1;
         private const ushort _LeftEfisId = 0x0DBF;
@@ -32,6 +33,8 @@ namespace McduDotNet.WinWing
         private const ushort _FcuId = 0x10BB;
 
         private readonly UsbWriter _UsbWriter;
+        private readonly byte[] _FcuPacket1Buffer;
+        private readonly byte[] _FcuPacket2Buffer;
         private readonly byte[] _EfisBuffer;
         private readonly byte[] _NullContentBuffer;
 
@@ -42,6 +45,9 @@ namespace McduDotNet.WinWing
         private readonly bool _IsRightEfisPresent;
         private readonly byte[] _RightEfisPayload = new byte[_EfisPayloadLength];
         private byte[]? _RightEfisPreviousPayload;
+
+        private readonly byte[] _FcuPayload = new byte[_FcuPayloadLength];
+        private byte[]? _FcuPreviousPayload;
 
         private ushort _SequenceNumber;
 
@@ -62,7 +68,20 @@ namespace McduDotNet.WinWing
             InitialiseBuffer(_EfisBuffer, new byte[] {
                 0xf0, 0x00, 0x00, 0x2B, 0xFF, 0xFF, 0x00, 0x00,
                 0x02, 0x01, 0x00, 0x00, 0x11, 0x11, 0x11, 0x00,
-                0x00, 0x09
+                0x00, 0x09,
+            });
+
+            _FcuPacket1Buffer = new byte[64];
+            InitialiseBuffer(_FcuPacket1Buffer, new byte[] {
+                0xf0, 0x00, 0x00, 0x31, 0xFF, 0xFF, 0x00, 0x00,
+                0x02, 0x01, 0x00, 0x00, 0x49, 0x56, 0x00, 0x00,
+                0x00, 0x20,
+            });
+
+            _FcuPacket2Buffer = new byte[64];
+            InitialiseBuffer(_FcuPacket2Buffer, new byte[] {
+                0xf0, 0x00, 0x00, 0x11, 0xFF, 0xFF, 0x00, 0x00,
+                0x03, 0x01, 0x00, 0x00, 0x49, 0x56,
             });
         }
 
@@ -87,35 +106,61 @@ namespace McduDotNet.WinWing
             if(segmentedDisplays != null) {
                 _UsbWriter.LockForOutput(() => {
                     if(_IsLeftEfisPresent && segmentedDisplays.LeftBaro != null) {
-                        if(PrepareEfisBuffer(
+                        if(PrepareEfisPayload(
                             segmentedDisplays.LeftBaro,
                             _LeftEfisPayload,
                             ref _LeftEfisPreviousPayload
                         ) || skipDuplicateCheck) {
-                            PrepareAndSendEfisBuffer(_LeftEfisId, _LeftEfisPayload);
+                            PrepareAndSendEfisPacket(_LeftEfisId, _LeftEfisPayload);
                         }
                     }
 
                     if(_IsRightEfisPresent && segmentedDisplays.RightBaro != null) {
-                        if(PrepareEfisBuffer(
+                        if(PrepareEfisPayload(
                             segmentedDisplays.RightBaro,
                             _RightEfisPayload,
                             ref _RightEfisPreviousPayload
                         ) || skipDuplicateCheck) {
-                            PrepareAndSendEfisBuffer(_RightEfisId, _RightEfisPayload);
+                            PrepareAndSendEfisPacket(_RightEfisId, _RightEfisPayload);
                         }
+                    }
+
+                    if(PrepareFcuPayload(
+                        segmentedDisplays.Speed,
+                        segmentedDisplays.Heading,
+                        segmentedDisplays.Mode,
+                        segmentedDisplays.Altitude,
+                        _FcuPayload,
+                        ref _FcuPreviousPayload
+                    ) || skipDuplicateCheck) {
+                        PrepareAndSendFcuPackets(_FcuId, _FcuPayload);
                     }
                 });
             }
         }
 
-        private void PrepareAndSendEfisBuffer(ushort efisId, byte[] payload)
+        private void PrepareAndSendEfisPacket(ushort deviceId, byte[] payload)
         {
             SetBufferSequenceNumber(_EfisBuffer, ++_SequenceNumber);
-            SetBufferDeviceId(_EfisBuffer, efisId);
+            SetBufferDeviceId(_EfisBuffer, deviceId);
             SetBufferPayload(_EfisBuffer, payload, 0x19);
 
             _UsbWriter.SendPacket(_EfisBuffer);
+
+            SendNullContent(_NullContentSends);
+        }
+
+        private void PrepareAndSendFcuPackets(ushort deviceId, byte[] payload)
+        {
+            SetBufferSequenceNumber(_FcuPacket1Buffer, ++_SequenceNumber);
+            SetBufferDeviceId(_FcuPacket1Buffer, deviceId);
+            SetBufferPayload(_FcuPacket1Buffer, payload, 0x19);
+
+            SetBufferSequenceNumber(_FcuPacket2Buffer, ++_SequenceNumber);
+            SetBufferDeviceId(_FcuPacket2Buffer, deviceId);
+
+            _UsbWriter.SendPacket(_FcuPacket1Buffer);
+            _UsbWriter.SendPacket(_FcuPacket2Buffer);
 
             SendNullContent(_NullContentSends);
         }
@@ -154,27 +199,74 @@ namespace McduDotNet.WinWing
             }
         }
 
-        private bool PrepareEfisBuffer(
+        private bool PrepareEfisPayload(
             FcuBaroSegmentedDisplay segmentedDisplay,
-            byte[] payloadBuffer,
-            ref byte[]? previousPayloadBuffer
+            byte[] payload,
+            ref byte[]? previousPayload
         )
         {
-            Array.Clear(payloadBuffer, 0, payloadBuffer.Length);
-            for(var idx = 0;idx < segmentedDisplay.BaroDigits.Count;++idx) {
-                var s7 = segmentedDisplay.BaroDigits[idx];
-                Bitmapper.SetS7Bits(
-                    s7.Segments,
-                    BaroDisplay.DigitBitmap,
-                    payloadBuffer,
-                    offset: idx
-                );
-            }
-            Bitmapper.SetBit(segmentedDisplay.Qfe, BaroDisplay.QfeBit, payloadBuffer);
-            Bitmapper.SetBit(segmentedDisplay.Qnh, BaroDisplay.QnhBit, payloadBuffer);
+            Array.Clear(payload, 0, payload.Length);
 
-            var result = CompareWithAndCopyToPreviousPayload(payloadBuffer, previousPayloadBuffer);
+            Bitmapper.SetRepeatingS7DigitCollection(
+                segmentedDisplay.BaroDigits,
+                BaroDisplay.DigitBitmap,
+                payload,
+                offset: 0
+            );
+            Bitmapper.SetBit(segmentedDisplay.Qfe, BaroDisplay.QfeBit, payload);
+            Bitmapper.SetBit(segmentedDisplay.Qnh, BaroDisplay.QnhBit, payload);
+
+            var result = CompareWithAndCopyToPreviousPayload(payload, previousPayload);
             return result;
+        }
+
+        private bool PrepareFcuPayload(
+            FcuSpeedSegmentedDisplay speed,
+            FcuHeadingSegmentedDisplay heading,
+            FcuModeSegmentedDisplay mode,
+            FcuAltitudeSegmentedDisplay altitude,
+            byte[] payload,
+            ref byte[]? previousPayload
+        )
+        {
+            Array.Clear(payload, 0, payload.Length);
+
+            if(speed != null) {
+                SetSpeedBits(payload, speed);
+            }
+            if(heading != null) {
+                SetHeadingBits(payload, heading);
+            }
+
+            var result = CompareWithAndCopyToPreviousPayload(payload, previousPayload);
+            return result;
+        }
+
+        private void SetSpeedBits(byte[] payload, FcuSpeedSegmentedDisplay speed)
+        {
+            Bitmapper.SetRepeatingS7DigitCollection(
+                speed.SpeedDigits,
+                SpeedDisplay.DigitBitmap,
+                payload,
+                offset: 0
+            );
+            Bitmapper.SetBit(speed.Dot,  SpeedDisplay.DotBit, payload);
+            Bitmapper.SetBit(speed.Mach, SpeedDisplay.MachBit, payload);
+            Bitmapper.SetBit(speed.Spd,  SpeedDisplay.SpdBit, payload);
+        }
+
+        private void SetHeadingBits(byte[] payload, FcuHeadingSegmentedDisplay heading)
+        {
+            Bitmapper.SetRepeatingS7DigitCollection(
+                heading.HeadingDigits,
+                HeadingDisplay.DigitBitmap,
+                payload,
+                offset: 3
+            );
+            Bitmapper.SetBit(heading.Dot, HeadingDisplay.DotBit, payload);
+            Bitmapper.SetBit(heading.Lat, HeadingDisplay.LatBit, payload);
+            Bitmapper.SetBit(heading.Trk, HeadingDisplay.TrkBit, payload);
+            Bitmapper.SetBit(heading.Hdg, HeadingDisplay.HdgBit, payload);
         }
 
         private bool CompareWithAndCopyToPreviousPayload(byte[] payload, byte[]? previousPayload)

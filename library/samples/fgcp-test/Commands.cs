@@ -26,8 +26,8 @@ namespace FgcpTest
                 Program.Worked = command.Run();
             });
 
-            FcuBaro.SetAction(parse => {
-                var command = new Command_FcuBaro() {
+            FcuSegments.SetAction(parse => {
+                var command = new Command_FcuSegments() {
                     SuppressCleanup = parse.GetValue(Options.SuppressCleanup),
                 };
                 Program.Worked = command.Run();
@@ -43,7 +43,7 @@ namespace FgcpTest
             Options.SuppressCleanup,
         };
 
-        public static Command FcuBaro = new("fcu-baro", "Test the FCU baro segment display") {
+        public static Command FcuSegments = new("fcu-segments", "Test the FCU segment displays") {
             Options.SuppressCleanup,
         };
 
@@ -53,7 +53,7 @@ namespace FgcpTest
         public static RootCommand Root = new("Tests interactions with an FGCP (I.E. an FCU or MCP) device.") {
             Commands.ShowDevices,
             Commands.Connect,
-            Commands.FcuBaro,
+            Commands.FcuSegments,
         };
     }
 }

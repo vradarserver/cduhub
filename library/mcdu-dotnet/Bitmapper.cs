@@ -114,5 +114,18 @@ namespace McduDotNet
                 );
             }
         }
+
+        public static void SetRepeatingS7DigitCollection(
+            S7DigitCollection digits,
+            IReadOnlyList<S7Bitmap> bitmaps,
+            byte[] buffer,
+            int offset
+        )
+        {
+            for(var idx = 0;idx < digits.Count;++idx) {
+                var s7 = digits[idx];
+                Bitmapper.SetS7Bits(s7.Segments, bitmaps, buffer, offset + idx);
+            }
+        }
     }
 }
