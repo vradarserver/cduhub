@@ -48,6 +48,8 @@ namespace FgcpTest
                     var speedDecimal = 0;
                     var speedWords = 0;
 
+                    var modeWords = 0x100;
+
                     Console.WriteLine($"Press Q to quit");
                     while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
                         if(DateTime.UtcNow >= nextTickUtc) {
@@ -91,10 +93,15 @@ namespace FgcpTest
                                 }
                             }
 
+                            if(++modeWords == 0x1000) {
+                                modeWords = 0;
+                            }
+
                             SetupBaro(fcu.SegmentedDisplays.LeftBaro, leftValue, leftDecimal, leftWords);
                             SetupBaro(fcu.SegmentedDisplays.RightBaro, rightValue, rightDecimal, rightWords);
                             SetupSpeed(fcu.SegmentedDisplays.Speed, speedValue, speedDecimal, speedWords);
                             SetupHeading(fcu.SegmentedDisplays.Heading, headingValue, headingDecimal, headingWords);
+                            SetupMode(fcu.SegmentedDisplays.Mode, modeWords);
 
                             fcu.RefreshSegmentedDisplays();
 
@@ -136,6 +143,15 @@ namespace FgcpTest
             heading.Hdg = (wordFlags & 0x02) != 0;
             heading.Trk = (wordFlags & 0x04) != 0;
             heading.Lat = (wordFlags & 0x08) != 0;
+        }
+
+        private void SetupMode(FcuModeSegmentedDisplay mode, int modeWords)
+        {
+            var flags = (modeWords & 0xf00) >> 8;
+            mode.Hdg = (flags & 0x01) != 0;
+            mode.VS = (flags & 0x02) != 0;
+            mode.Trk = (flags & 0x04) != 0;
+            mode.Fpa = (flags & 0x08) != 0;
         }
 
         private static string FormatRightDecimalNumber(string format, int number, int decimalIndex)

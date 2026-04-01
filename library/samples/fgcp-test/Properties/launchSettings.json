@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "fgcp-test": {
+      "commandName": "Project",
+      "commandLineArgs": "fcu-segments"
+    }
+  }
+}

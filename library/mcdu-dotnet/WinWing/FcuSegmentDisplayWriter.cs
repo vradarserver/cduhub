@@ -237,6 +237,9 @@ namespace McduDotNet.WinWing
             if(heading != null) {
                 SetHeadingBits(payload, heading);
             }
+            if(mode != null) {
+                SetModeBits(payload, mode);
+            }
 
             var result = CompareWithAndCopyToPreviousPayload(payload, previousPayload);
             return result;
@@ -267,6 +270,14 @@ namespace McduDotNet.WinWing
             Bitmapper.SetBit(heading.Lat, HeadingDisplay.LatBit, payload);
             Bitmapper.SetBit(heading.Trk, HeadingDisplay.TrkBit, payload);
             Bitmapper.SetBit(heading.Hdg, HeadingDisplay.HdgBit, payload);
+        }
+
+        private void SetModeBits(byte[] payload, FcuModeSegmentedDisplay mode)
+        {
+            Bitmapper.SetBit(mode.Fpa, ModeDisplay.FpaBit, payload);
+            Bitmapper.SetBit(mode.Hdg, ModeDisplay.HdgBit, payload);
+            Bitmapper.SetBit(mode.Trk, ModeDisplay.TrkBit, payload);
+            Bitmapper.SetBit(mode.VS, ModeDisplay.VSBit, payload);
         }
 
         private bool CompareWithAndCopyToPreviousPayload(byte[] payload, byte[]? previousPayload)
