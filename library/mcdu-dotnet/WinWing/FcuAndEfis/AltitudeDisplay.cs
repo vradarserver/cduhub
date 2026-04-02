@@ -37,8 +37,7 @@ namespace McduDotNet.WinWing.FcuAndEfis
         };
 
         /// <summary>
-        /// The altitude display is five of these digits starting at offset 7. This
-        /// is also used by the first, third and fourth V/S digit.
+        /// Used by the second VS digit.
         /// </summary>
         public static readonly IReadOnlyList<S7Bitmap> DecimalDigitBitmap = new S7Bitmap[] {
             new(S7.DL, 0, 0x10),
