@@ -42,6 +42,8 @@ namespace McduDotNet
         private static readonly Dictionary<char, S7> _Punctuation = new() {
             { ' ', (S7)0 },
             { '-', S7.MM },
+            { '|', S7.TC | S7.BC },
+            { ':', S7.TC | S7.BC },
             { '+', S7.MM | S7.TC | S7.BC },
             { '_', S7.BB },
             { '=', S7.MM | S7.BB },

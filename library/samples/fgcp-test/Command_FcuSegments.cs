@@ -50,6 +50,12 @@ namespace FgcpTest
 
                     var modeWords = 0x100;
 
+                    var altitudeValue = 0;
+                    var vsValue = 9999;
+                    var vsPlus = 0;
+                    var vsDecimal = false;
+                    var altitudeWords = 0;
+
                     Console.WriteLine($"Press Q to quit");
                     while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
                         if(DateTime.UtcNow >= nextTickUtc) {
@@ -97,11 +103,28 @@ namespace FgcpTest
                                 modeWords = 0;
                             }
 
+                            if(++altitudeValue > 99999) {
+                                altitudeValue = 0;
+                            }
+                            if(--vsValue == -1) {
+                                vsValue = 9999;
+                            }
+                            if(altitudeValue % 100 == 0) {
+                                if(++vsPlus == 3) {
+                                    vsPlus = 0;
+                                }
+                                vsDecimal = !vsDecimal;
+                                if(++altitudeWords == 0x80) {
+                                    altitudeWords = 0;
+                                }
+                            }
+
                             SetupBaro(fcu.SegmentedDisplays.LeftBaro, leftValue, leftDecimal, leftWords);
                             SetupBaro(fcu.SegmentedDisplays.RightBaro, rightValue, rightDecimal, rightWords);
                             SetupSpeed(fcu.SegmentedDisplays.Speed, speedValue, speedDecimal, speedWords);
                             SetupHeading(fcu.SegmentedDisplays.Heading, headingValue, headingDecimal, headingWords);
                             SetupMode(fcu.SegmentedDisplays.Mode, modeWords);
+                            SetupAltitude(fcu.SegmentedDisplays.Altitude, altitudeValue, vsPlus, vsValue, vsDecimal, altitudeWords);
 
                             fcu.RefreshSegmentedDisplays();
 
@@ -152,6 +175,29 @@ namespace FgcpTest
             mode.VS = (flags & 0x02) != 0;
             mode.Trk = (flags & 0x04) != 0;
             mode.Fpa = (flags & 0x08) != 0;
+        }
+
+        private void SetupAltitude(FcuAltitudeSegmentedDisplay altitude, int altitudeValue, int vsPlus, int vsValue, bool vsDecimal, int flags)
+        {
+            altitude.AltitudeDigits.SetFrom(altitudeValue.ToString("00000"));
+            char vsPrefix;
+            switch(vsPlus) {
+                case 0:     vsPrefix = ' '; break;
+                case 1:     vsPrefix = '-'; break;
+                case 2:     vsPrefix = '|'; break;
+                case 3:     vsPrefix = '+'; break;
+                default:    throw new NotImplementedException();
+            }
+            var vsText = $"{vsPrefix}{FormatLeftDecimalNumber("{0:0000}", vsValue, vsDecimal ? 2 : 0)}";
+            altitude.VerticalSpeedDigits.SetFrom(vsText);
+
+            altitude.Alt =             (flags & 0x01) != 0;
+            altitude.LvlChGroupLeft =  (flags & 0x02) != 0;
+            altitude.LvlCh =           (flags & 0x04) != 0;
+            altitude.LvlChGroupRight = (flags & 0x08) != 0;
+            altitude.VS =              (flags & 0x10) != 0;
+            altitude.Fpa =             (flags & 0x20) != 0;
+            altitude.AltDot =          (flags & 0x40) != 0;
         }
 
         private static string FormatRightDecimalNumber(string format, int number, int decimalIndex)

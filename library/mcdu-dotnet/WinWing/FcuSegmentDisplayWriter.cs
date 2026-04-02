@@ -25,7 +25,7 @@ namespace McduDotNet.WinWing
     /// </remarks>
     class FcuSegmentDisplayWriter
     {
-        private const int _FcuPayloadLength = 16;
+        private const int _FcuPayloadLength = 17;
         private const int _EfisPayloadLength = 5;
         private const int _NullContentSends = 1;
         private const ushort _LeftEfisId = 0x0DBF;
@@ -240,6 +240,9 @@ namespace McduDotNet.WinWing
             if(mode != null) {
                 SetModeBits(payload, mode);
             }
+            if(altitude != null) {
+                SetAltitudeBits(payload, altitude);
+            }
 
             var result = CompareWithAndCopyToPreviousPayload(payload, previousPayload);
             return result;
@@ -278,6 +281,41 @@ namespace McduDotNet.WinWing
             Bitmapper.SetBit(mode.Hdg, ModeDisplay.HdgBit, payload);
             Bitmapper.SetBit(mode.Trk, ModeDisplay.TrkBit, payload);
             Bitmapper.SetBit(mode.VS, ModeDisplay.VSBit, payload);
+        }
+
+        private void SetAltitudeBits(byte[] payload, FcuAltitudeSegmentedDisplay altitude)
+        {
+            Bitmapper.SetRepeatingS7DigitCollection(
+                altitude.AltitudeDigits,
+                AltitudeDisplay.SimpleDigitBitmap,
+                payload,
+                offset: AltitudeDisplay.AltitudeDisplayOffset
+            );
+
+            var vsPlus = altitude.VerticalSpeedDigits[0];
+            Bitmapper.SetBit(vsPlus.Segments.IsSet(S7.MM), AltitudeDisplay.VSMinusBit, payload);
+            Bitmapper.SetBit(vsPlus.Segments.IsSet(S7.TC | S7.BC), AltitudeDisplay.VSPipeBit, payload);
+
+            for(var idx = 1;idx < altitude.VerticalSpeedDigits.Count;++idx) {
+                var digit = altitude.VerticalSpeedDigits[idx];
+                var bitmap = idx == 2
+                    ? AltitudeDisplay.DecimalDigitBitmap
+                    : AltitudeDisplay.SimpleDigitBitmap;
+                Bitmapper.SetS7Bits(
+                    digit.Segments,
+                    bitmap,
+                    payload,
+                    (idx - 1) + AltitudeDisplay.VerticalSpeedOffset
+                );
+            }
+
+            Bitmapper.SetBit(altitude.Alt, AltitudeDisplay.AltBit, payload);
+            Bitmapper.SetBit(altitude.AltDot, AltitudeDisplay.AltDotBit, payload);
+            Bitmapper.SetBit(altitude.Fpa, AltitudeDisplay.FpaBit, payload);
+            Bitmapper.SetBit(altitude.LvlCh, AltitudeDisplay.LvlChBit, payload);
+            Bitmapper.SetBit(altitude.LvlChGroupLeft, AltitudeDisplay.LvlChGroupLeftBit, payload);
+            Bitmapper.SetBit(altitude.LvlChGroupRight, AltitudeDisplay.LvlChGroupRightBit, payload);
+            Bitmapper.SetBit(altitude.VS, AltitudeDisplay.VSBit, payload);
         }
 
         private bool CompareWithAndCopyToPreviousPayload(byte[] payload, byte[]? previousPayload)
