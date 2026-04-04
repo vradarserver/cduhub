@@ -10,7 +10,7 @@
 
 namespace McduDotNet
 {
-    public class FcuAltitudeSegmentedDisplay
+    public class FcuDisplayAltitude
     {
         public bool Alt { get; set; }
 

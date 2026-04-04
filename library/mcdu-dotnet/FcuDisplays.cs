@@ -10,26 +10,29 @@
 
 namespace McduDotNet
 {
-    public class FcuSpeedSegmentedDisplay
+    public class FcuSegmentedDisplays : ISegmentedDislays
     {
-        public bool Spd { get; set; }
+        public FcuDisplayBarometer LeftBarometer { get; set; } = new();
 
-        public bool Mach { get; set; }
+        public FcuDisplayBarometer RightBarometer { get; set; } = new();
 
-        public bool Dot { get; set; }
+        public FcuDisplaySpeed Speed { get; set; } = new();
 
-        public S7DigitCollection SpeedDigits { get; } = new(
-            S7Masks.DigitLeftDecimal,
-            S7Masks.DigitLeftDecimal,
-            S7Masks.DigitLeftDecimal
-        );
+        public FcuDisplayHeading Heading { get; set; } = new();
 
-        public void ClearDisplay()
+        public FcuDisplayAnnunciator Annunciator { get; set; } = new();
+
+        public FcuDisplayAltitude Altitude { get; set; } = new();
+
+        /// <inheritdoc/>
+        public void ClearDisplays()
         {
-            Spd = false;
-            Mach = false;
-            Dot = false;
-            SpeedDigits.ClearDisplay();
+            Altitude.ClearDisplay();
+            Heading.ClearDisplay();
+            LeftBarometer.ClearDisplay();
+            Annunciator.ClearDisplay();
+            RightBarometer.ClearDisplay();
+            Speed.ClearDisplay();
         }
     }
 }

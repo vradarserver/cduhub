@@ -105,9 +105,9 @@ namespace McduDotNet.WinWing
         {
             if(segmentedDisplays != null) {
                 _UsbWriter.LockForOutput(() => {
-                    if(_IsLeftEfisPresent && segmentedDisplays.LeftBaro != null) {
+                    if(_IsLeftEfisPresent && segmentedDisplays.LeftBarometer != null) {
                         if(PrepareEfisPayload(
-                            segmentedDisplays.LeftBaro,
+                            segmentedDisplays.LeftBarometer,
                             _LeftEfisPayload,
                             ref _LeftEfisPreviousPayload
                         ) || skipDuplicateCheck) {
@@ -115,9 +115,9 @@ namespace McduDotNet.WinWing
                         }
                     }
 
-                    if(_IsRightEfisPresent && segmentedDisplays.RightBaro != null) {
+                    if(_IsRightEfisPresent && segmentedDisplays.RightBarometer != null) {
                         if(PrepareEfisPayload(
-                            segmentedDisplays.RightBaro,
+                            segmentedDisplays.RightBarometer,
                             _RightEfisPayload,
                             ref _RightEfisPreviousPayload
                         ) || skipDuplicateCheck) {
@@ -128,7 +128,7 @@ namespace McduDotNet.WinWing
                     if(PrepareFcuPayload(
                         segmentedDisplays.Speed,
                         segmentedDisplays.Heading,
-                        segmentedDisplays.Mode,
+                        segmentedDisplays.Annunciator,
                         segmentedDisplays.Altitude,
                         _FcuPayload,
                         ref _FcuPreviousPayload
@@ -166,10 +166,11 @@ namespace McduDotNet.WinWing
         }
 
         /// <summary>
-        /// Sends an empty F0 command to the device. Without this, and without any
-        /// sleeps, a rapid sequence of sends "backs up" on the device and further
-        /// commands can be lost. Seen both SimAppPro and Mobiflight send empty
-        /// packets to the device, wondering whether it's to prevent this situation?
+        /// Sends an empty F0 command to the device. Not sure if this flushes
+        /// a queue on the device, or if it just introduces enough of a delay
+        /// to give the device time to process what's already been sent, but
+        /// without it the device can miss commands when they're sent as a
+        /// large uninterrupted stream.
         /// </summary>
         /// <param name="count"></param>
         private void SendNullContent(int count)
@@ -200,7 +201,7 @@ namespace McduDotNet.WinWing
         }
 
         private bool PrepareEfisPayload(
-            FcuBaroSegmentedDisplay segmentedDisplay,
+            FcuDisplayBarometer segmentedDisplay,
             byte[] payload,
             ref byte[]? previousPayload
         )
@@ -209,22 +210,22 @@ namespace McduDotNet.WinWing
 
             Bitmapper.SetRepeatingS7DigitCollection(
                 segmentedDisplay.BaroDigits,
-                BaroDisplay.DigitBitmap,
+                BarometerDisplay.DigitBitmap,
                 payload,
                 offset: 0
             );
-            Bitmapper.SetBit(segmentedDisplay.Qfe, BaroDisplay.QfeBit, payload);
-            Bitmapper.SetBit(segmentedDisplay.Qnh, BaroDisplay.QnhBit, payload);
+            Bitmapper.SetBit(segmentedDisplay.Qfe, BarometerDisplay.QfeBit, payload);
+            Bitmapper.SetBit(segmentedDisplay.Qnh, BarometerDisplay.QnhBit, payload);
 
             var result = CompareWithAndCopyToPreviousPayload(payload, previousPayload);
             return result;
         }
 
         private bool PrepareFcuPayload(
-            FcuSpeedSegmentedDisplay speed,
-            FcuHeadingSegmentedDisplay heading,
-            FcuModeSegmentedDisplay mode,
-            FcuAltitudeSegmentedDisplay altitude,
+            FcuDisplaySpeed speed,
+            FcuDisplayHeading heading,
+            FcuDisplayAnnunciator annunciator,
+            FcuDisplayAltitude altitude,
             byte[] payload,
             ref byte[]? previousPayload
         )
@@ -237,8 +238,8 @@ namespace McduDotNet.WinWing
             if(heading != null) {
                 SetHeadingBits(payload, heading);
             }
-            if(mode != null) {
-                SetModeBits(payload, mode);
+            if(annunciator != null) {
+                SetAnnunciatorBits(payload, annunciator);
             }
             if(altitude != null) {
                 SetAltitudeBits(payload, altitude);
@@ -248,7 +249,7 @@ namespace McduDotNet.WinWing
             return result;
         }
 
-        private void SetSpeedBits(byte[] payload, FcuSpeedSegmentedDisplay speed)
+        private void SetSpeedBits(byte[] payload, FcuDisplaySpeed speed)
         {
             Bitmapper.SetRepeatingS7DigitCollection(
                 speed.SpeedDigits,
@@ -261,7 +262,7 @@ namespace McduDotNet.WinWing
             Bitmapper.SetBit(speed.Spd,  SpeedDisplay.SpdBit, payload);
         }
 
-        private void SetHeadingBits(byte[] payload, FcuHeadingSegmentedDisplay heading)
+        private void SetHeadingBits(byte[] payload, FcuDisplayHeading heading)
         {
             Bitmapper.SetRepeatingS7DigitCollection(
                 heading.HeadingDigits,
@@ -275,15 +276,15 @@ namespace McduDotNet.WinWing
             Bitmapper.SetBit(heading.Hdg, HeadingDisplay.HdgBit, payload);
         }
 
-        private void SetModeBits(byte[] payload, FcuModeSegmentedDisplay mode)
+        private void SetAnnunciatorBits(byte[] payload, FcuDisplayAnnunciator annunciator)
         {
-            Bitmapper.SetBit(mode.Fpa, ModeDisplay.FpaBit, payload);
-            Bitmapper.SetBit(mode.Hdg, ModeDisplay.HdgBit, payload);
-            Bitmapper.SetBit(mode.Trk, ModeDisplay.TrkBit, payload);
-            Bitmapper.SetBit(mode.VS, ModeDisplay.VSBit, payload);
+            Bitmapper.SetBit(annunciator.Fpa, AnnunciatorDisplay.FpaBit, payload);
+            Bitmapper.SetBit(annunciator.Hdg, AnnunciatorDisplay.HdgBit, payload);
+            Bitmapper.SetBit(annunciator.Trk, AnnunciatorDisplay.TrkBit, payload);
+            Bitmapper.SetBit(annunciator.VS, AnnunciatorDisplay.VSBit, payload);
         }
 
-        private void SetAltitudeBits(byte[] payload, FcuAltitudeSegmentedDisplay altitude)
+        private void SetAltitudeBits(byte[] payload, FcuDisplayAltitude altitude)
         {
             Bitmapper.SetRepeatingS7DigitCollection(
                 altitude.AltitudeDigits,

@@ -10,7 +10,7 @@
 
 namespace McduDotNet
 {
-    public class FcuHeadingSegmentedDisplay
+    public class FcuDisplayHeading
     {
         public bool Hdg { get; set; }
 

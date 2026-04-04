@@ -48,7 +48,7 @@ namespace FgcpTest
                     var speedDecimal = 0;
                     var speedWords = 0;
 
-                    var modeWords = 0x100;
+                    var annunciatorWords = 0x100;
 
                     var altitudeValue = 0;
                     var vsValue = 9999;
@@ -99,8 +99,8 @@ namespace FgcpTest
                                 }
                             }
 
-                            if(++modeWords == 0x1000) {
-                                modeWords = 0;
+                            if(++annunciatorWords == 0x1000) {
+                                annunciatorWords = 0;
                             }
 
                             if(++altitudeValue > 99999) {
@@ -119,11 +119,11 @@ namespace FgcpTest
                                 }
                             }
 
-                            SetupBaro(fcu.SegmentedDisplays.LeftBaro, leftValue, leftDecimal, leftWords);
-                            SetupBaro(fcu.SegmentedDisplays.RightBaro, rightValue, rightDecimal, rightWords);
+                            SetupBaro(fcu.SegmentedDisplays.LeftBarometer, leftValue, leftDecimal, leftWords);
+                            SetupBaro(fcu.SegmentedDisplays.RightBarometer, rightValue, rightDecimal, rightWords);
                             SetupSpeed(fcu.SegmentedDisplays.Speed, speedValue, speedDecimal, speedWords);
                             SetupHeading(fcu.SegmentedDisplays.Heading, headingValue, headingDecimal, headingWords);
-                            SetupMode(fcu.SegmentedDisplays.Mode, modeWords);
+                            SetupAnnunciator(fcu.SegmentedDisplays.Annunciator, annunciatorWords);
                             SetupAltitude(fcu.SegmentedDisplays.Altitude, altitudeValue, vsPlus, vsValue, vsDecimal, altitudeWords);
 
                             fcu.RefreshSegmentedDisplays();
@@ -141,7 +141,7 @@ namespace FgcpTest
             return result;
         }
 
-        private void SetupBaro(FcuBaroSegmentedDisplay baro, int number, int decimalIndex, int wordFlags)
+        private void SetupBaro(FcuDisplayBarometer baro, int number, int decimalIndex, int wordFlags)
         {
             var text = FormatRightDecimalNumber("{0:0000}", number, decimalIndex);
             baro.BaroDigits.SetFrom(text);
@@ -149,7 +149,7 @@ namespace FgcpTest
             baro.Qnh = (wordFlags & 0x02) != 0;
         }
 
-        private void SetupSpeed(FcuSpeedSegmentedDisplay speed, int number, int decimalIndex, int wordFlags)
+        private void SetupSpeed(FcuDisplaySpeed speed, int number, int decimalIndex, int wordFlags)
         {
             var text = FormatLeftDecimalNumber("{0:000}", number, decimalIndex);
             speed.SpeedDigits.SetFrom(text);
@@ -158,7 +158,7 @@ namespace FgcpTest
             speed.Mach = (wordFlags & 0x04) != 0;
         }
 
-        private void SetupHeading(FcuHeadingSegmentedDisplay heading, int number, int decimalIndex, int wordFlags)
+        private void SetupHeading(FcuDisplayHeading heading, int number, int decimalIndex, int wordFlags)
         {
             var text = FormatLeftDecimalNumber("{0:000}", number, decimalIndex);
             heading.HeadingDigits.SetFrom(text);
@@ -168,16 +168,16 @@ namespace FgcpTest
             heading.Lat = (wordFlags & 0x08) != 0;
         }
 
-        private void SetupMode(FcuModeSegmentedDisplay mode, int modeWords)
+        private void SetupAnnunciator(FcuDisplayAnnunciator annunciator, int annunciatorWords)
         {
-            var flags = (modeWords & 0xf00) >> 8;
-            mode.Hdg = (flags & 0x01) != 0;
-            mode.VS = (flags & 0x02) != 0;
-            mode.Trk = (flags & 0x04) != 0;
-            mode.Fpa = (flags & 0x08) != 0;
+            var flags = (annunciatorWords & 0xf00) >> 8;
+            annunciator.Hdg = (flags & 0x01) != 0;
+            annunciator.VS = (flags & 0x02) != 0;
+            annunciator.Trk = (flags & 0x04) != 0;
+            annunciator.Fpa = (flags & 0x08) != 0;
         }
 
-        private void SetupAltitude(FcuAltitudeSegmentedDisplay altitude, int altitudeValue, int vsPlus, int vsValue, bool vsDecimal, int flags)
+        private void SetupAltitude(FcuDisplayAltitude altitude, int altitudeValue, int vsPlus, int vsValue, bool vsDecimal, int flags)
         {
             altitude.AltitudeDigits.SetFrom(altitudeValue.ToString("00000"));
             char vsPrefix;

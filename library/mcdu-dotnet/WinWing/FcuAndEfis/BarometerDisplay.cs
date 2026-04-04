@@ -8,31 +8,36 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace McduDotNet
+using System.Collections.Generic;
+
+namespace McduDotNet.WinWing.FcuAndEfis
 {
-    public class FcuSegmentedDisplays : ISegmentedDislays
+    /// <summary>
+    /// Bitmaps etc. for the EFIS baro segmented display.
+    /// </summary>
+    static class BarometerDisplay
     {
-        public FcuBaroSegmentedDisplay LeftBaro { get; set; } = new();
+        // All of the barometer digits are contained within a single byte, so we just need
+        // one bitmap and repeat it across four bytes.
+        public static readonly IReadOnlyList<S7Bitmap> DigitBitmap = new S7Bitmap[] {
+            new(S7.TL, 0, 0x01),
+            new(S7.MM, 0, 0x02),
+            new(S7.BL, 0, 0x04),
+            new(S7.BB, 0, 0x08),
+            new(S7.TT, 0, 0x10),
+            new(S7.TR, 0, 0x20),
+            new(S7.BR, 0, 0x40),
+            new(S7.DR, 0, 0x80),
+        };
 
-        public FcuBaroSegmentedDisplay RightBaro { get; set; } = new();
+        /// <summary>
+        /// Offset and bit for the QFE segment where offset 0 is the start of the digits.
+        /// </summary>
+        public static readonly ByteBitmap QfeBit = new(4, 0x01);
 
-        public FcuSpeedSegmentedDisplay Speed { get; set; } = new();
-
-        public FcuHeadingSegmentedDisplay Heading { get; set; } = new();
-
-        public FcuModeSegmentedDisplay Mode { get; set; } = new();
-
-        public FcuAltitudeSegmentedDisplay Altitude { get; set; } = new();
-
-        /// <inheritdoc/>
-        public void ClearDisplays()
-        {
-            Altitude.ClearDisplay();
-            Heading.ClearDisplay();
-            LeftBaro.ClearDisplay();
-            Mode.ClearDisplay();
-            RightBaro.ClearDisplay();
-            Speed.ClearDisplay();
-        }
+        /// <summary>
+        /// Offset and bit for the QNH segment where offset 0 is the start of the digits.
+        /// </summary>
+        public static readonly ByteBitmap QnhBit = new(4, 0x02);
     }
 }

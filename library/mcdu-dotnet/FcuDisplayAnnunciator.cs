@@ -10,24 +10,22 @@
 
 namespace McduDotNet
 {
-    public class FcuBaroSegmentedDisplay
+    public class FcuDisplayAnnunciator
     {
-        public bool Qfe { get; set; }
+        public bool Hdg { get; set; }
 
-        public bool Qnh { get; set; }
+        public bool VS { get; set; }
 
-        public S7DigitCollection BaroDigits { get; } = new(
-            S7Masks.DigitRightDecimal,
-            S7Masks.DigitRightDecimal,
-            S7Masks.DigitRightDecimal,
-            S7Masks.DigitRightDecimal
-        );
+        public bool Trk { get; set; }
+
+        public bool Fpa { get; set; }
 
         public void ClearDisplay()
         {
-            Qfe = false;
-            Qnh = false;
-            BaroDigits.ClearDisplay();
+            Hdg = false;
+            VS = false;
+            Trk = false;
+            Fpa = false;
         }
     }
 }
