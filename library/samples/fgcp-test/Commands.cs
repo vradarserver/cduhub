@@ -26,8 +26,15 @@ namespace FgcpTest
                 Program.Worked = command.Run();
             });
 
-            FcuSegments.SetAction(parse => {
-                var command = new Command_FcuSegments() {
+            FcuDisplays.SetAction(parse => {
+                var command = new Command_FcuDisplays() {
+                    SuppressCleanup = parse.GetValue(Options.SuppressCleanup),
+                };
+                Program.Worked = command.Run();
+            });
+
+            FcuLamps.SetAction(parse => {
+                var command = new Command_FcuLamps() {
                     SuppressCleanup = parse.GetValue(Options.SuppressCleanup),
                 };
                 Program.Worked = command.Run();
@@ -43,7 +50,11 @@ namespace FgcpTest
             Options.SuppressCleanup,
         };
 
-        public static Command FcuSegments = new("fcu-segments", "Test the FCU segment displays") {
+        public static Command FcuDisplays = new("fcu-segments", "Test the FCU segment displays") {
+            Options.SuppressCleanup,
+        };
+
+        public static Command FcuLamps = new("fcu-lamps", "Test the FCU LED lamps") {
             Options.SuppressCleanup,
         };
 
@@ -53,7 +64,8 @@ namespace FgcpTest
         public static RootCommand Root = new("Tests interactions with an FGCP (I.E. an FCU or MCP) device.") {
             Commands.ShowDevices,
             Commands.Connect,
-            Commands.FcuSegments,
+            Commands.FcuDisplays,
+            Commands.FcuLamps,
         };
     }
 }

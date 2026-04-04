@@ -17,9 +17,9 @@ namespace McduDotNet
     /// </summary>
     public class FcuLamps
     {
-        public FcuLampsEfis LeftEfis { get; } = new();
+        public FcuLampsEfis LeftEfis { get; } = new(isLeft: true);
 
-        public FcuLampsEfis RightEfis { get; } = new();
+        public FcuLampsEfis RightEfis { get; } = new(isLeft: false);
 
         public bool Loc { get; set; }
 
@@ -70,6 +70,49 @@ namespace McduDotNet
         // Just needs to be technically correct, we're not using these as keys.
         /// <inheritdoc/>
         public override int GetHashCode() => Loc ? 1 : 0;
+
+        /// <summary>
+        /// </summary>
+        /// <param name="lamp"></param>
+        /// <returns>
+        /// True if the lamp is switched on, false if it is switched off and null if it is
+        /// not supported by the device.
+        /// </returns>
+        public bool? GetLamp(FgcpLamp lamp)
+        {
+            bool? result;
+
+            switch(lamp) {
+                case FgcpLamp.Ap1:      result = Ap1; break;
+                case FgcpLamp.Ap2:      result = Ap2; break;
+                case FgcpLamp.Appr:     result = Appr; break;
+                case FgcpLamp.AThr:     result = AThr; break;
+                case FgcpLamp.Exped:    result = Exped; break;
+                case FgcpLamp.Loc:      result = Loc; break;
+                default:
+                    result = LeftEfis.GetLamp(lamp)
+                          ?? RightEfis.GetLamp(lamp);
+                    break;
+            }
+
+            return result;
+        }
+
+        public void SetLamp(FgcpLamp lamp, bool on)
+        {
+            switch(lamp) {
+                case FgcpLamp.Ap1:      Ap1 = on; break;
+                case FgcpLamp.Ap2:      Ap2 = on; break;
+                case FgcpLamp.Appr:     Appr = on; break;
+                case FgcpLamp.AThr:     AThr = on; break;
+                case FgcpLamp.Exped:    Exped = on; break;
+                case FgcpLamp.Loc:      Loc = on; break;
+                default:
+                    LeftEfis.SetLamp(lamp, on);
+                    RightEfis.SetLamp(lamp, on);
+                    break;
+            }
+        }
 
         public void CopyFrom(FcuLamps other)
         {

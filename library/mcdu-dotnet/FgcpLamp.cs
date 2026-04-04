@@ -17,11 +17,27 @@ namespace McduDotNet
     /// </summary>
     public enum FgcpLamp
     {
+        Left_FD,
+        Left_LS,
+        Left_Cstr,
+        Left_Wpt,
+        Left_VorD,
+        Left_Ndb,
+        Left_Arpt,
+
         Ap1,
         Ap2,
-        Appr,
+        Loc,
         AThr,
         Exped,
-        Loc,
+        Appr,
+
+        Right_Arpt,
+        Right_Ndb,
+        Right_VorD,
+        Right_Wpt,
+        Right_Cstr,
+        Right_LS,
+        Right_FD,
    }
 }

@@ -14,7 +14,7 @@ using McduDotNet;
 
 namespace FgcpTest
 {
-    class Command_FcuSegments : CommonCommand
+    class Command_FcuDisplays : CommonCommand
     {
         public bool SuppressCleanup { get; set; }
 
@@ -126,7 +126,7 @@ namespace FgcpTest
                             SetupAnnunciator(fcu.Displays.Annunciator, annunciatorWords);
                             SetupAltitude(fcu.Displays.Altitude, altitudeValue, vsPlus, vsValue, vsDecimal, altitudeWords);
 
-                            fcu.RefreshSegmentedDisplays();
+                            fcu.RefreshDisplays();
 
                             nextTickUtc = DateTime.UtcNow.AddMilliseconds(updateDelayMS);
                         }

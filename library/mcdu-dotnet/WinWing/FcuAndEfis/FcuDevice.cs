@@ -24,6 +24,36 @@ namespace McduDotNet.WinWing.FcuAndEfis
         protected UsbWriter? _UsbWriter;
         protected FcuDisplayWriter? _DisplayWriter;
 
+        protected IlluminationWriter? _LeftEfisIlluminationWriter;
+        protected IlluminationWriter? _RightEfisIlluminationWriter;
+        protected IlluminationWriter? _FcuIlluminationWriter;
+        protected BinaryLampMap _LeftEfisBinaryLampMap = new(new BinaryLamp[] {
+            new((int)FgcpLamp.Left_FD,      0x03),
+            new((int)FgcpLamp.Left_LS,      0x04),
+            new((int)FgcpLamp.Left_Cstr,    0x05),
+            new((int)FgcpLamp.Left_Wpt,     0x06),
+            new((int)FgcpLamp.Left_VorD,    0x07),
+            new((int)FgcpLamp.Left_Ndb,     0x08),
+            new((int)FgcpLamp.Left_Arpt,    0x09),
+        });
+        protected BinaryLampMap _RightEfisBinaryLampMap = new(new BinaryLamp[] {
+            new((int)FgcpLamp.Right_FD,     0x03),
+            new((int)FgcpLamp.Right_LS,     0x04),
+            new((int)FgcpLamp.Right_Cstr,   0x05),
+            new((int)FgcpLamp.Right_Wpt,    0x06),
+            new((int)FgcpLamp.Right_VorD,   0x07),
+            new((int)FgcpLamp.Right_Ndb,    0x08),
+            new((int)FgcpLamp.Right_Arpt,   0x09),
+        });
+        protected BinaryLampMap _FcuBinaryLampMap = new(new BinaryLamp[] {
+            new((int)FgcpLamp.Loc,          0x03),
+            new((int)FgcpLamp.Ap1,          0x05),
+            new((int)FgcpLamp.Ap2,          0x07),
+            new((int)FgcpLamp.AThr,         0x09),
+            new((int)FgcpLamp.Exped,        0x0b),
+            new((int)FgcpLamp.Appr,         0x0d),
+        });
+
         /// <inheritdoc/>
         public UsbDevice UsbDevice { get; }
 
@@ -62,6 +92,9 @@ namespace McduDotNet.WinWing.FcuAndEfis
             if(disposing) {
                 _UsbWriter = null;
                 _DisplayWriter = null;
+                _LeftEfisIlluminationWriter = null;
+                _RightEfisIlluminationWriter = null;
+                _FcuIlluminationWriter = null;
 
                 var hidStream = _HidStream;
                 _HidStream = null;
@@ -100,23 +133,62 @@ namespace McduDotNet.WinWing.FcuAndEfis
                // UpdatingDeviceCallback = args => OnDisplayChanging(args),
             };
 
-            RefreshSegmentedDisplays();
-        }
+            _LeftEfisIlluminationWriter = new IlluminationWriter(
+                _UsbWriter,
+                0x0DBF
+            );
+            _RightEfisIlluminationWriter = new IlluminationWriter(
+                _UsbWriter,
+                0x0EBF
+            );
+            _FcuIlluminationWriter = new IlluminationWriter(
+                _UsbWriter,
+                0x10BB
+            );
 
-        public void Cleanup()
-        {
-            Displays.ClearDisplays();
-
-            RefreshSegmentedDisplays();
+            RefreshDisplays();
         }
 
         /// <inheritdoc/>
-        public void RefreshSegmentedDisplays(bool skipDuplicateCheck = false)
+        public void Cleanup()
+        {
+            Displays.ClearDisplays();
+            Lamps.TurnAllOn(on: false);
+
+            RefreshDisplays();
+            RefreshLamps();
+        }
+
+        /// <inheritdoc/>
+        public void RefreshDisplays(bool skipDuplicateCheck = false)
         {
             _DisplayWriter?.SendSegmentedDisplays(
                 Displays,
                 skipDuplicateCheck
             );
+        }
+
+        /// <inheritdoc/>
+        public void RefreshLamps(bool skipDuplicateCheck = false)
+        {
+            CopyLampsToBinaryLampMap(_LeftEfisBinaryLampMap);
+            CopyLampsToBinaryLampMap(_RightEfisBinaryLampMap);
+            CopyLampsToBinaryLampMap(_FcuBinaryLampMap);
+
+            _LeftEfisIlluminationWriter?.SetLamps(_LeftEfisBinaryLampMap, skipDuplicateCheck);
+            _FcuIlluminationWriter?.SetLamps(_FcuBinaryLampMap, skipDuplicateCheck);
+            _RightEfisIlluminationWriter?.SetLamps(_RightEfisBinaryLampMap, skipDuplicateCheck);
+        }
+
+        private void CopyLampsToBinaryLampMap(BinaryLampMap binaryLampMap)
+        {
+            for(var idx = 0;idx < binaryLampMap.BinaryLamps.Count;++idx) {
+                var lamp = binaryLampMap.BinaryLamps[idx];
+                var on = Lamps.GetLamp((FgcpLamp)lamp.ExternalId);
+                if(on != null) {
+                    binaryLampMap.SetLamp(idx, on.Value);
+                }
+            }
         }
     }
 }

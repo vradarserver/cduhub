@@ -27,7 +27,13 @@ namespace McduDotNet
         /// segmented display buffer.
         /// </summary>
         /// <param name="skipDuplicateCheck"></param>
-        void RefreshSegmentedDisplays(bool skipDuplicateCheck = false);
+        void RefreshDisplays(bool skipDuplicateCheck = false);
+
+        /// <summary>
+        /// Update the device's LED lamps to match the content of the FGCP's lamp buffer.
+        /// </summary>
+        /// <param name="skipDuplicateCheck"></param>
+        void RefreshLamps(bool skipDuplicateCheck = false);
 
         /// <summary>
         /// Resets the device back to a clean state.

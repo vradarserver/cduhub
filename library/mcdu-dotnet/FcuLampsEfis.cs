@@ -17,6 +17,8 @@ namespace McduDotNet
     /// </summary>
     public class FcuLampsEfis
     {
+        public bool IsLeftEfis { get; }
+
         public bool FD { get; set; }
 
         public bool LS { get; set; }
@@ -30,6 +32,11 @@ namespace McduDotNet
         public bool Ndb { get; set; }
 
         public bool Arpt { get; set; }
+
+        public FcuLampsEfis(bool isLeft)
+        {
+            IsLeftEfis = isLeft;
+        }
 
         /// <summary>
         /// Switches all of the LEDs on or off.
@@ -66,6 +73,51 @@ namespace McduDotNet
         // Just needs to be technically correct, we're not using these as keys.
         /// <inheritdoc/>
         public override int GetHashCode() => FD ? 1 : 0;
+
+        public bool? GetLamp(FgcpLamp lamp)
+        {
+            bool? result = null;
+
+            switch(lamp) {
+                case FgcpLamp.Left_FD:       result = IsLeftEfis ? FD : null; break;
+                case FgcpLamp.Left_LS:       result = IsLeftEfis ? LS : null; break;
+                case FgcpLamp.Left_Cstr:     result = IsLeftEfis ? Cstr : null; break;
+                case FgcpLamp.Left_Wpt:      result = IsLeftEfis ? Wpt : null; break;
+                case FgcpLamp.Left_VorD:     result = IsLeftEfis ? VorD : null; break;
+                case FgcpLamp.Left_Ndb:      result = IsLeftEfis ? Ndb : null; break;
+                case FgcpLamp.Left_Arpt:     result = IsLeftEfis ? Arpt : null; break;
+                case FgcpLamp.Right_FD:      result = !IsLeftEfis ? FD : null; break;
+                case FgcpLamp.Right_LS:      result = !IsLeftEfis ? LS : null; break;
+                case FgcpLamp.Right_Cstr:    result = !IsLeftEfis ? Cstr : null; break;
+                case FgcpLamp.Right_Wpt:     result = !IsLeftEfis ? Wpt : null; break;
+                case FgcpLamp.Right_VorD:    result = !IsLeftEfis ? VorD : null; break;
+                case FgcpLamp.Right_Ndb:     result = !IsLeftEfis ? Ndb : null; break;
+                case FgcpLamp.Right_Arpt:    result = !IsLeftEfis ? Arpt : null; break;
+            }
+
+            return result;
+        }
+
+        public void SetLamp(FgcpLamp lamp, bool on)
+        {
+            switch(lamp) {
+                case FgcpLamp.Left_FD:      if(IsLeftEfis) FD = on; break;
+                case FgcpLamp.Left_LS:      if(IsLeftEfis) LS = on; break;
+                case FgcpLamp.Left_Cstr:    if(IsLeftEfis) Cstr = on; break;
+                case FgcpLamp.Left_Wpt:     if(IsLeftEfis) Wpt = on; break;
+                case FgcpLamp.Left_VorD:    if(IsLeftEfis) VorD = on; break;
+                case FgcpLamp.Left_Ndb:     if(IsLeftEfis) Ndb = on; break;
+                case FgcpLamp.Left_Arpt:    if(IsLeftEfis) Arpt = on; break;
+
+                case FgcpLamp.Right_FD:     if(!IsLeftEfis) FD = on; break;
+                case FgcpLamp.Right_LS:     if(!IsLeftEfis) LS = on; break;
+                case FgcpLamp.Right_Cstr:   if(!IsLeftEfis) Cstr = on; break;
+                case FgcpLamp.Right_Wpt:    if(!IsLeftEfis) Wpt = on; break;
+                case FgcpLamp.Right_VorD:   if(!IsLeftEfis) VorD = on; break;
+                case FgcpLamp.Right_Ndb:    if(!IsLeftEfis) Ndb = on; break;
+                case FgcpLamp.Right_Arpt:   if(!IsLeftEfis) Arpt = on; break;
+            }
+        }
 
         public void CopyFrom(FcuLampsEfis other)
         {
