@@ -50,7 +50,7 @@ namespace FgcpTest
             Options.SuppressCleanup,
         };
 
-        public static Command FcuDisplays = new("fcu-segments", "Test the FCU segment displays") {
+        public static Command FcuDisplays = new("fcu-displays", "Test the FCU segment displays") {
             Options.SuppressCleanup,
         };
 
