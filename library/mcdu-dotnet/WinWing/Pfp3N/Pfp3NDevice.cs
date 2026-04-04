@@ -21,14 +21,14 @@ namespace McduDotNet.WinWing.Pfp3N
     {
         protected override byte CommandPrefix => 0x31;
 
-        private static readonly Dictionary<CduLamp, byte> _LampIndicatorCodeMap = new() {
-            { CduLamp.Dspy, 0x03 },
-            { CduLamp.Fail, 0x04 },
-            { CduLamp.Msg, 0x05 },
-            { CduLamp.Ofst, 0x06 },
-            { CduLamp.Exec, 0x07 },
-        };
-        protected override Dictionary<CduLamp, byte> LampIndicatorCodeMap => _LampIndicatorCodeMap;
+        private BinaryLampMap _BinaryLampMap = new(new BinaryLamp[] {
+            new((int)CduLamp.Dspy, 0x03),
+            new((int)CduLamp.Fail, 0x04),
+            new((int)CduLamp.Msg, 0x05),
+            new((int)CduLamp.Ofst, 0x06),
+            new((int)CduLamp.Exec, 0x07),
+        });
+        protected override BinaryLampMap BinaryLampMap => _BinaryLampMap;
 
         protected override Func<Key, (int Flag, int Offset)> KeyToFlagOffsetCallback => KeyboardMap.InputReport01FlagAndOffset;
 

@@ -21,18 +21,18 @@ namespace McduDotNet.WinWing.Mcdu
     {
         protected override byte CommandPrefix => 0x32;
 
-        private static readonly Dictionary<CduLamp, byte> _LampIndicatorCodeMap = new() {
-            { CduLamp.Fail, 0x08 },
-            { CduLamp.Fm, 0x09 },
-            { CduLamp.Mcdu, 0x0a },
-            { CduLamp.Menu, 0x0b },
-            { CduLamp.Fm1, 0x0c },
-            { CduLamp.Ind, 0x0d },
-            { CduLamp.Rdy, 0x0e },
-            { CduLamp.Line, 0x0f },
-            { CduLamp.Fm2, 0x10 },
-        };
-        protected override Dictionary<CduLamp, byte> LampIndicatorCodeMap => _LampIndicatorCodeMap;
+        private BinaryLampMap _BinaryLampMap = new(new BinaryLamp[] {
+            new((int)CduLamp.Fail, 0x08),
+            new((int)CduLamp.Fm, 0x09),
+            new((int)CduLamp.Mcdu, 0x0a),
+            new((int)CduLamp.Menu, 0x0b),
+            new((int)CduLamp.Fm1, 0x0c),
+            new((int)CduLamp.Ind, 0x0d),
+            new((int)CduLamp.Rdy, 0x0e),
+            new((int)CduLamp.Line, 0x0f),
+            new((int)CduLamp.Fm2, 0x10),
+        });
+        protected override BinaryLampMap BinaryLampMap => _BinaryLampMap;
 
         protected override Func<Key, (int Flag, int Offset)> KeyToFlagOffsetCallback => KeyboardMap.InputReport01FlagAndOffset;
 

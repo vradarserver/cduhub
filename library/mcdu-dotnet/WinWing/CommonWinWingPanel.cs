@@ -22,6 +22,10 @@ namespace McduDotNet.WinWing
     /// </summary>
     abstract class CommonWinWingPanel : IDisposable, ICdu
     {
+        protected const byte _KeyboardBacklightId = 0x00;
+        protected const byte _DisplayBacklightId = 0x01;
+        protected const byte _LampBrightnessId = 0x02;
+
         protected abstract byte CommandPrefix { get; }
         // One of the differences between panels seems to be that the first byte of the
         // XXBB commands differs between each device. That sequence is 4 characters in
@@ -31,7 +35,7 @@ namespace McduDotNet.WinWing
         // written as hex strings. Hence why the name is particularly terse.
         protected string CP { get; }
 
-        protected abstract Dictionary<CduLamp, byte> LampIndicatorCodeMap { get; }
+        protected abstract BinaryLampMap BinaryLampMap { get; }
 
         protected abstract Func<Key, (int Flag, int Offset)> KeyToFlagOffsetCallback { get; }
 
@@ -56,8 +60,22 @@ namespace McduDotNet.WinWing
         /// <inheritdoc/>
         public CduLamps Lamps { get; }
 
+        private CduLamp[]? _SupportedLamps;
         /// <inheritdoc/>
-        public IReadOnlyList<CduLamp> SupportedLamps { get; }
+        public IReadOnlyList<CduLamp> SupportedLamps
+        {
+            get {
+                var result = _SupportedLamps;
+                if(result == null) {
+                    result = BinaryLampMap
+                        .BinaryLamps
+                        .Select(r => (CduLamp)r.ExternalId)
+                        .ToArray();
+                    _SupportedLamps = result;
+                }
+                return result;
+            }
+        }
 
         /// <inheritdoc/>
         public IReadOnlyList<Key> SupportedKeys { get; }
@@ -83,7 +101,7 @@ namespace McduDotNet.WinWing
                 var normalised = Percent.Clamp(value);
                 if(normalised != DisplayBrightnessPercent) {
                     _DisplayBrightnessPercent = normalised;
-                    _IlluminationWriter?.SendDisplayBrightnessPercent(_DisplayBrightnessPercent);
+                    _IlluminationWriter?.SetIntensity(_DisplayBacklightId, _DisplayBrightnessPercent);
                 }
             }
         }
@@ -96,7 +114,7 @@ namespace McduDotNet.WinWing
                 var normalised = Percent.Clamp(value);
                 if(normalised != BacklightBrightnessPercent) {
                     _BacklightBrightnessPercent = normalised;
-                    _IlluminationWriter?.SendBacklightPercent(_BacklightBrightnessPercent);
+                    _IlluminationWriter?.SetIntensity(_KeyboardBacklightId, _BacklightBrightnessPercent);
                 }
             }
         }
@@ -110,7 +128,7 @@ namespace McduDotNet.WinWing
                 var normalised = Percent.Clamp(value);
                 if(normalised != LampBrightnessPercent) {
                     _LampBrightnessPercent = normalised;
-                    _IlluminationWriter?.SendLampBrightnessPercent(_LampBrightnessPercent);
+                    _IlluminationWriter?.SetIntensity(_LampBrightnessId, _LampBrightnessPercent);
                 }
             }
         }
@@ -209,7 +227,6 @@ namespace McduDotNet.WinWing
             _HidDevice = hidDevice;
             UsbDevice = usbDevice;
             Lamps = new();
-            SupportedLamps = LampIndicatorCodeMap.Select(r => r.Key).ToArray();
             Screen = new();
             Output = new(Screen);
             Palette = new();
@@ -223,10 +240,6 @@ namespace McduDotNet.WinWing
 #pragma warning disable CS0618 // Type or member is obsolete
             _DeviceId = new(usbDevice);
             _Leds = new(Lamps);
-            SupportedLeds = SupportedLamps
-                .Where(lamp => Enum.IsDefined(typeof(Led), (Led)lamp))
-                .OfType<Led>()
-                .ToArray();
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
@@ -291,8 +304,7 @@ namespace McduDotNet.WinWing
             };
             _IlluminationWriter = new IlluminationWriter(
                 _UsbWriter,
-                CommandPrefix,
-                LampIndicatorCodeMap
+                (ushort)((CommandPrefix << 8) | 0xbb)
             );
             _FontWriter = new FontWriter(_UsbWriter) {
                 UpdatingDeviceCallback = args => OnFontChanging(args),
@@ -392,9 +404,9 @@ namespace McduDotNet.WinWing
         /// <inheritdoc/>
         public void RefreshBrightnesses()
         {
-            _IlluminationWriter?.SendBacklightPercent(BacklightBrightnessPercent);
-            _IlluminationWriter?.SendDisplayBrightnessPercent(DisplayBrightnessPercent);
-            _IlluminationWriter?.SendLampBrightnessPercent(LampBrightnessPercent);
+            _IlluminationWriter?.SetIntensity(_KeyboardBacklightId, BacklightBrightnessPercent);
+            _IlluminationWriter?.SetIntensity(_DisplayBacklightId, DisplayBrightnessPercent);
+            _IlluminationWriter?.SetIntensity(_LampBrightnessId, LampBrightnessPercent);
         }
 
         /// <inheritdoc/>
@@ -416,7 +428,27 @@ namespace McduDotNet.WinWing
         /// <inheritdoc/>
         public void RefreshLamps(bool skipDuplicateCheck = false)
         {
-            _IlluminationWriter?.ApplyCduLamps(Lamps, skipDuplicateCheck);
+            for(var idx = 0;idx < BinaryLampMap.BinaryLamps.Count;++idx) {
+                var lamp = BinaryLampMap.BinaryLamps[idx];
+                var on = lamp.On;
+                switch((CduLamp)lamp.ExternalId) {
+                    case CduLamp.Dspy:  on = Lamps.Dspy; break;
+                    case CduLamp.Exec:  on = Lamps.Exec; break;
+                    case CduLamp.Fail:  on = Lamps.Fail; break;
+                    case CduLamp.Fm:    on = Lamps.Fm; break;
+                    case CduLamp.Fm1:   on = Lamps.Fm1; break;
+                    case CduLamp.Fm2:   on = Lamps.Fm2; break;
+                    case CduLamp.Ind:   on = Lamps.Ind; break;
+                    case CduLamp.Line:  on = Lamps.Line; break;
+                    case CduLamp.Mcdu:  on = Lamps.Mcdu; break;
+                    case CduLamp.Menu:  on = Lamps.Menu; break;
+                    case CduLamp.Msg:   on = Lamps.Msg; break;
+                    case CduLamp.Ofst:  on = Lamps.Ofst; break;
+                    case CduLamp.Rdy:   on = Lamps.Rdy; break;
+                }
+                BinaryLampMap.SetLamp(idx, on);
+            }
+            _IlluminationWriter?.SetLamps(BinaryLampMap, skipDuplicateCheck);
         }
 
         /// <inheritdoc/>
@@ -483,9 +515,9 @@ namespace McduDotNet.WinWing
         {
             Screen.Clear();
             Lamps.TurnAllOn(false);
-            _IlluminationWriter?.SendLampBrightnessPercent(ledBrightnessPercent);
-            _IlluminationWriter?.SendDisplayBrightnessPercent(displayBrightnessPercent);
-            _IlluminationWriter?.SendBacklightPercent(backlightBrightnessPercent);
+            _IlluminationWriter?.SetIntensity(_KeyboardBacklightId, backlightBrightnessPercent);
+            _IlluminationWriter?.SetIntensity(_DisplayBacklightId, displayBrightnessPercent);
+            _IlluminationWriter?.SetIntensity(_LampBrightnessId, ledBrightnessPercent);
             RefreshDisplay();
             RefreshLamps();
         }
@@ -498,7 +530,7 @@ namespace McduDotNet.WinWing
         /// </summary>
         /// <param name="lamp"></param>
         /// <returns></returns>
-        public bool IsLampSupported(CduLamp lamp) => LampIndicatorCodeMap.ContainsKey(lamp);
+        public bool IsLampSupported(CduLamp lamp) => BinaryLampMap.ContainsExternalId((int)lamp);
 
         protected void HidSharpDeviceList_Changed(object sender, DeviceListChangedEventArgs e)
         {
@@ -524,8 +556,22 @@ namespace McduDotNet.WinWing
         [Obsolete("Use Lamps")]
         public Leds Leds => _Leds;
 
+        private IReadOnlyList<Led>? _SupportedLeds;
         [Obsolete("Use SupportedLamps")]
-        public IReadOnlyList<Led> SupportedLeds { get; }
+        public IReadOnlyList<Led> SupportedLeds
+        {
+            get {
+                var result = _SupportedLeds;
+                if(result == null) {
+                    result = SupportedLamps
+                        .Where(lamp => Enum.IsDefined(typeof(Led), (Led)lamp))
+                        .OfType<Led>()
+                        .ToArray();
+                    _SupportedLeds = result;
+                }
+                return result;
+            }
+        }
 
         [Obsolete("Use LampBrightnessPercent")]
         public int LedBrightnessPercent

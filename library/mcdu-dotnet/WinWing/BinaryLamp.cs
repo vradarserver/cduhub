@@ -1,4 +1,4 @@
-﻿// Copyright © 2025 onwards, Andrew Whewell
+﻿// Copyright © 2026 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -9,34 +9,54 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using System.Collections.Generic;
-using HidSharp;
 
-namespace McduDotNet.WinWing.Pfp7
+namespace McduDotNet.WinWing
 {
     /// <summary>
-    /// Implements <see cref="ICdu"/> for a WinWing PFP-7.
+    /// Describes the <see cref="IlluminationWriter"/> LED ID and value of a lamp.
     /// </summary>
-    class Pfp7Device : CommonWinWingPanel, ICduPfp7
+    struct BinaryLamp
     {
-        protected override byte CommandPrefix => 0x33;
+        public int ExternalId { get; }
 
-        private BinaryLampMap _BinaryLampMap = new(new BinaryLamp[] {
-            new((int)CduLamp.Dspy, 0x03),
-            new((int)CduLamp.Fail, 0x04),
-            new((int)CduLamp.Msg, 0x05),
-            new((int)CduLamp.Ofst, 0x06),
-            new((int)CduLamp.Exec, 0x07),
-        });
-        protected override BinaryLampMap BinaryLampMap => _BinaryLampMap;
+        public byte LedId { get; }
 
-        protected override Func<Key, (int Flag, int Offset)> KeyToFlagOffsetCallback => KeyboardMap.InputReport01FlagAndOffset;
+        public bool On { get; }
 
-        public Pfp7Device(HidDevice hidDevice, UsbDevice usbDevice) : base(hidDevice, usbDevice)
+        public BinaryLamp(int externalId, byte id, bool on)
+        {
+            ExternalId = externalId;
+            LedId = id;
+            On = on;
+        }
+
+        public BinaryLamp(int externalId, byte id) : this(externalId, id, on: false)
         {
         }
 
-        /// <inheritdoc/>
-        ~Pfp7Device() => Dispose(false);
+        public static bool operator==(BinaryLamp lhs, BinaryLamp rhs)
+        {
+            return lhs.ExternalId == rhs.ExternalId
+                && lhs.LedId == rhs.LedId
+                && lhs.On == rhs.On;
+        }
+
+        public static bool operator!=(BinaryLamp lhs, BinaryLamp rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        public override string ToString() => $"{ExternalId} 0x{LedId:X2}={(On ? "on" : "off")}";
+
+        public override bool Equals(object obj)
+        {
+            var result = Object.ReferenceEquals(this, obj);
+            if(!result && obj is BinaryLamp other) {
+                result = this == other;
+            }
+            return result;
+        }
+
+        public override int GetHashCode() => LedId.GetHashCode();
     }
 }

@@ -8,8 +8,6 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System.Collections.Generic;
-
 namespace McduDotNet.WinWing
 {
     /// <summary>
@@ -18,89 +16,67 @@ namespace McduDotNet.WinWing
     class IlluminationWriter
     {
         private readonly UsbWriter _UsbWriter;
-        private readonly Dictionary<CduLamp, byte> _LampIndicatorMap;
-        private CduLamps? _PreviousLamps;
+        private BinaryLampMap? _PreviousLamps;
 
         /// <summary>
         /// The 02 report that controls LED on/off and display brightnesses.
         /// </summary>
         private readonly byte[] _IlluminationPacket = new byte[] {
-            0x02, 0x32, 0xbb, 0x00, 0x00, 0x03, 0x49,   // <-- 0x32 replaced with command prefix in ctor
-            0x00, 0x00,                                 // <-- these two change during Send LED calls
+            0x02, 0xFF, 0xFF, 0x00, 0x00, 0x03, 0x49,   // <-- 0xFF replaced with device ID in ctor
+            0x00, 0x00,                                 // <-- these two change during send calls
             0x00, 0x00, 0x00, 0x00, 0x00
         };
         private const int _IlluminationPacketTypeIndicatorOffset = 7;
 
-        private const byte _SetKeyboardBacklight =  0x00;
-        private const byte _SetDisplayBrightness =  0x01;
-        private const byte _SetLampBrightness =     0x02;
-
         public IlluminationWriter(
             UsbWriter usbWriter,
-            byte commandPrefix,
-            Dictionary<CduLamp, byte> ledIndicatorMap
+            ushort winwingDeviceId
         )
         {
-            _IlluminationPacket[1] = commandPrefix;
+            _IlluminationPacket[1] = (byte)((winwingDeviceId & 0xff00) >> 8);
+            _IlluminationPacket[2] = (byte)(winwingDeviceId & 0x00ff);
             _UsbWriter = usbWriter;
-            _LampIndicatorMap = ledIndicatorMap;
         }
 
         /// <summary>
-        /// Sets the keyboard backlight illumination as a percentage from 0 (off) to 100
-        /// (fully on).
+        /// Sets a backlight or LED brightness intensity.
         /// </summary>
+        /// <param name="adjustableElementId">
+        /// The code for the device-specific element with an adjustable intensity.
+        /// </param>
         /// <param name="percent"></param>
-        public void SendBacklightPercent(int percent)
+        public void SetIntensity(byte adjustableElementId, int percent)
         {
             var byteValue = Percent.ToByte(percent);
-            SendIlluminationSettingPacket(_SetKeyboardBacklight, byteValue);
+            SendIlluminationSettingPacket(adjustableElementId, byteValue);
         }
 
         /// <summary>
-        /// Sets the display backlight illumination as a percentage from 0 (off) to 100
-        /// (fully on).
+        /// Turns lamps on and off in accordance with the map passed across.
         /// </summary>
-        /// <param name="percent"></param>
-        public void SendDisplayBrightnessPercent(int percent)
-        {
-            var byteValue = Percent.ToByte(percent);
-            SendIlluminationSettingPacket(_SetDisplayBrightness, byteValue);
-        }
-
-        /// <summary>
-        /// Sets the LED lamp brightness as a percentage from 0 (off) to 100 (fully on).
-        /// </summary>
-        /// <param name="percent"></param>
-        public void SendLampBrightnessPercent(int percent)
-        {
-            var byteValue = Percent.ToByte(percent);
-            SendIlluminationSettingPacket(_SetLampBrightness, byteValue);
-        }
-
-        /// <summary>
-        /// Copies an <see cref="CduLamps"/> buffer to the device.
-        /// </summary>
-        /// <param name="lamps"></param>
+        /// <param name="map"></param>
         /// <param name="skipDuplicateCheck"></param>
-        public void ApplyCduLamps(CduLamps lamps, bool skipDuplicateCheck)
+        public void SetLamps(BinaryLampMap map, bool skipDuplicateCheck)
         {
             _UsbWriter.LockForOutput(() => {
-                if(skipDuplicateCheck || !(_PreviousLamps?.Equals(lamps) ?? false)) {
-                    foreach(var kvp in _LampIndicatorMap) {
-                        var led = kvp.Key;
-                        var indicatorCode = kvp.Value;
+                if(skipDuplicateCheck || !(_PreviousLamps?.Equals(map) ?? false)) {
+                    for(var idx = 0;idx < map.BinaryLamps.Count;++idx) {
+                        var lamp = map.BinaryLamps[idx];
+                        bool? previous = _PreviousLamps == null || _PreviousLamps.BinaryLamps.Count <= idx
+                            ? null
+                            : _PreviousLamps.BinaryLamps[idx].On;
                         SendLight(
-                            _PreviousLamps?.GetLamp(led),
-                            lamps.GetLamp(led),
-                            indicatorCode
+                            previous,
+                            lamp.On,
+                            lamp.LedId
                         );
                     }
 
                     if(_PreviousLamps == null) {
-                        _PreviousLamps = new CduLamps();
+                        _PreviousLamps = new BinaryLampMap(map);
+                    } else {
+                        _PreviousLamps.CopyFrom(map);
                     }
-                    _PreviousLamps.CopyFrom(lamps);
                 }
             });
         }
