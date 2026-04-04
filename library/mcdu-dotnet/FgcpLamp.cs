@@ -10,29 +10,18 @@
 
 namespace McduDotNet
 {
-    public class FcuDisplays : IFgcpDisplays
+    /// <summary>
+    /// An enumeration of all FCU / EFIS etc. lamps that can be driven
+    /// across all supported FGCP devices. Only a subset of these will
+    /// be supported by any given device.
+    /// </summary>
+    public enum FgcpLamp
     {
-        public FcuDisplayBarometer LeftBarometer { get; set; } = new();
-
-        public FcuDisplayBarometer RightBarometer { get; set; } = new();
-
-        public FcuDisplaySpeed Speed { get; set; } = new();
-
-        public FcuDisplayHeading Heading { get; set; } = new();
-
-        public FcuDisplayAnnunciator Annunciator { get; set; } = new();
-
-        public FcuDisplayAltitude Altitude { get; set; } = new();
-
-        /// <inheritdoc/>
-        public void ClearDisplays()
-        {
-            Altitude.ClearDisplay();
-            Heading.ClearDisplay();
-            LeftBarometer.ClearDisplay();
-            Annunciator.ClearDisplay();
-            RightBarometer.ClearDisplay();
-            Speed.ClearDisplay();
-        }
-    }
+        Ap1,
+        Ap2,
+        Appr,
+        AThr,
+        Exped,
+        Loc,
+   }
 }

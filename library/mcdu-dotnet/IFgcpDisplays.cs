@@ -11,13 +11,13 @@
 namespace McduDotNet
 {
     /// <summary>
-    /// The interface that all buffers that describe the segmented displays for an FGCP
-    /// must implement.
+    /// The interface that must be implemented by all buffers that describe the content of
+    /// an FGCP's displays.
     /// </summary>
-    public interface ISegmentedDislays
+    public interface IFgcpDisplays
     {
         /// <summary>
-        /// Empty all of the segmented displays.
+        /// Empty all of the displays.
         /// </summary>
         void ClearDisplays();
     }

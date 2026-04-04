@@ -23,7 +23,7 @@ namespace McduDotNet.WinWing
     /// hold of an MCP this might be rejiggered and renamed to deal with both devices, but
     /// for now it hard codes IDs for the FCU and will only work with the FCU.
     /// </remarks>
-    class FcuSegmentDisplayWriter
+    class FcuDisplayWriter
     {
         private const int _FcuPayloadLength = 17;
         private const int _EfisPayloadLength = 5;
@@ -51,7 +51,7 @@ namespace McduDotNet.WinWing
 
         private ushort _SequenceNumber;
 
-        public FcuSegmentDisplayWriter(
+        public FcuDisplayWriter(
             UsbWriter usbWriter,
             bool isLeftEfisPresent,
             bool isRightEfisPresent
@@ -99,7 +99,7 @@ namespace McduDotNet.WinWing
         }
 
         public void SendSegmentedDisplays(
-            FcuSegmentedDisplays? segmentedDisplays,
+            FcuDisplays? segmentedDisplays,
             bool skipDuplicateCheck
         )
         {

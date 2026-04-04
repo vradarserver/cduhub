@@ -119,12 +119,12 @@ namespace FgcpTest
                                 }
                             }
 
-                            SetupBaro(fcu.SegmentedDisplays.LeftBarometer, leftValue, leftDecimal, leftWords);
-                            SetupBaro(fcu.SegmentedDisplays.RightBarometer, rightValue, rightDecimal, rightWords);
-                            SetupSpeed(fcu.SegmentedDisplays.Speed, speedValue, speedDecimal, speedWords);
-                            SetupHeading(fcu.SegmentedDisplays.Heading, headingValue, headingDecimal, headingWords);
-                            SetupAnnunciator(fcu.SegmentedDisplays.Annunciator, annunciatorWords);
-                            SetupAltitude(fcu.SegmentedDisplays.Altitude, altitudeValue, vsPlus, vsValue, vsDecimal, altitudeWords);
+                            SetupBaro(fcu.Displays.LeftBarometer, leftValue, leftDecimal, leftWords);
+                            SetupBaro(fcu.Displays.RightBarometer, rightValue, rightDecimal, rightWords);
+                            SetupSpeed(fcu.Displays.Speed, speedValue, speedDecimal, speedWords);
+                            SetupHeading(fcu.Displays.Heading, headingValue, headingDecimal, headingWords);
+                            SetupAnnunciator(fcu.Displays.Annunciator, annunciatorWords);
+                            SetupAltitude(fcu.Displays.Altitude, altitudeValue, vsPlus, vsValue, vsDecimal, altitudeWords);
 
                             fcu.RefreshSegmentedDisplays();
 

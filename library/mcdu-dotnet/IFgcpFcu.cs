@@ -28,6 +28,11 @@ namespace McduDotNet
         /// <summary>
         /// The segmented displays.
         /// </summary>
-        FcuSegmentedDisplays SegmentedDisplays { get; }
+        FcuDisplays Displays { get; }
+
+        /// <summary>
+        /// The LED lights.
+        /// </summary>
+        FcuLamps Lamps { get; }
     }
 }

@@ -22,8 +22,7 @@ namespace McduDotNet.WinWing.FcuAndEfis
         protected HidDevice _HidDevice;
         protected HidStream? _HidStream;
         protected UsbWriter? _UsbWriter;
-        protected FcuSegmentDisplayWriter? _SegmentedDisplayWriter;
-
+        protected FcuDisplayWriter? _DisplayWriter;
 
         /// <inheritdoc/>
         public UsbDevice UsbDevice { get; }
@@ -35,7 +34,10 @@ namespace McduDotNet.WinWing.FcuAndEfis
         public bool IsRightEfisPresent => (UsbDevice.EquipmentType & EquipmentType.RightEfis) != 0;
 
         /// <inheritdoc/>
-        public FcuSegmentedDisplays SegmentedDisplays { get; } = new();
+        public FcuDisplays Displays { get; } = new();
+
+        /// <inheritdoc/>
+        public FcuLamps Lamps { get; } = new();
 
         /// <summary>
         /// Creates a new object.
@@ -59,7 +61,7 @@ namespace McduDotNet.WinWing.FcuAndEfis
         {
             if(disposing) {
                 _UsbWriter = null;
-                _SegmentedDisplayWriter = null;
+                _DisplayWriter = null;
 
                 var hidStream = _HidStream;
                 _HidStream = null;
@@ -90,7 +92,7 @@ namespace McduDotNet.WinWing.FcuAndEfis
             }
             _UsbWriter = new UsbWriter(_HidStream);
 
-            _SegmentedDisplayWriter = new FcuSegmentDisplayWriter(
+            _DisplayWriter = new FcuDisplayWriter(
                 _UsbWriter,
                 IsLeftEfisPresent,
                 IsRightEfisPresent
@@ -103,7 +105,7 @@ namespace McduDotNet.WinWing.FcuAndEfis
 
         public void Cleanup()
         {
-            SegmentedDisplays.ClearDisplays();
+            Displays.ClearDisplays();
 
             RefreshSegmentedDisplays();
         }
@@ -111,8 +113,8 @@ namespace McduDotNet.WinWing.FcuAndEfis
         /// <inheritdoc/>
         public void RefreshSegmentedDisplays(bool skipDuplicateCheck = false)
         {
-            _SegmentedDisplayWriter?.SendSegmentedDisplays(
-                SegmentedDisplays,
+            _DisplayWriter?.SendSegmentedDisplays(
+                Displays,
                 skipDuplicateCheck
             );
         }
