@@ -8,12 +8,11 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System;
+
 namespace McduDotNet
 {
-    /// <summary>
-    /// An enumeration of keys that the CDUs have in common, or are *very* roughly
-    /// equivalent (even if it's just in name and/or location on the keyboard).
-    /// </summary>
+    [Obsolete("Use CommonCduKey")]
     public enum CommonKey
     {
         DeviceSpecific = 1000,
@@ -88,22 +87,5 @@ namespace McduDotNet
         SecFPlnOrAltn =             EitherOr + 8,
         OvfyOrDel =                 EitherOr + 9,
         AtcCommOrFmcComm =          EitherOr + 10,
-
-        // unmapped:
-        // Legs,        PFP-*
-        // Hold,        PFP-*
-        // Exec,        PFP-*
-        // Fix,         PFP-*
-        // Clb,         PFP-3N
-        // Crz,         PFP-3N
-        // Des,         PFP-3N
-        // N1Limit,     PFP-3N
-        // Data,        MCDU
-        // Dir,         MCDU
-        // FuelPred,    MCDU
-        // Perf,        MCDU
-        // UpArrow,     MCDU
-        // DownArrow,   MCDU
-        // VNav,        PFP-7
     }
 }

@@ -15,6 +15,7 @@ namespace McduDotNet
     /// <summary>
     /// Extension methods for the <see cref="Key"/> enum.
     /// </summary>
+    [Obsolete("Use CduKeyExtensions")]
     public static class KeyExtensions
     {
         public static string ToCharacter(this Key key)

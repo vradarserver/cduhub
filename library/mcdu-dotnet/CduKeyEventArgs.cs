@@ -1,4 +1,4 @@
-﻿// Copyright © 2025 onwards, Andrew Whewell
+﻿// Copyright © 2026 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -12,17 +12,17 @@ using System;
 
 namespace McduDotNet
 {
-    public class KeyEventArgs : EventArgs
+    public class CduKeyEventArgs : EventArgs
     {
-        public Key Key { get; }
+        public CduKey Key { get; }
 
-        public CommonKey CommonKey => Key.ToCommonKey();
+        public CommonCduKey CommonKey => Key.ToCommonKey();
 
         public string Character { get; }
 
         public bool Pressed { get; }
 
-        public KeyEventArgs(Key key, bool pressed)
+        public CduKeyEventArgs(CduKey key, bool pressed)
         {
             Key = key;
             Character = key.ToCharacter();

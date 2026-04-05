@@ -1,4 +1,4 @@
-﻿// Copyright © 2025 onwards, Andrew Whewell
+﻿// Copyright © 2026 onwards, Andrew Whewell
 // All rights reserved.
 //
 // Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -11,9 +11,9 @@
 namespace McduDotNet
 {
     /// <summary>
-    /// An enumeration of all of the keys on the MCDU.
+    /// An enumeration of all of the keys across all of the supported CDUs.
     /// </summary>
-    public enum Key
+    public enum CduKey
     {
         LineSelectLeft1,
         LineSelectLeft2,
