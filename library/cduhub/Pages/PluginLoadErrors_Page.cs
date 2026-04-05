@@ -68,18 +68,18 @@ namespace Cduhub.Pages
             RefreshDisplay();
         }
 
-        public override void OnCommonKeyDown(CommonKey commonKey)
+        public override void OnCommonKeyDown(CommonCduKey commonKey)
         {
             switch(commonKey) {
-                case CommonKey.LeftArrowOrPrevPage:
+                case CommonCduKey.LeftArrowOrPrevPage:
                     --_ErrorIndex;
                     DrawPage();
                     break;
-                case CommonKey.RightArrowOrNextPage:
+                case CommonCduKey.RightArrowOrNextPage:
                     ++_ErrorIndex;
                     DrawPage();
                     break;
-                case CommonKey.LineSelectLeft6:
+                case CommonCduKey.LineSelectLeft6:
                     _Hub.ReturnToParent();
                     break;
             }

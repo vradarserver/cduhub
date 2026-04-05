@@ -72,15 +72,15 @@ namespace Cduhub.Pages
             }
         }
 
-        public override void OnCommonKeyDown(CommonKey key)
+        public override void OnCommonKeyDown(CommonCduKey key)
         {
             switch(key) {
-                case CommonKey.LineSelectLeft1:   _Hub.CreateAndSelectPage<Clock_Page>(); break;
-                case CommonKey.LineSelectLeft2:   _Hub.CreateAndSelectPage<WeatherMenu_Page>(); break;
-                case CommonKey.LineSelectLeft6:   _Hub.CreateAndSelectPage<About_Page>(); break;
-                case CommonKey.LineSelectRight1:  _Hub.CreateAndSelectPage<FlightSimulator.FlightSimMenu_Page>(); break;
-                case CommonKey.LineSelectRight2:  _Hub.ShowPluginMenuFor(EntryPointPage.Root); break;
-                case CommonKey.LineSelectRight6:  _Hub.Shutdown(); break;
+                case CommonCduKey.LineSelectLeft1:   _Hub.CreateAndSelectPage<Clock_Page>(); break;
+                case CommonCduKey.LineSelectLeft2:   _Hub.CreateAndSelectPage<WeatherMenu_Page>(); break;
+                case CommonCduKey.LineSelectLeft6:   _Hub.CreateAndSelectPage<About_Page>(); break;
+                case CommonCduKey.LineSelectRight1:  _Hub.CreateAndSelectPage<FlightSimulator.FlightSimMenu_Page>(); break;
+                case CommonCduKey.LineSelectRight2:  _Hub.ShowPluginMenuFor(EntryPointPage.Root); break;
+                case CommonCduKey.LineSelectRight6:  _Hub.Shutdown(); break;
             }
         }
 

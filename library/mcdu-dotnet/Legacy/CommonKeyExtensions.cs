@@ -12,6 +12,7 @@ using System;
 
 namespace McduDotNet
 {
+    [Obsolete("Use CommonCduKeyExtensions")]
     public static class CommonKeyExtensions
     {
         public static Key ToKey(this CommonKey commonKey, ICdu? cdu)

@@ -19,31 +19,31 @@ namespace Cduhub.FlightSim
         /// A pre-defined keymap that has no entries.
         /// </summary>
         public static readonly DeviceTypeKeymap Empty = new(
-            DeviceType.NotSpecified, DeviceType.NotSpecified, new (Key,Key)[] { }
+            DeviceType.NotSpecified, DeviceType.NotSpecified, new (CduKey,CduKey)[] { }
         );
 
         public DeviceType FirstDeviceType { get; }
 
         public DeviceType SecondDeviceType { get; }
 
-        private readonly Dictionary<Key, Key> _FirstToSecondKeymap = new();
+        private readonly Dictionary<CduKey, CduKey> _FirstToSecondKeymap = new();
         /// <summary>
         /// A lookup table of key mappings when the key was pressed on a device of type
         /// <see cref="FirstDeviceType"/>.
         /// </summary>
-        public IReadOnlyDictionary<Key, Key> FirstToSecondKeymap => _FirstToSecondKeymap;
+        public IReadOnlyDictionary<CduKey, CduKey> FirstToSecondKeymap => _FirstToSecondKeymap;
 
-        private readonly Dictionary<Key, Key> _SecondToFirstKeymap = new();
+        private readonly Dictionary<CduKey, CduKey> _SecondToFirstKeymap = new();
         /// <summary>
         /// A lookup table of key mappings when the key was pressed on a device of type
         /// <see cref="SecondDeviceType"/>.
         /// </summary>
-        public IReadOnlyDictionary<Key, Key> SecondToFirstKeymap => _SecondToFirstKeymap;
+        public IReadOnlyDictionary<CduKey, CduKey> SecondToFirstKeymap => _SecondToFirstKeymap;
 
         public DeviceTypeKeymap(
             DeviceType firstDeviceType,
             DeviceType secondDeviceType,
-            IEnumerable<(Key From, Key To)> keyMap
+            IEnumerable<(CduKey From, CduKey To)> keyMap
         )
         {
             FirstDeviceType = firstDeviceType;
@@ -60,7 +60,7 @@ namespace Cduhub.FlightSim
         /// <param name="input"></param>
         /// <param name="fromDeviceType"></param>
         /// <returns></returns>
-        public Key Translate(Key input, DeviceType fromDeviceType)
+        public CduKey Translate(CduKey input, DeviceType fromDeviceType)
         {
             var result = input;
 

@@ -37,7 +37,7 @@ namespace Cduhub.FlightSim
         }
 
         /// <inheritdoc/>
-        public override void SendKeyToSimulator(Key key, bool pressed)
+        public override void SendKeyToSimulator(CduKey key, bool pressed)
         {
             if(pressed) {
                 var keyCode = key.ToXPlaneCommand();

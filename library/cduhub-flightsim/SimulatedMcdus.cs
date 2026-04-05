@@ -129,7 +129,7 @@ namespace Cduhub.FlightSim
         }
 
         /// <inheritdoc/>
-        public abstract void SendKeyToSimulator(Key key, bool pressed);
+        public abstract void SendKeyToSimulator(CduKey key, bool pressed);
 
         /// <inheritdoc/>
         public abstract void ReconnectToSimulator();

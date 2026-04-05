@@ -30,13 +30,13 @@ namespace Cduhub
 
         public virtual FontReference? PageFont => _Hub.DefaultFontReference;
 
-        public virtual CommonKey? MenuKey { get; }
+        public virtual CommonCduKey? MenuKey { get; }
 
         public virtual bool DisableMenuKey { get; }
 
         public virtual bool DisableInitKey { get; }
 
-        public virtual CommonKey? ParentKey { get; }
+        public virtual CommonCduKey? ParentKey { get; }
 
         public virtual bool DisableParentKey { get; }
 
@@ -85,17 +85,17 @@ namespace Cduhub
         {
         }
 
-        public virtual void OnKeyDown(Key key)
+        public virtual void OnKeyDown(CduKey key)
         {
             Scratchpad?.KeyDown(key);
         }
 
-        public virtual void OnKeyUp(Key key)
+        public virtual void OnKeyUp(CduKey key)
         {
             Scratchpad?.KeyUp(key);
         }
 
-        public virtual void OnCommonKeyDown(CommonKey commonKey)
+        public virtual void OnCommonKeyDown(CommonCduKey commonKey)
         {
             ;
         }
@@ -117,35 +117,35 @@ namespace Cduhub
             return buffer.ToString();
         }
 
-        protected virtual int LeftLineSelectIndex(Key key)
+        protected virtual int LeftLineSelectIndex(CduKey key)
         {
             switch(key) {
-                case Key.LineSelectLeft1:   return 1;
-                case Key.LineSelectLeft2:   return 2;
-                case Key.LineSelectLeft3:   return 3;
-                case Key.LineSelectLeft4:   return 4;
-                case Key.LineSelectLeft5:   return 5;
-                case Key.LineSelectLeft6:   return 6;
+                case CduKey.LineSelectLeft1:   return 1;
+                case CduKey.LineSelectLeft2:   return 2;
+                case CduKey.LineSelectLeft3:   return 3;
+                case CduKey.LineSelectLeft4:   return 4;
+                case CduKey.LineSelectLeft5:   return 5;
+                case CduKey.LineSelectLeft6:   return 6;
             }
             return -1;
         }
 
-        protected virtual int LeftLineSelectIndex(CommonKey commonKey) => LeftLineSelectIndex((Key)commonKey);
+        protected virtual int LeftLineSelectIndex(CommonCduKey commonKey) => LeftLineSelectIndex((CduKey)commonKey);
 
-        protected virtual int RightLineSelectIndex(Key key)
+        protected virtual int RightLineSelectIndex(CduKey key)
         {
             switch(key) {
-                case Key.LineSelectRight1:  return 1;
-                case Key.LineSelectRight2:  return 2;
-                case Key.LineSelectRight3:  return 3;
-                case Key.LineSelectRight4:  return 4;
-                case Key.LineSelectRight5:  return 5;
-                case Key.LineSelectRight6:  return 6;
+                case CduKey.LineSelectRight1:  return 1;
+                case CduKey.LineSelectRight2:  return 2;
+                case CduKey.LineSelectRight3:  return 3;
+                case CduKey.LineSelectRight4:  return 4;
+                case CduKey.LineSelectRight5:  return 5;
+                case CduKey.LineSelectRight6:  return 6;
             }
             return -1;
         }
 
-        protected virtual int RightLineSelectIndex(CommonKey commonKey) => RightLineSelectIndex((Key)commonKey);
+        protected virtual int RightLineSelectIndex(CommonCduKey commonKey) => RightLineSelectIndex((CduKey)commonKey);
 
         protected virtual void FullPageStatusMessage(
             params string[] lines
@@ -203,16 +203,16 @@ namespace Cduhub
         }
 
         protected virtual bool CreateAndSelectPageForArrows(
-            CommonKey commonKey,
+            CommonCduKey commonKey,
             bool replaceCurrentInHistory = true
         )
         {
             Type? type = null;
             switch(commonKey) {
-                case CommonKey.LeftArrowOrPrevPage:
+                case CommonCduKey.LeftArrowOrPrevPage:
                     type = LeftArrowCallback?.Invoke();
                     break;
-                case CommonKey.RightArrowOrNextPage:
+                case CommonCduKey.RightArrowOrNextPage:
                     type = RightArrowCallback?.Invoke();
                     break;
             }

@@ -52,15 +52,15 @@ namespace Cduhub.Pages
             RefreshDisplay();
         }
 
-        public override void OnCommonKeyDown(CommonKey commonKey)
+        public override void OnCommonKeyDown(CommonCduKey commonKey)
         {
             switch(commonKey) {
-                case CommonKey.LineSelectRight2:
+                case CommonCduKey.LineSelectRight2:
                     if(PluginLoader.LoadErrors.Count > 0) {
                         _Hub.CreateAndSelectPage<PluginLoadErrors_Page>();
                     }
                     break;
-                case CommonKey.LineSelectLeft6:
+                case CommonCduKey.LineSelectLeft6:
                     _Hub.ReturnToParent();
                     break;
             }

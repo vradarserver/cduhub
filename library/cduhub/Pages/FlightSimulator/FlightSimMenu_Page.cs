@@ -30,15 +30,15 @@ namespace Cduhub.Pages.FlightSimulator
                 .LeftLabel(6, "<red><small>>BACK");
         }
 
-        public override void OnCommonKeyDown(CommonKey commonKey)
+        public override void OnCommonKeyDown(CommonCduKey commonKey)
         {
             switch(commonKey) {
-                case CommonKey.LineSelectLeft1:   _Hub.CreateAndSelectPage<FenixMenu_Page>(); break;
-                case CommonKey.LineSelectLeft2:   _Hub.CreateAndSelectPage<SimBridgeMenu_Page>(); break;
-                case CommonKey.LineSelectRight1:  _Hub.CreateAndSelectPage<XPlaneMenu_Page>(); break;
-                case CommonKey.LineSelectRight2:  _Hub.CreateAndSelectPage<ToLissMenu_Page>(); break;
-                case CommonKey.LineSelectRight3:  _Hub.CreateAndSelectPage<PassthruMenu_Page>(); break;
-                case CommonKey.LineSelectLeft6:   _Hub.ReturnToParent(); break;
+                case CommonCduKey.LineSelectLeft1:   _Hub.CreateAndSelectPage<FenixMenu_Page>(); break;
+                case CommonCduKey.LineSelectLeft2:   _Hub.CreateAndSelectPage<SimBridgeMenu_Page>(); break;
+                case CommonCduKey.LineSelectRight1:  _Hub.CreateAndSelectPage<XPlaneMenu_Page>(); break;
+                case CommonCduKey.LineSelectRight2:  _Hub.CreateAndSelectPage<ToLissMenu_Page>(); break;
+                case CommonCduKey.LineSelectRight3:  _Hub.CreateAndSelectPage<PassthruMenu_Page>(); break;
+                case CommonCduKey.LineSelectLeft6:   _Hub.ReturnToParent(); break;
             }
         }
     }

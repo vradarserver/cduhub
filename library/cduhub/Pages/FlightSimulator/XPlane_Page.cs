@@ -70,7 +70,7 @@ namespace Cduhub.Pages.FlightSimulator
             }
         }
 
-        public override void OnKeyDown(Key key)
+        public override void OnKeyDown(CduKey key)
         {
             if(key.ToCommonKey() != _Hub.InterruptKey1) {
                 _XPlaneMcdu?.SendKeyToSimulator(Translate(key), pressed: true);
@@ -79,7 +79,7 @@ namespace Cduhub.Pages.FlightSimulator
             }
         }
 
-        public override void OnKeyUp(Key key)
+        public override void OnKeyUp(CduKey key)
         {
             if(key.ToCommonKey() != _Hub.InterruptKey1) {
                 _XPlaneMcdu?.SendKeyToSimulator(Translate(key), pressed: false);

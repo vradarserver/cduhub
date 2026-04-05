@@ -46,8 +46,8 @@ namespace FenixMcdu
                     using(var graphQLClient = new GraphQLHttpClient(graphQLOptions, new NewtonsoftJsonSerializer())) {
                         _FenixEfbGraphQLClient = graphQLClient;
                         SetupFenixDisplayChangeEvents(cdu, graphQLClient);
-                        cdu.KeyDown += Mcdu_KeyEvent;
-                        cdu.KeyUp   += Mcdu_KeyEvent;
+                        cdu.CduKeyDown += Mcdu_KeyEvent;
+                        cdu.CduKeyUp   += Mcdu_KeyEvent;
 
                         Console.WriteLine($"Press Q to quit");
                         while(Console.ReadKey(intercept: true).Key != ConsoleKey.Q);
@@ -132,7 +132,7 @@ namespace FenixMcdu
             RefreshVisibleDisplay();
         }
 
-        private static void SendKeyToFenix(Key mcduKey, bool pressed)
+        private static void SendKeyToFenix(CduKey mcduKey, bool pressed)
         {
             var client = _FenixEfbGraphQLClient;
             if(client != null) {
@@ -155,9 +155,9 @@ namespace FenixMcdu
             }
         }
 
-        private static void Mcdu_KeyEvent(object? _, KeyEventArgs args)
+        private static void Mcdu_KeyEvent(object? _, CduKeyEventArgs args)
         {
-            if(args.Key != Key.Blank1) {
+            if(args.Key != CduKey.Blank1) {
                 SendKeyToFenix(args.Key, args.Pressed);
             } else if(args.Pressed) {
                 ToggleBetweenCaptainAndFirstOfficerMcdu();

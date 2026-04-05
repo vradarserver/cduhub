@@ -70,7 +70,7 @@ namespace Cduhub.Pages.Init
             RefreshDisplay();
         }
 
-        public override void OnCommonKeyDown(CommonKey commonKey)
+        public override void OnCommonKeyDown(CommonCduKey commonKey)
         {
             var idx = LeftLineSelectIndex(commonKey) - 1;
             var initPage = idx > -1 && idx < _LeftInitPages.Count
@@ -80,7 +80,7 @@ namespace Cduhub.Pages.Init
                 _Hub.CreateAndSelectPage(initPage.PageType);
             } else {
                 switch(commonKey) {
-                    case CommonKey.LineSelectLeft6:
+                    case CommonCduKey.LineSelectLeft6:
                         _Hub.ReturnToParent();
                         break;
                 }

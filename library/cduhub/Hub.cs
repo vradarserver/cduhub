@@ -90,13 +90,13 @@ namespace Cduhub
         /// </summary>
         public int BacklightBrightnessPercent => _Cdu?.BacklightBrightnessPercent ?? 0;
 
-        public CommonKey InterruptKey1 { get; set; } = CommonKey.Brt;
+        public CommonCduKey InterruptKey1 { get; set; } = CommonCduKey.Brt;
 
-        public CommonKey InterruptKey2 { get; set; } = CommonKey.Dim;
+        public CommonCduKey InterruptKey2 { get; set; } = CommonCduKey.Dim;
 
-        public CommonKey MenuKey { get; set; } = CommonKey.McduMenuOrMenu;
+        public CommonCduKey MenuKey { get; set; } = CommonCduKey.McduMenuOrMenu;
 
-        public CommonKey InitKey { get; set; } = CommonKey.InitOrInitRef;
+        public CommonCduKey InitKey { get; set; } = CommonCduKey.InitOrInitRef;
 
         public string InterruptKey1Name => InterruptKey1.Describe(_Cdu);
 
@@ -280,8 +280,8 @@ namespace Cduhub
                     if(_Cdu != null) {
                         ApplySettingsToDevice();
 
-                        _Cdu.KeyDown += Cdu_KeyDown;
-                        _Cdu.KeyUp += Cdu_KeyUp;
+                        _Cdu.CduKeyDown += Cdu_CduKeyDown;
+                        _Cdu.CduKeyUp += Cdu_CduKeyUp;
                         _Cdu.Disconnected += Cdu_Disconnected;
                         _Cdu.DisplayChanging += Cdu_DisplayChanging;
                         _Cdu.FontChanging += Cdu_FontChanging;
@@ -323,8 +323,8 @@ namespace Cduhub
                 CleanupPageHistory();
                 SelectPage(null);
 
-                _Cdu.KeyDown -= Cdu_KeyDown;
-                _Cdu.KeyUp -= Cdu_KeyUp;
+                _Cdu.CduKeyDown -= Cdu_CduKeyDown;
+                _Cdu.CduKeyUp -= Cdu_CduKeyUp;
                 _Cdu.Cleanup();
                 _Cdu.Dispose();
                 _Cdu = null;
@@ -541,7 +541,7 @@ namespace Cduhub
             }
         }
 
-        private void Cdu_KeyDown(object sender, McduDotNet.KeyEventArgs e)
+        private void Cdu_CduKeyDown(object sender, CduKeyEventArgs e)
         {
             if(!_ShuttingDown) {
                 var cdu = sender as ICdu;
@@ -561,14 +561,14 @@ namespace Cduhub
                     CreateAndSelectPage<Pages.Init.InitMenu_Page>();
                 } else {
                     _SelectedPage?.OnKeyDown(e.Key);
-                    if(e.CommonKey != CommonKey.DeviceSpecific) {
+                    if(e.CommonKey != CommonCduKey.DeviceSpecific) {
                         _SelectedPage?.OnCommonKeyDown(e.CommonKey);
                     }
                 }
             }
         }
 
-        private void Cdu_KeyUp(object sender, McduDotNet.KeyEventArgs e)
+        private void Cdu_CduKeyUp(object sender, CduKeyEventArgs e)
         {
             if(!_ShuttingDown) {
                 _SelectedPage?.OnKeyUp(e.Key);

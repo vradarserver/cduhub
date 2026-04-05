@@ -75,7 +75,7 @@ namespace Colours
                     Console.WriteLine("No device connected");
                 } else {
                     Console.WriteLine($"Using {cdu.UsbDevice}");
-                    cdu.KeyDown += Cdu_KeyDown;
+                    cdu.CduKeyDown += Cdu_CduKeyDown;
 
                     var font = LoadFont(fontFileInfo);
                     if(font != null) {
@@ -137,7 +137,7 @@ namespace Colours
                 .LeftToRight().Newline();
         }
 
-        static void Cdu_KeyDown(object? sender, KeyEventArgs args)
+        static void Cdu_CduKeyDown(object? sender, CduKeyEventArgs args)
         {
             if(sender is not ICdu cdu) {
                 return;
@@ -160,24 +160,24 @@ namespace Colours
 
             var redrawScreen = true;
             switch(args.Key) {
-                case Key.DownArrow:     scrollBackwards(2); break;
-                case Key.UpArrow:       scrollForwards(2); break;
-                case Key.RightArrow:    scrollBackwards(1); break;
-                case Key.LeftArrow:     scrollForwards(1); break;
-                case Key.Dir:           _FirstSetIsSmall = !_FirstSetIsSmall; break;
-                case Key.Init:
+                case CduKey.DownArrow:     scrollBackwards(2); break;
+                case CduKey.UpArrow:       scrollForwards(2); break;
+                case CduKey.RightArrow:    scrollBackwards(1); break;
+                case CduKey.LeftArrow:     scrollForwards(1); break;
+                case CduKey.Dir:           _FirstSetIsSmall = !_FirstSetIsSmall; break;
+                case CduKey.Init:
                     cdu.Palette.White.Set(0xff, 0xff, 0xff);
                     cdu.RefreshPalette();
                     break;
-                case Key.SecFPln:
+                case CduKey.SecFPln:
                     cdu.Palette.White.Set(0xff, 0x00, 0x00);
                     cdu.RefreshPalette();
                     break;
-                case Key.AtcComm:
+                case CduKey.AtcComm:
                     cdu.Palette.White.Set(0x00, 0xff, 0x00);
                     cdu.RefreshPalette();
                     break;
-                case Key.McduMenu:
+                case CduKey.McduMenu:
                     cdu.Palette.White.Set(0x00, 0x00, 0xff);
                     cdu.RefreshPalette();
                     break;

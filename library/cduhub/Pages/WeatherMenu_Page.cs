@@ -27,11 +27,11 @@ namespace Cduhub.Pages
                 .LeftLabel(6, "<red><small>>BACK");
         }
 
-        public override void OnCommonKeyDown(CommonKey key)
+        public override void OnCommonKeyDown(CommonCduKey key)
         {
             switch(key) {
-                case CommonKey.LineSelectLeft1:   _Hub.CreateAndSelectPage<MetarTaf_Page>(); break;
-                case CommonKey.LineSelectLeft6:   _Hub.ReturnToParent(); break;
+                case CommonCduKey.LineSelectLeft1:   _Hub.CreateAndSelectPage<MetarTaf_Page>(); break;
+                case CommonCduKey.LineSelectLeft6:   _Hub.ReturnToParent(); break;
             }
         }
     }

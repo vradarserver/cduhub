@@ -52,6 +52,6 @@ namespace Cduhub.Pages.FlightSimulator
 
         protected abstract void Disconnect();
 
-        protected Key Translate(Key key) => Keymap.Translate(key, _CduDeviceType);
+        protected CduKey Translate(CduKey key) => Keymap.Translate(key, _CduDeviceType);
     }
 }

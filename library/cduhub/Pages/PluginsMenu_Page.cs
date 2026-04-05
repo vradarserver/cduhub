@@ -88,7 +88,7 @@ namespace Cduhub.Pages
             RefreshDisplay();
         }
 
-        public override void OnCommonKeyDown(CommonKey commonKey)
+        public override void OnCommonKeyDown(CommonCduKey commonKey)
         {
             RegisteredPlugin? plugin = null;
             var leftIdx = LeftLineSelectIndex(commonKey);

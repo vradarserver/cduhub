@@ -16,36 +16,36 @@ namespace Cduhub.FlightSim
     static class PredefinedDeviceTypeKeymaps
     {
         public static DeviceTypeKeymap BetweenA320McduAndPfp7 = new DeviceTypeKeymap(
-            DeviceType.AirbusA320Mcdu, DeviceType.Boeing777Pfp, new (Key,Key)[] {
-                (Key.AtcComm, Key.FmcComm),
-                (Key.Init, Key.InitRef),
-                (Key.Data, Key.Exec),
-                (Key.FPln, Key.Rte),
-                (Key.RadNav, Key.NavRad),
-                (Key.McduMenu, Key.Menu),
-                (Key.Dir, Key.Fix),
-                (Key.LeftArrow, Key.PrevPage),
-                (Key.RightArrow, Key.NextPage),
-                (Key.Ovfy, Key.Del),
+            DeviceType.AirbusA320Mcdu, DeviceType.Boeing777Pfp, new (CduKey,CduKey)[] {
+                (CduKey.AtcComm, CduKey.FmcComm),
+                (CduKey.Init, CduKey.InitRef),
+                (CduKey.Data, CduKey.Exec),
+                (CduKey.FPln, CduKey.Rte),
+                (CduKey.RadNav, CduKey.NavRad),
+                (CduKey.McduMenu, CduKey.Menu),
+                (CduKey.Dir, CduKey.Fix),
+                (CduKey.LeftArrow, CduKey.PrevPage),
+                (CduKey.RightArrow, CduKey.NextPage),
+                (CduKey.Ovfy, CduKey.Del),
             }
         );
 
         public static DeviceTypeKeymap BetweenA320McduAndPfp3N = new DeviceTypeKeymap(
-            DeviceType.AirbusA320Mcdu, DeviceType.Boeing737NGPfp, new (Key,Key)[] {
-                (Key.Init, Key.InitRef),
-                (Key.Data, Key.Exec),
-                (Key.FPln, Key.Rte),
-                (Key.RadNav, Key.NavRad),
-                (Key.McduMenu, Key.Menu),
-                (Key.Dir, Key.Fix),
-                (Key.LeftArrow, Key.PrevPage),
-                (Key.RightArrow, Key.NextPage),
-                (Key.Ovfy, Key.Del),
+            DeviceType.AirbusA320Mcdu, DeviceType.Boeing737NGPfp, new (CduKey,CduKey)[] {
+                (CduKey.Init, CduKey.InitRef),
+                (CduKey.Data, CduKey.Exec),
+                (CduKey.FPln, CduKey.Rte),
+                (CduKey.RadNav, CduKey.NavRad),
+                (CduKey.McduMenu, CduKey.Menu),
+                (CduKey.Dir, CduKey.Fix),
+                (CduKey.LeftArrow, CduKey.PrevPage),
+                (CduKey.RightArrow, CduKey.NextPage),
+                (CduKey.Ovfy, CduKey.Del),
             }
         );
 
         public static DeviceTypeKeymap BetweenPfp3NAndPfp7 = new DeviceTypeKeymap(
-            DeviceType.Boeing777Pfp, DeviceType.Boeing737NGPfp, new (Key,Key)[] {
+            DeviceType.Boeing777Pfp, DeviceType.Boeing737NGPfp, new (CduKey,CduKey)[] {
                 // TBD
             }
         );

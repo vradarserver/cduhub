@@ -68,30 +68,30 @@ namespace Cduhub.Pages.FlightSimulator
             ConfigStorage.Save(_Settings);
         }
 
-        public override void OnCommonKeyDown(CommonKey commonKey)
+        public override void OnCommonKeyDown(CommonCduKey commonKey)
         {
             if(_Settings == null) return;
 
             switch(commonKey) {
-                case CommonKey.LineSelectLeft1:
+                case CommonCduKey.LineSelectLeft1:
                     CopyScratchpadToHost();
                     break;
-                case CommonKey.LineSelectLeft2:
+                case CommonCduKey.LineSelectLeft2:
                     CopyScratchpadToPort();
                     break;
-                case CommonKey.LineSelectLeft3:
+                case CommonCduKey.LineSelectLeft3:
                     _Form.CycleFontNames(_Settings.Font.FontName, v => _Settings.Font.FontName = v, includeDefaultFontName: false);
                     break;
-                case CommonKey.LineSelectLeft4:
+                case CommonCduKey.LineSelectLeft4:
                     _Form.ToggleBool(_Settings.Font.UseFullWidth, v => _Settings.Font.UseFullWidth = v);
                     break;
-                case CommonKey.LineSelectLeft5:
+                case CommonCduKey.LineSelectLeft5:
                     _Form.CyclePaletteNames(_Settings.PaletteName, v => _Settings.PaletteName = v, includeDefaultPaletteName: false);
                     break;
-                case CommonKey.LineSelectLeft6:
+                case CommonCduKey.LineSelectLeft6:
                     _Hub.ReturnToParent();
                     break;
-                case CommonKey.LineSelectRight6:
+                case CommonCduKey.LineSelectRight6:
                     ResetToDefaults();
                     break;
             }

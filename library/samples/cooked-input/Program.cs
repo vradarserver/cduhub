@@ -25,10 +25,10 @@ namespace CookedInput
                     cdu.Output.Centred("Press buttons");
                     cdu.RefreshDisplay();
 
-                    cdu.KeyDown += (_, args) => {
+                    cdu.CduKeyDown += (_, args) => {
                         ShowKeyEvent(cdu, "Dn", args);
                     };
-                    cdu.KeyUp += (_, args) => {
+                    cdu.CduKeyUp += (_, args) => {
                         ShowKeyEvent(cdu, "Up", args);
                     };
 
@@ -66,7 +66,7 @@ namespace CookedInput
             return result;
         }
 
-        private static void ShowKeyEvent(ICdu cdu, string eventName, KeyEventArgs args)
+        private static void ShowKeyEvent(ICdu cdu, string eventName, CduKeyEventArgs args)
         {
             cdu.Output
                 .ScrollUp(startRow: 1)

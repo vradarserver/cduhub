@@ -98,7 +98,7 @@ namespace Cduhub.FlightSim
         }
 
         /// <inheritdoc/>
-        public override void SendKeyToSimulator(Key mcduKey, bool pressed)
+        public override void SendKeyToSimulator(CduKey mcduKey, bool pressed)
         {
             var client = _GraphQLClient;
             if(client != null) {

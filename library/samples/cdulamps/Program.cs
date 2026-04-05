@@ -50,7 +50,7 @@ namespace Leds
 
                     cdu.RefreshDisplay();
 
-                    cdu.KeyDown += (_, args) => {
+                    cdu.CduKeyDown += (_, args) => {
                         var lsNumber = args.Key.ToLineSelectNumber();
                         if(lsNumber.Number != -1) {
                             var list = lsNumber.IsLeft ? leftLamps : rightLamps;

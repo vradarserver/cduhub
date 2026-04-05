@@ -104,21 +104,21 @@ namespace Cduhub.Pages
             }
         }
 
-        public override void OnCommonKeyDown(CommonKey key)
+        public override void OnCommonKeyDown(CommonCduKey key)
         {
             if(_Settings == null) return;
 
             switch(key) {
-                case CommonKey.LineSelectLeft1:
+                case CommonCduKey.LineSelectLeft1:
                     CopyScratchpadToStationCode();
                     break;
-                case CommonKey.LineSelectRight1:
+                case CommonCduKey.LineSelectRight1:
                     CopyScratchpadToRefreshMinutes();
                     break;
-                case CommonKey.LineSelectLeft6:
+                case CommonCduKey.LineSelectLeft6:
                     _Hub.ReturnToParent();
                     break;
-                case CommonKey.LineSelectRight6:
+                case CommonCduKey.LineSelectRight6:
                     _Form.CycleEnum(
                         _Settings.Download,
                         v => {
@@ -131,11 +131,11 @@ namespace Cduhub.Pages
                         formatValue: MetarSettings.DescribeReports
                     );
                     break;
-                case CommonKey.LeftArrowOrPrevPage:
+                case CommonCduKey.LeftArrowOrPrevPage:
                     --_CurrentPageIndex;
                     ShowPage();
                     break;
-                case CommonKey.RightArrowOrNextPage:
+                case CommonCduKey.RightArrowOrNextPage:
                     ++_CurrentPageIndex;
                     ShowPage();
                     break;

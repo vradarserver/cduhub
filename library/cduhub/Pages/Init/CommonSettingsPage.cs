@@ -147,17 +147,17 @@ namespace Cduhub.Pages.Init
         {
         }
 
-        public override void OnCommonKeyDown(CommonKey commonKey)
+        public override void OnCommonKeyDown(CommonCduKey commonKey)
         {
             switch(commonKey) {
-                case CommonKey.LineSelectLeft6:
+                case CommonCduKey.LineSelectLeft6:
                     if(ShowReturnToParent) {
                         _Hub.ReturnToParent();
                     } else {
                         base.OnCommonKeyDown(commonKey);
                     }
                     break;
-                case CommonKey.LineSelectRight6:
+                case CommonCduKey.LineSelectRight6:
                     if(ShowResetToDefaults) {
                         ResetToDefaults();
                     } else {

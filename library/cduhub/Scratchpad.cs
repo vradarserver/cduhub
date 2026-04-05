@@ -63,10 +63,10 @@ namespace Cduhub
             _MessageRow = new Row();
         }
 
-        public virtual void KeyDown(Key key)
+        public virtual void KeyDown(CduKey key)
         {
             switch(key) {
-                case Key.Clr:
+                case CduKey.Clr:
                     if(_ShowingMessage) {
                         _ClrPressedUtc = default;
                         HideMessage();
@@ -75,12 +75,12 @@ namespace Cduhub
                         Backspace();
                     }
                     break;
-                case Key.PositiveNegative:
+                case CduKey.PositiveNegative:
                     if(!_ShowingMessage) {
                         AddPlusMinus();
                     }
                     break;
-                case Key.Ovfy:
+                case CduKey.Ovfy:
                     if(!_ShowingMessage && OverflyTogglesCase) {
                         IsLowerCase = !IsLowerCase;
                     }
@@ -100,10 +100,10 @@ namespace Cduhub
             }
         }
 
-        public virtual void KeyUp(Key key)
+        public virtual void KeyUp(CduKey key)
         {
             switch(key) {
-                case Key.Clr:
+                case CduKey.Clr:
                     if(_ClrPressedUtc != default) {
                         var threshold = _ClrPressedUtc.AddMilliseconds(HoldClrToEraseLineMilliseconds);
                         if(DateTime.UtcNow >= threshold) {

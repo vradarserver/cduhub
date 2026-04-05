@@ -159,7 +159,7 @@ namespace McduDotNet.FlightSim
         /// <param name="key"></param>
         /// <param name="deviceUser"></param>
         /// <returns></returns>
-        public static string GraphQLKeyName(Key key, EquipmentLocation location)
+        public static string GraphQLKeyName(CduKey key, EquipmentLocation location)
         {
             var cduKey = key.ToFenixEfbMcduKeyName();
             var cduNum = EquipmentLocationToFenixMcduNumber(location);
@@ -167,6 +167,12 @@ namespace McduDotNet.FlightSim
             return cduKey == ""
                 ? ""
                 : $"S_CDU{cduNum}_KEY_{cduKey}";
+        }
+
+        [Obsolete("Use CduKey version")]
+        public static string GraphQLKeyName(Key key, EquipmentLocation location)
+        {
+            return GraphQLKeyName((CduKey)key, location);
         }
     }
 }

@@ -69,7 +69,7 @@ namespace Cduhub.Pages.FlightSimulator
             }
         }
 
-        public override void OnKeyDown(Key key)
+        public override void OnKeyDown(CduKey key)
         {
             if(key.ToCommonKey() != _Hub.InterruptKey1) {
                 _SimBridgeA320?.SendKeyToSimulator(Translate(key), pressed: true);

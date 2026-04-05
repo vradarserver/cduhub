@@ -90,14 +90,14 @@ namespace Characters
                         reloadFont();
                     }
 
-                    cdu.KeyDown += (_, args) => {
+                    cdu.CduKeyDown += (_, args) => {
                         switch(args.Key) {
-                            case Key.Init:
-                            case Key.InitRef:
+                            case CduKey.Init:
+                            case CduKey.InitRef:
                                 reloadFont();
                                 break;
-                            case Key.Data:
-                            case Key.Altn:
+                            case CduKey.Data:
+                            case CduKey.Altn:
                                 toggleWidth();
                                 break;
                         }

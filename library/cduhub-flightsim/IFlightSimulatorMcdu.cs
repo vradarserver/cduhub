@@ -104,7 +104,7 @@ namespace Cduhub.FlightSim
         /// </summary>
         /// <param name="mcduKey"></param>
         /// <param name="pressed"></param>
-        void SendKeyToSimulator(Key mcduKey, bool pressed);
+        void SendKeyToSimulator(CduKey mcduKey, bool pressed);
 
         /// <summary>
         /// Select the next simulated MCDU.
