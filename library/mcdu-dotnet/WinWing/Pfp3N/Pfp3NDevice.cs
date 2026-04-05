@@ -30,7 +30,7 @@ namespace McduDotNet.WinWing.Pfp3N
         });
         protected override BinaryLampMap BinaryLampMap => _BinaryLampMap;
 
-        protected override Func<Key, (int Flag, int Offset)> KeyToFlagOffsetCallback => KeyboardMap.InputReport01FlagAndOffset;
+        protected override Func<CduKey, (int Flag, int Offset)> KeyToFlagOffsetCallback => KeyboardMap.InputReport01FlagAndOffset;
 
         public Pfp3NDevice(HidDevice hidDevice, UsbDevice usbDevice) : base(hidDevice, usbDevice)
         {

@@ -51,7 +51,7 @@ namespace McduDotNet
         /// <summary>
         /// Returns a read-only collection of keys that the device supports.
         /// </summary>
-        IReadOnlyList<Key> SupportedKeys { get; }
+        IReadOnlyList<CduKey> SupportedCduKeys { get; }
 
         /// <summary>
         /// Gets and sets the display backlight as a percentage between 0 and 100. Changes to
@@ -119,12 +119,12 @@ namespace McduDotNet
         /// <summary>
         /// Raised when a key is pressed.
         /// </summary>
-        event EventHandler<KeyEventArgs> KeyDown;
+        event EventHandler<CduKeyEventArgs> CduKeyDown;
 
         /// <summary>
         /// Raised when a key is released.
         /// </summary>
-        event EventHandler<KeyEventArgs> KeyUp;
+        event EventHandler<CduKeyEventArgs> CduKeyUp;
 
         /// <summary>
         /// Raised on a background thread when the display is changing.
@@ -262,7 +262,7 @@ namespace McduDotNet
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        bool IsKeySupported(Key key);
+        bool IsKeySupported(CduKey key);
 
         /// <summary>
         /// True if the device supports the lamp passed across.
@@ -292,6 +292,18 @@ namespace McduDotNet
 
         [Obsolete("Use LampBrightnessPercent instead")]
         int LedBrightnessPercent { get; set; }
+
+        [Obsolete("Use SupportedCduKeys instead")]
+        IReadOnlyList<Key> SupportedKeys { get; }
+
+        [Obsolete("Use CduKeyDown instead")]
+        event EventHandler<KeyEventArgs> KeyDown;
+
+        [Obsolete("Use CduKeyUp insteaad")]
+        event EventHandler<KeyEventArgs> KeyUp;
+
+        [Obsolete("Use CduKey version instead")]
+        bool IsKeySupported(Key key);
 
 #pragma warning restore CS0618 // Type or member is obsolete
 

@@ -37,7 +37,7 @@ namespace McduDotNet.WinWing
 
         protected abstract BinaryLampMap BinaryLampMap { get; }
 
-        protected abstract Func<Key, (int Flag, int Offset)> KeyToFlagOffsetCallback { get; }
+        protected abstract Func<CduKey, (int Flag, int Offset)> KeyToFlagOffsetCallback { get; }
 
         protected readonly Screen _EmptyScreen = new();
         protected HidDevice _HidDevice;
@@ -78,7 +78,7 @@ namespace McduDotNet.WinWing
         }
 
         /// <inheritdoc/>
-        public IReadOnlyList<Key> SupportedKeys { get; }
+        public IReadOnlyList<CduKey> SupportedCduKeys { get; }
 
         /// <inheritdoc/>
         public Palette Palette { get; }
@@ -175,30 +175,32 @@ namespace McduDotNet.WinWing
 
         protected virtual void OnAmbientLightChanged() => AmbientLightChanged?.Invoke(this, EventArgs.Empty);
 
-        public event EventHandler<KeyEventArgs>? KeyDown;
+        public event EventHandler<CduKeyEventArgs>? CduKeyDown;
 
         /// <summary>
-        /// Raises <see cref="KeyDown"/>. Doesn't bother creating args unless something is listening.
+        /// Raises <see cref="CduKeyDown"/>. Doesn't bother creating args unless something
+        /// is listening.
         /// </summary>
         /// <param name="createArgs"></param>
-        protected virtual void OnKeyDown(Func<KeyEventArgs> createArgs)
+        protected virtual void OnCduKeyDown(Func<CduKeyEventArgs> createArgs)
         {
-            if(KeyDown != null) {
-                KeyDown?.Invoke(this, createArgs());
+            if(CduKeyDown != null) {
+                CduKeyDown?.Invoke(this, createArgs());
             }
         }
 
         /// <inheritdoc/>
-        public event EventHandler<KeyEventArgs>? KeyUp;
+        public event EventHandler<CduKeyEventArgs>? CduKeyUp;
 
         /// <summary>
-        /// Raises <see cref="KeyUp"/>. Doesn't bother creating args unless something is listening.
+        /// Raises <see cref="CduKeyUp"/>. Doesn't bother creating args unless something
+        /// is listening.
         /// </summary>
         /// <param name="createArgs"></param>
-        protected virtual void OnKeyUp(Func<KeyEventArgs> createArgs)
+        protected virtual void OnCduKeyUp(Func<CduKeyEventArgs> createArgs)
         {
-            if(KeyUp != null) {
-                KeyUp?.Invoke(this, createArgs());
+            if(CduKeyUp != null) {
+                CduKeyUp?.Invoke(this, createArgs());
             }
         }
 
@@ -244,14 +246,18 @@ namespace McduDotNet.WinWing
             Palette = new();
             HidSharp.DeviceList.Local.Changed += HidSharpDeviceList_Changed;
 
-            SupportedKeys = Enum.GetValues(typeof(Key))
-                .OfType<Key>()
+            SupportedCduKeys = Enum.GetValues(typeof(CduKey))
+                .OfType<CduKey>()
                 .Where(key => IsKeySupported(key))
                 .ToArray();
 
 #pragma warning disable CS0618 // Type or member is obsolete
             _DeviceId = new(usbDevice);
             _Leds = new(Lamps);
+            SupportedKeys = Enum.GetValues(typeof(Key))
+                .OfType<Key>()
+                .Where(key => IsKeySupported(key))
+                .ToArray();
 #pragma warning restore CS0618 // Type or member is obsolete
         }
 
@@ -369,12 +375,18 @@ namespace McduDotNet.WinWing
             });
         }
 
-        protected virtual void ProcessKeyboardEvent(Key key, bool pressed)
+        protected virtual void ProcessKeyboardEvent(CduKey key, bool pressed)
         {
             if(pressed) {
-                OnKeyDown(() => new KeyEventArgs(key, pressed));
+                OnCduKeyDown(() => new CduKeyEventArgs(key, pressed));
+                #pragma warning disable CS0618 // Type or member is obsolete
+                OnKeyDown(() => new KeyEventArgs((Key)key, pressed));
+                #pragma warning restore CS0618 // Type or member is obsolete
             } else {
-                OnKeyUp(() => new KeyEventArgs(key, pressed));
+                OnCduKeyUp(() => new CduKeyEventArgs(key, pressed));
+                #pragma warning disable CS0618 // Type or member is obsolete
+                OnKeyUp(() => new KeyEventArgs((Key)key, pressed));
+                #pragma warning restore CS0618 // Type or member is obsolete
             }
         }
 
@@ -535,7 +547,7 @@ namespace McduDotNet.WinWing
         }
 
         /// <inheritdoc/>
-        public bool IsKeySupported(Key key) => KeyToFlagOffsetCallback(key).Flag != 0;
+        public bool IsKeySupported(CduKey key) => KeyToFlagOffsetCallback(key).Flag != 0;
 
         /// <summary>
         /// True if the device supports the LED lamp passed across.
@@ -600,6 +612,34 @@ namespace McduDotNet.WinWing
 
         [Obsolete("Use IsLampSupported")]
         public bool IsLedSupported(Led led) => IsLampSupported((CduLamp)led);
+
+        [Obsolete("Use SupportedCduKeys instead")]
+        public IReadOnlyList<Key> SupportedKeys { get; }
+
+        [Obsolete("Use CduKeyDown instead")]
+        public event EventHandler<KeyEventArgs>? KeyDown;
+
+        [Obsolete("Use OnCduKeyDown instead")]
+        protected virtual void OnKeyDown(Func<KeyEventArgs> createArgs)
+        {
+            if(KeyDown != null) {
+                KeyDown?.Invoke(this, createArgs());
+            }
+        }
+
+        [Obsolete("Use CduKeyUp instead")]
+        public event EventHandler<KeyEventArgs>? KeyUp;
+
+        [Obsolete("Use OnCduKeyUp instead")]
+        protected virtual void OnKeyUp(Func<KeyEventArgs> createArgs)
+        {
+            if(KeyUp != null) {
+                KeyUp?.Invoke(this, createArgs());
+            }
+        }
+
+        [Obsolete("Use the CduKey version instead")]
+        public bool IsKeySupported(Key key) => KeyToFlagOffsetCallback((CduKey)key).Flag != 0;
 
 #pragma warning restore CS0618 // Type or member is obsolete
 

@@ -19,8 +19,8 @@ namespace McduDotNet.WinWing
     /// </summary>
     class KeyboardReader : UsbPollingReader
     {
-        private readonly Func<Key, (int Flag, int Offset)> _KeyToFlagOffsetCallback;
-        private readonly Action<Key, bool> _KeyPressAction;
+        private readonly Func<CduKey, (int Flag, int Offset)> _KeyToFlagOffsetCallback;
+        private readonly Action<CduKey, bool> _KeyPressAction;
         private readonly Action<UInt16, UInt16> _AmbientLightChangedAction;
         private readonly InputReport _InputReport_Previous = new InputReport();
         private readonly InputReport _InputReport_Current = new InputReport();
@@ -31,8 +31,8 @@ namespace McduDotNet.WinWing
 
         public KeyboardReader(
             HidStream hidStream,
-            Func<Key, (int Flag, int Offset)> keyToFlagOffsetCallback,
-            Action<Key, bool> keyPressAction,
+            Func<CduKey, (int Flag, int Offset)> keyToFlagOffsetCallback,
+            Action<CduKey, bool> keyPressAction,
             Action<UInt16, UInt16> ambientLightChangedAction
         ) : base(hidStream)
         {
@@ -50,7 +50,7 @@ namespace McduDotNet.WinWing
                || digest.Item3 != _PreviousInputReportDigest.Item3
             ) {
                 try {
-                    foreach(Key key in Enum.GetValues(typeof(Key))) {
+                    foreach(CduKey key in Enum.GetValues(typeof(CduKey))) {
                         (var flag, var offset) = _KeyToFlagOffsetCallback(key);
                         if(flag != 0) {
                             var pressed = _InputReport_Current.IsKeyPressed(flag, offset);

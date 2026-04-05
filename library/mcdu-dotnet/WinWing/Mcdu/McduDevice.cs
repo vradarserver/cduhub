@@ -34,7 +34,7 @@ namespace McduDotNet.WinWing.Mcdu
         });
         protected override BinaryLampMap BinaryLampMap => _BinaryLampMap;
 
-        protected override Func<Key, (int Flag, int Offset)> KeyToFlagOffsetCallback => KeyboardMap.InputReport01FlagAndOffset;
+        protected override Func<CduKey, (int Flag, int Offset)> KeyToFlagOffsetCallback => KeyboardMap.InputReport01FlagAndOffset;
 
         /// <summary>
         /// Creates a new object.
