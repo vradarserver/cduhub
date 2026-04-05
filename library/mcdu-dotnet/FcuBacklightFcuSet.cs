@@ -8,36 +8,41 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System;
+
 namespace McduDotNet
 {
-    /// <summary>
-    /// The interface for the Airbus FCU variant of the <see cref="IFgcp"/> device.
-    /// </summary>
-    public interface IFgcpFcu : IFgcp
+    public class FcuBacklightFcuSet : FcuBacklightSet
     {
+        private int _ExpedPercent;
         /// <summary>
-        /// True if the left EFIS device is attached to the FCU.
+        /// Gets or sets the EXPED button backlight intensity as a percentage from 0 to
+        /// 100.
         /// </summary>
-        bool IsLeftEfisPresent { get; }
+        public int ExpedPercent
+        {
+            get => _ExpedPercent;
+            set => _ExpedPercent = Math.Min(100, Math.Max(0, value));
+        }
 
-        /// <summary>
-        /// True if the right EFIS device is attached to the FCU.
-        /// </summary>
-        bool IsRightEfisPresent { get; }
+        public override bool Equals(object obj)
+        {
+            var result = Object.ReferenceEquals(this, obj);
+            if(!result && obj is FcuBacklightFcuSet other) {
+                result = base.Equals(other)
+                      && ExpedPercent == other.ExpedPercent;
+            }
+            return result;
+        }
 
-        /// <summary>
-        /// The backlights.
-        /// </summary>
-        FcuBacklights Backlights { get; }
+        public override int GetHashCode() => base.GetHashCode();
 
-        /// <summary>
-        /// The segmented displays.
-        /// </summary>
-        FcuDisplays Displays { get; }
+        public void CopyFrom(FcuBacklightFcuSet other)
+        {
+            base.CopyFrom(other);
+            ExpedPercent = other.ExpedPercent;
+        }
 
-        /// <summary>
-        /// The LED lights.
-        /// </summary>
-        FcuLamps Lamps { get; }
+        public void CopyTo(FcuBacklightFcuSet to) => to?.CopyFrom(this);
     }
 }

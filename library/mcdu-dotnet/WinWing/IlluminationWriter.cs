@@ -8,6 +8,8 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Collections.Generic;
+
 namespace McduDotNet.WinWing
 {
     /// <summary>
@@ -16,6 +18,7 @@ namespace McduDotNet.WinWing
     class IlluminationWriter
     {
         private readonly UsbWriter _UsbWriter;
+        private readonly Dictionary<byte, byte> _PreviousIntensities = new();
         private BinaryLampMap? _PreviousLamps;
 
         /// <summary>
@@ -45,10 +48,15 @@ namespace McduDotNet.WinWing
         /// The code for the device-specific element with an adjustable intensity.
         /// </param>
         /// <param name="percent"></param>
-        public void SetIntensity(byte adjustableElementId, int percent)
+        /// <param name="skipDuplicateCheck"></param>
+        public void SetIntensity(byte adjustableElementId, int percent, bool skipDuplicateCheck)
         {
             var byteValue = Percent.ToByte(percent);
-            SendIlluminationSettingPacket(adjustableElementId, byteValue);
+            var notSeenBefore = !_PreviousIntensities.TryGetValue(adjustableElementId, out var previous);
+            if(notSeenBefore || previous != byteValue || skipDuplicateCheck) {
+                SendIlluminationSettingPacket(adjustableElementId, byteValue);
+                _PreviousIntensities[adjustableElementId] = byteValue;
+            }
         }
 
         /// <summary>

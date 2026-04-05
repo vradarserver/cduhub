@@ -19,6 +19,11 @@ namespace McduDotNet.WinWing.FcuAndEfis
     /// </summary>
     class FcuDevice : IFgcpFcu
     {
+        private const byte _PanelIntensityId =      0x00;
+        private const byte _DisplayIntensityId =    0x01;
+        private const byte _GreenLedIntensityId =   0x11;
+        private const byte _ExpedIntensityId =      0x1E;
+
         protected HidDevice _HidDevice;
         protected HidStream? _HidStream;
         protected UsbWriter? _UsbWriter;
@@ -62,6 +67,9 @@ namespace McduDotNet.WinWing.FcuAndEfis
 
         /// <inheritdoc/>
         public bool IsRightEfisPresent => (UsbDevice.EquipmentType & EquipmentType.RightEfis) != 0;
+
+        /// <inheritdoc/>
+        public FcuBacklights Backlights { get; } = new();
 
         /// <inheritdoc/>
         public FcuDisplays Displays { get; } = new();
@@ -146,7 +154,14 @@ namespace McduDotNet.WinWing.FcuAndEfis
                 0x10BB
             );
 
+            Backlights.PanelPercent = 50;
+            Backlights.DisplayPercent = 50;
+            Backlights.LedPercent = 50;
+            Backlights.ExpedPercent = 50;
+
+            RefreshBacklights();
             RefreshDisplays();
+            RefreshLamps();
         }
 
         /// <inheritdoc/>
@@ -154,9 +169,42 @@ namespace McduDotNet.WinWing.FcuAndEfis
         {
             Displays.ClearDisplays();
             Lamps.TurnAllOn(on: false);
+            Backlights.PanelPercent = 0;
+            Backlights.ExpedPercent = 0;
+            Backlights.DisplayPercent = 50;
+            Backlights.LedPercent = 50;
 
+            RefreshBacklights();
             RefreshDisplays();
             RefreshLamps();
+        }
+
+        public void RefreshBacklights(bool skipDuplicateCheck = false)
+        {
+            SendIntensity(Backlights.LeftEfis, _LeftEfisIlluminationWriter, skipDuplicateCheck);
+            SendIntensity(Backlights.Fcu, skipDuplicateCheck);
+            SendIntensity(Backlights.RightEfis, _RightEfisIlluminationWriter, skipDuplicateCheck);
+        }
+
+        private void SendIntensity(FcuBacklightFcuSet backlights, bool skipDuplicateCheck)
+        {
+            if(_FcuIlluminationWriter != null) {
+                SendIntensity(backlights, _FcuIlluminationWriter, skipDuplicateCheck);
+                _FcuIlluminationWriter.SetIntensity(_ExpedIntensityId, backlights.ExpedPercent, skipDuplicateCheck);
+            }
+        }
+
+        private void SendIntensity(
+            FcuBacklightSet backlights,
+            IlluminationWriter? writer,
+            bool skipDuplicateCheck
+        )
+        {
+            if(writer != null) {
+                writer.SetIntensity(_PanelIntensityId, backlights.PanelPercent, skipDuplicateCheck);
+                writer.SetIntensity(_DisplayIntensityId, backlights.DisplayPercent, skipDuplicateCheck);
+                writer.SetIntensity(_GreenLedIntensityId, backlights.GreenLedPercent, skipDuplicateCheck);
+            }
         }
 
         /// <inheritdoc/>

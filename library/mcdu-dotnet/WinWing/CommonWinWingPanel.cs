@@ -101,7 +101,11 @@ namespace McduDotNet.WinWing
                 var normalised = Percent.Clamp(value);
                 if(normalised != DisplayBrightnessPercent) {
                     _DisplayBrightnessPercent = normalised;
-                    _IlluminationWriter?.SetIntensity(_DisplayBacklightId, _DisplayBrightnessPercent);
+                    _IlluminationWriter?.SetIntensity(
+                        _DisplayBacklightId,
+                        _DisplayBrightnessPercent,
+                        skipDuplicateCheck: true
+                    );
                 }
             }
         }
@@ -114,7 +118,11 @@ namespace McduDotNet.WinWing
                 var normalised = Percent.Clamp(value);
                 if(normalised != BacklightBrightnessPercent) {
                     _BacklightBrightnessPercent = normalised;
-                    _IlluminationWriter?.SetIntensity(_KeyboardBacklightId, _BacklightBrightnessPercent);
+                    _IlluminationWriter?.SetIntensity(
+                        _KeyboardBacklightId,
+                        _BacklightBrightnessPercent,
+                        skipDuplicateCheck: true
+                    );
                 }
             }
         }
@@ -128,7 +136,11 @@ namespace McduDotNet.WinWing
                 var normalised = Percent.Clamp(value);
                 if(normalised != LampBrightnessPercent) {
                     _LampBrightnessPercent = normalised;
-                    _IlluminationWriter?.SetIntensity(_LampBrightnessId, _LampBrightnessPercent);
+                    _IlluminationWriter?.SetIntensity(
+                        _LampBrightnessId,
+                        _LampBrightnessPercent,
+                        skipDuplicateCheck: true
+                    );
                 }
             }
         }
@@ -404,9 +416,9 @@ namespace McduDotNet.WinWing
         /// <inheritdoc/>
         public void RefreshBrightnesses()
         {
-            _IlluminationWriter?.SetIntensity(_KeyboardBacklightId, BacklightBrightnessPercent);
-            _IlluminationWriter?.SetIntensity(_DisplayBacklightId, DisplayBrightnessPercent);
-            _IlluminationWriter?.SetIntensity(_LampBrightnessId, LampBrightnessPercent);
+            _IlluminationWriter?.SetIntensity(_KeyboardBacklightId, BacklightBrightnessPercent, skipDuplicateCheck: true);
+            _IlluminationWriter?.SetIntensity(_DisplayBacklightId, DisplayBrightnessPercent, skipDuplicateCheck: true);
+            _IlluminationWriter?.SetIntensity(_LampBrightnessId, LampBrightnessPercent, skipDuplicateCheck: true);
         }
 
         /// <inheritdoc/>
@@ -515,9 +527,9 @@ namespace McduDotNet.WinWing
         {
             Screen.Clear();
             Lamps.TurnAllOn(false);
-            _IlluminationWriter?.SetIntensity(_KeyboardBacklightId, backlightBrightnessPercent);
-            _IlluminationWriter?.SetIntensity(_DisplayBacklightId, displayBrightnessPercent);
-            _IlluminationWriter?.SetIntensity(_LampBrightnessId, ledBrightnessPercent);
+            _IlluminationWriter?.SetIntensity(_KeyboardBacklightId, backlightBrightnessPercent, skipDuplicateCheck: true);
+            _IlluminationWriter?.SetIntensity(_DisplayBacklightId, displayBrightnessPercent, skipDuplicateCheck: true);
+            _IlluminationWriter?.SetIntensity(_LampBrightnessId, ledBrightnessPercent, skipDuplicateCheck: true);
             RefreshDisplay();
             RefreshLamps();
         }
