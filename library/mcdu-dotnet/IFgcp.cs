@@ -23,6 +23,12 @@ namespace McduDotNet
         UsbDevice UsbDevice { get; }
 
         /// <summary>
+        /// Update the display's backlights and LED intensities.
+        /// </summary>
+        /// <param name="skipDuplicateCheck"></param>
+        void RefreshBacklights(bool skipDuplicateCheck = false);
+
+        /// <summary>
         /// Update the device's segmented displays to match the content of the FGCP's
         /// segmented display buffer.
         /// </summary>

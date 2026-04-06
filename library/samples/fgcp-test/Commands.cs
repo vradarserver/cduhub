@@ -26,6 +26,13 @@ namespace FgcpTest
                 Program.Worked = command.Run();
             });
 
+            FcuClock.SetAction(parse => {
+                var command = new Command_FcuClock() {
+                    SuppressCleanup = parse.GetValue(Options.SuppressCleanup),
+                };
+                Program.Worked = command.Run();
+            });
+
             FcuDisplays.SetAction(parse => {
                 var command = new Command_FcuDisplays() {
                     SuppressCleanup = parse.GetValue(Options.SuppressCleanup),
@@ -50,6 +57,10 @@ namespace FgcpTest
             Options.SuppressCleanup,
         };
 
+        public static Command FcuClock = new("fcu-clock", "Show a clock on the FCU") {
+            Options.SuppressCleanup,
+        };
+
         public static Command FcuDisplays = new("fcu-displays", "Test the FCU segment displays") {
             Options.SuppressCleanup,
         };
@@ -66,6 +77,7 @@ namespace FgcpTest
             Commands.Connect,
             Commands.FcuDisplays,
             Commands.FcuLamps,
+            Commands.FcuClock,
         };
     }
 }
