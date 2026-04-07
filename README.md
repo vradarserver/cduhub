@@ -1,13 +1,23 @@
+# Repository
+
+This repository contains two related projects.
+
+* `mcdu-dotnet` is a .NET Standard 2.0 library that contains the low-level code for
+  reading and controlling supported WinWing devices over USB. The source for it is
+  in the `library` folder. The README for it [is here](library/mcdu-dotnet/README.md).
+  It is available on NuGet here:
+
+  https://www.nuget.org/packages/mcdu-dotnet
+
+* `CDU HUB` is a library and application that uses `mcdu-dotnet` to give you something
+  to do with the devices while you're not using them in flight sims.
+
+
 # CDU HUB
 
-[WinWing](https://uk.winwingsim.com/view/) sell replicas of various Airbus and
-Boeing CDUs. They plug in over USB, they have 24 x 14 alphanumeric colour displays,
-backlight buttons, two ambient light sensors, half-a-dozen LEDs and are very cool.
+This application uses `mcdu-dotnet` to display output on, and accept input from,
+WinWing CDU devices.
 
-They come in very handy when flying airliners in flight simulators, but I
-want to them outside of flight sims as well.
-
-This application can display output on, and accept input from, these CDU devices.
 The idea is that it can be left running all the time, it has its own built-in
 set of pages and it will let other applications connect to it and display their
 pages as well.
@@ -139,16 +149,3 @@ Known issues:
   then I'll switch over to those and the lag should go away.
 * Only the PFP-7 buttons have commands set up for them.
 * LEDs don't work. I think I just need to find the commands for those.
-
-
-
-## mcdu-dotnet
-
-The code for reading and writing the CDU USB device is in a separate library to
-the rest of CDU Hub, and can be used by applications that want to drive the devices
-for themselves.
-
-The library is called `mcdu-dotnet` and it's in the `library` folder. The README
-for it [is here](library/mcdu-dotnet/README.md). It is available on NuGet here:
-
-https://www.nuget.org/packages/mcdu-dotnet
