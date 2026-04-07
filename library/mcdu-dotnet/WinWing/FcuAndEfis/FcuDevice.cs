@@ -9,6 +9,8 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using HidSharp;
 
 namespace McduDotNet.WinWing.FcuAndEfis
@@ -28,36 +30,17 @@ namespace McduDotNet.WinWing.FcuAndEfis
         protected HidStream? _HidStream;
         protected UsbWriter? _UsbWriter;
         protected FcuDisplayWriter? _DisplayWriter;
+        protected FcuKeyboardReader? _KeyboardReader;
 
         protected IlluminationWriter? _LeftEfisIlluminationWriter;
         protected IlluminationWriter? _RightEfisIlluminationWriter;
         protected IlluminationWriter? _FcuIlluminationWriter;
-        protected BinaryLampMap _LeftEfisBinaryLampMap = new(new BinaryLamp[] {
-            new((int)FgcpLamp.Left_FD,      0x03),
-            new((int)FgcpLamp.Left_LS,      0x04),
-            new((int)FgcpLamp.Left_Cstr,    0x05),
-            new((int)FgcpLamp.Left_Wpt,     0x06),
-            new((int)FgcpLamp.Left_VorD,    0x07),
-            new((int)FgcpLamp.Left_Ndb,     0x08),
-            new((int)FgcpLamp.Left_Arpt,    0x09),
-        });
-        protected BinaryLampMap _RightEfisBinaryLampMap = new(new BinaryLamp[] {
-            new((int)FgcpLamp.Right_FD,     0x03),
-            new((int)FgcpLamp.Right_LS,     0x04),
-            new((int)FgcpLamp.Right_Cstr,   0x05),
-            new((int)FgcpLamp.Right_Wpt,    0x06),
-            new((int)FgcpLamp.Right_VorD,   0x07),
-            new((int)FgcpLamp.Right_Ndb,    0x08),
-            new((int)FgcpLamp.Right_Arpt,   0x09),
-        });
-        protected BinaryLampMap _FcuBinaryLampMap = new(new BinaryLamp[] {
-            new((int)FgcpLamp.Loc,          0x03),
-            new((int)FgcpLamp.Ap1,          0x05),
-            new((int)FgcpLamp.Ap2,          0x07),
-            new((int)FgcpLamp.AThr,         0x09),
-            new((int)FgcpLamp.Exped,        0x0b),
-            new((int)FgcpLamp.Appr,         0x0d),
-        });
+        protected BinaryLampMap _LeftEfisBinaryLampMap = LampMaps.CreateLeftEfisMap();
+        protected BinaryLampMap _RightEfisBinaryLampMap = LampMaps.CreateRightEfisMap();
+        protected BinaryLampMap _FcuBinaryLampMap = LampMaps.CreateFcuMap();
+
+        private CancellationTokenSource? _InputLoopCancellationTokenSource;
+        private Task? _InputLoopTask;
 
         /// <inheritdoc/>
         public UsbDevice UsbDevice { get; }
@@ -76,6 +59,38 @@ namespace McduDotNet.WinWing.FcuAndEfis
 
         /// <inheritdoc/>
         public FcuLamps Lamps { get; } = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<FcuKeyEventArgs>? FcuKeyDown;
+
+        /// <summary>
+        /// Raises <see cref="FcuKeyDown"/>. Only creates the args if something is
+        /// listening.
+        /// </summary>
+        /// <param name="createArgs"></param>
+        protected virtual void OnFcuKeyDown(Func<FcuKeyEventArgs> createArgs)
+        {
+            if(FcuKeyDown != null) {
+                var args = createArgs();
+                FcuKeyDown?.Invoke(this, args);
+            }
+        }
+
+        /// <inheritdoc/>
+        public event EventHandler<FcuKeyEventArgs>? FcuKeyUp;
+
+        /// <summary>
+        /// Raises <see cref="FcuKeyUp"/>. Only creates the args if something is
+        /// listening.
+        /// </summary>
+        /// <param name="createArgs"></param>
+        protected virtual void OnFcuKeyUp(Func<FcuKeyEventArgs> createArgs)
+        {
+            if(FcuKeyUp != null) {
+                var args = createArgs();
+                FcuKeyUp?.Invoke(this, args);
+            }
+        }
 
         /// <summary>
         /// Creates a new object.
@@ -98,6 +113,11 @@ namespace McduDotNet.WinWing.FcuAndEfis
         protected virtual void Dispose(bool disposing)
         {
             if(disposing) {
+                _InputLoopCancellationTokenSource?.Cancel();
+                _InputLoopTask?.Wait(5000);
+                _InputLoopTask = null;
+                _KeyboardReader = null;
+
                 _UsbWriter = null;
                 _DisplayWriter = null;
                 _LeftEfisIlluminationWriter = null;
@@ -140,6 +160,16 @@ namespace McduDotNet.WinWing.FcuAndEfis
             ) {
                // UpdatingDeviceCallback = args => OnDisplayChanging(args),
             };
+
+            _KeyboardReader = new FcuKeyboardReader(
+                _HidStream,
+                KeyboardMap.InputReport01FlagAndOffset,
+                ProcessKeyboardEvent
+            );
+            _InputLoopCancellationTokenSource = new CancellationTokenSource();
+            _InputLoopTask = Task.Run(() => _KeyboardReader.RunInputLoop(
+                _InputLoopCancellationTokenSource.Token
+            ));
 
             _LeftEfisIlluminationWriter = new IlluminationWriter(
                 _UsbWriter,
@@ -236,6 +266,15 @@ namespace McduDotNet.WinWing.FcuAndEfis
                 if(on != null) {
                     binaryLampMap.SetLamp(idx, on.Value);
                 }
+            }
+        }
+
+        protected virtual void ProcessKeyboardEvent(FcuKey key, bool pressed)
+        {
+            if(pressed) {
+                OnFcuKeyDown(() => new FcuKeyEventArgs(key, pressed));
+            } else {
+                OnFcuKeyUp(() => new FcuKeyEventArgs(key, pressed));
             }
         }
     }

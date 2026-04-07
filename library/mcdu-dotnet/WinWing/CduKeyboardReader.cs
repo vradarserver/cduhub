@@ -14,10 +14,10 @@ using HidSharp;
 namespace McduDotNet.WinWing
 {
     /// <summary>
-    /// Reads a WinWing panel's keyboard and raises events on the parent device when keys
-    /// are pressed or released, or when the ambient light sensors change value.
+    /// Reads a WinWing CDU device's keyboard and raises events on the parent device when
+    /// keys are pressed or released, or when the ambient light sensors change value.
     /// </summary>
-    class KeyboardReader : UsbPollingReader
+    class CduKeyboardReader : UsbPollingReader
     {
         private readonly Func<CduKey, (int Flag, int Offset)> _KeyToFlagOffsetCallback;
         private readonly Action<CduKey, bool> _KeyPressAction;
@@ -29,7 +29,7 @@ namespace McduDotNet.WinWing
         /// <inheritdoc/>
         protected override int PacketSize => InputReport.PacketLength;
 
-        public KeyboardReader(
+        public CduKeyboardReader(
             HidStream hidStream,
             Func<CduKey, (int Flag, int Offset)> keyToFlagOffsetCallback,
             Action<CduKey, bool> keyPressAction,

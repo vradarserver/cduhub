@@ -8,48 +8,44 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
+using Cduhub.CommandLine;
+using McduDotNet;
 
-namespace McduDotNet
+namespace FgcpTest
 {
-    /// <summary>
-    /// The interface for the Airbus FCU variant of the <see cref="IFgcp"/> device.
-    /// </summary>
-    public interface IFgcpFcu : IFgcp
+    class Command_FcuKeys : CommonCommand
     {
-        /// <summary>
-        /// True if the left EFIS device is attached to the FCU.
-        /// </summary>
-        bool IsLeftEfisPresent { get; }
+        public bool SuppressCleanup { get; set; }
 
-        /// <summary>
-        /// True if the right EFIS device is attached to the FCU.
-        /// </summary>
-        bool IsRightEfisPresent { get; }
+        public bool Run()
+        {
+            var result = true;
 
-        /// <summary>
-        /// The backlights.
-        /// </summary>
-        FcuBacklights Backlights { get; }
+            using(var fcu = DeviceFactory.ConnectLocalFgcp<IFgcpFcu>()) {
+                if(fcu == null) {
+                    Console.WriteLine("No FCU device connected");
+                    result = false;
+                } else {
+                    Console.WriteLine($"Connected to {fcu}");
 
-        /// <summary>
-        /// The segmented displays.
-        /// </summary>
-        FcuDisplays Displays { get; }
+                    fcu.FcuKeyDown += (sender, args) => {
+                        Console.WriteLine($"DOWN: Key={args.Key,-20} (Pressed={args.Pressed})");
+                    };
+                    fcu.FcuKeyUp += (sender, args) => {
+                        Console.WriteLine($"UP:   Key={args.Key,-20} (Pressed={args.Pressed})");
+                    };
 
-        /// <summary>
-        /// The LED lights.
-        /// </summary>
-        FcuLamps Lamps { get; }
+                    Console.WriteLine($"Press Q to quit");
+                    while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
+                    }
 
-        /// <summary>
-        /// Raised when a button is pressed.
-        /// </summary>
-        event EventHandler<FcuKeyEventArgs> FcuKeyDown;
+                    if(!SuppressCleanup) {
+                        fcu.Cleanup();
+                    }
+                }
+            }
 
-        /// <summary>
-        /// Raised when a button is released.
-        /// </summary>
-        event EventHandler<FcuKeyEventArgs> FcuKeyUp;
+            return result;
+        }
     }
 }

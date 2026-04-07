@@ -48,7 +48,7 @@ namespace McduDotNet.WinWing
         protected IlluminationWriter? _IlluminationWriter;
         private FontWriter? _FontWriter;
         private PaletteWriter? _PaletteWriter;
-        private KeyboardReader? _KeyboardReader;
+        private CduKeyboardReader? _KeyboardReader;
         private CancellationTokenSource? _InputLoopCancellationTokenSource;
         private Task? _InputLoopTask;
 
@@ -310,7 +310,7 @@ namespace McduDotNet.WinWing
             }
             _UsbWriter = new UsbWriter(_HidStream);
 
-            _KeyboardReader = new KeyboardReader(
+            _KeyboardReader = new CduKeyboardReader(
                 _HidStream,
                 KeyToFlagOffsetCallback,
                 ProcessKeyboardEvent,

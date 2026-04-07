@@ -47,6 +47,13 @@ namespace FgcpTest
                 Program.Worked = command.Run();
             });
 
+            FcuKeys.SetAction(parse => {
+                var command = new Command_FcuKeys() {
+                    SuppressCleanup = parse.GetValue(Options.SuppressCleanup),
+                };
+                Program.Worked = command.Run();
+            });
+
             ShowDevices.SetAction(parse => {
                 var command = new Command_ShowDevices();
                 Program.Worked = command.Run();
@@ -65,6 +72,10 @@ namespace FgcpTest
             Options.SuppressCleanup,
         };
 
+        public static Command FcuKeys = new("fcu-keys", "Test the FCU keys") {
+            Options.SuppressCleanup,
+        };
+
         public static Command FcuLamps = new("fcu-lamps", "Test the FCU LED lamps") {
             Options.SuppressCleanup,
         };
@@ -77,6 +88,7 @@ namespace FgcpTest
             Commands.Connect,
             Commands.FcuDisplays,
             Commands.FcuLamps,
+            Commands.FcuKeys,
             Commands.FcuClock,
         };
     }

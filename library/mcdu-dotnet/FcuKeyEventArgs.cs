@@ -12,44 +12,16 @@ using System;
 
 namespace McduDotNet
 {
-    /// <summary>
-    /// The interface for the Airbus FCU variant of the <see cref="IFgcp"/> device.
-    /// </summary>
-    public interface IFgcpFcu : IFgcp
+    public class FcuKeyEventArgs : EventArgs
     {
-        /// <summary>
-        /// True if the left EFIS device is attached to the FCU.
-        /// </summary>
-        bool IsLeftEfisPresent { get; }
+        public FcuKey Key { get; }
 
-        /// <summary>
-        /// True if the right EFIS device is attached to the FCU.
-        /// </summary>
-        bool IsRightEfisPresent { get; }
+        public bool Pressed { get; }
 
-        /// <summary>
-        /// The backlights.
-        /// </summary>
-        FcuBacklights Backlights { get; }
-
-        /// <summary>
-        /// The segmented displays.
-        /// </summary>
-        FcuDisplays Displays { get; }
-
-        /// <summary>
-        /// The LED lights.
-        /// </summary>
-        FcuLamps Lamps { get; }
-
-        /// <summary>
-        /// Raised when a button is pressed.
-        /// </summary>
-        event EventHandler<FcuKeyEventArgs> FcuKeyDown;
-
-        /// <summary>
-        /// Raised when a button is released.
-        /// </summary>
-        event EventHandler<FcuKeyEventArgs> FcuKeyUp;
+        public FcuKeyEventArgs(FcuKey key, bool pressed)
+        {
+            Key = key;
+            Pressed = pressed;
+        }
     }
 }
