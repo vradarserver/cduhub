@@ -33,22 +33,17 @@ namespace FgcpTest
                     fcu.Backlights.DisplayPercent = 80;
                     fcu.RefreshBacklights();
 
-                    var previousSecond = -1;
-                    var separator = S7.BB;
-
                     Console.WriteLine($"Press Q to quit");
                     while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
                         var time = DateTime.Now;
 
                         var altitudeText = time.ToString("HH mm");
 
-                        if(time.Second != previousSecond) {
-                            previousSecond = time.Second;
-                            switch(separator) {
-                                case S7.TT: separator = S7.MM; break;
-                                case S7.MM: separator = S7.BB; break;
-                                case S7.BB: separator = S7.TT; break;
-                            }
+                        var separator = S7.TT;
+                        if(time.Second >= 20) {
+                            separator = time.Second < 40
+                                ? S7.MM
+                                : S7.BB;
                         }
 
                         var altitudeDisplay = fcu
