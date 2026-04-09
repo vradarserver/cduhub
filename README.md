@@ -4,7 +4,10 @@ This repository contains two related projects.
 
 * `mcdu-dotnet` is a .NET Standard 2.0 library that contains the low-level code for
   reading and controlling supported WinWing devices over USB. The source for it is
-  in the `library` folder. The README for it [is here](library/mcdu-dotnet/README.md).
+  in the `library` folder. The README for it is here:
+
+  [library/mcdu-dotnet/README.md](library/mcdu-dotnet/README.md)
+
   It is available on NuGet here:
 
   https://www.nuget.org/packages/mcdu-dotnet
