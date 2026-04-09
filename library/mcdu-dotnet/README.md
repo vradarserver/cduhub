@@ -87,11 +87,6 @@ If the specific type of FGCP device cannot be found then it returns null.
 `FindLocalDevices` returns a collection of `UsbDevice` objects that describe all
 supported devices attached to the local machine.
 
-https://github.com/vradarserver/cduhub/blob/main/library/mcdu-dotnet/ICdu.cs
-
-
-#### UsbDevice Types
-
 * https://github.com/vradarserver/cduhub/blob/main/library/mcdu-dotnet/UsbDevice.cs
 
 
