@@ -65,8 +65,8 @@ namespace Leds
 
                             if(!lsNumber.IsLeft) {
                                 switch(lsNumber.Number) {
-                                    case 5: cdu.LampBrightnessPercent = Math.Max(0, cdu.LampBrightnessPercent - 5); break;
-                                    case 6: cdu.LampBrightnessPercent = Math.Min(100, cdu.LampBrightnessPercent + 5); break;
+                                    case 5: cdu.Backlights.LedPercent = Math.Max(0, cdu.Backlights.LedPercent - 5); break;
+                                    case 6: cdu.Backlights.LedPercent = Math.Min(100, cdu.Backlights.LedPercent + 5); break;
                                 }
                             }
 

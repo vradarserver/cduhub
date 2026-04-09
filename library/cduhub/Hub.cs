@@ -78,17 +78,17 @@ namespace Cduhub
         /// <summary>
         /// The CDU's current display brightness percent value.
         /// </summary>
-        public int DisplayBrightnessPercent => _Cdu?.DisplayBrightnessPercent ?? 0;
+        public int DisplayBrightnessPercent => _Cdu?.Backlights.DisplayPercent ?? 0;
 
         /// <summary>
         /// The CDU's current LED lamp intensity percent value.
         /// </summary>
-        public int LedBrightnessPercent => _Cdu?.LampBrightnessPercent ?? 0;
+        public int LedBrightnessPercent => _Cdu?.Backlights.LedPercent ?? 0;
 
         /// <summary>
         /// The CDU's current keyboard backlight brightness percent value.
         /// </summary>
-        public int BacklightBrightnessPercent => _Cdu?.BacklightBrightnessPercent ?? 0;
+        public int BacklightBrightnessPercent => _Cdu?.Backlights.KeyboardPercent ?? 0;
 
         public CommonCduKey InterruptKey1 { get; set; } = CommonCduKey.Brt;
 
@@ -239,7 +239,7 @@ namespace Cduhub
                 UploadFont(_SelectedPage.PageFont);
                 RefreshPalette(_SelectedPage, forceRefresh: true);
                 RefreshLamps(_SelectedPage);
-                _Cdu?.RefreshBrightnesses();
+                _Cdu?.RefreshBacklights();
             }
         }
 
@@ -248,7 +248,7 @@ namespace Cduhub
             LoadSettings();
             ApplySettingsToDevice();
             _Cdu?.ApplyAutoBrightness();
-            _Cdu?.RefreshBrightnesses();
+            _Cdu?.RefreshBacklights();
         }
 
         private void PersistSettings()
@@ -361,7 +361,7 @@ namespace Cduhub
                     _PageHistory.Push(page);
                     RefreshDisplay(page);
                     RefreshLamps(page);
-                    _Cdu?.RefreshBrightnesses();
+                    _Cdu?.RefreshBacklights();
                     _SelectedPage.OnSelected(true);
                 }
             }

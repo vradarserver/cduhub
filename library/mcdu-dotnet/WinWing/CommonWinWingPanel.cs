@@ -24,7 +24,7 @@ namespace McduDotNet.WinWing
     {
         protected const byte _KeyboardBacklightId = 0x00;
         protected const byte _DisplayBacklightId = 0x01;
-        protected const byte _LampBrightnessId = 0x02;
+        protected const byte _LedBrightnessId = 0x02;
 
         protected abstract byte CommandPrefix { get; }
         // One of the differences between panels seems to be that the first byte of the
@@ -78,6 +78,9 @@ namespace McduDotNet.WinWing
         }
 
         /// <inheritdoc/>
+        public CduBacklights Backlights { get; }
+
+        /// <inheritdoc/>
         public IReadOnlyList<CduKey> SupportedCduKeys { get; }
 
         /// <inheritdoc/>
@@ -91,59 +94,6 @@ namespace McduDotNet.WinWing
 
         /// <inheritdoc/>
         public Compositor Output { get; }
-
-        private int _DisplayBrightnessPercent = 100;
-        /// <inheritdoc/>
-        public int DisplayBrightnessPercent
-        {
-            get => _DisplayBrightnessPercent;
-            set {
-                var normalised = Percent.Clamp(value);
-                if(normalised != DisplayBrightnessPercent) {
-                    _DisplayBrightnessPercent = normalised;
-                    _IlluminationWriter?.SetIntensity(
-                        _DisplayBacklightId,
-                        _DisplayBrightnessPercent,
-                        skipDuplicateCheck: true
-                    );
-                }
-            }
-        }
-
-        private int _BacklightBrightnessPercent = 0;
-        public int BacklightBrightnessPercent
-        {
-            get => _BacklightBrightnessPercent;
-            set {
-                var normalised = Percent.Clamp(value);
-                if(normalised != BacklightBrightnessPercent) {
-                    _BacklightBrightnessPercent = normalised;
-                    _IlluminationWriter?.SetIntensity(
-                        _KeyboardBacklightId,
-                        _BacklightBrightnessPercent,
-                        skipDuplicateCheck: true
-                    );
-                }
-            }
-        }
-
-        private int _LampBrightnessPercent = 100;
-        /// <inheritdoc/>
-        public int LampBrightnessPercent
-        {
-            get => _LampBrightnessPercent;
-            set {
-                var normalised = Percent.Clamp(value);
-                if(normalised != LampBrightnessPercent) {
-                    _LampBrightnessPercent = normalised;
-                    _IlluminationWriter?.SetIntensity(
-                        _LampBrightnessId,
-                        _LampBrightnessPercent,
-                        skipDuplicateCheck: true
-                    );
-                }
-            }
-        }
 
         /// <inheritdoc/>
         public AutoBrightnessSettings AutoBrightness { get; } = new();
@@ -243,6 +193,7 @@ namespace McduDotNet.WinWing
             Lamps = new();
             Screen = new();
             Output = new(Screen);
+            Backlights = new();
             Palette = new();
             HidSharp.DeviceList.Local.Changed += HidSharpDeviceList_Changed;
 
@@ -340,7 +291,7 @@ namespace McduDotNet.WinWing
 
             InitialiseBasicFontsAndColours();
             RefreshLamps();
-            RefreshBrightnesses();
+            RefreshBacklights();
         }
 
         protected virtual void PanelSpecificInitialisation()
@@ -426,26 +377,20 @@ namespace McduDotNet.WinWing
         }
 
         /// <inheritdoc/>
-        public void RefreshBrightnesses()
-        {
-            _IlluminationWriter?.SetIntensity(_KeyboardBacklightId, BacklightBrightnessPercent, skipDuplicateCheck: true);
-            _IlluminationWriter?.SetIntensity(_DisplayBacklightId, DisplayBrightnessPercent, skipDuplicateCheck: true);
-            _IlluminationWriter?.SetIntensity(_LampBrightnessId, LampBrightnessPercent, skipDuplicateCheck: true);
-        }
-
-        /// <inheritdoc/>
         public void ApplyAutoBrightness()
         {
             if(AutoBrightness.Enabled) {
-                BacklightBrightnessPercent = AutoBrightness
+                Backlights.KeyboardPercent = AutoBrightness
                     .KeyboardBacklight
                     .BrightnessForAmbientPercent(AmbientLightPercent);
-                DisplayBrightnessPercent = AutoBrightness
+                Backlights.DisplayPercent = AutoBrightness
                     .DisplayBacklight
                     .BrightnessForAmbientPercent(AmbientLightPercent);
-                LampBrightnessPercent = AutoBrightness
+                Backlights.LedPercent = AutoBrightness
                     .LedIntensity
                     .IntensityForAmbientPercent(AmbientLightPercent);
+
+                RefreshBacklights();
             }
         }
 
@@ -490,7 +435,7 @@ namespace McduDotNet.WinWing
                             suppressUpdatingDeviceCallback: DisplayChanging == null
                         );
                     },
-                    DisplayBrightnessPercent,
+                    Backlights.DisplayPercent,
                     XOffset,
                     YOffset,
                     skipDuplicateCheck,
@@ -531,6 +476,16 @@ namespace McduDotNet.WinWing
         }
 
         /// <inheritdoc/>
+        public void RefreshBacklights(bool skipDuplicateCheck = false)
+        {
+            if(_IlluminationWriter != null) {
+                _IlluminationWriter.SetIntensity(_DisplayBacklightId,   Backlights.DisplayPercent,  skipDuplicateCheck: skipDuplicateCheck);
+                _IlluminationWriter.SetIntensity(_KeyboardBacklightId,  Backlights.KeyboardPercent, skipDuplicateCheck: skipDuplicateCheck);
+                _IlluminationWriter.SetIntensity(_LedBrightnessId,      Backlights.LedPercent,      skipDuplicateCheck: skipDuplicateCheck);
+            }
+        }
+
+        /// <inheritdoc/>
         public void Cleanup(
             int ledBrightnessPercent = 0,
             int displayBrightnessPercent = 0,
@@ -541,7 +496,7 @@ namespace McduDotNet.WinWing
             Lamps.TurnAllOn(false);
             _IlluminationWriter?.SetIntensity(_KeyboardBacklightId, backlightBrightnessPercent, skipDuplicateCheck: true);
             _IlluminationWriter?.SetIntensity(_DisplayBacklightId, displayBrightnessPercent, skipDuplicateCheck: true);
-            _IlluminationWriter?.SetIntensity(_LampBrightnessId, ledBrightnessPercent, skipDuplicateCheck: true);
+            _IlluminationWriter?.SetIntensity(_LedBrightnessId, ledBrightnessPercent, skipDuplicateCheck: true);
             RefreshDisplay();
             RefreshLamps();
         }
@@ -597,13 +552,6 @@ namespace McduDotNet.WinWing
             }
         }
 
-        [Obsolete("Use LampBrightnessPercent")]
-        public int LedBrightnessPercent
-        {
-            get => LampBrightnessPercent;
-            set => LampBrightnessPercent = value;
-        }
-
         [Obsolete("Use RefreshLamps")]
         public void RefreshLeds(bool skipDuplicateCheck = false)
         {
@@ -640,6 +588,39 @@ namespace McduDotNet.WinWing
 
         [Obsolete("Use the CduKey version instead")]
         public bool IsKeySupported(Key key) => KeyToFlagOffsetCallback((CduKey)key).Flag != 0;
+
+        [Obsolete("Use Backlights.DisplayPercent instead")]
+        public int DisplayBrightnessPercent
+        {
+            get => Backlights.DisplayPercent;
+            set {
+                Backlights.DisplayPercent = value;
+                RefreshBacklights();
+            }
+        }
+
+        [Obsolete("Use Backlights.KeyboardPercent instead")]
+        public int BacklightBrightnessPercent
+        {
+            get => Backlights.KeyboardPercent;
+            set {
+                Backlights.KeyboardPercent = value;
+                RefreshBacklights();
+            }
+        }
+
+        [Obsolete("Use Backlights.LedPercent instead")]
+        public int LedBrightnessPercent
+        {
+            get => Backlights.LedPercent;
+            set {
+                Backlights.LedPercent = value;
+                RefreshBacklights();
+            }
+        }
+
+        [Obsolete("Use RefreshBacklights instead")]
+        public void RefreshBrightnesses() => RefreshBacklights();
 
 #pragma warning restore CS0618 // Type or member is obsolete
 

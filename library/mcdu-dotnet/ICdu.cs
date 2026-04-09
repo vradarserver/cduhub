@@ -37,6 +37,12 @@ namespace McduDotNet
         CduLamps Lamps { get; }
 
         /// <summary>
+        /// The backlight intensities. Changes to the backlight settings are not sent to the
+        /// device until <see cref="RefreshBacklights"/> is called.
+        /// </summary>
+        CduBacklights Backlights { get; }
+
+        /// <summary>
         /// The CDU LED palette buffer. Changes to the palette buffer are not sent to the
         /// device until <see cref="RefreshPalette"/> is called.
         /// </summary>
@@ -52,25 +58,6 @@ namespace McduDotNet
         /// Returns a read-only collection of keys that the device supports.
         /// </summary>
         IReadOnlyList<CduKey> SupportedCduKeys { get; }
-
-        /// <summary>
-        /// Gets and sets the display backlight as a percentage between 0 and 100. Changes to
-        /// this value are immediately sent to the device, but see <see cref="RefreshBrightnesses"/>.
-        /// </summary>
-        int DisplayBrightnessPercent { get; set; }
-
-        /// <summary>
-        /// Gets and sets the keyboard backlight as a percentage between 0 and 100. Changes to
-        /// this value are immediately sent to the device, but see <see cref="RefreshBrightnesses"/>.
-        /// </summary>
-        int BacklightBrightnessPercent { get; set; }
-
-        /// <summary>
-        /// Gets and sets the LED lamp intensity as a percentage between 0 and 100.
-        /// Changes to this value are immediately sent to the device, but see <see
-        /// cref="RefreshBrightnesses"/>.
-        /// </summary>
-        int LampBrightnessPercent { get; set; }
 
         /// <summary>
         /// Gets and sets the offset of the left edge of the screen text.
@@ -215,13 +202,10 @@ namespace McduDotNet
         void RefreshPalette(bool skipDuplicateCheck = false, bool forceDisplayRefresh = true);
 
         /// <summary>
-        /// Resets the device's backlight and LED intensities to the <see
-        /// cref="DisplayBrightnessPercent"/>, <see cref="BacklightBrightnessPercent"/>
-        /// and <see cref="LedBrightnessPercent"/> values. Note that, unlike most other
-        /// properties, changes to the backlight values are immediately sent to the device,
-        /// you do not need to routintely call this function.
+        /// Update the CDU's backlights and LED intensities.
         /// </summary>
-        void RefreshBrightnesses();
+        /// <param name="skipDuplicateCheck"></param>
+        void RefreshBacklights(bool skipDuplicateCheck = false);
 
         /// <summary>
         /// Apply the auto-brightness settings. Changes to the auto-brightness settings
@@ -290,9 +274,6 @@ namespace McduDotNet
         [Obsolete("Use RefreshLamps instead")]
         void RefreshLeds(bool skipDuplicateCheck = false);
 
-        [Obsolete("Use LampBrightnessPercent instead")]
-        int LedBrightnessPercent { get; set; }
-
         [Obsolete("Use SupportedCduKeys instead")]
         IReadOnlyList<Key> SupportedKeys { get; }
 
@@ -305,6 +286,17 @@ namespace McduDotNet
         [Obsolete("Use CduKey version instead")]
         bool IsKeySupported(Key key);
 
+        [Obsolete("Use Backlights.DisplayPercent instead")]
+        int DisplayBrightnessPercent { get; set; }
+
+        [Obsolete("Use Backlights.KeyboardPercent instead")]
+        int BacklightBrightnessPercent { get; set; }
+
+        [Obsolete("Use Backlights.LedPercent instead")]
+        int LedBrightnessPercent { get; set; }
+
+        [Obsolete("Use RefreshBacklights instead")]
+        void RefreshBrightnesses();
 #pragma warning restore CS0618 // Type or member is obsolete
 
         #endregion
