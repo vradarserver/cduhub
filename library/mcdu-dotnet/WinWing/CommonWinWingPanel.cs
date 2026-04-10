@@ -41,6 +41,7 @@ namespace McduDotNet.WinWing
 
         protected readonly Screen _EmptyScreen = new();
         protected HidDevice _HidDevice;
+        protected string _HidDevicePath;
 
         protected HidStream? _HidStream;
         protected UsbWriter? _UsbWriter;
@@ -189,13 +190,17 @@ namespace McduDotNet.WinWing
         {
             CP = $"{CommandPrefix:x2}bb";
             _HidDevice = hidDevice;
+            _HidDevicePath = hidDevice.DevicePath;
             UsbDevice = usbDevice;
             Lamps = new();
             Screen = new();
             Output = new(Screen);
             Backlights = new();
             Palette = new();
-            HidSharp.DeviceList.Local.Changed += HidSharpDeviceList_Changed;
+            HidSharpDeviceWatcher.RegisterDisconnectedCallback(
+                _HidDevicePath,
+                OnDisconnected
+            );
 
             SupportedCduKeys = Enum.GetValues(typeof(CduKey))
                 .OfType<CduKey>()
@@ -222,7 +227,7 @@ namespace McduDotNet.WinWing
         protected virtual void Dispose(bool disposing)
         {
             if(disposing) {
-                HidSharp.DeviceList.Local.Changed -= HidSharpDeviceList_Changed;
+                HidSharpDeviceWatcher.DeregisterDisconnectedCallbacks(_HidDevicePath);
 
                 _InputLoopCancellationTokenSource?.Cancel();
                 _InputLoopTask?.Wait(5000);
@@ -510,18 +515,6 @@ namespace McduDotNet.WinWing
         /// <param name="lamp"></param>
         /// <returns></returns>
         public bool IsLampSupported(CduLamp lamp) => BinaryLampMap.ContainsExternalId((int)lamp);
-
-        protected void HidSharpDeviceList_Changed(object sender, DeviceListChangedEventArgs e)
-        {
-            var devicePresent = HidSharp
-                .DeviceList
-                .Local
-                .GetHidDevices()
-                .Any(device => device.DevicePath == _HidDevice.DevicePath);
-            if(!devicePresent) {
-                OnDisconnected();
-            }
-        }
 
         #region Obsolete members retained for short term backwards compatability
 
