@@ -27,6 +27,7 @@ namespace McduDotNet.WinWing.FcuAndEfis
         private const byte _ExpedIntensityId =      0x1E;
 
         protected HidDevice _HidDevice;
+        protected string _HidDevicePath;
         protected HidStream? _HidStream;
         protected UsbWriter? _UsbWriter;
         protected FcuDisplayWriter? _DisplayWriter;
@@ -92,6 +93,14 @@ namespace McduDotNet.WinWing.FcuAndEfis
             }
         }
 
+        /// <inheritdoc/>
+        public event EventHandler? Disconnected;
+
+        /// <summary>
+        /// Raises <see cref="Disconnected"/>.
+        /// </summary>
+        protected virtual void OnDisconnected() => Disconnected?.Invoke(this, EventArgs.Empty);
+
         /// <summary>
         /// Creates a new object.
         /// </summary>
@@ -100,7 +109,10 @@ namespace McduDotNet.WinWing.FcuAndEfis
         public FcuDevice(HidDevice hidDevice, UsbDevice usbDevice)
         {
             _HidDevice = hidDevice;
+            _HidDevicePath = hidDevice.DevicePath;
             UsbDevice = usbDevice;
+
+            HidSharpDeviceWatcher.RegisterDisconnectedCallback(_HidDevicePath, OnDisconnected);
         }
 
         /// <inheritdoc/>
@@ -113,6 +125,7 @@ namespace McduDotNet.WinWing.FcuAndEfis
         protected virtual void Dispose(bool disposing)
         {
             if(disposing) {
+                HidSharpDeviceWatcher.DeregisterDisconnectedCallbacks(_HidDevicePath);
                 _InputLoopCancellationTokenSource?.Cancel();
                 _InputLoopTask?.Wait(5000);
                 _InputLoopTask = null;

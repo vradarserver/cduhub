@@ -23,6 +23,11 @@ namespace McduDotNet
         UsbDevice UsbDevice { get; }
 
         /// <summary>
+        /// Raised when the USB device has been disconnected.
+        /// </summary>
+        event EventHandler Disconnected;
+
+        /// <summary>
         /// Update the display's backlights and LED intensities.
         /// </summary>
         /// <param name="skipDuplicateCheck"></param>

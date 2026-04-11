@@ -15,26 +15,73 @@ namespace FgcpTest
 {
     class Command_Connect : CommonCommand
     {
+        private IFgcp? _Fgcp;
+        private bool _PollMessageShown;
+
         public bool SuppressCleanup { get; set; }
 
         public bool Run()
         {
             var result = false;
+            var tickCounter = 0;
 
-            using(var fgcp = DeviceFactory.ConnectLocalFgcp()) {
-                if(fgcp == null) {
-                    Console.WriteLine("Could not find an FGCP device to connect to");
-                } else {
-                    result = true;
-                    Console.WriteLine($"Connected to {fgcp}");
-
-                    if(!SuppressCleanup) {
-                        fgcp.Cleanup();
+            try {
+                Console.WriteLine($"Press Q to quit");
+                while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
+                    if(_Fgcp == null && (tickCounter % 10 == 0)) {
+                        ConnectToFgcp();
                     }
+
+                    ++tickCounter;
+                    Thread.Sleep(100);
+                }
+
+                if(_Fgcp != null) {
+                    _Fgcp.Disconnected -= Fgcp_Disconnected;
+                    if(!SuppressCleanup) {
+                        _Fgcp.Cleanup();
+                    }
+                }
+            } finally {
+                if(_Fgcp != null) {
+                    _Fgcp.Dispose();
                 }
             }
 
             return result;
+        }
+
+        private void ConnectToFgcp()
+        {
+            if(_Fgcp == null) {
+                if(_PollMessageShown) {
+                    Console.Write('.');
+                } else {
+                    Console.Write("Connecting to the first available FGCP");
+                    _PollMessageShown = true;
+                }
+                _Fgcp = DeviceFactory.ConnectLocalFgcp();
+                if(_Fgcp != null) {
+                    Console.WriteLine();
+                    Console.WriteLine($"Connected to {_Fgcp}");
+                    _Fgcp.Disconnected += Fgcp_Disconnected;
+                }
+            }
+        }
+
+        private void Fgcp_Disconnected(object? sender, EventArgs e)
+        {
+            var fgcp = _Fgcp;
+            if(fgcp != null) {
+                Console.WriteLine($"{fgcp} disconnected");
+                try {
+                    fgcp.Dispose();
+                } catch {
+                    ;
+                }
+                _PollMessageShown = false;
+                _Fgcp = null;
+            }
         }
     }
 }
