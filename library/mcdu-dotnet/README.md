@@ -130,7 +130,7 @@ offers a fluent interface for setting the content of a screen.
 
 ### Screen Buffers
 
-Screens are not tied to an CDU, and they can be instantiated just like any other
+Screens are not tied to a CDU, and they can be instantiated just like any other
 object. There are a pair of functions, `CopyFrom` and `CopyTo`, that can be used to
 copy the content of a screen buffer into the CDU's screen buffer.
 
@@ -138,7 +138,7 @@ copy the content of a screen buffer into the CDU's screen buffer.
 
 ### LEDs
 
-Same process as per screen buffers - there is an `CduLamps` class that carries the state and
+Same process as per screen buffers - there is a `CduLamps` class that carries the state and
 brightness of the LED lights. The class is copyable.
 
 There is a `RefreshLamps` function on the CDU object to copy the current state of the
