@@ -1,4 +1,4 @@
-﻿# MCDU-DOTNET
+# MCDU-DOTNET
 
 The NuGet package for the library can be found here:
 
@@ -82,7 +82,7 @@ If the specific type of FGCP device cannot be found then it returns null.
 
 
 
-### Discovering USB Devices
+## Discovering USB Devices
 
 `FindLocalDevices` returns a collection of `UsbDevice` objects that describe all
 supported devices attached to the local machine.
@@ -91,7 +91,10 @@ supported devices attached to the local machine.
 
 
 
-## Reading from the CDU
+## Interacting with the CDU
+
+
+### Reading from the CDU
 
 The `ICdu` interface exposes two events, `CduKeyDown` and `CduKeyUp`. These are passed
 an event args that tells you which key was pressed or released. There are extension
@@ -103,7 +106,7 @@ methods on the `CduKey` enum to convert keys into different formats.
 > as obsolete, and will be removed in a future version of the library.
 
 
-## Writing to the CDU display
+### Writing to the CDU display
 
 This is a two-step process. The `ICdu` exposes a `Screen` property which lets you
 set the content of the display. Setting the content of a screen does not update the
@@ -210,3 +213,128 @@ https://github.com/vradarserver/cduhub/tree/main/library/cduhub/Resources
 Besides the `CduKeyDown` and `CduKeyUp` events referenced elsewhere there is also the
 `Disconnected` event, which is raised when the library detects that the device has been
 disconnected.
+
+
+
+## Interacting with FGCP devices
+
+The FGCP devices follow the same general rules as the CDU devices, except that there is
+more stuff on the device-specific interfaces.
+
+
+### The FCU + EFIS device
+
+This is represented by `IFgcpFcu`. The interface will work with all valid combinations
+of FCU and EFIS.
+
+
+### Segmented Displays
+
+The segmented displays are exposed via a property called `Displays` on the device-
+specific interface.
+
+Segment displays are split into a set of bools, one for each "word" segment on a
+display, and a set of `S7DigitCollection` properties, one for each group of seven
+(or more) segment digits or characters.
+
+
+#### S7, S7Digit and S7DigitCollection
+
+Each segment in an seven segment digit is represented by a bitflag in a 16 bit word.
+The bitflags are exposed as an enum called `S7`. They are all two characters long.
+
+| S7 | Segment |
+| -- | --- |
+| TT | Top |
+| TL | Top Left |
+| TR | Top Right |
+| MM | Middle |
+| BL | Bottom Left |
+| BR | Bottom Right |
+| BB | Bottom |
+| DL | Decimal Point Left |
+| DR | Decimal Point Right |
+| TC | Top Centre Vertical Line |
+| BC | Bottom Centre Vertical Line |
+
+OR'ing or ADDing the bitflags together forms a character. There is a set of standard
+characters pre-declared in `S7CharacterSet`. Functions exist on that static class to
+let you declare your own segmented character sets.
+
+An `S7Digit` is a struct that takes an S7 mask that describes all of the available
+segments for a digit and an S7 value that indicates which segments are lit. `S7Digit`s
+are immutable.
+
+An `S7DigitCollection` groups a set of digits into a cluster that represents a
+segmented display cluster on the FGCP. You can index each digit individually, setting
+segments as required, or you can use functions on the collection to manupulate
+the cluster as a single unit.
+
+For example, to set the speed cluster on an FCU to "1.23" you could call:
+
+```
+var fcu = DeviceFactory.ConnectLocalFgcp<IFgcpFcu>();
+fcu.Displays
+   .Speed
+   .SpeedDigits
+   .SetFrom("1.23");
+```
+
+#### FCU Displays
+
+There are three properties under `Displays`, one each for the left and right EFIS
+and one for the main FCU panel.
+
+You can write to the left and right EFIS displays even if they are not physically
+present.
+
+Writing to the display buffers does not send them to the device. Once you have
+prepared the display buffers you need to send them by calling `RefreshDisplays`.
+
+
+
+### Backlights
+
+The `Backlights` property contains values that set the brightnesses of the panel,
+button and LED backlights as percentages from 0 (off) to 100 (full on).
+
+Setting the brightnesses does not immediately change anything on the device. Once
+you have set the brightnesses you want you need to call `RefreshBacklights`.
+
+
+### LED Lights
+
+The `Lamps` property contains values that indicate which LEDs should be lit. For
+the FCU all of the LEDs are associated with push buttons, and are named for those
+buttons.
+
+Once you have set up the LEDs you need to call `RefreshLamps` to set the LEDs
+on the device.
+
+
+### Button Input
+
+There are two events on the device-specific interfaces, one for key down (or
+button push) events and another for key up (or button release) events. The
+names and event args are specific to each device.
+
+Momentary buttons are represented by a single key. You get a key down event
+when the user pushes the button, and a key up when they release the button.
+
+The dials and switches have a key for each position on the dial or switch,
+and will send a key down when each position is selected. You will not see
+a key up until the user selects another position.
+
+Rotary dials are represented by two buttons, one called "Increment" and
+the other "Decrement". One or the other will fire key down and key up events
+for each click of the dial as it's being twisted. Generally speaking the
+increments are clockwise rotations and decrements are anti-clockwise.
+
+
+### Cleanup
+
+The FGCP device will retain its state after your program stops driving it - I.E. it will
+continue to show whatever you last wrote to the displays.
+
+There is a function called `Cleanup` that will clear the displays and turn off all of
+the lights.
