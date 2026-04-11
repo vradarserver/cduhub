@@ -45,7 +45,7 @@ namespace Cduhub.Pages.FlightSimulator
 
             Output
                 .Clear()
-                .Centred("<green>X-PLANE12 REST CONFIG")
+                .Centred("<green>X-PLANE12 NETWORK CONFIG")
                 .LeftLabelTitle(1, "<small> HOST")
                 .LeftLabel(1, $"<cyan>{SanitiseInput(_Settings.Host)}")
                 .LeftLabelTitle(2, "<small> PORT")

@@ -27,7 +27,8 @@ namespace Cduhub.Pages.FlightSimulator
                 .Centred($"{_Hub.InterruptKey1Name} <small>TO SWAP <large>CDUs")
                 .Newline()
                 .Centred($"{_Hub.InterruptKey2Name} <small>FOR HUB <large>MENU")
-                .RightLabel(3, "<cyan>MCDU<")
+                .RightLabel(3, "<cyan>MCDU (WEBSOCKET API)<")
+                .RightLabel(4, "<cyan>MCDU (REST API)<")
                 .LeftLabel(5, "<amber><small>>INIT")
                 .LeftLabel(6, "<red><small>>BACK");
         }
@@ -37,7 +38,8 @@ namespace Cduhub.Pages.FlightSimulator
             switch(commonKey) {
                 case CommonCduKey.LineSelectLeft5:  _Hub.CreateAndSelectPage<XPlaneInit_Page>(); break;
                 case CommonCduKey.LineSelectLeft6:  _Hub.ReturnToParent(); break;
-                case CommonCduKey.LineSelectRight3: _Hub.CreateAndSelectPage<XPlane_Page>(); break;
+                case CommonCduKey.LineSelectRight3: _Hub.CreateAndSelectPage<XPlane_WebSocketApi_Page>(); break;
+                case CommonCduKey.LineSelectRight4: _Hub.CreateAndSelectPage<XPlane_RestApi_Page>(); break;
             }
         }
     }

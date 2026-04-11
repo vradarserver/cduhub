@@ -14,7 +14,7 @@ using McduDotNet;
 
 namespace Cduhub.Pages.FlightSimulator
 {
-    class XPlane_Page : CommonFlightSimPage
+    class XPlane_RestApi_Page : CommonFlightSimPage
     {
         private XPlaneGenericMcdu? _XPlaneMcdu;
 
@@ -24,7 +24,7 @@ namespace Cduhub.Pages.FlightSimulator
 
         public override Palette Palette => SettingsPalette<XPlane12RestSettings>(r => r.PaletteName);
 
-        public XPlane_Page(Hub hub) : base(hub)
+        public XPlane_RestApi_Page(Hub hub) : base(hub)
         {
         }
 
