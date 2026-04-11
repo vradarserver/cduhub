@@ -101,7 +101,7 @@ an event args that tells you which key was pressed or released. There are extens
 methods on the `CduKey` enum to convert keys into different formats.
 
 > [!NOTE]
-> The events used to be called `KeyDown` and `KeyUp`, and the CduKey was originally
+> In V1 the events were called `KeyDown` and `KeyUp`, and the CduKey was originally
 > called `Key`. All of these enums and events still exist but they have been marked
 > as obsolete, and will be removed in a future version of the library.
 
@@ -146,7 +146,7 @@ There is a `RefreshLamps` function on the CDU object to copy the current state o
 default, nothing is sent.
 
 > [!NOTE]
-> In previous versions of the library CduLamps was called `Leds`, RefreshLamps was
+> In V1 CduLamps was called `Leds`, RefreshLamps was
 > called `RefreshLeds` and the lamps buffer property was also called `Leds`. These
 > all still exist but have been marked as obsolete, and will be removed in a future
 > version of the library.
@@ -165,12 +165,11 @@ the `Backlights` buffer to the device. If nothing has changed since the last ref
 by default, nothing is sent.
 
 > [!NOTE]
-> In earlier versions of the library there was no buffer for backlights at all, instead
-> there were three backlight percentage properties on ICdu and any values assigned to
-> them were immediately sent to the device. There was also a `RefreshBrightnesses` function
-> to force a resend of the backlight intensities when required. All of these still exist
-> but they have been marked as obsolete and will be removed in a future verison of the
-> library.
+> In V1 there was no buffer for backlights at all, instead there were three backlight
+> percentage properties on ICdu and any values assigned to them were immediately sent
+> to the device. There was also a `RefreshBrightnesses` function to force a resend of
+> the backlight intensities when required. All of these still exist but they have been
+> marked as obsolete and will be removed in a future verison of the library.
 
 
 
