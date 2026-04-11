@@ -242,19 +242,19 @@ display, and a set of `S7DigitCollection` properties, one for each group of seve
 Each segment in an seven segment digit is represented by a bitflag in a 16 bit word.
 The bitflags are exposed as an enum called `S7`. They are all two characters long.
 
-| S7 | Segment |
-| -- | --- |
-| TT | Top |
-| TL | Top Left |
-| TR | Top Right |
-| MM | Middle |
-| BL | Bottom Left |
-| BR | Bottom Right |
-| BB | Bottom |
-| DL | Decimal Point Left |
-| DR | Decimal Point Right |
-| TC | Top Centre Vertical Line |
-| BC | Bottom Centre Vertical Line |
+| S7   | Segment |
+| ---  | --- |
+| `TT` | Top |
+| `TL` | Top Left |
+| `TR` | Top Right |
+| `MM` | Middle |
+| `BL` | Bottom Left |
+| `BR` | Bottom Right |
+| `BB` | Bottom |
+| `DL` | Decimal Point Left |
+| `DR` | Decimal Point Right |
+| `TC` | Top Centre Vertical Line |
+| `BC` | Bottom Centre Vertical Line |
 
 OR'ing or ADDing the bitflags together forms a character. There is a set of standard
 characters pre-declared in `S7CharacterSet`. Functions exist on that static class to
