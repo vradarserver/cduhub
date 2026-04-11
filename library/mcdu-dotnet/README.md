@@ -279,6 +279,17 @@ fcu.Displays
    .SetFrom("1.23");
 ```
 
+or if you wanted to do it segment-by-segment:
+
+```
+var fcu = DeviceFactory.ConnectLocalFgcp<IFgcpFcu>();
+var speed = fcu.Displays.Speed.SpeedDigits;
+speed[0] = S7.TR | S7.BR;
+speed[1] = S7.TT | S7.TR | S7.MM | S7.BL | S7.BB | S7.DL;
+speed[2] = S7.TT | S7.TR | S7.MM | S7.BR | S7.BB;
+```
+
+
 #### FCU Displays
 
 There are three properties under `Displays`, one each for the left and right EFIS
