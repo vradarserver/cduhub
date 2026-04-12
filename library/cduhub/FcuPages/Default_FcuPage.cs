@@ -9,6 +9,7 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using McduDotNet;
@@ -55,6 +56,7 @@ namespace Cduhub.FcuPages
         private long _LastTimeShown;
         private Countdown? _MinuteCountdown;
         private Countdown? _SecondCountdown;
+        private long? _StopwatchSeconds;
 
         public Default_FcuPage(FcuHub fcuHub) : base(fcuHub)
         {
@@ -85,6 +87,7 @@ namespace Cduhub.FcuPages
                 case FcuKey.FcuHdgInc:  SetCountdownTarget(ref _SecondCountdown, seconds: 1, increment: true); break;
                 case FcuKey.FcuHdgDec:  SetCountdownTarget(ref _SecondCountdown, seconds: 1, increment: false); break;
                 case FcuKey.FcuHdgPush: _SecondCountdown = null; break;
+                case FcuKey.FcuSpdMach: ToggleStopwatch(); break;
             }
             PopulateDisplays();
         }
@@ -128,6 +131,13 @@ namespace Cduhub.FcuPages
             }
         }
 
+        private void ToggleStopwatch()
+        {
+            _StopwatchSeconds = _StopwatchSeconds != null
+                ? null
+                : 0;
+        }
+
         private void StartRefreshTimer()
         {
             _RefreshTimer?.Dispose();
@@ -155,8 +165,15 @@ namespace Cduhub.FcuPages
             PopulateDisplay(Displays.LeftBarometer.BaroDigits, _ShowInLeftBaro, now);
             PopulateDisplay(Displays.RightBarometer.BaroDigits, _ShowInRightBaro, now);
 
-            PopulateCountdownDisplay(Displays.Speed.SpeedDigits, _MinuteCountdown);
-            PopulateCountdownDisplay(Displays.Heading.HeadingDigits, _SecondCountdown);
+            if(_StopwatchSeconds == null) {
+                PopulateCountdownDisplay(Displays.Speed.SpeedDigits, _MinuteCountdown);
+                PopulateCountdownDisplay(Displays.Heading.HeadingDigits, _SecondCountdown);
+            } else {
+                PopulateStopwatch(
+                    Displays.Speed.SpeedDigits,
+                    Displays.Heading.HeadingDigits
+                );
+            }
 
             Lamps.Exped = _ShowInAltitude != Show.Nothing;
             Lamps.Appr =  _ShowInVerticalSpeed != Show.Nothing;
@@ -236,6 +253,25 @@ namespace Cduhub.FcuPages
             }
         }
 
+        private void PopulateStopwatch(S7DigitCollection minuteDigits, S7DigitCollection secondDigits)
+        {
+            minuteDigits.ClearDisplay();
+            secondDigits.ClearDisplay();
+
+            var seconds = _StopwatchSeconds;
+            if(seconds != null) {
+                var minutes = seconds / 60;
+                seconds -= minutes * 60;
+                if(minutes > 999) {
+                    minutes = 999;
+                    seconds = 999;
+                }
+
+                minuteDigits.SetFrom(minutes.Value.ToString("0"), S7TextAlign.Right);
+                secondDigits.SetFrom(seconds.Value.ToString("00"), S7TextAlign.Right);
+            }
+        }
+
         private long ResolveTime(DateTime time)
         {
             return time.Ticks / 10000000;
@@ -249,6 +285,9 @@ namespace Cduhub.FcuPages
                 _LastTimeShown = resolvedTime;
                 _MinuteCountdown?.SecondHasPassed();
                 _SecondCountdown?.SecondHasPassed();
+                if(_StopwatchSeconds != null) {
+                    ++_StopwatchSeconds;
+                }
                 PopulateDisplays();
             }
             _RefreshTimer?.Start();
