@@ -24,9 +24,25 @@ namespace Cduhub.Pages.FlightSimulator
 
         public override Palette Palette => SettingsPalette<XPlane12RestSettings>(r => r.PaletteName);
 
+//temp
+public XPlane_FcuPage FcuPage { get; }
+
         public XPlane_WebSocketApi_Page(Hub hub) : base(hub)
         {
+//temp
+FcuPage = new(hub.FcuHub);
+FcuPage.KeyEventCallback += FcuKeyEvent;
         }
+
+//temp
+public override void OnSelected(bool selected)
+{
+    if(selected) {
+        _Hub.FcuHub.SelectPage(FcuPage);
+    }
+    base.OnSelected(selected);
+
+}
 
         protected override void Connect()
         {
@@ -44,6 +60,8 @@ namespace Cduhub.Pages.FlightSimulator
                 Port = settings.Port,
             };
             _XPlaneMcdu = mcdu;
+//temp
+_XPlaneMcdu.FcuDisplay = FcuPage.Displays;
 
             ShowConnectionState(_XPlaneMcdu?.ConnectionState);
             mcdu.DisplayRefreshRequired += XPlaneMcdu_DisplayRefreshRequired;
@@ -88,7 +106,18 @@ namespace Cduhub.Pages.FlightSimulator
             }
         }
 
-        private void XPlaneMcdu_DisplayRefreshRequired(object sender, System.EventArgs e) => RefreshDisplay();
+        private void XPlaneMcdu_DisplayRefreshRequired(object sender, System.EventArgs e)
+        {
+            RefreshDisplay();
+//temp
+FcuPage.RefreshDisplays();
+        }
+
+//temp
+private void FcuKeyEvent(FcuKey key, bool pressed)
+{
+    _XPlaneMcdu?.SendFcuKey(key, pressed);
+}
 
         private void XPlaneMcdu_LedsRefreshRequired(object sender, System.EventArgs e) => RefreshLamps();
 
