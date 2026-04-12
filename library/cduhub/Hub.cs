@@ -38,6 +38,11 @@ namespace Cduhub
         private bool? _IsCurrentFontFullWidth;
         private CduhubSettings? _Settings;
         private BrightnessSettings? _BrightnessSettings;
+        private FcuHub _FcuHub;
+
+        internal bool ShuttingDown => _ShuttingDown;
+
+        public FcuHub FcuHub => _FcuHub;
 
         /// <summary>
         /// Gets or sets a value indicating whether the hub should perpetually try to reconnect to the MCDU if
@@ -180,6 +185,8 @@ namespace Cduhub
         /// </summary>
         public Hub()
         {
+            _FcuHub = new(this);
+
             _ReconnectTimer = new System.Timers.Timer() {
                 AutoReset = false,
                 Interval = 1000,
@@ -210,10 +217,12 @@ namespace Cduhub
             _Cdu?.Cleanup(
                 backlightBrightnessPercent: settings?.Cleanup.BacklightBrightnessPercentOnExit ?? 0,
                 displayBrightnessPercent:   settings?.Cleanup.DisplayBrightnessPercentOnExit ?? 0,
-                lampBrightnessPercent:       settings?.Cleanup.DisplayBrightnessPercentOnExit ?? 0
+                lampBrightnessPercent:      settings?.Cleanup.DisplayBrightnessPercentOnExit ?? 0
             );
             _Cdu?.Dispose();
             _Cdu = null;
+
+            _FcuHub.Dispose();
 
             PersistSettings();
 
@@ -274,6 +283,12 @@ namespace Cduhub
 
         public void Connect()
         {
+            ConnectCdu();
+            ConnectFcu();
+        }
+
+        private void ConnectCdu()
+        {
             if(_Cdu == null && Interlocked.Exchange(ref _ConnectingCount, 1) == 0) {
                 try {
                     _Cdu = DeviceFactory.ConnectLocalCdu();
@@ -300,6 +315,8 @@ namespace Cduhub
                 }
             }
         }
+
+        private void ConnectFcu() => _FcuHub.Connect();
 
         private void ApplySettingsToDevice()
         {
@@ -341,7 +358,7 @@ namespace Cduhub
         private void PerformAutoReconnect()
         {
             if(AutoReconnect && !_WaitingForConnect) {
-                Connect();
+                ConnectCdu();
             }
         }
 

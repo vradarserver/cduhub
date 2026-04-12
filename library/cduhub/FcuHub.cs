@@ -1,0 +1,227 @@
+﻿// Copyright © 2026 onwards, Andrew Whewell
+// All rights reserved.
+//
+// Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+//    * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+//    * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+//    * Neither the name of the author nor the names of the program's contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading;
+using McduDotNet;
+
+namespace Cduhub
+{
+    /// <summary>
+    /// Manages access to the FCU version of the FGCP.
+    /// </summary>
+    public class FcuHub : IDisposable
+    {
+        private Hub _Hub;
+        private IFgcpFcu? _Fcu;
+        private FcuPage? _SelectedPage;
+        private Stack<FcuPage> _PageHistory = new();
+        private System.Timers.Timer? _ReconnectTimer;
+        private bool _WaitingForConnect = true;
+        private int _ConnectingCount;
+
+        internal bool AutoReconnect => _Hub.AutoReconnect;
+
+        internal bool ShuttingDown => _Hub.ShuttingDown;
+
+        public FcuBacklights GlobalBacklights { get; } = new() {
+            PanelPercent =   1,
+            ExpedPercent =   1,
+            DisplayPercent = 80,
+            LedPercent =     80,
+        };
+
+        /// <summary>
+        /// The connected device or null if no device is connected.
+        /// </summary>
+        public UsbDevice? ConnectedDevice => _Fcu?.UsbDevice;
+
+        /// <summary>
+        /// Raised when <see cref="ConnectedDevice"/> changes.
+        /// </summary>
+        public event EventHandler? ConnectedDeviceChanged;
+
+        /// <summary>
+        /// Raises <see cref="ConnectedDeviceChanged"/>.
+        /// </summary>
+        protected virtual void OnConnectedDeviceChanged()
+        {
+            ConnectedDeviceChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        internal FcuHub(Hub hub)
+        {
+            _Hub = hub;
+
+            _ReconnectTimer = new() {
+                AutoReset = false,
+                Interval = 1000,
+            };
+            _ReconnectTimer.Elapsed += ReconnectTimer_Elapsed;
+            _ReconnectTimer.Start();
+        }
+
+        ~FcuHub() => Dispose(false);
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if(disposing) {
+                Disconnect();
+            }
+        }
+
+        internal void Connect()
+        {
+            if(_Fcu == null && Interlocked.Exchange(ref _ConnectingCount, 1) == 0) {
+                try {
+                    _Fcu = DeviceFactory.ConnectLocalFgcp<IFgcpFcu>();
+                    if(_Fcu != null) {
+                        ApplySettingsToDevice();
+
+                        _Fcu.FcuKeyDown += Fcu_FcuKeyDown;
+                        _Fcu.FcuKeyUp += Fcu_FcuKeyUp;
+                        _Fcu.Disconnected += Fcu_Disconnected;
+
+                        OnConnectedDeviceChanged();
+                    }
+                } finally {
+                    Interlocked.Exchange(ref _ConnectingCount, 0);
+                    _WaitingForConnect = false;
+                }
+            }
+        }
+
+        internal void Disconnect()
+        {
+            if(_Fcu != null) {
+                _Fcu.Disconnected -= Fcu_Disconnected;
+                _Fcu.FcuKeyDown -= Fcu_FcuKeyDown;
+                _Fcu.FcuKeyUp -= Fcu_FcuKeyUp;
+                _Fcu.Cleanup();
+            }
+            _Fcu = null;
+        }
+
+        public void Reconnect()
+        {
+            Disconnect();
+            Reconnect();
+        }
+
+        private void PerformAutoReconnect()
+        {
+            if(AutoReconnect && !_WaitingForConnect) {
+                Connect();
+            }
+        }
+
+        private void ApplySettingsToDevice()
+        {
+            var fcu = _Fcu;
+            if(fcu != null) {
+                var page = _SelectedPage;
+                fcu.Backlights.CopyFrom(page?.Backlights ?? GlobalBacklights);
+                if(page != null) {
+                    RefreshDisplays(page);
+                    RefreshLamps(page);
+                }
+
+                if(page == null) {
+                    SelectPage(new FcuPages.Default_FcuPage(this));
+                }
+            }
+        }
+
+        public void SelectPage(FcuPage? page, bool replaceCurrentInHistory = false)
+        {
+            if(page != _SelectedPage) {
+                DeselectPage(_SelectedPage);
+                _SelectedPage = page;
+
+                if(_SelectedPage != null && page != null) {
+                    page.PreparePage();
+                    if(replaceCurrentInHistory && _PageHistory.Count > 0) {
+                        _PageHistory.Pop();
+                    }
+                    _PageHistory.Push(page);
+                    RefreshDisplays(page);
+                    RefreshLamps(page);
+                    _Fcu?.RefreshBacklights();
+                    _SelectedPage.OnSelected(true);
+                }
+            }
+        }
+
+        private void DeselectPage(FcuPage? page)
+        {
+            page?.OnSelected(false);
+        }
+
+        public void RefreshDisplays(FcuPage page)
+        {
+            var fcu = _Fcu;
+            if(page == _SelectedPage && fcu != null) {
+                fcu.Displays.CopyFrom(page.Displays);
+                fcu.RefreshDisplays();
+            }
+        }
+
+        public void RefreshLamps(FcuPage page)
+        {
+            var fcu = _Fcu;
+            if(page == _SelectedPage && fcu != null) {
+                fcu.Lamps.CopyFrom(page.Lamps);
+                fcu.RefreshLamps();
+            }
+        }
+
+        private void Fcu_Disconnected(object sender, EventArgs e)
+        {
+            Disconnect();
+        }
+
+        private void Fcu_FcuKeyDown(object sender, FcuKeyEventArgs e)
+        {
+            if(!ShuttingDown) {
+                _SelectedPage?.OnFcuKeyDown(e.Key);
+            }
+        }
+
+        private void Fcu_FcuKeyUp(object sender, FcuKeyEventArgs e)
+        {
+            if(!ShuttingDown) {
+                _SelectedPage?.OnFcuKeyUp(e.Key);
+            }
+        }
+
+        private void ReconnectTimer_Elapsed(object sender, EventArgs e)
+        {
+            try {
+                if(!ShuttingDown) {
+                    PerformAutoReconnect();
+                }
+            } finally {
+                if(!ShuttingDown) {
+                    var timer = _ReconnectTimer;
+                    timer?.Start();
+                }
+            }
+        }
+    }
+}

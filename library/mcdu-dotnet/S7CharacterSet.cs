@@ -28,10 +28,10 @@ namespace McduDotNet
             { '3', S7.TT | S7.TR | S7.MM | S7.BR | S7.BB },
             { '4', S7.TL | S7.TR | S7.MM | S7.BR },
             { '5', S7.TL | S7.TT | S7.MM | S7.BR | S7.BB },
-            { '6', S7.TL | S7.MM | S7.BL | S7.BR | S7.BB },
-            { '7', S7.TT | S7.TR | S7.BR },
+            { '6', S7.TT | S7.TL | S7.MM | S7.BL | S7.BR | S7.BB },
+            { '7', S7.TL | S7.TT | S7.TR | S7.BR },
             { '8', S7.TL | S7.TT | S7.TR | S7.MM | S7.BL | S7.BR | S7.BB },
-            { '9', S7.TL | S7.TT | S7.TR | S7.MM | S7.BR },
+            { '9', S7.TL | S7.TT | S7.TR | S7.MM | S7.BB | S7.BR },
         };
 
         /// <summary>

@@ -50,6 +50,8 @@ namespace McduDotNet
         /// <returns></returns>
         public static bool operator!=(S7Digit lhs, S7Digit rhs) => !(lhs == rhs);
 
+        public static implicit operator S7Digit(S7 segments) => new S7Digit(segments, segments);
+
         /// <summary>
         /// Creates a new object.
         /// </summary>

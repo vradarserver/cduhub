@@ -240,5 +240,20 @@ namespace McduDotNet
                 }
             }
         }
+
+        public void CopyFrom(S7DigitCollection other)
+        {
+            if(other == null) {
+                throw new ArgumentNullException(nameof(other));
+            }
+            for(var idx = 0;idx < _S7Digits.Length;++idx) {
+                var segments = idx < other._S7Digits.Length
+                    ? other._S7Digits[idx].Segments
+                    : (S7)0;
+                SetAt(idx, segments);
+            }
+        }
+
+        public void CopyTo(S7DigitCollection? other) => other?.CopyFrom(this);
     }
 }

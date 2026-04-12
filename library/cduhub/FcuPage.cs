@@ -8,43 +8,52 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
+using McduDotNet;
 
-namespace McduDotNet
+namespace Cduhub
 {
-    public class FcuDisplaySpeed
+    public class FcuPage
     {
-        public bool Spd { get; set; }
+        protected FcuHub _FcuHub;
+        protected bool _Prepared;
 
-        public bool Mach { get; set; }
+        public virtual FcuBacklights? Backlights => null;
 
-        public bool Dot { get; set; }
+        public FcuDisplays Displays { get; } = new();
 
-        public S7DigitCollection SpeedDigits { get; } = new(
-            S7Masks.DigitLeftDecimal,
-            S7Masks.DigitLeftDecimal,
-            S7Masks.DigitLeftDecimal
-        );
+        public FcuLamps Lamps { get; } = new();
 
-        public void ClearDisplay()
+        public FcuPage(FcuHub fcuHub)
         {
-            Spd = false;
-            Mach = false;
-            Dot = false;
-            SpeedDigits.ClearDisplay();
+            _FcuHub = fcuHub;
         }
 
-        public void CopyFrom(FcuDisplaySpeed other)
+        public void PreparePage()
         {
-            if(other == null) {
-                throw new ArgumentNullException(nameof(other));
+            if(!_Prepared) {
+                _Prepared = true;
+                OnPreparePage();
             }
-            Spd = other.Spd;
-            Mach = other.Mach;
-            Dot = other.Dot;
-            SpeedDigits.CopyFrom(other.SpeedDigits);
         }
 
-        public void CopyTo(FcuDisplaySpeed? other) => other?.CopyFrom(this);
+        public virtual void OnPreparePage()
+        {
+        }
+
+        public virtual void OnSelected(bool selected)
+        {
+        }
+
+        public virtual void OnFcuKeyDown(FcuKey fcuKey)
+        {
+        }
+
+        public virtual void OnFcuKeyUp(FcuKey fcuKey)
+        {
+        }
+
+        public virtual void RefreshDisplays() => _FcuHub.RefreshDisplays(this);
+
+        public virtual void RefreshLamps() => _FcuHub.RefreshLamps(this);
     }
 }
