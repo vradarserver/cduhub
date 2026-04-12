@@ -23,7 +23,8 @@ namespace Cduhub.CommandLineInterface
 
             Hub? hub = null;
             var cancelSource = new CancellationTokenSource();
-            var hasBeenConnected = false;
+            var hasBeenConnectedToCdu = false;
+            var hasBeenConnectedToFcu = false;
 
             try {
                 HubBootstrap.Boot();
@@ -35,11 +36,20 @@ namespace Cduhub.CommandLineInterface
                 };
                 hub.ConnectedDeviceChanged += (_,_) => {
                     var connectedDevice = hub.ConnectedDevice;
-                    if(connectedDevice == null && hasBeenConnected) {
+                    if(connectedDevice == null && hasBeenConnectedToCdu) {
                         OutputTimestamped("Disconnected from CDU");
                     } else {
                         OutputTimestamped($"Connected to {connectedDevice}");
-                        hasBeenConnected = true;
+                        hasBeenConnectedToCdu = true;
+                    }
+                };
+                hub.FcuHub.ConnectedDeviceChanged += (_,_) => {
+                    var connectedDevice = hub.FcuHub.ConnectedDevice;
+                    if(connectedDevice == null && hasBeenConnectedToFcu) {
+                        OutputTimestamped("Disconnected from FCU");
+                    } else {
+                        OutputTimestamped($"Connected to {connectedDevice}");
+                        hasBeenConnectedToFcu = true;
                     }
                 };
                 ConnectedFlightSimulators.ConnectedFlightSimulatorsChanged += (_,_) => {

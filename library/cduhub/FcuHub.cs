@@ -114,8 +114,11 @@ namespace Cduhub
                 _Fcu.FcuKeyDown -= Fcu_FcuKeyDown;
                 _Fcu.FcuKeyUp -= Fcu_FcuKeyUp;
                 _Fcu.Cleanup();
+
+                _Fcu = null;
+
+                OnConnectedDeviceChanged();
             }
-            _Fcu = null;
         }
 
         public void Reconnect()
@@ -137,14 +140,12 @@ namespace Cduhub
             if(fcu != null) {
                 var page = _SelectedPage;
                 fcu.Backlights.CopyFrom(page?.Backlights ?? GlobalBacklights);
-                if(page != null) {
-                    RefreshDisplays(page);
-                    RefreshLamps(page);
-                }
 
-                if(page == null) {
-                    SelectPage(new FcuPages.Default_FcuPage(this));
-                }
+                fcu.RefreshBacklights(skipDuplicateCheck: true);
+                fcu.RefreshDisplays(skipDuplicateCheck: false);
+                fcu.RefreshLamps(skipDuplicateCheck: false);
+
+                SelectPage(page ?? new FcuPages.Default_FcuPage(this));
             }
         }
 
@@ -173,21 +174,25 @@ namespace Cduhub
             page?.OnSelected(false);
         }
 
-        public void RefreshDisplays(FcuPage page)
+        public void RefreshDisplays(FcuPage page) => RefreshDisplays(page, skipDuplicateCheck: false);
+
+        protected void RefreshDisplays(FcuPage page, bool skipDuplicateCheck)
         {
             var fcu = _Fcu;
             if(page == _SelectedPage && fcu != null) {
                 fcu.Displays.CopyFrom(page.Displays);
-                fcu.RefreshDisplays();
+                fcu.RefreshDisplays(skipDuplicateCheck);
             }
         }
 
-        public void RefreshLamps(FcuPage page)
+        public void RefreshLamps(FcuPage page) => RefreshLamps(page, skipDuplicateCheck: false);
+
+        protected void RefreshLamps(FcuPage page, bool skipDuplicateCheck)
         {
             var fcu = _Fcu;
             if(page == _SelectedPage && fcu != null) {
                 fcu.Lamps.CopyFrom(page.Lamps);
-                fcu.RefreshLamps();
+                fcu.RefreshLamps(skipDuplicateCheck);
             }
         }
 
