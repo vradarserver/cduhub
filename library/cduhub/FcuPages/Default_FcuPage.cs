@@ -9,7 +9,7 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using McduDotNet;
 
@@ -17,7 +17,7 @@ namespace Cduhub.FcuPages
 {
     class Default_FcuPage : FcuPage
     {
-        public enum ShowFour
+        public enum Show
         {
             Nothing,
             HoursMinutes,
@@ -25,10 +25,10 @@ namespace Cduhub.FcuPages
             DayMonth,
         }
 
-        private ShowFour _ShowInLeftBaro = ShowFour.HoursMinutes;
-        private ShowFour _ShowInRightBaro = ShowFour.DayMonth;
-        private ShowFour _ShowInAltitude = ShowFour.HoursMinutes;
-        private ShowFour _ShowInVerticalSpeed = ShowFour.Seconds;
+        private Show _ShowInLeftBaro = Show.HoursMinutes;
+        private Show _ShowInRightBaro = Show.DayMonth;
+        private Show _ShowInAltitude = Show.HoursMinutes;
+        private Show _ShowInVerticalSpeed = Show.Seconds;
         private System.Timers.Timer? _RefreshTimer;
         private long _LastTimeShown;
 
@@ -39,11 +39,11 @@ namespace Cduhub.FcuPages
         public override void OnSelected(bool selected)
         {
             base.OnSelected(selected);
-            if(selected) {
+            if(!selected) {
+                StopTimer();
+            } else {
                 PopulateDisplays();
                 StartTimer();
-            } else {
-                StopTimer();
             }
         }
 
@@ -51,26 +51,22 @@ namespace Cduhub.FcuPages
         {
             base.OnFcuKeyDown(fcuKey);
             switch(fcuKey) {
-                case FcuKey.LeftFd:
-                    _ShowInLeftBaro = Advance(_ShowInLeftBaro); break;
-                case FcuKey.RightFd:
-                    _ShowInRightBaro = Advance(_ShowInRightBaro); break;
-                case FcuKey.FcuExped:
-                    _ShowInAltitude = Advance(_ShowInAltitude); break;
-                case FcuKey.FcuAppr:
-                    _ShowInVerticalSpeed = Advance(_ShowInVerticalSpeed); break;
+                case FcuKey.LeftFd:     Advance(ref _ShowInLeftBaro); break;
+                case FcuKey.RightFd:    Advance(ref _ShowInRightBaro); break;
+                case FcuKey.FcuExped:   Advance(ref _ShowInAltitude); break;
+                case FcuKey.FcuAppr:    Advance(ref _ShowInVerticalSpeed); break;
             }
             PopulateDisplays();
         }
 
-        private ShowFour Advance(ShowFour show)
+        private void Advance(ref Show show)
         {
             switch(show) {
-                case ShowFour.Nothing:      return ShowFour.HoursMinutes;
-                case ShowFour.HoursMinutes: return ShowFour.Seconds;
-                case ShowFour.Seconds:      return ShowFour.DayMonth;
-                case ShowFour.DayMonth:     return ShowFour.Nothing;
-                default:                    throw new NotImplementedException();
+                case Show.Nothing:      show = Show.HoursMinutes; break;
+                case Show.HoursMinutes: show = Show.Seconds; break;
+                case Show.Seconds:      show = Show.DayMonth; break;
+                case Show.DayMonth:     show = Show.Nothing; break;
+                default:                throw new NotImplementedException();
             }
         }
 
@@ -94,23 +90,23 @@ namespace Cduhub.FcuPages
         private void PopulateDisplays()
         {
             var now = DateTime.Now;
-            PopulateFourDigitDisplay(Displays.Altitude.AltitudeDigits, _ShowInAltitude, now);
-            PopulateFourDigitDisplay(Displays.Altitude.VerticalSpeedDigits, _ShowInVerticalSpeed, now, prefix: " ");
-            PopulateFourDigitDisplay(Displays.LeftBarometer.BaroDigits, _ShowInLeftBaro, now);
-            PopulateFourDigitDisplay(Displays.RightBarometer.BaroDigits, _ShowInRightBaro, now);
+            PopulateDisplay(Displays.Altitude.AltitudeDigits, _ShowInAltitude, now);
+            PopulateDisplay(Displays.Altitude.VerticalSpeedDigits, _ShowInVerticalSpeed, now, prefix: " ");
+            PopulateDisplay(Displays.LeftBarometer.BaroDigits, _ShowInLeftBaro, now);
+            PopulateDisplay(Displays.RightBarometer.BaroDigits, _ShowInRightBaro, now);
 
-            Lamps.Exped = _ShowInAltitude != ShowFour.Nothing;
-            Lamps.Appr =  _ShowInVerticalSpeed != ShowFour.Nothing;
-            Lamps.LeftEfis.FD = _ShowInLeftBaro != ShowFour.Nothing;
-            Lamps.RightEfis.FD = _ShowInRightBaro != ShowFour.Nothing;
+            Lamps.Exped = _ShowInAltitude != Show.Nothing;
+            Lamps.Appr =  _ShowInVerticalSpeed != Show.Nothing;
+            Lamps.LeftEfis.FD = _ShowInLeftBaro != Show.Nothing;
+            Lamps.RightEfis.FD = _ShowInRightBaro != Show.Nothing;
 
             RefreshDisplays();
             RefreshLamps();
         }
 
-        private void PopulateFourDigitDisplay(
+        private void PopulateDisplay(
             S7DigitCollection digits,
-            ShowFour show,
+            Show show,
             DateTime now,
             string prefix = ""
         )
@@ -120,23 +116,25 @@ namespace Cduhub.FcuPages
             var digitsLength = digits.Count - buffer.Length;
 
             switch(show) {
-                case ShowFour.Nothing:
+                case Show.Nothing:
                     break;
-                case ShowFour.HoursMinutes:
+                case Show.HoursMinutes:
                     if(digitsLength == 4) {
                         buffer.Append(now.ToString("HH.mm"));
                     } else {
                         buffer.Append(now.ToString("HH-mm"));
                     }
                     break;
-                case ShowFour.Seconds:
+                case Show.Seconds:
                     buffer.Append(now.ToString(" ss"));
                     break;
-                case ShowFour.DayMonth:
+                case Show.DayMonth:
+                    var shortDateFormat = CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern;
+                    var dayThenMonth = shortDateFormat.IndexOf('d') < shortDateFormat.IndexOf('M');
                     if(digitsLength == 4) {
-                        buffer.Append(now.ToString("ddMM"));
+                        buffer.Append(now.ToString(dayThenMonth ? "ddMM" : "MMdd"));
                     } else {
-                        buffer.Append(now.ToString("dd MM"));
+                        buffer.Append(now.ToString(dayThenMonth ? "dd MM" : "MM dd"));
                     }
                     break;
             }
