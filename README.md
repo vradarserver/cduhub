@@ -146,9 +146,11 @@ Known issues:
   web server doesn't accept connections from the LAN? Not sure. However you can
   configure any address for the sim, if Laminar adds support for LAN access in the
   future then it should work with no code changes here.
-* Laggy. This is a by-product of fetching the MCDU datarefs by REST instead of
+* ~Laggy. This is a by-product of fetching the MCDU datarefs by REST instead of
   WebSockets (which gets aborted after 100 seconds) or UDP (which requires 3200+
-  datarefs for the generic MCDUs). If I can get web sockets working with X-Plane
-  then I'll switch over to those and the lag should go away.
+  datarefs for the generic MCDUs).~ Laminar seem to have fixed the problem with
+  web sockets getting aborted after 100 seconds. The old REST API client is still
+  available for those who haven't updated X-Plane to a suitable version, but if you
+  are on the latest version of X-Plane then the WebSockets version should work fine.
 * Only the PFP-7 buttons have commands set up for them.
 * LEDs don't work. I think I just need to find the commands for those.
