@@ -173,10 +173,16 @@ namespace McduDotNet
         /// <summary>
         /// Switches off all segments in the display.
         /// </summary>
-        public void ClearDisplay()
+        public void ClearDisplay() => FillDisplay(0);
+
+        /// <summary>
+        /// Fills the display with the segments passed across;
+        /// </summary>
+        /// <param name="segments"></param>
+        public void FillDisplay(S7 segments)
         {
             for(var idx = 0;idx < _S7Digits.Length;++idx) {
-                SetAt(idx, 0);
+                SetAt(idx, segments);
             }
         }
 
@@ -187,7 +193,18 @@ namespace McduDotNet
         /// <param name="text"></param>
         public void SetFrom(string? text)
         {
-            SetFrom(text, S7CharacterSet.CharacterSet());
+            SetFrom(text, S7CharacterSet.CharacterSet(), S7TextAlign.Left);
+        }
+
+        /// <summary>
+        /// Sets the digits using the character set returned by <see
+        /// cref="S7CharacterSet.CharacterSet"/>(). Unknown characters are ignored.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="textAlign"></param>
+        public void SetFrom(string? text, S7TextAlign textAlign)
+        {
+            SetFrom(text, S7CharacterSet.CharacterSet(), textAlign);
         }
 
         /// <summary>
@@ -196,12 +213,21 @@ namespace McduDotNet
         /// </summary>
         /// <param name="text"></param>
         /// <param name="characterSet"></param>
-        public void SetFrom(string? text, IReadOnlyDictionary<char, S7> characterSet)
+        /// <param name="textAlign"></param>
+        public void SetFrom(
+            string? text,
+            IReadOnlyDictionary<char, S7> characterSet,
+            S7TextAlign textAlign
+        )
         {
             text = text ?? "";
             ClearDisplay();
 
             if(_S7Digits.Length > 0) {
+                if(textAlign != S7TextAlign.Left) {
+                    text = textAlign.PadText(text, _S7Digits.Length, ignoreDecimals: true);
+                }
+
                 for(int textIdx = 0, s7Idx = 0;textIdx < text.Length && s7Idx <= _S7Digits.Length;++textIdx) {
                     var ch = text[textIdx];
                     switch(ch) {
