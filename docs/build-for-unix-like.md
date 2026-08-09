@@ -179,3 +179,16 @@ To skip the build phase you can use the `--no-build` switch to `dotnet run`:
 ```
 dotnet run --no-build --project apps/cduhub-cli/cduhub-cli.csproj
 ```
+
+### Running without a terminal
+
+By default the CLI will listen to stdin and will quit when it sees `Q` being
+pressed by the user. This does not work if there is no terminal attached to
+the process - E.G. if you are starting it via systemd or init.
+
+This will run the program and tell it not to listen to stdin. To shut it down
+you need to send it a SIGINT or SIGTERM:
+
+```
+dotnet run --no-build --project apps/cduhub-cli/cduhub-cli.csproj run --nostdin
+```

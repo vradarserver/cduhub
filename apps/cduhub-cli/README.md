@@ -21,8 +21,12 @@ If no command is specified then `run` is assumed.
 This runs the CDU Hub. By default it connects to the first CDU device that
 it can find.
 
-The program will keep running until you either press Q on the console or
-use the QUIT option on the CDU device.
+By default the program will keep running until you either press Q on the
+console or use the QUIT option on the CDU device.
+
+If you use the `--nostdin` option then it will wait for either SIGINT or
+SIGTERM. It will not poll stdin. Use this if you are starting the program
+from an environment that does not have a terminal attached.
 
 ### list
 
