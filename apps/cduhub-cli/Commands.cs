@@ -25,6 +25,7 @@ namespace Cduhub.CommandLineInterface
         };
 
         public static readonly Command Run = new("run", "Runs the CDU Hub (default command)") {
+            Options.NoStdIn,
         };
 
         public static readonly RootCommand RootCommand = new("The command-line interface version of the CDU Hub") {
@@ -45,7 +46,9 @@ namespace Cduhub.CommandLineInterface
             });
 
             Run.SetAction(parser => {
-                var command = new Command_Run();
+                var command = new Command_Run() {
+                    NoStdIn = parser.GetValue(Options.NoStdIn),
+                };
                 Program.Worked = command.Run();
             });
         }

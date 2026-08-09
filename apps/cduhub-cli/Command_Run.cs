@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System.Runtime.InteropServices;
 using Cduhub.FlightSim;
 
 namespace Cduhub.CommandLineInterface
@@ -16,6 +17,8 @@ namespace Cduhub.CommandLineInterface
     {
         private readonly object _SyncLock = new();
         private readonly List<FlightSim.IFlightSimulatorMcdu> _HookedFlightSimulatorStates = [];
+
+        public bool NoStdIn { get; set; }
 
         public bool Run()
         {
@@ -55,6 +58,25 @@ namespace Cduhub.CommandLineInterface
                 ConnectedFlightSimulators.ConnectedFlightSimulatorsChanged += (_,_) => {
                     HookAndUnhookFlightSimulatorStates(ConnectedFlightSimulators.GetFlightSimulatorMcdus());
                 };
+
+                PosixSignalRegistration.Create(PosixSignal.SIGINT, _ => {
+                    try {
+                        Console.WriteLine();
+                        OutputTimestamped("SIGINT received, cleaning up");
+                        hub?.Dispose();
+                    } catch {
+                        ;
+                    }
+                });
+                PosixSignalRegistration.Create(PosixSignal.SIGTERM, _ => {
+                    try {
+                        Console.WriteLine();
+                        OutputTimestamped("SIGTERM received, cleaning up");
+                        hub?.Dispose();
+                    } catch {
+                        ;
+                    }
+                });
             } catch(Exception ex) {
                 Console.WriteLine("Caught exception when instantiating the CDU Hub");
                 Console.WriteLine(ex);
@@ -62,10 +84,14 @@ namespace Cduhub.CommandLineInterface
             }
 
             if(result && hub != null) {
-                Console.WriteLine("Press Q to quit");
+                if(NoStdIn) {
+                    OutputTimestamped("Started without stdin, waiting for SIGINT or SIGTERM");
+                } else {
+                    Console.WriteLine("Press Q to quit");
+                }
                 try {
                     hub.Connect();
-                    while(!Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
+                    while(NoStdIn || !Console.KeyAvailable || Console.ReadKey(intercept: true).Key != ConsoleKey.Q) {
                         if(cancelSource.Token.IsCancellationRequested) {
                             break;
                         }

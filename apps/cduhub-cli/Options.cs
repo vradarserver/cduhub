@@ -23,5 +23,10 @@ namespace Cduhub.CommandLineInterface
             Description = "Show device paths",
             DefaultValueFactory = _ => false,
         };
+
+        public static readonly Option<bool> NoStdIn = new("--nostdin") {
+            Description = "Do not try to use stdin",
+            DefaultValueFactory = _ => false,
+        };
     }
 }
