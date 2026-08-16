@@ -56,6 +56,7 @@ namespace FastUpdate
                 if(cdu == null) {
                     Console.WriteLine("No device connected");
                 } else {
+                    cdu.ResetBrightnesses();
                     Console.WriteLine($"Using {cdu.UsbDevice}");
 
                     Console.WriteLine($"Press Q to quit");

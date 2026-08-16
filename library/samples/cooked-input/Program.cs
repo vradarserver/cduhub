@@ -21,6 +21,7 @@ namespace CookedInput
                 if(cdu == null) {
                     Console.WriteLine("No device connected");
                 } else {
+                    cdu.ResetBrightnesses();
                     Console.WriteLine($"Using {cdu.UsbDevice}");
                     cdu.Output.Centred("Press buttons");
                     cdu.RefreshDisplay();

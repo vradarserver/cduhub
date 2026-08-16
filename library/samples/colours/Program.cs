@@ -74,6 +74,7 @@ namespace Colours
                 if(cdu == null) {
                     Console.WriteLine("No device connected");
                 } else {
+                    cdu.ResetBrightnesses();
                     Console.WriteLine($"Using {cdu.UsbDevice}");
                     cdu.CduKeyDown += Cdu_CduKeyDown;
 

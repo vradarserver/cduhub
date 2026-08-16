@@ -22,6 +22,7 @@ namespace Leds
                     Console.WriteLine("No device connected");
                 } else {
                     Console.WriteLine($"Using {cdu.UsbDevice}");
+                    cdu.ResetBrightnesses();
 
                     var supportedLamps = cdu.SupportedLamps
                         .OrderBy(led => led.Describe())
@@ -69,7 +70,7 @@ namespace Leds
                                     case 6: cdu.Backlights.LedPercent = Math.Min(100, cdu.Backlights.LedPercent + 5); break;
                                 }
                             }
-
+                            cdu.RefreshBacklights();
                             cdu.RefreshLamps();
                         }
                     };

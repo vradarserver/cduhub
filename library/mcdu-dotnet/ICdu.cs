@@ -230,15 +230,28 @@ namespace McduDotNet
         void UseFont(McduFontFile fontFileContent, bool useFullWidth, bool skipDuplicateCheck = true);
 
         /// <summary>
+        /// Sets all of the brightnesses and applies them to the device in one call. The
+        /// defaults allow the display, LED lights and keyboard to be visible.
+        /// </summary>
+        /// <param name="ledPercent"></param>
+        /// <param name="displayPercent"></param>
+        /// <param name="keyboardPercent"></param>
+        void ResetBrightnesses(
+            int ledPercent = 70,
+            int displayPercent = 90,
+            int keyboardPercent = 70
+        );
+
+        /// <summary>
         /// Resets the display and turns everything off.
         /// </summary>
-        /// <param name="backlightBrightnessPercent">Defaults to 0.</param>
+        /// <param name="ledBrightnessPercent">Defaults to 0.</param>
         /// <param name="displayBrightnessPercent">Defaults to 0.</param>
-        /// <param name="lampBrightnessPercent">Defaults to 0.</param>
+        /// <param name="keyboardBrightnessPercent">Defaults to 0.</param>
         void Cleanup(
-            int backlightBrightnessPercent = 0,
+            int ledBrightnessPercent = 0,
             int displayBrightnessPercent = 0,
-            int lampBrightnessPercent = 0
+            int keyboardBrightnessPercent = 0
         );
 
         /// <summary>

@@ -65,6 +65,7 @@ namespace Characters
                 if(cdu == null) {
                     Console.WriteLine("No device connected");
                 } else {
+                    cdu.ResetBrightnesses();
                     Console.WriteLine($"Using {cdu.UsbDevice}");
                     Console.WriteLine($"Setting X and Y offsets to {xOffset} / {yOffset}");
                     cdu.XOffset = xOffset;

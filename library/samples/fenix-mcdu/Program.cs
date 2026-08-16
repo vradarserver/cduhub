@@ -30,6 +30,7 @@ namespace FenixMcdu
                 if(cdu == null) {
                     Console.WriteLine("No device connected");
                 } else {
+                    cdu.ResetBrightnesses();
                     Console.WriteLine($"Using {cdu.UsbDevice}");
                     _Mcdu = cdu;
                     _EquipmentLocation = cdu.UsbDevice.EquipmentLocation;
