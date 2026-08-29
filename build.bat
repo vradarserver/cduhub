@@ -116,29 +116,24 @@ rem ## Common actions
     if %RUN%==NO goto :DNBUILD
     set "NOBUILD= "
     if %BUILD%==NO set "NOBUILD=--no-build "
-    echo dotnet run %NOBUILD%-c %CONFIG% --project "%PROJ%" -- %RUNARGS%
-         dotnet run %NOBUILD%-c %CONFIG% --project "%PROJ%" -- %RUNARGS%
+    dotnet run %NOBUILD%-c %CONFIG% --project "%PROJ%" -- %RUNARGS%
     if ERRORLEVEL 1 goto :EOF
     exit /b 0
 :DNBUILD
-    echo dotnet build -c %CONFIG% "%PROJ%"
-         dotnet build -c %CONFIG% "%PROJ%"
+    dotnet build -c %CONFIG% "%PROJ%"
     if ERRORLEVEL 1 goto :EOF
     exit /b 0
 :DNPUBNORUN
-    echo dotnet publish -c %CONFIG% "%PROJ%" --output "%PUBDIR%"
-         dotnet publish -c %CONFIG% "%PROJ%" --output "%PUBDIR%"
+    dotnet publish -c %CONFIG% "%PROJ%" --output "%PUBDIR%"
     if ERRORLEVEL 1 goto :EOF
     exit /b 0
 :MSBUILD
     if %BUILD%==NO goto :MSBUILT
-    echo "%MSBUILD%" "%PROJ%" /p:Configuration=%CONFIG% "/p:PublishDir=%PUBDIR%" /t:Publish
-         "%MSBUILD%" "%PROJ%" /p:Configuration=%CONFIG% "/p:PublishDir=%PUBDIR%" /t:Publish
+    "%MSBUILD%" "%PROJ%" /p:Configuration=%CONFIG% "/p:PublishDir=%PUBDIR%" /t:Publish
     if ERRORLEVEL 1 goto :EOF
 :MSBUILT
     if %RUN%==NO exit /b 0
-    echo "%RUNEXE%"
-         "%RUNEXE%"
+    "%RUNEXE%"
     if ERRORLEVEL 1 goto :EOF
     exit /b 0
 

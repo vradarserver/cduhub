@@ -245,13 +245,13 @@ namespace McduDotNet
         /// <summary>
         /// Resets the display and turns everything off.
         /// </summary>
-        /// <param name="ledBrightnessPercent">Defaults to 0.</param>
+        /// <param name="backlightBrightnessPercent">Defaults to 0.</param>
         /// <param name="displayBrightnessPercent">Defaults to 0.</param>
-        /// <param name="keyboardBrightnessPercent">Defaults to 0.</param>
+        /// <param name="lampBrightnessPercent">Defaults to 0.</param>
         void Cleanup(
-            int ledBrightnessPercent = 0,
+            int backlightBrightnessPercent = 0,
             int displayBrightnessPercent = 0,
-            int keyboardBrightnessPercent = 0
+            int lampBrightnessPercent = 0
         );
 
         /// <summary>

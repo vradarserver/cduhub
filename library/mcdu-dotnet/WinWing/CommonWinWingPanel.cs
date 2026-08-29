@@ -505,16 +505,16 @@ namespace McduDotNet.WinWing
 
         /// <inheritdoc/>
         public void Cleanup(
-            int ledBrightnessPercent = 0,
+            int backlightBrightnessPercent = 0,
             int displayBrightnessPercent = 0,
-            int keyboardBrightnessPercent = 0
+            int lampBrightnessPercent = 0
         )
         {
             Screen.Clear();
             Lamps.TurnAllOn(false);
-            _IlluminationWriter?.SetIntensity(_KeyboardBacklightId, keyboardBrightnessPercent, skipDuplicateCheck: true);
+            _IlluminationWriter?.SetIntensity(_KeyboardBacklightId, lampBrightnessPercent, skipDuplicateCheck: true);
             _IlluminationWriter?.SetIntensity(_DisplayBacklightId, displayBrightnessPercent, skipDuplicateCheck: true);
-            _IlluminationWriter?.SetIntensity(_LedBrightnessId, ledBrightnessPercent, skipDuplicateCheck: true);
+            _IlluminationWriter?.SetIntensity(_LedBrightnessId, backlightBrightnessPercent, skipDuplicateCheck: true);
             RefreshDisplay();
             RefreshLamps();
         }

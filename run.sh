@@ -4,7 +4,7 @@ RUNARGS=${@:2}
 
 SHOW_USAGE() {
     echo "Usage: run [program] (args to program)"
-    echo "console       Build cduhub-cli"
+    echo "console       Run cduhub-cli"
     echo
     echo "convert-font  Run the font converter"
     echo "extract-font  Run the extract-font utility"
