@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:Cduhub.DesktopGui.Controls"
+        xmlns:cduhub="clr-namespace:Cduhub.DesktopGui"
         x:Class="Cduhub.DesktopGui.MainWindow"
         mc:Ignorable="d"
         Width="640" Height="720"
@@ -11,8 +12,34 @@
         Icon="/Assets/app.ico"
         Title="CDU Hub">
 
-    <Panel Background="Black">
-        <controls:CduDisplayControl x:Name="_CduDisplay" />
-    </Panel>
+    <DockPanel LastChildFill="True">
+
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8,8,8,4" Spacing="6">
+            <TextBlock Text="USB device:" VerticalAlignment="Center" />
+            <TextBlock x:Name="_Label_UsbDeviceState"
+                       Text="-"
+                       VerticalAlignment="Center"
+                       FontFamily="{x:Static cduhub:Fonts.MonospacedStack}" />
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Bottom" Margin="8,4,8,8" Spacing="2">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Text="Configs:" VerticalAlignment="Center" />
+                <HyperlinkButton x:Name="_Link_ConfigFolder"
+                                 Content="-"
+                                 Padding="0"
+                                 Click="ConfigFolder_Click" />
+            </StackPanel>
+            <HyperlinkButton x:Name="_Link_About"
+                             Content="About"
+                             HorizontalAlignment="Center"
+                             Click="About_Click" />
+        </StackPanel>
+
+        <Panel Background="Black">
+            <controls:CduDisplayControl x:Name="_CduDisplay" />
+        </Panel>
+
+    </DockPanel>
 
 </Window>

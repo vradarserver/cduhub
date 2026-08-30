@@ -9,7 +9,11 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.Diagnostics;
+using System.IO;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Threading;
 using McduDotNet;
 
 namespace Cduhub.DesktopGui
@@ -34,8 +38,12 @@ namespace Cduhub.DesktopGui
         {
             base.OnOpened(e);
 
+            Title = $"CDU Hub {CduhubVersions.LibraryVersion}";
+            _Link_ConfigFolder.Content = ConfigStorage.Folder;
+
             if(_Hub != null) {
                 HookHub();
+                UpdateStateDisplay();
 
                 _CduDisplay.CopyFromDisplayFont(_Hub.CurrentDisplayFont, _Hub.CurrentXOffset, _Hub.CurrentYOffset);
                 _CduDisplay.CopyFromDisplayPalette(_Hub.CurrentDisplayPalette);
@@ -54,6 +62,7 @@ namespace Cduhub.DesktopGui
         {
             if(_Hub != null && !_HubEventsHooked) {
                 _HubEventsHooked = true;
+                _Hub.ConnectedDeviceChanged += Hub_ConnectedDeviceChanged;
                 _Hub.DisplayChanging += Hub_DisplayChanging;
                 _Hub.FontChanging += Hub_FontChanging;
                 _Hub.PaletteChanging += Hub_PaletteChanging;
@@ -64,9 +73,44 @@ namespace Cduhub.DesktopGui
         {
             if(_Hub != null && _HubEventsHooked) {
                 _HubEventsHooked = false;
+                _Hub.ConnectedDeviceChanged -= Hub_ConnectedDeviceChanged;
                 _Hub.DisplayChanging -= Hub_DisplayChanging;
                 _Hub.FontChanging -= Hub_FontChanging;
                 _Hub.PaletteChanging -= Hub_PaletteChanging;
+            }
+        }
+
+        private void UpdateStateDisplay()
+        {
+            var device = _Hub?.ConnectedDevice;
+            _Label_UsbDeviceState.Text = device == null
+                ? "Not connected"
+                : $"{device.Description} connected";
+        }
+
+        private static void OpenFolder(string path)
+        {
+            if(Directory.Exists(path)) {
+                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true, });
+            }
+        }
+
+        private void About_Click(object? sender, RoutedEventArgs e)
+        {
+            ;
+        }
+
+        private void ConfigFolder_Click(object? sender, RoutedEventArgs e)
+        {
+            OpenFolder(ConfigStorage.Folder);
+        }
+
+        private void Hub_ConnectedDeviceChanged(object? sender, EventArgs e)
+        {
+            if(Dispatcher.UIThread.CheckAccess()) {
+                UpdateStateDisplay();
+            } else {
+                Dispatcher.UIThread.Post(UpdateStateDisplay);
             }
         }
 

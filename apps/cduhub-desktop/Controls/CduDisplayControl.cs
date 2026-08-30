@@ -55,8 +55,7 @@ namespace Cduhub.DesktopGui.Controls
         /// The monospace typeface used on the fallback render path. A fallback stack is
         /// given so that all three target platforms resolve something monospaced.
         /// </summary>
-        private static readonly Typeface _FallbackTypeface =
-            new(FontFamily.Parse("Cascadia Mono,Consolas,Menlo,DejaVu Sans Mono,monospace"));
+        private static readonly Typeface _FallbackTypeface = new(FontFamily.Parse(Fonts.MonospacedStack));
 
         /// <summary>
         /// The palette colours as brushes, for the fallback render path. Null until a
