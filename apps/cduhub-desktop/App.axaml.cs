@@ -11,11 +11,14 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 
 namespace Cduhub.DesktopGui
 {
     public partial class App : Application
     {
+        private Hub? _Hub;
+
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
@@ -24,10 +27,27 @@ namespace Cduhub.DesktopGui
         public override void OnFrameworkInitializationCompleted()
         {
             if(ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
-                desktop.MainWindow = new MainWindow();
+                HubBootstrap.Boot();
+
+                _Hub = new Hub();
+                _Hub.CloseApplication += (_, _) => Dispatcher.UIThread.Post(() => desktop.Shutdown());
+
+                desktop.MainWindow = new MainWindow(_Hub);
+                desktop.ShutdownRequested += Desktop_ShutdownRequested;
+
+                _Hub.Connect();
             }
 
             base.OnFrameworkInitializationCompleted();
+        }
+
+        private void Desktop_ShutdownRequested(object? sender, ShutdownRequestedEventArgs e)
+        {
+            if(_Hub != null) {
+                _Hub.Shutdown();
+                _Hub.Dispose();
+                _Hub = null;
+            }
         }
     }
 }

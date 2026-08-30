@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:Cduhub.DesktopGui.Controls"
         x:Class="Cduhub.DesktopGui.MainWindow"
         mc:Ignorable="d"
         Width="640" Height="720"
@@ -11,10 +12,7 @@
         Title="CDU Hub">
 
     <Panel Background="Black">
-        <TextBlock Text="CDU Hub — desktop skeleton"
-                   Foreground="White"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center" />
+        <controls:CduDisplayControl x:Name="_CduDisplay" />
     </Panel>
 
 </Window>
