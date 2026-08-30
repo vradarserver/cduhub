@@ -6,6 +6,7 @@ SHOW_USAGE() {
     echo "restore       Restore all NuGet packages"
     echo "solution      Build the solution (excluding Windows-only projects)"
     echo "console       Build cduhub-cli"
+    echo "desktop       Build cduhub-desktop"
     echo
     echo "convert-font  Convert font resources to MCDU-DOTNET font files"
     echo "extract-font  Build the extract-font utility"
@@ -66,7 +67,7 @@ do
         RUNARGS+=("$arg")
     else
         case $arg in
-            solution | restore | ambient | cdulamps | characters | clock | colours | console | convert-font | cooked-input | extract-font | fast-update | fenix-mcdu | fgcp-test | inproc-plugin)
+            solution | restore | ambient | cdulamps | characters | clock | colours | console | desktop | convert-font | cooked-input | extract-font | fast-update | fenix-mcdu | fgcp-test | inproc-plugin)
                 TARGET="$arg"
                 ;;
             -run | --run)
@@ -113,6 +114,10 @@ case $TARGET in
     console)
         BUILD_DOTNET "$SHDIR/apps/cduhub-cli/cduhub-cli.csproj"
         RUN_DOTNET   "$SHDIR/apps/cduhub-cli/cduhub-cli.csproj"
+        ;;
+    desktop)
+        BUILD_DOTNET "$SHDIR/apps/cduhub-desktop/cduhub-desktop.csproj"
+        RUN_DOTNET   "$SHDIR/apps/cduhub-desktop/cduhub-desktop.csproj"
         ;;
     convert-font)
         BUILD_DOTNET "$SHDIR/utilities/convert-font/convert-font.csproj"

@@ -5,6 +5,7 @@ RUNARGS=${@:2}
 SHOW_USAGE() {
     echo "Usage: run [program] (args to program)"
     echo "console       Run cduhub-cli"
+    echo "desktop       Run cduhub-desktop"
     echo
     echo "convert-font  Run the font converter"
     echo "extract-font  Run the extract-font utility"
@@ -48,6 +49,9 @@ case $1 in
         ;;
     console)
         RUN_BUILD console
+        ;;
+    desktop)
+        RUN_BUILD desktop
         ;;
     convert-font)
         RUN_BUILD convert-font

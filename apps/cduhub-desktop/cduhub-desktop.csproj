@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <RootNamespace>Cduhub.DesktopGui</RootNamespace>
+        <AssemblyName>cduhub-desktop</AssemblyName>
+        <Nullable>enable</Nullable>
+        <LangVersion>9.0</LangVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <ApplicationIcon>Assets/app.ico</ApplicationIcon>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="Assets/**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" />
+        <PackageReference Include="Avalonia.Desktop" />
+        <PackageReference Include="Avalonia.Themes.Fluent" />
+        <PackageReference Include="Avalonia.Fonts.Inter" />
+        <PackageReference Include="Avalonia.Controls.DataGrid" />
+        <PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)' == 'Debug'" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\library\cduhub\cduhub.csproj" />
+        <ProjectReference Include="..\..\library\cduhub-flightsim\cduhub-flightsim.csproj" />
+        <ProjectReference Include="..\..\library\mcdu-dotnet\mcdu-dotnet.csproj" />
+    </ItemGroup>
+
+</Project>

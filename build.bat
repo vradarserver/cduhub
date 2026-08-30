@@ -24,6 +24,7 @@ set RUNARGS=
     set BADARG=BAD
     if "%1"=="solution"      set BADARG=OK & set TARGET=SLN
     if "%1"=="console"       set BADARG=OK & set TARGET=CONSOLE
+    if "%1"=="desktop"       set BADARG=OK & set TARGET=DESKTOP
     if "%1"=="windows"       set BADARG=OK & set TARGET=WINDOWS
     if "%1"=="winsetup"      set BADARG=OK & set TARGET=WINSETUP
     if "%1"=="restore"       set BADARG=OK & set TARGET=RESTORE
@@ -59,6 +60,7 @@ set RUNARGS=
 :ENDARGS
     if "%TARGET%"=="COFONT"     goto :COFONT
     if "%TARGET%"=="CONSOLE"    goto :CONSOLE
+    if "%TARGET%"=="DESKTOP"    goto :DESKTOP
     if "%TARGET%"=="EXFONT"     goto :EXFONT
     if "%TARGET%"=="RESTORE"    goto :RESTORE
     if "%TARGET%"=="SAMAMBI"    goto :SAMAMBI
@@ -81,6 +83,7 @@ echo Usage: build command options
 echo restore       Restore all NuGet packages
 echo solution      Build the solution
 echo console       Build cduhub-cli
+echo desktop       Build cduhub-desktop
 echo windows       Build cduhub-windows
 echo winsetup      Build cduhub-windows installer
 echo.
@@ -116,7 +119,7 @@ rem ## Common actions
     if %RUN%==NO goto :DNBUILD
     set "NOBUILD= "
     if %BUILD%==NO set "NOBUILD=--no-build "
-    dotnet run %NOBUILD%-c %CONFIG% --project "%PROJ%" -- %RUNARGS%
+    dotnet run %NOBUILD% -c %CONFIG% --project "%PROJ%" -- %RUNARGS%
     if ERRORLEVEL 1 goto :EOF
     exit /b 0
 :DNBUILD
@@ -154,6 +157,11 @@ rem ## Build targets
 
 :CONSOLE
     set  "PROJ=%BATDIR%apps\cduhub-cli\cduhub-cli.csproj"
+    call :DOTNET
+    goto :EOF
+
+:DESKTOP
+    set  "PROJ=%BATDIR%apps\cduhub-desktop\cduhub-desktop.csproj"
     call :DOTNET
     goto :EOF
 

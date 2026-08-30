@@ -13,6 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		clean.sh = clean.sh
 		CleanObject.ps1 = CleanObject.ps1
 		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
 		global.json = global.json
 		LICENSE = LICENSE
 		README.md = README.md
@@ -67,6 +68,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cduhub-flightsim", "library
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cduhub-windows", "apps\cduhub-windows\cduhub-windows.csproj", "{74C211CE-9802-44D3-941B-9DF9E3527BB0}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cduhub-desktop", "apps\cduhub-desktop\cduhub-desktop.csproj", "{15F067D5-E4BE-4DF5-9E9E-759FE85639E5}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fast-update", "library\samples\fast-update\fast-update.csproj", "{3D52D94B-F097-471D-892D-A8079ED009C6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "characters", "library\samples\characters\characters.csproj", "{6DA6F729-8FF1-45CE-BB59-091E456E08D6}"
@@ -110,9 +113,9 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
 		NoWinDebug|Any CPU = NoWinDebug|Any CPU
 		NoWinRelease|Any CPU = NoWinRelease|Any CPU
+		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{F656E0C6-F924-4D09-AEE0-9E258CF5C61A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -193,6 +196,14 @@ Global
 		{74C211CE-9802-44D3-941B-9DF9E3527BB0}.NoWinRelease|Any CPU.ActiveCfg = Release|Any CPU
 		{74C211CE-9802-44D3-941B-9DF9E3527BB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{74C211CE-9802-44D3-941B-9DF9E3527BB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15F067D5-E4BE-4DF5-9E9E-759FE85639E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15F067D5-E4BE-4DF5-9E9E-759FE85639E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15F067D5-E4BE-4DF5-9E9E-759FE85639E5}.NoWinDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15F067D5-E4BE-4DF5-9E9E-759FE85639E5}.NoWinDebug|Any CPU.Build.0 = Debug|Any CPU
+		{15F067D5-E4BE-4DF5-9E9E-759FE85639E5}.NoWinRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{15F067D5-E4BE-4DF5-9E9E-759FE85639E5}.NoWinRelease|Any CPU.Build.0 = Release|Any CPU
+		{15F067D5-E4BE-4DF5-9E9E-759FE85639E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15F067D5-E4BE-4DF5-9E9E-759FE85639E5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3D52D94B-F097-471D-892D-A8079ED009C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3D52D94B-F097-471D-892D-A8079ED009C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D52D94B-F097-471D-892D-A8079ED009C6}.NoWinDebug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -275,6 +286,7 @@ Global
 		{F32C6B7D-F01C-40BD-87DC-09ED8E5DEA77} = {F23391C6-F0DD-4436-A60C-0B65690AE6C6}
 		{6A5771A0-1330-4A81-A47D-66CA72D11896} = {7612F6B1-A4A7-431C-8688-167145D1D5F8}
 		{74C211CE-9802-44D3-941B-9DF9E3527BB0} = {8110F87C-2A2E-484C-B35D-FD9CC36E8167}
+		{15F067D5-E4BE-4DF5-9E9E-759FE85639E5} = {8110F87C-2A2E-484C-B35D-FD9CC36E8167}
 		{3D52D94B-F097-471D-892D-A8079ED009C6} = {61A9C6CD-82AE-494E-86C9-21644DAADBD6}
 		{6DA6F729-8FF1-45CE-BB59-091E456E08D6} = {61A9C6CD-82AE-494E-86C9-21644DAADBD6}
 		{D11E29C9-8291-4989-B411-021DC0D8A6AC} = {455CEB36-52CC-4544-93F2-90F3FE8C667E}
