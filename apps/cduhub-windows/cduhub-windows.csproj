@@ -8,6 +8,7 @@
         <UseWindowsForms>true</UseWindowsForms>
         <ApplicationIcon>app.ico</ApplicationIcon>
         <Nullable>enable</Nullable>
+        <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,11 +16,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.183">
+      <PackageReference Include="Microsoft.Windows.CsWin32">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="System.Memory" Version="4.6.3" />
+      <PackageReference Include="System.Memory" />
+      <PackageReference Include="System.Resources.Extensions" />
     </ItemGroup>
 
     <ItemGroup>

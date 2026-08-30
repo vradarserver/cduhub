@@ -27,8 +27,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="HidSharp" Version="2.1.0" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+      <PackageReference Include="HidSharp" />
+      <PackageReference Include="Newtonsoft.Json" />
     </ItemGroup>
 
     <ItemGroup>
