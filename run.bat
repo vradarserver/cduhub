@@ -15,6 +15,7 @@ set RUNARGS=
 :ENDARGS
 
 if "%PROG%"=="console"      call "%BATDIR%build.bat" console      -nobuild -run %RUNARGS%
+if "%PROG%"=="windows"      call "%BATDIR%build.bat" windows      -nobuild -run %RUNARGS%
 if "%PROG%"=="convert-font" call "%BATDIR%build.bat" convert-font -nobuild -run %RUNARGS%
 if "%PROG%"=="extract-font" call "%BATDIR%build.bat" extract-font -nobuild -run %RUNARGS%
 if "%PROG%"=="ambient"      call "%BATDIR%build.bat" ambient      -nobuild -run %RUNARGS%
@@ -32,6 +33,7 @@ goto :EOF
 :BADARGS
 echo Usage: run [program] (args to program)
 echo console       Run cduhub-cli
+echo windows       Run cduhub-windows
 echo.
 echo convert-font  Run the font converter
 echo extract-font  Run the extract-font utility
