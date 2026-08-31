@@ -37,7 +37,7 @@ namespace Cduhub.DesktopGui
                 _Hub.CloseApplication += (_, _) => Dispatcher.UIThread.Post(() => desktop.Shutdown());
 
                 desktop.MainWindow = new MainWindow(_Hub);
-                desktop.ShutdownRequested += Desktop_ShutdownRequested;
+                desktop.Exit += Desktop_Exit;
 
                 _Hub.Connect();
             }
@@ -45,7 +45,7 @@ namespace Cduhub.DesktopGui
             base.OnFrameworkInitializationCompleted();
         }
 
-        private void Desktop_ShutdownRequested(object? sender, ShutdownRequestedEventArgs e)
+        private void Desktop_Exit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
         {
             if(_Hub != null) {
                 _Hub.Shutdown();
