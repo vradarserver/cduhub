@@ -13,6 +13,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Media.Immutable;
@@ -91,6 +93,19 @@ namespace Cduhub.DesktopGui.Controls
         public CduDisplayControl()
         {
             RenderOptions.SetBitmapInterpolationMode(this, BitmapInterpolationMode.None);
+
+            ContextMenu = CreateContextMenu();
+        }
+
+        private ContextMenu CreateContextMenu()
+        {
+            var contextMenu = new ContextMenu();
+
+            var copyToClipboardMenuItem = new MenuItem() { Header = "Copy to Clipboard", };
+            copyToClipboardMenuItem.Click += CopyToClipboardMenuItem_Click;
+            contextMenu.Items.Add(copyToClipboardMenuItem);
+
+            return contextMenu;
         }
 
         /// <summary>
@@ -336,14 +351,19 @@ namespace Cduhub.DesktopGui.Controls
                     var transform = Matrix.CreateScale(scale, scale) * Matrix.CreateTranslation(offsetX, offsetY);
 
                     using(context.PushTransform(transform)) {
-                        for(var rowIdx = 0;rowIdx < displayBuffer.CountRows;++rowIdx) {
-                            for(var cellIdx = 0;cellIdx < displayBuffer.CountCells;++cellIdx) {
-                                var ch = displayBuffer.Characters[rowIdx, cellIdx];
-                                var fontAndColour = displayBuffer.FontsAndColours[rowIdx, cellIdx];
-                                DrawCharacterUsingFallbackFontAt(context, rowIdx, cellIdx, ch, fontAndColour);
-                            }
-                        }
+                        DrawFallbackCells(context, displayBuffer);
                     }
+                }
+            }
+        }
+
+        private void DrawFallbackCells(DrawingContext context, DisplayBuffer displayBuffer)
+        {
+            for(var rowIdx = 0;rowIdx < displayBuffer.CountRows;++rowIdx) {
+                for(var cellIdx = 0;cellIdx < displayBuffer.CountCells;++cellIdx) {
+                    var ch = displayBuffer.Characters[rowIdx, cellIdx];
+                    var fontAndColour = displayBuffer.FontsAndColours[rowIdx, cellIdx];
+                    DrawCharacterUsingFallbackFontAt(context, rowIdx, cellIdx, ch, fontAndColour);
                 }
             }
         }
@@ -375,6 +395,53 @@ namespace Cduhub.DesktopGui.Controls
                 );
                 context.DrawText(formattedText, origin);
             }
+        }
+
+        /// <summary>
+        /// Copies the CDU screen to clipboard.
+        /// </summary>
+        private async void CopyToClipboardMenuItem_Click(object? sender, RoutedEventArgs e)
+        {
+            try {
+                var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+                if(clipboard != null) {
+                    using(var snapshot = CreateScreenSnapshot()) {
+                        if(snapshot != null) {
+                            await clipboard.SetBitmapAsync(snapshot);
+                        }
+                    }
+                }
+            } catch {
+                ;
+            }
+        }
+
+        private RenderTargetBitmap? CreateScreenSnapshot()
+        {
+            RenderTargetBitmap? result = null;
+
+            var composedBitmap = _ComposedBitmap;
+            var displayBuffer = _DisplayBuffer;
+            if(composedBitmap != null && composedBitmap.PixelSize.Width > 0 && composedBitmap.PixelSize.Height > 0) {
+                var bounds = new Rect(composedBitmap.Size);
+                result = new RenderTargetBitmap(composedBitmap.PixelSize, new Vector(96, 96));
+                using(var context = result.CreateDrawingContext()) {
+                    context.FillRectangle(Brushes.Black, bounds);
+                    context.DrawImage(composedBitmap, bounds, bounds);
+                }
+            } else if(displayBuffer != null && _DisplayFont == null) {
+                var canvasWidth = (_XOffset * 2) + (displayBuffer.CountCells * _FallbackCellPixelWidth);
+                var canvasHeight = (_YOffset * 2) + (displayBuffer.CountRows * _FallbackCellPixelHeight);
+                if(canvasWidth > 0 && canvasHeight > 0) {
+                    result = new RenderTargetBitmap(new PixelSize(canvasWidth, canvasHeight), new Vector(96, 96));
+                    using(var context = result.CreateDrawingContext()) {
+                        context.FillRectangle(Brushes.Black, new Rect(0, 0, canvasWidth, canvasHeight));
+                        DrawFallbackCells(context, displayBuffer);
+                    }
+                }
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>
