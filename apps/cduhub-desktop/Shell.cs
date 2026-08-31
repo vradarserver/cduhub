@@ -9,29 +9,29 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using Avalonia;
+using System.Diagnostics;
 
 namespace Cduhub.DesktopGui
 {
     /// <summary>
-    /// Application entry point.
+    /// A thin wrapper over the operating system's "open this" verb.
     /// </summary>
-    static class Program
+    static class Shell
     {
-        [STAThread]
-        public static void Main(string[] args)
+        /// <summary>
+        /// Asks the OS to open <paramref name="target"/> (a folder path or a URL). Ignores
+        /// empty targets, swallows exceptions.
+        /// </summary>
+        /// <param name="target"></param>
+        public static void Open(string? target)
         {
-            var builder = BuildAvaloniaApp();
-            builder.StartWithClassicDesktopLifetime(args);
-        }
-
-        public static AppBuilder BuildAvaloniaApp()
-        {
-            var result = AppBuilder.Configure<App>()
-                .UsePlatformDetect()
-                .WithInterFont()
-                .LogToTrace();
-            return result;
+            if(!String.IsNullOrWhiteSpace(target)) {
+                try {
+                    Process.Start(new ProcessStartInfo(target) { UseShellExecute = true, });
+                } catch {
+                    ;
+                }
+            }
         }
     }
 }

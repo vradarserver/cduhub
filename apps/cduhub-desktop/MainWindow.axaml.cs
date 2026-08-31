@@ -10,7 +10,6 @@
 
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Avalonia.Controls;
@@ -133,13 +132,14 @@ namespace Cduhub.DesktopGui
         private static void OpenFolder(string path)
         {
             if(Directory.Exists(path)) {
-                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true, });
+                Shell.Open(path);
             }
         }
 
         private void About_Click(object? sender, RoutedEventArgs e)
         {
-            ;
+            var dialog = new AboutWindow();
+            dialog.ShowDialog(this);
         }
 
         private void ConfigFolder_Click(object? sender, RoutedEventArgs e)

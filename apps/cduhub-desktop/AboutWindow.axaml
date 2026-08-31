@@ -1,0 +1,75 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cduhub="clr-namespace:Cduhub.DesktopGui"
+        x:Class="Cduhub.DesktopGui.AboutWindow"
+        mc:Ignorable="d"
+        Width="700" Height="560"
+        MinWidth="440" MinHeight="380"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        Title="About CDU Hub">
+
+    <DockPanel Margin="12">
+
+        <Button DockPanel.Dock="Bottom"
+                Content="Close"
+                HorizontalAlignment="Right"
+                Margin="0,12,0,0"
+                MinWidth="80"
+                IsCancel="True"
+                Click="Close_Click" />
+
+        <Grid ColumnDefinitions="Auto,*,Auto"
+              RowDefinitions="Auto,Auto,Auto,Auto,*,Auto,*"
+              ColumnSpacing="8"
+              RowSpacing="6">
+
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="This version:" VerticalAlignment="Center" />
+            <TextBox Grid.Row="0" Grid.Column="1" x:Name="_TextBox_ThisVersion"
+                     IsReadOnly="True"
+                     FontFamily="{x:Static cduhub:Fonts.MonospacedStack}" />
+            <CheckBox Grid.Row="0" Grid.Column="2" x:Name="_Check_AutoStart"
+                      Content="Start when user logs in"
+                      IsEnabled="False"
+                      ToolTip.Tip="Enabled in a later version" />
+
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Latest version:" VerticalAlignment="Center" />
+            <TextBox Grid.Row="1" Grid.Column="1" x:Name="_TextBox_LatestVersion"
+                     IsReadOnly="True"
+                     FontFamily="{x:Static cduhub:Fonts.MonospacedStack}" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Release URL:" VerticalAlignment="Center" />
+            <TextBox Grid.Row="2" Grid.Column="1" x:Name="_TextBox_ReleaseUrl"
+                     IsReadOnly="True"
+                     FontFamily="{x:Static cduhub:Fonts.MonospacedStack}" />
+            <HyperlinkButton Grid.Row="2" Grid.Column="2" x:Name="_Link_OpenReleaseUrl"
+                             Content="Open"
+                             Click="OpenReleaseUrl_Click" />
+
+            <TextBlock Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" Text="License:" />
+            <Border Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3"
+                    BorderBrush="Gray" BorderThickness="1">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="6">
+                    <SelectableTextBlock x:Name="_Text_License"
+                                         TextWrapping="NoWrap"
+                                         FontFamily="{x:Static cduhub:Fonts.MonospacedStack}" />
+                </ScrollViewer>
+            </Border>
+
+            <TextBlock Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="3" Text="Credit:" />
+            <Border Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="3"
+                    BorderBrush="Gray" BorderThickness="1">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Padding="6">
+                    <SelectableTextBlock x:Name="_Text_Credit"
+                                         TextWrapping="NoWrap"
+                                         FontFamily="{x:Static cduhub:Fonts.MonospacedStack}" />
+                </ScrollViewer>
+            </Border>
+
+        </Grid>
+
+    </DockPanel>
+
+</Window>
