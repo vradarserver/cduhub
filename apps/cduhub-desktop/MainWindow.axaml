@@ -65,9 +65,9 @@
             </DataGrid>
         </StackPanel>
 
-        <Panel Background="Black">
+        <Border Background="Black" BorderBrush="Black" BorderThickness="2">
             <controls:CduDisplayControl x:Name="_CduDisplay" />
-        </Panel>
+        </Border>
 
     </DockPanel>
 
