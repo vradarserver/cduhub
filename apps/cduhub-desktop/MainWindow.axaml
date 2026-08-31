@@ -9,7 +9,6 @@
         Width="640" Height="720"
         MinWidth="480" MinHeight="480"
         WindowStartupLocation="CenterScreen"
-        WindowState="Minimized"
         Icon="/Assets/app.ico"
         Title="CDU Hub">
 

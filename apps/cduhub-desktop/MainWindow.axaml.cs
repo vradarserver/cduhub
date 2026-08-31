@@ -33,6 +33,13 @@ namespace Cduhub.DesktopGui
         {
             InitializeComponent();
 
+            // As of time of writing Avalonia doesn't like it if you start minimised
+            // on MacOS, none of the content renders properly. Going to make it a
+            // Windows-only thing for now.
+            if(OperatingSystem.IsWindows()) {
+                WindowState = WindowState.Minimized;
+            }
+
             _RefreshTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250), };
             _RefreshTimer.Tick += RefreshTimer_Tick;
         }
