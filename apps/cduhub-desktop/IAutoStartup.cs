@@ -8,33 +8,27 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using Avalonia;
-
 namespace Cduhub.DesktopGui
 {
     /// <summary>
-    /// Application entry point.
+    /// Handles auto-startup of the application on user login.
     /// </summary>
-    static class Program
+    interface IAutoStartup
     {
-        [STAThread]
-        public static void Main(string[] args)
-        {
-            using(var singleInstance = PlatformFactory.Resolve<ISingleInstance>().Acquire()) {
-                if(singleInstance != null) {
-                    BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
-                }
-            }
-        }
+        /// <summary>
+        /// True if the O/S supports auto-runs.
+        /// </summary>
+        bool IsSupported { get; }
 
-        public static AppBuilder BuildAvaloniaApp()
-        {
-            var result = AppBuilder.Configure<App>()
-                .UsePlatformDetect()
-                .WithInterFont()
-                .LogToTrace();
-            return result;
-        }
+        /// <summary>
+        /// True if cduhub-desktop is configured to auto-run on login.
+        /// </summary>
+        bool IsEnabled { get; }
+
+        /// <summary>
+        /// Adds or removes configuration to auto-run on login.
+        /// </summary>
+        /// <param name="enable"></param>
+        void Enable(bool enable);
     }
 }

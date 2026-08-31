@@ -31,9 +31,7 @@
                      IsReadOnly="True"
                      FontFamily="{x:Static cduhub:Fonts.MonospacedStack}" />
             <CheckBox Grid.Row="0" Grid.Column="2" x:Name="_Check_AutoStart"
-                      Content="Start when user logs in"
-                      IsEnabled="False"
-                      ToolTip.Tip="Enabled in a later version" />
+                      Content="Start when user logs in" />
 
             <TextBlock Grid.Row="1" Grid.Column="0" Text="Latest version:" VerticalAlignment="Center" />
             <TextBox Grid.Row="1" Grid.Column="1" x:Name="_TextBox_LatestVersion"

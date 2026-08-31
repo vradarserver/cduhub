@@ -9,32 +9,50 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
-using Avalonia;
+using System.IO;
 
-namespace Cduhub.DesktopGui
+namespace Cduhub.DesktopGui.Platform
 {
     /// <summary>
-    /// Application entry point.
+    /// Implementation of <see cref="IAutoStartup"/> for Linux.
     /// </summary>
-    static class Program
+    sealed class AutoStartup_Linux : IAutoStartup
     {
-        [STAThread]
-        public static void Main(string[] args)
+        private const string _FileName = "cduhub-desktop.desktop";
+
+        private static string? ApplicationPath => Environment.ProcessPath;
+
+        /// <inheritdoc/>
+        public bool IsSupported => !String.IsNullOrEmpty(ApplicationPath);
+
+        /// <inheritdoc/>
+        public bool IsEnabled => File.Exists(AutostartFilePath());
+
+        /// <inheritdoc/>
+        public void Enable(bool enable)
         {
-            using(var singleInstance = PlatformFactory.Resolve<ISingleInstance>().Acquire()) {
-                if(singleInstance != null) {
-                    BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+            if(IsSupported) {
+                var filePath = AutostartFilePath();
+                if(enable) {
+                    Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+                    File.WriteAllText(
+                        filePath,
+                        "[Desktop Entry]\n"
+                        + "Type=Application\n"
+                        + "Name=CDU Hub\n"
+                        + $"Exec=\"{ApplicationPath}\"\n"
+                        + "X-GNOME-Autostart-enabled=true\n"
+                    );
+                } else if(File.Exists(filePath)) {
+                    File.Delete(filePath);
                 }
             }
         }
 
-        public static AppBuilder BuildAvaloniaApp()
+        private static string AutostartFilePath()
         {
-            var result = AppBuilder.Configure<App>()
-                .UsePlatformDetect()
-                .WithInterFont()
-                .LogToTrace();
-            return result;
+            var configFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            return Path.Combine(configFolder, "autostart", _FileName);
         }
     }
 }

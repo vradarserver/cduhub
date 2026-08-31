@@ -8,32 +8,38 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using Avalonia;
+using System.Threading;
 
-namespace Cduhub.DesktopGui
+namespace Cduhub.DesktopGui.Platform
 {
     /// <summary>
-    /// Application entry point.
+    /// Common base for <see cref="ISingleInstance"/> implementations.
     /// </summary>
-    static class Program
+    static class SingleInstanceMutex
     {
-        [STAThread]
-        public static void Main(string[] args)
+        /// <summary>
+        /// Tests ownership of <paramref name="mutex"/>. Returns the mutex if ownership
+        /// was acquired, or disposes it and returns null if another instance already
+        /// holds it.
+        /// </summary>
+        /// <param name="mutex"></param>
+        /// <returns></returns>
+        public static Mutex? TryAcquire(Mutex mutex)
         {
-            using(var singleInstance = PlatformFactory.Resolve<ISingleInstance>().Acquire()) {
-                if(singleInstance != null) {
-                    BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
-                }
-            }
-        }
+            var result = mutex;
 
-        public static AppBuilder BuildAvaloniaApp()
-        {
-            var result = AppBuilder.Configure<App>()
-                .UsePlatformDetect()
-                .WithInterFont()
-                .LogToTrace();
+            bool acquired;
+            try {
+                acquired = mutex.WaitOne(0, exitContext: false);
+            } catch(AbandonedMutexException) {
+                acquired = true;
+            }
+
+            if(!acquired) {
+                mutex.Dispose();
+                result = null;
+            }
+
             return result;
         }
     }

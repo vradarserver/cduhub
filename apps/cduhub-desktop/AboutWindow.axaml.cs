@@ -16,6 +16,8 @@ namespace Cduhub.DesktopGui
 {
     public partial class AboutWindow : Window
     {
+        private readonly IAutoStartup _AutoStartup = PlatformFactory.Resolve<IAutoStartup>();
+
         private const string _LicenseText =
 @"BSD 3-Clause License
 
@@ -76,6 +78,22 @@ https://github.com/graphql-dotnet/graphql-client";
 
             _Text_License.Text = _LicenseText;
             _Text_Credit.Text = _CreditText;
+
+            _Check_AutoStart.IsEnabled = _AutoStartup.IsSupported;
+            _Check_AutoStart.IsChecked = _AutoStartup.IsEnabled;
+            _Check_AutoStart.IsCheckedChanged += AutoStart_IsCheckedChanged;
+        }
+
+        /// <inheritdoc/>
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            _Check_AutoStart.IsCheckedChanged -= AutoStart_IsCheckedChanged;
+        }
+
+        private void AutoStart_IsCheckedChanged(object? sender, RoutedEventArgs e)
+        {
+            _AutoStartup.Enable(_Check_AutoStart.IsChecked == true);
         }
 
         private void Close_Click(object? sender, RoutedEventArgs e)

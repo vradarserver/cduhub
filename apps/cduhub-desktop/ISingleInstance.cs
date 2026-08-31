@@ -8,33 +8,22 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using System;
-using Avalonia;
+using System.Threading;
 
 namespace Cduhub.DesktopGui
 {
     /// <summary>
-    /// Application entry point.
+    /// Handles the singleton mutex that guards against two instances running
+    /// simultaneously.
     /// </summary>
-    static class Program
+    /// <remarks>Two instances would fight over the USB devices.</remarks>
+    interface ISingleInstance
     {
-        [STAThread]
-        public static void Main(string[] args)
-        {
-            using(var singleInstance = PlatformFactory.Resolve<ISingleInstance>().Acquire()) {
-                if(singleInstance != null) {
-                    BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
-                }
-            }
-        }
-
-        public static AppBuilder BuildAvaloniaApp()
-        {
-            var result = AppBuilder.Configure<App>()
-                .UsePlatformDetect()
-                .WithInterFont()
-                .LogToTrace();
-            return result;
-        }
+        /// <summary>
+        /// Returns the singleton mutex if there is no other instance running or null if
+        /// another instance is running.
+        /// </summary>
+        /// <returns></returns>
+        Mutex? Acquire();
     }
 }
