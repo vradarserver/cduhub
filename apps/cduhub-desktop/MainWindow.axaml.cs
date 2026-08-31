@@ -9,8 +9,10 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -23,9 +25,17 @@ namespace Cduhub.DesktopGui
         private readonly Hub? _Hub;
         private bool _HubEventsHooked;
 
+        private readonly ObservableCollection<FlightSimRow> _FlightSimRows = new();
+        private readonly DispatcherTimer _RefreshTimer;
+        private bool _FlightSimulatorsHooked;
+        private int _FlightSimulatorsChanged;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            _RefreshTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250), };
+            _RefreshTimer.Tick += RefreshTimer_Tick;
         }
 
         public MainWindow(Hub hub) : this()
@@ -41,6 +51,11 @@ namespace Cduhub.DesktopGui
             Title = $"CDU Hub {CduhubVersions.LibraryVersion}";
             _Link_ConfigFolder.Content = ConfigStorage.Folder;
 
+            _Grid_FlightSims.ItemsSource = _FlightSimRows;
+            HookFlightSimulators();
+            RefreshFlightSimulators();
+            _RefreshTimer.Start();
+
             if(_Hub != null) {
                 HookHub();
                 UpdateStateDisplay();
@@ -55,6 +70,9 @@ namespace Cduhub.DesktopGui
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
+
+            _RefreshTimer.Stop();
+            UnhookFlightSimulators();
             UnhookHub();
         }
 
@@ -77,6 +95,30 @@ namespace Cduhub.DesktopGui
                 _Hub.DisplayChanging -= Hub_DisplayChanging;
                 _Hub.FontChanging -= Hub_FontChanging;
                 _Hub.PaletteChanging -= Hub_PaletteChanging;
+            }
+        }
+
+        private void HookFlightSimulators()
+        {
+            if(!_FlightSimulatorsHooked) {
+                _FlightSimulatorsHooked = true;
+                ConnectedFlightSimulators.FlightSimulatorStateChanged += FlightSimulators_StateChanged;
+            }
+        }
+
+        private void UnhookFlightSimulators()
+        {
+            if(_FlightSimulatorsHooked) {
+                _FlightSimulatorsHooked = false;
+                ConnectedFlightSimulators.FlightSimulatorStateChanged -= FlightSimulators_StateChanged;
+            }
+        }
+
+        private void RefreshFlightSimulators()
+        {
+            _FlightSimRows.Clear();
+            foreach(var mcdu in ConnectedFlightSimulators.GetFlightSimulatorMcdus()) {
+                _FlightSimRows.Add(new FlightSimRow(mcdu));
             }
         }
 
@@ -105,6 +147,11 @@ namespace Cduhub.DesktopGui
             OpenFolder(ConfigStorage.Folder);
         }
 
+        private void FlightSimulators_StateChanged(object? sender, EventArgs e)
+        {
+            Interlocked.Exchange(ref _FlightSimulatorsChanged, 1);
+        }
+
         private void Hub_ConnectedDeviceChanged(object? sender, EventArgs e)
         {
             if(Dispatcher.UIThread.CheckAccess()) {
@@ -127,6 +174,13 @@ namespace Cduhub.DesktopGui
         private void Hub_PaletteChanging(object? sender, PaletteChangingEventArgs e)
         {
             _CduDisplay.CopyFromDisplayPalette(e.DisplayPalette);
+        }
+
+        private void RefreshTimer_Tick(object? sender, EventArgs e)
+        {
+            if(Interlocked.Exchange(ref _FlightSimulatorsChanged, 0) != 0) {
+                RefreshFlightSimulators();
+            }
         }
     }
 }

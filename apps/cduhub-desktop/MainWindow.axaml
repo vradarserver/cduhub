@@ -36,6 +36,35 @@
                              Click="About_Click" />
         </StackPanel>
 
+        <StackPanel DockPanel.Dock="Bottom" Margin="8,4,8,4" Spacing="2">
+            <TextBlock Text="Flight Simulators" FontWeight="SemiBold" />
+            <DataGrid x:Name="_Grid_FlightSims"
+                      x:DataType="cduhub:FlightSimRow"
+                      MaxHeight="150"
+                      IsReadOnly="True"
+                      CanUserReorderColumns="False"
+                      GridLinesVisibility="All"
+                      HeadersVisibility="Column"
+                      FontFamily="{x:Static cduhub:Fonts.MonospacedStack}">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Flight Simulator" Width="Auto" Binding="{Binding FlightSimulatorName}" />
+                    <DataGridTextColumn Header="Aircraft" Width="Auto" Binding="{Binding AircraftName}" />
+                    <DataGridTextColumn Header="State" Width="Auto" Binding="{Binding ConnectionState}" />
+                    <DataGridTextColumn Header="Last Message" Width="Auto" Binding="{Binding LastMessage}" />
+                    <DataGridTemplateColumn Header="Messages" Width="Auto">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate x:DataType="cduhub:FlightSimRow">
+                                <TextBlock Text="{Binding CountMessages}"
+                                           TextAlignment="Right"
+                                           VerticalAlignment="Center"
+                                           Margin="12,0" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+
         <Panel Background="Black">
             <controls:CduDisplayControl x:Name="_CduDisplay" />
         </Panel>
