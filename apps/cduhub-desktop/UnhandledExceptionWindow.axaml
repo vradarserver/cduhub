@@ -7,8 +7,8 @@
         mc:Ignorable="d"
         Width="760" Height="520"
         MinWidth="480" MinHeight="320"
-        WindowStartupLocation="CenterOwner"
-        ShowInTaskbar="False"
+        WindowStartupLocation="CenterScreen"
+        Topmost="True"
         Title="Unhandled Exception">
 
     <DockPanel Margin="12">

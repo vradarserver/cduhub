@@ -66,7 +66,7 @@ namespace Cduhub.DesktopGui
         }
 
         /// <summary>
-        /// Shows the details of an unhandled UI-thread exception in a modal dialog.
+        /// Shows the details of an unhandled UI-thread exception.
         /// </summary>
         /// <param name="exception"></param>
         public static void ShowUnhandledException(Exception exception)
@@ -84,12 +84,9 @@ namespace Cduhub.DesktopGui
                     var window = new UnhandledExceptionWindow(exception);
                     window.Closed += (_, _) => _ShowingUnhandledException = false;
 
-                    var owner = (Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
-                    if(owner != null && owner.IsVisible) {
-                        _ = window.ShowDialog(owner);
-                    } else {
-                        window.Show();
-                    }
+                    // Shown ownerless and non-modal - we don't want to care about whether
+                    // the main window already has a modal dialog attached
+                    window.Show();
                 } catch {
                     _ShowingUnhandledException = false;
                 }
