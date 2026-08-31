@@ -8,6 +8,7 @@
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -18,6 +19,7 @@ namespace Cduhub.DesktopGui
     public partial class App : Application
     {
         private Hub? _Hub;
+        private bool _ShowingUnhandledException;
 
         public override void Initialize()
         {
@@ -26,6 +28,8 @@ namespace Cduhub.DesktopGui
 
         public override void OnFrameworkInitializationCompleted()
         {
+            Dispatcher.UIThread.UnhandledException += UIThread_UnhandledException;
+
             if(ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
                 HubBootstrap.Boot();
 
@@ -47,6 +51,48 @@ namespace Cduhub.DesktopGui
                 _Hub.Shutdown();
                 _Hub.Dispose();
                 _Hub = null;
+            }
+        }
+
+        /// <summary>
+        /// Called when an unhandled exception is thrown on the UI thread.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void UIThread_UnhandledException(object? sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            e.Handled = true;
+            ShowUnhandledException(e.Exception);
+        }
+
+        /// <summary>
+        /// Shows the details of an unhandled UI-thread exception in a modal dialog.
+        /// </summary>
+        /// <param name="exception"></param>
+        public static void ShowUnhandledException(Exception exception)
+        {
+            if(Current is App app) {
+                Dispatcher.UIThread.Post(() => app.ShowUnhandledExceptionDialog(exception));
+            }
+        }
+
+        private void ShowUnhandledExceptionDialog(Exception exception)
+        {
+            if(!_ShowingUnhandledException) {
+                _ShowingUnhandledException = true;
+                try {
+                    var window = new UnhandledExceptionWindow(exception);
+                    window.Closed += (_, _) => _ShowingUnhandledException = false;
+
+                    var owner = (Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+                    if(owner != null && owner.IsVisible) {
+                        _ = window.ShowDialog(owner);
+                    } else {
+                        window.Show();
+                    }
+                } catch {
+                    _ShowingUnhandledException = false;
+                }
             }
         }
     }

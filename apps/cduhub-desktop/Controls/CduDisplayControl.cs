@@ -402,17 +402,14 @@ namespace Cduhub.DesktopGui.Controls
         /// </summary>
         private async void CopyToClipboardMenuItem_Click(object? sender, RoutedEventArgs e)
         {
-            try {
-                var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-                if(clipboard != null) {
-                    using(var snapshot = CreateScreenSnapshot()) {
-                        if(snapshot != null) {
-                            await clipboard.SetBitmapAsync(snapshot);
-                        }
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if(clipboard != null) {
+                using(var snapshot = CreateScreenSnapshot()) {
+                    if(snapshot != null) {
+                        await clipboard.SetBitmapAsync(snapshot);
+                        await clipboard.FlushAsync();
                     }
                 }
-            } catch {
-                ;
             }
         }
 
