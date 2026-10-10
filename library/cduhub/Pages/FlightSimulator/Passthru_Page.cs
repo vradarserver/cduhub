@@ -9,11 +9,15 @@
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OF THE SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using Cduhub.Config;
+using Cduhub.FcuPages;
 
 namespace Cduhub.Pages.FlightSimulator
 {
     class Passthru_Page : Page
     {
+        private readonly Passthru_FcuPage _FcuPage;
+        private FcuPage? _PreviousFcuPage;
+
         public override bool DisableMenuKey => true;
 
         public override bool DisableInitKey => true;
@@ -22,6 +26,25 @@ namespace Cduhub.Pages.FlightSimulator
 
         public Passthru_Page(Hub hub) : base(hub)
         {
+            _FcuPage = new(hub.FcuHub);
+        }
+
+        public override void OnSelected(bool selected)
+        {
+            var fcuHub = _Hub.FcuHub;
+            if(selected) {
+                _PreviousFcuPage = fcuHub.SelectedPage;
+                fcuHub.SelectPage(_FcuPage);
+            } else {
+                if(fcuHub.SelectedPage == _FcuPage) {
+                    fcuHub.SelectPage(
+                        _PreviousFcuPage ?? new Default_FcuPage(fcuHub),
+                        replaceCurrentInHistory: true
+                    );
+                }
+                _PreviousFcuPage = null;
+            }
+            base.OnSelected(selected);
         }
     }
 }

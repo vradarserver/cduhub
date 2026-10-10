@@ -33,6 +33,8 @@ namespace Cduhub
 
         internal bool ShuttingDown => _Hub.ShuttingDown;
 
+        public FcuPage? SelectedPage => _SelectedPage;
+
         public FcuBacklights GlobalBacklights { get; } = new() {
             PanelPercent =   1,
             ExpedPercent =   1,
