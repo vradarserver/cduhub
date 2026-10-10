@@ -124,7 +124,7 @@ namespace Cduhub
         public void Reconnect()
         {
             Disconnect();
-            Reconnect();
+            Connect();
         }
 
         private void PerformAutoReconnect()
