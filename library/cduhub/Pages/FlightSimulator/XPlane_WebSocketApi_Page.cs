@@ -35,14 +35,7 @@ FcuPage.KeyEventCallback += FcuKeyEvent;
         }
 
 //temp
-public override void OnSelected(bool selected)
-{
-    if(selected) {
-        _Hub.FcuHub.SelectPage(FcuPage);
-    }
-    base.OnSelected(selected);
-
-}
+protected override FcuPage CreateFcuPage() => FcuPage;
 
         protected override void Connect()
         {

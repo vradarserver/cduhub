@@ -11,9 +11,9 @@
 
 namespace Cduhub.FcuPages
 {
-    class Passthru_FcuPage : FcuPage
+    class Blank_FcuPage : FcuPage
     {
-        public Passthru_FcuPage(FcuHub fcuHub) : base(fcuHub)
+        public Blank_FcuPage(FcuHub fcuHub) : base(fcuHub)
         {
         }
     }

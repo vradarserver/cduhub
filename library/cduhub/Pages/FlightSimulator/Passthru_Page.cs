@@ -15,8 +15,7 @@ namespace Cduhub.Pages.FlightSimulator
 {
     class Passthru_Page : Page
     {
-        private readonly Passthru_FcuPage _FcuPage;
-        private FcuPage? _PreviousFcuPage;
+        private readonly FcuPageOverride _FcuPageOverride;
 
         public override bool DisableMenuKey => true;
 
@@ -26,24 +25,12 @@ namespace Cduhub.Pages.FlightSimulator
 
         public Passthru_Page(Hub hub) : base(hub)
         {
-            _FcuPage = new(hub.FcuHub);
+            _FcuPageOverride = new(hub.FcuHub, new Blank_FcuPage(hub.FcuHub));
         }
 
         public override void OnSelected(bool selected)
         {
-            var fcuHub = _Hub.FcuHub;
-            if(selected) {
-                _PreviousFcuPage = fcuHub.SelectedPage;
-                fcuHub.SelectPage(_FcuPage);
-            } else {
-                if(fcuHub.SelectedPage == _FcuPage) {
-                    fcuHub.SelectPage(
-                        _PreviousFcuPage ?? new Default_FcuPage(fcuHub),
-                        replaceCurrentInHistory: true
-                    );
-                }
-                _PreviousFcuPage = null;
-            }
+            _FcuPageOverride.OwnerSelected(selected);
             base.OnSelected(selected);
         }
     }
